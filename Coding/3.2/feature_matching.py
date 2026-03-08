@@ -73,7 +73,17 @@ def geometric_verification(kp1, kp2, good_matches):
     return f_matrix, matches_mask, good_matches
 
 
-def visualize_matches(img1, kp1, img2, kp2, matches, mask=None, title="Matches", max_matches=50):
+def visualize_matches(
+    img1,
+    kp1,
+    img2,
+    kp2,
+    matches,
+    mask=None,
+    title="Matches",
+    max_matches=50,
+    save_path=None,
+):
     """Visualize a subset of matches."""
     if max_matches is not None:
         matches = matches[:max_matches]
@@ -93,13 +103,15 @@ def visualize_matches(img1, kp1, img2, kp2, matches, mask=None, title="Matches",
     plt.title(title)
     plt.axis("off")
     plt.tight_layout()
+    if save_path is not None:
+        plt.savefig(save_path, dpi=200, bbox_inches="tight")
     plt.show()
 
 
 def main():
     script_dir = Path(__file__).resolve().parent
-    img1_path = script_dir / "leuvenA.jpg"
-    img2_path = script_dir / "leuvenB.jpg"
+    img1_path = script_dir / "2-a.jpg"
+    img2_path = script_dir / "2-b.jpg"
 
     print("Loading images...")
     img1, img2, gray1, gray2 = load_images(img1_path, img2_path)
@@ -122,6 +134,7 @@ def main():
         good_matches,
         title="After Ratio Test (Before RANSAC)",
         max_matches=50,
+        save_path=script_dir / "matches_before_ransac.png",
     )
 
     print("Running RANSAC...")
@@ -146,6 +159,7 @@ def main():
         mask=matches_mask,
         title="Final Matches (After RANSAC)",
         max_matches=50,
+        save_path=script_dir / "matches_after_ransac.png",
     )
 
 
