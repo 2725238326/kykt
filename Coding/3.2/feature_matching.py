@@ -85,17 +85,22 @@ def visualize_matches(
     save_path=None,
 ):
     """Visualize a subset of matches."""
+    if mask is not None:
+        filtered_pairs = [(m, keep) for m, keep in zip(matches, mask) if keep]
+        matches = [m for m, _ in filtered_pairs]
+        mask = None
+
+    matches = sorted(matches, key=lambda m: m.distance)
+
     if max_matches is not None:
         matches = matches[:max_matches]
-        if mask is not None:
-            mask = mask[:max_matches]
 
     draw_params = dict(
         matchColor=(255, 0, 0),
-        singlePointColor=None,
+        singlePointColor=(255, 215, 0),
         matchesMask=mask,
-        flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS,
-        matchesThickness=3,
+        flags=cv2.DrawMatchesFlags_DEFAULT,
+        matchesThickness=2,
     )
 
     img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, **draw_params)
@@ -134,7 +139,7 @@ def main():
         kp2,
         good_matches,
         title="After Ratio Test (Before RANSAC)",
-        max_matches=50,
+        max_matches=80,
         save_path=script_dir / "matches_before_ransac.png",
     )
 
@@ -159,7 +164,7 @@ def main():
         final_matches,
         mask=matches_mask,
         title="Final Matches (After RANSAC)",
-        max_matches=50,
+        max_matches=80,
         save_path=script_dir / "matches_after_ransac.png",
     )
 
