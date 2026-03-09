@@ -91,10 +91,11 @@ def visualize_matches(
             mask = mask[:max_matches]
 
     draw_params = dict(
-        matchColor=(0, 255, 0),
+        matchColor=(255, 0, 0),
         singlePointColor=None,
         matchesMask=mask,
         flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS,
+        matchesThickness=3,
     )
 
     img_matches = cv2.drawMatches(img1, kp1, img2, kp2, matches, None, **draw_params)
