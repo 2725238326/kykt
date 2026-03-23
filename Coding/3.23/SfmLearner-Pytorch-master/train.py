@@ -4,6 +4,7 @@ import csv
 
 import numpy as np
 import torch
+from torch import amp
 import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
@@ -74,10 +75,35 @@ parser.add_argument('-f', '--training-output-freq', type=int,
                     help='frequence for outputting dispnet outputs and warped imgs at training for all scales. '
                          'if 0, will not output',
                     metavar='N', default=0)
+parser.add_argument('--val-freq', default=1, type=int, metavar='N',
+                    help='run validation every N epochs')
+parser.add_argument('--amp', action='store_true',
+                    help='enable automatic mixed precision training')
+parser.add_argument('--prefetch-factor', default=2, type=int, metavar='N',
+                    help='number of prefetched batches per worker when workers > 0')
+parser.add_argument('--no-persistent-workers', action='store_true',
+                    help='disable persistent dataloader workers')
 
 best_error = -1
 n_iter = 0
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
+
+def unwrap_model(model):
+    return model.module if isinstance(model, torch.nn.DataParallel) else model
+
+
+def build_dataloader(dataset, batch_size, shuffle, workers, prefetch_factor, persistent_workers):
+    loader_kwargs = {
+        'batch_size': batch_size,
+        'shuffle': shuffle,
+        'num_workers': workers,
+        'pin_memory': torch.cuda.is_available(),
+    }
+    if workers > 0:
+        loader_kwargs['persistent_workers'] = persistent_workers
+        loader_kwargs['prefetch_factor'] = prefetch_factor
+    return torch.utils.data.DataLoader(dataset, **loader_kwargs)
 
 
 def main():
@@ -92,8 +118,12 @@ def main():
     print('=> will save everything to {}'.format(args.save_path))
     args.save_path.makedirs_p()
     torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
     if args.evaluate:
         args.epochs = 0
+    use_amp = args.amp and torch.cuda.is_available()
+    scaler = amp.GradScaler('cuda', enabled=use_amp)
 
     tb_writer = SummaryWriter(args.save_path)
     # Data loading code
@@ -141,12 +171,22 @@ def main():
         )
     print('{} samples found in {} train scenes'.format(len(train_set), len(train_set.scenes)))
     print('{} samples found in {} valid scenes'.format(len(val_set), len(val_set.scenes)))
-    train_loader = torch.utils.data.DataLoader(
-        train_set, batch_size=args.batch_size, shuffle=True,
-        num_workers=args.workers, pin_memory=True)
-    val_loader = torch.utils.data.DataLoader(
-        val_set, batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True)
+    train_loader = build_dataloader(
+        train_set,
+        batch_size=args.batch_size,
+        shuffle=True,
+        workers=args.workers,
+        prefetch_factor=args.prefetch_factor,
+        persistent_workers=not args.no_persistent_workers,
+    )
+    val_loader = build_dataloader(
+        val_set,
+        batch_size=args.batch_size,
+        shuffle=False,
+        workers=args.workers,
+        prefetch_factor=args.prefetch_factor,
+        persistent_workers=not args.no_persistent_workers,
+    )
 
     if args.epoch_size == 0:
         args.epoch_size = len(train_loader)
@@ -175,8 +215,12 @@ def main():
         disp_net.init_weights()
 
     cudnn.benchmark = True
-    disp_net = torch.nn.DataParallel(disp_net)
-    pose_exp_net = torch.nn.DataParallel(pose_exp_net)
+    gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
+    print('=> device: {}, gpu_count: {}, amp: {}'.format(device, gpu_count, use_amp))
+    if gpu_count > 1:
+        print('=> enabling DataParallel')
+        disp_net = torch.nn.DataParallel(disp_net)
+        pose_exp_net = torch.nn.DataParallel(pose_exp_net)
 
     print('=> setting adam solver')
 
@@ -202,11 +246,11 @@ def main():
     if args.pretrained_disp or args.evaluate:
         logger.reset_valid_bar()
         if args.with_gt and args.with_pose:
-            errors, error_names = validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, 0, logger, tb_writer)
+            errors, error_names = validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, 0, logger, tb_writer, use_amp=use_amp)
         elif args.with_gt:
-            errors, error_names = validate_with_gt(args, val_loader, disp_net, 0, logger, tb_writer)
+            errors, error_names = validate_with_gt(args, val_loader, disp_net, 0, logger, tb_writer, use_amp=use_amp)
         else:
-            errors, error_names = validate_without_gt(args, val_loader, disp_net, pose_exp_net, 0, logger, tb_writer)
+            errors, error_names = validate_without_gt(args, val_loader, disp_net, pose_exp_net, 0, logger, tb_writer, use_amp=use_amp)
         for error, name in zip(errors, error_names):
             tb_writer.add_scalar(name, error, 0)
         error_string = ', '.join('{} : {:.3f}'.format(name, error) for name, error in zip(error_names[2:9], errors[2:9]))
@@ -217,48 +261,59 @@ def main():
 
         # train for one epoch
         logger.reset_train_bar()
-        train_loss = train(args, train_loader, disp_net, pose_exp_net, optimizer, args.epoch_size, logger, tb_writer)
+        train_loss = train(args, train_loader, disp_net, pose_exp_net, optimizer, scaler, args.epoch_size, logger, tb_writer, use_amp)
         logger.train_writer.write(' * Avg Loss : {:.3f}'.format(train_loss))
 
-        # evaluate on validation set
-        logger.reset_valid_bar()
-        if args.with_gt and args.with_pose:
-            errors, error_names = validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer)
-        elif args.with_gt:
-            errors, error_names = validate_with_gt(args, val_loader, disp_net, epoch, logger, tb_writer)
+        run_validation = (
+            args.evaluate or
+            ((epoch + 1) % args.val_freq == 0) or
+            (epoch == args.epochs - 1)
+        )
+        decisive_error = train_loss
+        validation_loss = float('nan')
+
+        if run_validation:
+            logger.reset_valid_bar()
+            if args.with_gt and args.with_pose:
+                errors, error_names = validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer, use_amp=use_amp)
+            elif args.with_gt:
+                errors, error_names = validate_with_gt(args, val_loader, disp_net, epoch, logger, tb_writer, use_amp=use_amp)
+            else:
+                errors, error_names = validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer, use_amp=use_amp)
+            error_string = ', '.join('{} : {:.3f}'.format(name, error) for name, error in zip(error_names, errors))
+            logger.valid_writer.write(' * Avg {}'.format(error_string))
+
+            for error, name in zip(errors, error_names):
+                tb_writer.add_scalar(name, error, epoch)
+
+            decisive_error = errors[1]
+            validation_loss = decisive_error
+            if best_error < 0:
+                best_error = decisive_error
         else:
-            errors, error_names = validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer)
-        error_string = ', '.join('{} : {:.3f}'.format(name, error) for name, error in zip(error_names, errors))
-        logger.valid_writer.write(' * Avg {}'.format(error_string))
-
-        for error, name in zip(errors, error_names):
-            tb_writer.add_scalar(name, error, epoch)
-
-        # Up to you to chose the most relevant error to measure your model's performance, careful some measures are to maximize (such as a1,a2,a3)
-        decisive_error = errors[1]
-        if best_error < 0:
-            best_error = decisive_error
+            logger.valid_writer.write(' * Skipping validation at epoch {}'.format(epoch + 1))
 
         # remember lowest error and save checkpoint
-        is_best = decisive_error < best_error
-        best_error = min(best_error, decisive_error)
+        is_best = run_validation and decisive_error < best_error
+        if run_validation:
+            best_error = min(best_error, decisive_error)
         save_checkpoint(
             args.save_path, {
                 'epoch': epoch + 1,
-                'state_dict': disp_net.module.state_dict()
+                'state_dict': unwrap_model(disp_net).state_dict()
             }, {
                 'epoch': epoch + 1,
-                'state_dict': pose_exp_net.module.state_dict()
+                'state_dict': unwrap_model(pose_exp_net).state_dict()
             },
             is_best)
 
         with open(args.save_path/args.log_summary, 'a') as csvfile:
             writer = csv.writer(csvfile, delimiter='\t')
-            writer.writerow([train_loss, decisive_error])
+            writer.writerow([train_loss, validation_loss])
     logger.epoch_bar.finish()
 
 
-def train(args, train_loader, disp_net, pose_exp_net, optimizer, epoch_size, logger, tb_writer):
+def train(args, train_loader, disp_net, pose_exp_net, optimizer, scaler, epoch_size, logger, tb_writer, use_amp):
     global n_iter, device
     batch_time = AverageMeter()
     data_time = AverageMeter()
@@ -278,25 +333,26 @@ def train(args, train_loader, disp_net, pose_exp_net, optimizer, epoch_size, log
 
         # measure data loading time
         data_time.update(time.time() - end)
-        tgt_img = tgt_img.to(device)
-        ref_imgs = [img.to(device) for img in ref_imgs]
-        intrinsics = intrinsics.to(device)
+        tgt_img = tgt_img.to(device, non_blocking=True)
+        ref_imgs = [img.to(device, non_blocking=True) for img in ref_imgs]
+        intrinsics = intrinsics.to(device, non_blocking=True)
 
         # compute output
-        disparities = disp_net(tgt_img)
-        depth = [1/disp for disp in disparities]
-        explainability_mask, pose = pose_exp_net(tgt_img, ref_imgs)
+        with amp.autocast('cuda', enabled=use_amp):
+            disparities = disp_net(tgt_img)
+            depth = [1/disp for disp in disparities]
+            explainability_mask, pose = pose_exp_net(tgt_img, ref_imgs)
 
-        loss_1, warped, diff = photometric_reconstruction_loss(tgt_img, ref_imgs, intrinsics,
-                                                               depth, explainability_mask, pose,
-                                                               args.rotation_mode, args.padding_mode)
-        if w2 > 0:
-            loss_2 = explainability_loss(explainability_mask)
-        else:
-            loss_2 = 0
-        loss_3 = smooth_loss(depth)
+            loss_1, warped, diff = photometric_reconstruction_loss(tgt_img, ref_imgs, intrinsics,
+                                                                   depth, explainability_mask, pose,
+                                                                   args.rotation_mode, args.padding_mode)
+            if w2 > 0:
+                loss_2 = explainability_loss(explainability_mask)
+            else:
+                loss_2 = 0
+            loss_3 = smooth_loss(depth)
 
-        loss = w1*loss_1 + w2*loss_2 + w3*loss_3
+            loss = w1*loss_1 + w2*loss_2 + w3*loss_3
 
         if log_losses:
             tb_writer.add_scalar('photometric_error', loss_1.item(), n_iter)
@@ -314,9 +370,10 @@ def train(args, train_loader, disp_net, pose_exp_net, optimizer, epoch_size, log
         losses.update(loss.item(), args.batch_size)
 
         # compute gradient and do Adam step
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        optimizer.zero_grad(set_to_none=True)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -337,7 +394,7 @@ def train(args, train_loader, disp_net, pose_exp_net, optimizer, epoch_size, log
 
 
 @torch.no_grad()
-def validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer, sample_nb_to_log=3):
+def validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer, sample_nb_to_log=3, use_amp=False):
     global device
     batch_time = AverageMeter()
     losses = AverageMeter(i=3, precision=4)
@@ -355,20 +412,21 @@ def validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger,
     end = time.time()
     logger.valid_bar.update(0)
     for i, (tgt_img, ref_imgs, intrinsics, intrinsics_inv) in enumerate(val_loader):
-        tgt_img = tgt_img.to(device)
-        ref_imgs = [img.to(device) for img in ref_imgs]
-        intrinsics = intrinsics.to(device)
-        intrinsics_inv = intrinsics_inv.to(device)
+        tgt_img = tgt_img.to(device, non_blocking=True)
+        ref_imgs = [img.to(device, non_blocking=True) for img in ref_imgs]
+        intrinsics = intrinsics.to(device, non_blocking=True)
+        intrinsics_inv = intrinsics_inv.to(device, non_blocking=True)
 
         # compute output
-        disp = disp_net(tgt_img)
-        depth = 1/disp
-        explainability_mask, pose = pose_exp_net(tgt_img, ref_imgs)
+        with amp.autocast('cuda', enabled=use_amp):
+            disp = disp_net(tgt_img)
+            depth = 1/disp
+            explainability_mask, pose = pose_exp_net(tgt_img, ref_imgs)
 
-        loss_1, warped, diff = photometric_reconstruction_loss(tgt_img, ref_imgs,
-                                                               intrinsics, depth,
-                                                               explainability_mask, pose,
-                                                               args.rotation_mode, args.padding_mode)
+            loss_1, warped, diff = photometric_reconstruction_loss(tgt_img, ref_imgs,
+                                                                   intrinsics, depth,
+                                                                   explainability_mask, pose,
+                                                                   args.rotation_mode, args.padding_mode)
         loss_1 = loss_1.item()
         if w2 > 0:
             loss_2 = explainability_loss(explainability_mask).item()
@@ -418,7 +476,7 @@ def validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger,
 
 
 @torch.no_grad()
-def validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer, sample_nb_to_log=3):
+def validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer, sample_nb_to_log=3, use_amp=False):
     global device
     batch_time = AverageMeter()
     depth_error_names = ['abs_diff', 'abs_rel', 'sq_rel', 'a1', 'a2', 'a3']
@@ -438,16 +496,17 @@ def validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, epoch, logge
     end = time.time()
     logger.valid_bar.update(0)
     for i, (tgt_img, ref_imgs, gt_depth, gt_poses) in enumerate(val_loader):
-        tgt_img = tgt_img.to(device)
-        gt_depth = gt_depth.to(device)
-        gt_poses = gt_poses.to(device)
-        ref_imgs = [img.to(device) for img in ref_imgs]
+        tgt_img = tgt_img.to(device, non_blocking=True)
+        gt_depth = gt_depth.to(device, non_blocking=True)
+        gt_poses = gt_poses.to(device, non_blocking=True)
+        ref_imgs = [img.to(device, non_blocking=True) for img in ref_imgs]
         b = tgt_img.shape[0]
 
         # compute output
-        output_disp = disp_net(tgt_img)
-        output_depth = 1/output_disp
-        explainability_mask, output_poses = pose_exp_net(tgt_img, ref_imgs)
+        with amp.autocast('cuda', enabled=use_amp):
+            output_disp = disp_net(tgt_img)
+            output_depth = 1/output_disp
+            explainability_mask, output_poses = pose_exp_net(tgt_img, ref_imgs)
 
         reordered_output_poses = torch.cat([output_poses[:, :gt_poses.shape[1]//2],
                                             torch.zeros(b, 1, 6).to(output_poses),
@@ -515,7 +574,7 @@ def validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, epoch, logge
 
 
 @torch.no_grad()
-def validate_with_gt(args, val_loader, disp_net, epoch, logger, tb_writer, sample_nb_to_log=3):
+def validate_with_gt(args, val_loader, disp_net, epoch, logger, tb_writer, sample_nb_to_log=3, use_amp=False):
     global device
     batch_time = AverageMeter()
     error_names = ['abs_diff', 'abs_rel', 'sq_rel', 'a1', 'a2', 'a3']
@@ -530,12 +589,13 @@ def validate_with_gt(args, val_loader, disp_net, epoch, logger, tb_writer, sampl
     end = time.time()
     logger.valid_bar.update(0)
     for i, (tgt_img, depth) in enumerate(val_loader):
-        tgt_img = tgt_img.to(device)
-        depth = depth.to(device)
+        tgt_img = tgt_img.to(device, non_blocking=True)
+        depth = depth.to(device, non_blocking=True)
 
         # compute output
-        output_disp = disp_net(tgt_img)
-        output_depth = 1/output_disp[:, 0]
+        with amp.autocast('cuda', enabled=use_amp):
+            output_disp = disp_net(tgt_img)
+            output_depth = 1/output_disp[:, 0]
 
         if log_outputs and i in batches_to_log:
             index = batches_to_log.index(i)
