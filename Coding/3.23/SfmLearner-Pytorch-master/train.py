@@ -8,6 +8,7 @@ from torch import amp
 import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
+from path import Path
 import custom_transforms
 import models
 from utils import tensor2array, save_checkpoint, save_path_formatter, log_output_tensorboard
@@ -62,6 +63,8 @@ parser.add_argument('--pretrained-disp', dest='pretrained_disp', default=None, m
                     help='path to pre-trained dispnet model')
 parser.add_argument('--pretrained-exppose', dest='pretrained_exp_pose', default=None, metavar='PATH',
                     help='path to pre-trained Exp Pose net model')
+parser.add_argument('--resume-dir', default=None, metavar='PATH',
+                    help='resume training from an existing checkpoint directory')
 parser.add_argument('--seed', default=0, type=int, help='seed for random functions, and network initialization')
 parser.add_argument('--log-summary', default='progress_log_summary.csv', metavar='PATH',
                     help='csv where to save per-epoch train and valid stats')
@@ -109,12 +112,16 @@ def build_dataloader(dataset, batch_size, shuffle, workers, prefetch_factor, per
 def main():
     global best_error, n_iter, device
     args = parser.parse_args()
+    start_epoch = 0
     if args.dataset_format == 'stacked':
         from datasets.stacked_sequence_folders import SequenceFolder
     elif args.dataset_format == 'sequential':
         from datasets.sequence_folders import SequenceFolder
-    save_path = save_path_formatter(args, parser)
-    args.save_path = 'checkpoints'/save_path
+    if args.resume_dir is not None:
+        args.save_path = Path(args.resume_dir)
+    else:
+        save_path = save_path_formatter(args, parser)
+        args.save_path = 'checkpoints'/save_path
     print('=> will save everything to {}'.format(args.save_path))
     args.save_path.makedirs_p()
     torch.manual_seed(args.seed)
@@ -232,6 +239,29 @@ def main():
                                  betas=(args.momentum, args.beta),
                                  weight_decay=args.weight_decay)
 
+    if args.resume_dir is not None:
+        disp_ckpt = args.save_path/'dispnet_checkpoint.pth.tar'
+        pose_ckpt = args.save_path/'exp_pose_checkpoint.pth.tar'
+        print("=> resuming from {}".format(args.save_path))
+        if not disp_ckpt.isfile():
+            raise FileNotFoundError("disp checkpoint not found at {}".format(disp_ckpt))
+        if not pose_ckpt.isfile():
+            raise FileNotFoundError("pose checkpoint not found at {}".format(pose_ckpt))
+
+        disp_weights = torch.load(disp_ckpt, map_location='cpu')
+        pose_weights = torch.load(pose_ckpt, map_location='cpu')
+
+        unwrap_model(disp_net).load_state_dict(disp_weights['state_dict'])
+        unwrap_model(pose_exp_net).load_state_dict(pose_weights['state_dict'], strict=False)
+
+        if 'optimizer' in disp_weights:
+            optimizer.load_state_dict(disp_weights['optimizer'])
+        if 'scaler' in disp_weights and use_amp:
+            scaler.load_state_dict(disp_weights['scaler'])
+
+        start_epoch = int(disp_weights.get('epoch', 0))
+        print('=> resumed at epoch {}'.format(start_epoch))
+
     with open(args.save_path/args.log_summary, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter='\t')
         writer.writerow(['train_loss', 'validation_loss'])
@@ -256,7 +286,7 @@ def main():
         error_string = ', '.join('{} : {:.3f}'.format(name, error) for name, error in zip(error_names[2:9], errors[2:9]))
         logger.valid_writer.write(' * Avg {}'.format(error_string))
 
-    for epoch in range(args.epochs):
+    for epoch in range(start_epoch, args.epochs):
         logger.epoch_bar.update(epoch)
 
         # train for one epoch
@@ -300,7 +330,9 @@ def main():
         save_checkpoint(
             args.save_path, {
                 'epoch': epoch + 1,
-                'state_dict': unwrap_model(disp_net).state_dict()
+                'state_dict': unwrap_model(disp_net).state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'scaler': scaler.state_dict()
             }, {
                 'epoch': epoch + 1,
                 'state_dict': unwrap_model(pose_exp_net).state_dict()
