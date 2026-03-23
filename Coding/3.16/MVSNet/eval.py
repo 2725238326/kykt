@@ -1,5 +1,4 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 import argparse
 
 import torch
@@ -100,12 +99,13 @@ def save_depth():
 
     # model
     model = MVSNet(refine=False)
-    model = nn.DataParallel(model)
+    if torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
     model.cuda()
 
     # load checkpoint file specified by args.loadckpt
     print("loading model {}".format(args.loadckpt))
-    state_dict = torch.load(args.loadckpt)
+    state_dict = torch.load(args.loadckpt, map_location='cpu')
     model.load_state_dict(state_dict['model'])
     model.eval()
 

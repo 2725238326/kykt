@@ -1,5 +1,4 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 import argparse
 
 import torch
@@ -13,6 +12,7 @@ import torch.nn.functional as F
 import numpy as np
 import time
 from tensorboardX import SummaryWriter
+from tqdm.auto import tqdm
 from datasets import find_dataset_def
 from models import *
 from utils import *
@@ -58,12 +58,12 @@ if args.testpath is None:
     args.testpath = args.trainpath
 
 torch.manual_seed(args.seed)
-torch.cuda.manual_seed(args.seed)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(args.seed)
 
 # create logger for mode "train" and "testall"
 if args.mode == "train":
-    if not os.path.isdir(args.logdir):
-        os.mkdir(args.logdir)
+    os.makedirs(args.logdir, exist_ok=True)
 
     current_time_str = str(datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
     print("current time", current_time_str)
@@ -83,7 +83,7 @@ TestImgLoader = DataLoader(test_dataset, args.batch_size, shuffle=False, num_wor
 
 # model, optimizer
 model = MVSNet(refine=False)
-if args.mode in ["train", "test"]:
+if args.mode in ["train", "test"] and torch.cuda.device_count() > 1:
     model = nn.DataParallel(model)
 model.cuda()
 model_loss = mvsnet_loss
@@ -119,11 +119,17 @@ def train():
 
     for epoch_idx in range(start_epoch, args.epochs):
         print('Epoch {}:'.format(epoch_idx))
-        lr_scheduler.step()
         global_step = len(TrainImgLoader) * epoch_idx
 
         # training
-        for batch_idx, sample in enumerate(TrainImgLoader):
+        train_bar = tqdm(
+            enumerate(TrainImgLoader),
+            total=len(TrainImgLoader),
+            desc='Epoch {}/{} [train]'.format(epoch_idx + 1, args.epochs),
+            dynamic_ncols=True,
+            leave=True
+        )
+        for batch_idx, sample in train_bar:
             start_time = time.time()
             global_step = len(TrainImgLoader) * epoch_idx + batch_idx
             do_summary = global_step % args.summary_freq == 0
@@ -132,10 +138,8 @@ def train():
                 save_scalars(logger, 'train', scalar_outputs, global_step)
                 save_images(logger, 'train', image_outputs, global_step)
             del scalar_outputs, image_outputs
-            print(
-                'Epoch {}/{}, Iter {}/{}, train loss = {:.3f}, time = {:.3f}'.format(epoch_idx, args.epochs, batch_idx,
-                                                                                     len(TrainImgLoader), loss,
-                                                                                     time.time() - start_time))
+            iter_time = time.time() - start_time
+            train_bar.set_postfix(loss='{:.3f}'.format(loss), sec='{:.3f}'.format(iter_time))
 
         # checkpoint
         if (epoch_idx + 1) % args.save_freq == 0:
@@ -162,18 +166,26 @@ def train():
                                                                                      time.time() - start_time))
         save_scalars(logger, 'fulltest', avg_test_scalars.mean(), global_step)
         print("avg_test_scalars:", avg_test_scalars.mean())
+        lr_scheduler.step()
         # gc.collect()
 
 
 def test():
     avg_test_scalars = DictAverageMeter()
-    for batch_idx, sample in enumerate(TestImgLoader):
+    test_bar = tqdm(
+        enumerate(TestImgLoader),
+        total=len(TestImgLoader),
+        desc='Test',
+        dynamic_ncols=True,
+        leave=True
+    )
+    for batch_idx, sample in test_bar:
         start_time = time.time()
         loss, scalar_outputs, image_outputs = test_sample(sample, detailed_summary=True)
         avg_test_scalars.update(scalar_outputs)
         del scalar_outputs, image_outputs
-        print('Iter {}/{}, test loss = {:.3f}, time = {:3f}'.format(batch_idx, len(TestImgLoader), loss,
-                                                                    time.time() - start_time))
+        iter_time = time.time() - start_time
+        test_bar.set_postfix(loss='{:.3f}'.format(loss), sec='{:.3f}'.format(iter_time))
         if batch_idx % 100 == 0:
             print("Iter {}/{}, test results = {}".format(batch_idx, len(TestImgLoader), avg_test_scalars.mean()))
     print("final", avg_test_scalars)

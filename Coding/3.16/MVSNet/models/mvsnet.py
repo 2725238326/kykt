@@ -151,4 +151,4 @@ class MVSNet(nn.Module):
 
 def mvsnet_loss(depth_est, depth_gt, mask):
     mask = mask > 0.5
-    return F.smooth_l1_loss(depth_est[mask], depth_gt[mask], size_average=True)
+    return F.smooth_l1_loss(depth_est[mask], depth_gt[mask], reduction='mean')

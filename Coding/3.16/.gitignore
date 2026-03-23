@@ -1,0 +1,18 @@
+﻿# Generated experiment outputs
+/d192_fast16_eval/
+/d192_fast16_eval_all.tar.gz
+*.tar.gz
+*.ply
+*.pfm
+
+# MVSNet artifacts
+/MVSNet/checkpoints/
+/MVSNet/outputs/
+/MVSNet/logs/
+/MVSNet/backups/
+/MVSNet/__pycache__/
+/MVSNet/**/*.pyc
+/MVSNet/**/__pycache__/
+
+# TensorBoard
+events.out.tfevents.*

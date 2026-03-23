@@ -1,0 +1,23 @@
+﻿.idea
+outputs
+*.bin
+checkpoints
+__pycache__
+
+
+# Experiment outputs
+checkpoints/
+outputs/
+logs/
+backups/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Generated artifacts
+*.ply
+*.pfm
+*.tar.gz
+events.out.tfevents.*
