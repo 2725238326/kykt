@@ -1,6 +1,49 @@
-from blessings import Terminal
-import progressbar
 import sys
+
+from tqdm.auto import tqdm
+
+
+class TqdmBar(object):
+    def __init__(self, total, desc, position=0, leave=True):
+        self.total = total
+        self.desc = desc
+        self.position = position
+        self.leave = leave
+        self.bar = None
+        self.current = 0
+
+    def start(self):
+        if self.bar is None:
+            self.bar = tqdm(
+                total=self.total,
+                desc=self.desc,
+                position=self.position,
+                leave=self.leave,
+                dynamic_ncols=True,
+                file=sys.stdout,
+            )
+            self.current = 0
+
+    def update(self, value):
+        if self.bar is None:
+            self.start()
+        delta = value - self.current
+        if delta > 0:
+            self.bar.update(delta)
+        self.current = value
+
+    def finish(self):
+        if self.bar is not None:
+            self.bar.close()
+            self.bar = None
+
+
+class TqdmWriter(object):
+    def write(self, string):
+        tqdm.write(string, file=sys.stdout)
+
+    def flush(self):
+        return
 
 
 class TermLogger(object):
@@ -8,72 +51,24 @@ class TermLogger(object):
         self.n_epochs = n_epochs
         self.train_size = train_size
         self.valid_size = valid_size
-        self.t = Terminal()
-        s = 10
-        e = 1   # epoch bar position
-        tr = 3  # train bar position
-        ts = 6  # valid bar position
-        h = self.t.height
-        self.interactive = sys.stdout.isatty() and h is not None
 
-        if self.interactive:
-            for i in range(10):
-                print('')
-            self.epoch_bar = progressbar.ProgressBar(max_value=n_epochs, fd=Writer(self.t, (0, h-s+e)))
-
-            self.train_writer = Writer(self.t, (0, h-s+tr))
-            self.train_bar_writer = Writer(self.t, (0, h-s+tr+1))
-
-            self.valid_writer = Writer(self.t, (0, h-s+ts))
-            self.valid_bar_writer = Writer(self.t, (0, h-s+ts+1))
-        else:
-            self.epoch_bar = progressbar.ProgressBar(max_value=n_epochs, fd=sys.stdout)
-            self.train_writer = PlainWriter()
-            self.train_bar_writer = sys.stdout
-            self.valid_writer = PlainWriter()
-            self.valid_bar_writer = sys.stdout
+        self.epoch_bar = TqdmBar(total=n_epochs, desc='Epoch', position=0, leave=True)
+        self.train_writer = TqdmWriter()
+        self.valid_writer = TqdmWriter()
 
         self.reset_train_bar()
         self.reset_valid_bar()
 
     def reset_train_bar(self, train_size=None):
-        self.train_bar = progressbar.ProgressBar(max_value=train_size if train_size is not None else self.train_size,
-                                                 fd=self.train_bar_writer)
+        if hasattr(self, 'train_bar') and self.train_bar is not None:
+            self.train_bar.finish()
+        total = train_size if train_size is not None else self.train_size
+        self.train_bar = TqdmBar(total=total, desc='Train', position=1, leave=False)
 
     def reset_valid_bar(self):
-        self.valid_bar = progressbar.ProgressBar(max_value=self.valid_size, fd=self.valid_bar_writer)
-
-
-class Writer(object):
-    """Create an object with a write method that writes to a
-    specific place on the screen, defined at instantiation.
-
-    This is the glue between blessings and progressbar.
-    """
-
-    def __init__(self, t, location):
-        """
-        Input: location - tuple of ints (x, y), the position
-                        of the bar in the terminal
-        """
-        self.location = location
-        self.t = t
-
-    def write(self, string):
-        with self.t.location(*self.location):
-            sys.stdout.write("\033[K")
-            print(string)
-
-    def flush(self):
-        return
-
-
-class PlainWriter(object):
-    def write(self, string):
-        print(string)
-
-    def flush(self):
-        return
+        if hasattr(self, 'valid_bar') and self.valid_bar is not None:
+            self.valid_bar.finish()
+        self.valid_bar = TqdmBar(total=self.valid_size, desc='Valid', position=2, leave=False)
 
 
 class AverageMeter(object):
@@ -85,17 +80,17 @@ class AverageMeter(object):
         self.reset(self.meters)
 
     def reset(self, i):
-        self.val = [0]*i
-        self.avg = [0]*i
-        self.sum = [0]*i
+        self.val = [0] * i
+        self.avg = [0] * i
+        self.sum = [0] * i
         self.count = 0
 
     def update(self, val, n=1):
         if not isinstance(val, list):
             val = [val]
-        assert(len(val) == self.meters)
+        assert len(val) == self.meters
         self.count += n
-        for i,v in enumerate(val):
+        for i, v in enumerate(val):
             self.val[i] = v
             self.sum[i] += v * n
             self.avg[i] = self.sum[i] / self.count
