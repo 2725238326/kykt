@@ -202,14 +202,14 @@ def main():
 
     if args.pretrained_exp_pose:
         print("=> using pre-trained weights for explainabilty and pose net")
-        weights = torch.load(args.pretrained_exp_pose)
+        weights = torch.load(args.pretrained_exp_pose, map_location='cpu')
         pose_exp_net.load_state_dict(weights['state_dict'], strict=False)
     else:
         pose_exp_net.init_weights()
 
     if args.pretrained_disp:
         print("=> using pre-trained weights for Dispnet")
-        weights = torch.load(args.pretrained_disp)
+        weights = torch.load(args.pretrained_disp, map_location='cpu')
         disp_net.load_state_dict(weights['state_dict'])
     else:
         disp_net.init_weights()
@@ -336,6 +336,7 @@ def train(args, train_loader, disp_net, pose_exp_net, optimizer, scaler, epoch_s
         tgt_img = tgt_img.to(device, non_blocking=True)
         ref_imgs = [img.to(device, non_blocking=True) for img in ref_imgs]
         intrinsics = intrinsics.to(device, non_blocking=True)
+        intrinsics_inv = intrinsics_inv.to(device, non_blocking=True)
 
         # compute output
         with amp.autocast('cuda', enabled=use_amp):
@@ -345,7 +346,9 @@ def train(args, train_loader, disp_net, pose_exp_net, optimizer, scaler, epoch_s
 
             loss_1, warped, diff = photometric_reconstruction_loss(tgt_img, ref_imgs, intrinsics,
                                                                    depth, explainability_mask, pose,
-                                                                   args.rotation_mode, args.padding_mode)
+                                                                   intrinsics_inv=intrinsics_inv,
+                                                                   rotation_mode=args.rotation_mode,
+                                                                   padding_mode=args.padding_mode)
             if w2 > 0:
                 loss_2 = explainability_loss(explainability_mask)
             else:
@@ -426,7 +429,9 @@ def validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger,
             loss_1, warped, diff = photometric_reconstruction_loss(tgt_img, ref_imgs,
                                                                    intrinsics, depth,
                                                                    explainability_mask, pose,
-                                                                   args.rotation_mode, args.padding_mode)
+                                                                   intrinsics_inv=intrinsics_inv,
+                                                                   rotation_mode=args.rotation_mode,
+                                                                   padding_mode=args.padding_mode)
         loss_1 = loss_1.item()
         if w2 > 0:
             loss_2 = explainability_loss(explainability_mask).item()

@@ -8,6 +8,7 @@ from inverse_warp import inverse_warp
 
 def photometric_reconstruction_loss(tgt_img, ref_imgs, intrinsics,
                                     depth, explainability_mask, pose,
+                                    intrinsics_inv=None,
                                     rotation_mode='euler', padding_mode='zeros'):
     def one_scale(depth, explainability_mask):
         assert(explainability_mask is None or depth.size()[2:] == explainability_mask.size()[2:])
@@ -20,6 +21,12 @@ def photometric_reconstruction_loss(tgt_img, ref_imgs, intrinsics,
         tgt_img_scaled = F.interpolate(tgt_img, (h, w), mode='area')
         ref_imgs_scaled = [F.interpolate(ref_img, (h, w), mode='area') for ref_img in ref_imgs]
         intrinsics_scaled = torch.cat((intrinsics[:, 0:2]/downscale, intrinsics[:, 2:]), dim=1)
+        intrinsics_inv_scaled = None
+        if intrinsics_inv is not None:
+            scale_mat = intrinsics_inv.new_tensor([[downscale, 0, 0],
+                                                   [0, downscale, 0],
+                                                   [0, 0, 1]]).unsqueeze(0).expand(b, -1, -1)
+            intrinsics_inv_scaled = intrinsics_inv @ scale_mat
 
         warped_imgs = []
         diff_maps = []
@@ -29,6 +36,7 @@ def photometric_reconstruction_loss(tgt_img, ref_imgs, intrinsics,
 
             ref_img_warped, valid_points = inverse_warp(ref_img, depth[:,0], current_pose,
                                                         intrinsics_scaled,
+                                                        intrinsics_inv_scaled,
                                                         rotation_mode, padding_mode)
             diff = (tgt_img_scaled - ref_img_warped) * valid_points.unsqueeze(1).float()
 
