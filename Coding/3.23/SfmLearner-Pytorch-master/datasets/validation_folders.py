@@ -13,7 +13,7 @@ def crawl_folders(folders_list):
             current_depth = []
             for img in current_imgs:
                 d = img.dirname()/(img.name[:-4] + '.npy')
-                assert(d.isfile()), "depth file {} not found".format(str(d))
+                assert(d.is_file()), "depth file {} not found".format(str(d))
                 depth.append(d)
             imgs.extend(current_imgs)
             depth.extend(current_depth)
@@ -98,7 +98,7 @@ class ValidationSetWithPose(data.Dataset):
             for i in range(demi_length, len(imgs)-demi_length):
                 tgt_img = imgs[i]
                 d = tgt_img.dirname()/(tgt_img.name[:-4] + '.npy')
-                assert(d.isfile()), "depth file {} not found".format(str(d))
+                assert(d.is_file()), "depth file {} not found".format(str(d))
                 sample = {'intrinsics': intrinsics, 'tgt': tgt_img, 'ref_imgs': [], 'poses': [], 'depth': d}
                 first_pose = poses_4D[i - demi_length]
                 sample['poses'] = (np.linalg.inv(first_pose) @ poses_4D[i - demi_length: i + demi_length + 1])[:, :3]

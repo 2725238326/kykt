@@ -14,16 +14,24 @@ class TermLogger(object):
         tr = 3  # train bar position
         ts = 6  # valid bar position
         h = self.t.height
+        self.interactive = sys.stdout.isatty() and h is not None
 
-        for i in range(10):
-            print('')
-        self.epoch_bar = progressbar.ProgressBar(max_value=n_epochs, fd=Writer(self.t, (0, h-s+e)))
+        if self.interactive:
+            for i in range(10):
+                print('')
+            self.epoch_bar = progressbar.ProgressBar(max_value=n_epochs, fd=Writer(self.t, (0, h-s+e)))
 
-        self.train_writer = Writer(self.t, (0, h-s+tr))
-        self.train_bar_writer = Writer(self.t, (0, h-s+tr+1))
+            self.train_writer = Writer(self.t, (0, h-s+tr))
+            self.train_bar_writer = Writer(self.t, (0, h-s+tr+1))
 
-        self.valid_writer = Writer(self.t, (0, h-s+ts))
-        self.valid_bar_writer = Writer(self.t, (0, h-s+ts+1))
+            self.valid_writer = Writer(self.t, (0, h-s+ts))
+            self.valid_bar_writer = Writer(self.t, (0, h-s+ts+1))
+        else:
+            self.epoch_bar = progressbar.ProgressBar(max_value=n_epochs, fd=sys.stdout)
+            self.train_writer = PlainWriter()
+            self.train_bar_writer = sys.stdout
+            self.valid_writer = PlainWriter()
+            self.valid_bar_writer = sys.stdout
 
         self.reset_train_bar()
         self.reset_valid_bar()
@@ -55,6 +63,14 @@ class Writer(object):
         with self.t.location(*self.location):
             sys.stdout.write("\033[K")
             print(string)
+
+    def flush(self):
+        return
+
+
+class PlainWriter(object):
+    def write(self, string):
+        print(string)
 
     def flush(self):
         return
