@@ -14,7 +14,7 @@ def photometric_reconstruction_loss(tgt_img, ref_imgs, intrinsics,
         assert(explainability_mask is None or depth.size()[2:] == explainability_mask.size()[2:])
         assert(pose.size(1) == len(ref_imgs))
 
-        reconstruction_loss = 0
+        reconstruction_loss = depth.new_zeros(())
         b, _, h, w = depth.size()
         downscale = tgt_img.size(2)/h
 
@@ -43,8 +43,10 @@ def photometric_reconstruction_loss(tgt_img, ref_imgs, intrinsics,
             if explainability_mask is not None:
                 diff = diff * explainability_mask[:,i:i+1].expand_as(diff)
 
-            reconstruction_loss += diff.abs().mean()
-            assert((reconstruction_loss == reconstruction_loss).item() == 1)
+            diff = torch.nan_to_num(diff, nan=0.0, posinf=0.0, neginf=0.0)
+            diff_loss = diff.abs().mean()
+            if torch.isfinite(diff_loss):
+                reconstruction_loss = reconstruction_loss + diff_loss
 
             warped_imgs.append(ref_img_warped[0])
             diff_maps.append(diff[0])

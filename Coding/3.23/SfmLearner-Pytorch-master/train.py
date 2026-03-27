@@ -389,6 +389,11 @@ def train(args, train_loader, disp_net, pose_exp_net, optimizer, scaler, epoch_s
 
             loss = w1*loss_1 + w2*loss_2 + w3*loss_3
 
+        if not torch.isfinite(loss):
+            optimizer.zero_grad(set_to_none=True)
+            end = time.time()
+            continue
+
         if log_losses:
             tb_writer.add_scalar('photometric_error', loss_1.item(), n_iter)
             if w2 > 0:
@@ -490,6 +495,8 @@ def validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger,
                                                             disp_unraveled.max(-1)[0]]).numpy()
 
         loss = w1*loss_1 + w2*loss_2 + w3*loss_3
+        if not np.isfinite(loss):
+            continue
         losses.update([loss, loss_1, loss_2])
 
         # measure elapsed time
