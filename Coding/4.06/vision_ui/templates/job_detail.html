@@ -3,58 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KYKT Vision UI 任务详情页。">
   <title>{{ job.job_id }} - KYKT Vision UI</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <main class="page">
+  <main class="page" data-job-id="{{ job.job_id }}" data-job-status="{{ job.status }}" data-job-created="{{ job.created_at }}">
     <section class="panel">
       <div class="detail-header">
         <div>
           <p class="eyebrow">Job Detail</p>
           <h1>{{ job.job_id }}</h1>
         </div>
-        <a class="back-link" href="/">Back</a>
+        <div class="detail-header-actions">
+          <span class="elapsed-badge {% if job.status == 'running' %}is-running{% endif %}" id="elapsed-badge">Time --:--</span>
+          <a class="back-link" href="/">Back</a>
+        </div>
       </div>
+
+      <div class="status-row">
+        <div class="status-pill status-{{ job.status }}" id="job-status-pill">{{ job.status }}</div>
+        <div class="status-summary" id="job-phase-text">{{ phase_display.label }}</div>
+      </div>
+
+      <section class="progress-panel">
+        <div class="progress-header">
+          <div>
+            <h2>Task Progress</h2>
+            <p id="job-progress-text">{{ phase_display.description }}</p>
+          </div>
+          <div class="progress-percent" id="job-progress-percent">{{ phase_display.percent }}%</div>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="job-progress-fill" style="width: {{ phase_display.percent }}%;"></div>
+        </div>
+        <div class="progress-steps">
+          {% for item in phase_display.steps %}
+          <div class="progress-step {% if item.state == 'done' %}is-done{% elif item.state == 'current' %}is-current{% endif %}">
+            <span class="step-index">{{ loop.index }}</span>
+            <div>
+              <strong>{{ item.label }}</strong>
+              <p>{{ item.hint }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
 
       <div class="detail-grid">
-        <div class="kv"><span>Model</span><strong>{{ job.model }}</strong></div>
-        <div class="kv"><span>Source Type</span><strong>{{ job.source_type }}</strong></div>
-        <div class="kv"><span>Status</span><strong>{{ job.status }}</strong></div>
-        <div class="kv"><span>Phase</span><strong>{{ job.phase }}</strong></div>
+        <div class="kv"><span>Model</span><strong id="job-model">{{ job.model }}</strong></div>
+        <div class="kv"><span>Source Type</span><strong id="job-source-type">{{ job.source_type }}</strong></div>
+        <div class="kv"><span>Status</span><strong id="job-status">{{ job.status }}</strong></div>
+        <div class="kv"><span>Phase</span><strong id="job-phase">{{ job.phase }}</strong></div>
         <div class="kv"><span>Created At</span><strong>{{ job.created_at }}</strong></div>
         <div class="kv"><span>Remote Runner</span><strong>{{ job.remote_runner }}</strong></div>
+        <div class="kv full-span">
+          <span>Latest Progress</span>
+          <strong id="job-latest-progress">{{ job.progress_message or "Waiting for the first remote log line." }}</strong>
+        </div>
       </div>
 
-      <form method="post" action="/jobs/{{ job.job_id }}/dispatch" class="dispatch-form">
-        <button type="submit">Run Remote Job</button>
-      </form>
+      <div class="action-row">
+        <form method="post" action="/jobs/{{ job.job_id }}/dispatch" class="dispatch-form">
+          <button type="submit" id="run-job-button" {% if job.status == "running" %}disabled{% endif %}>Run Remote Job</button>
+        </form>
+        <form method="post" action="/jobs/{{ job.job_id }}/retry" class="dispatch-form">
+          <button type="submit" id="retry-job-button" class="secondary-button" {% if job.status == "running" %}disabled{% endif %}>Retry Current Job</button>
+        </form>
+        <form method="post" action="/jobs/{{ job.job_id }}/duplicate" class="dispatch-form">
+          <button type="submit" class="secondary-button">Duplicate as New Job</button>
+        </form>
+      </div>
 
       {% if job.notes %}
-      <div class="notes-box">
+      <div class="notes-box info-box">
         <h2>Notes</h2>
         <p>{{ job.notes }}</p>
       </div>
       {% endif %}
 
-      {% if job.error_message %}
-      <div class="notes-box error-box">
-        <h2>Error</h2>
-        <p>{{ job.error_message }}</p>
+      <div class="notes-box info-box">
+        <h2>Input Naming</h2>
+        <p>上传文件名没有要求。系统会自动改成稳定的内部名字，再同步到服务器。</p>
       </div>
-      {% endif %}
+
+      <div class="notes-box error-box {% if not job.error_message %}hidden{% endif %}" id="error-box">
+        <h2>Error</h2>
+        <p id="job-error-message">{{ job.error_message or '' }}</p>
+      </div>
     </section>
 
     <section class="panel">
-      <h2>Uploaded Inputs</h2>
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Uploaded Inputs</p>
+          <h2>输入文件</h2>
+        </div>
+      </div>
       <div class="preview-grid">
         {% for item in previews %}
         <div class="preview-card">
-          <p><code>{{ item.relative_path }}</code></p>
+          <p><strong>{{ item.display_name }}</strong></p>
+          <p class="meta-line">Stored as <code>{{ item.stored_name }}</code></p>
           {% if item.is_image %}
-          <img src="{{ item.url }}" alt="{{ item.relative_path }}">
+          <img src="{{ item.url }}" alt="{{ item.display_name }}" loading="lazy">
           {% else %}
-          <p class="empty">当前预览只支持图片。该文件已正常保存。</p>
+          <p class="empty">当前只对图片提供预览，但文件已正常保存并可用于任务执行。</p>
           {% endif %}
         </div>
         {% endfor %}
@@ -62,33 +116,68 @@
     </section>
 
     <section class="panel">
-      <h2>Next Remote Steps</h2>
-      <ol class="next-steps">
-        {% for step in next_steps %}
-        <li>{{ step }}</li>
-        {% endfor %}
-      </ol>
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Outputs</p>
+          <h2>输出结果</h2>
+        </div>
+      </div>
+      <div class="preview-grid" id="outputs-grid">
+        {% if outputs %}
+          {% for item in outputs %}
+          <div class="preview-card">
+            <p><strong>{{ item.display_name }}</strong></p>
+            <p class="meta-line"><code>{{ item.relative_path }}</code></p>
+            {% if item.is_image %}
+            <img src="{{ item.url }}" alt="{{ item.display_name }}" loading="lazy">
+            {% elif item.is_pointcloud %}
+            <div class="viewer-container" id="viewer-{{ loop.index }}" data-ply-url="{{ item.url }}">
+              <div class="viewer-loading" id="viewer-loading-{{ loop.index }}">
+                <div class="spinner"></div>
+                Loading point cloud...
+              </div>
+            </div>
+            <div class="viewer-controls">
+              <button class="viewer-btn" onclick="resetViewer({{ loop.index }})" type="button">Reset View</button>
+              <a href="{{ item.url }}" download class="viewer-btn viewer-link">Download .ply</a>
+            </div>
+            {% else %}
+            <p><a class="inline-link" href="{{ item.url }}" target="_blank">Open / Download</a></p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="empty" id="outputs-empty">结果还没有回传到本地，任务完成后会自动出现在这里。</p>
+        {% endif %}
+      </div>
     </section>
 
     <section class="panel">
-      <h2>Outputs</h2>
-      {% if outputs %}
-      <div class="preview-grid">
-        {% for item in outputs %}
-        <div class="preview-card">
-          <p><code>{{ item.relative_path }}</code></p>
-          {% if item.is_image %}
-          <img src="{{ item.url }}" alt="{{ item.relative_path }}">
-          {% else %}
-          <p><a href="{{ item.url }}" target="_blank">Open / Download</a></p>
-          {% endif %}
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Live Logs</p>
+          <h2>实时日志</h2>
         </div>
-        {% endfor %}
       </div>
-      {% else %}
-      <p class="empty">结果还没有回传到本地。远程任务完成后，匹配图、点云和日志会出现在这里。</p>
-      {% endif %}
+      <div class="log-grid" id="log-grid">
+        {% if logs %}
+          {% for item in logs %}
+          <div class="preview-card">
+            <p><strong>{{ item.name }}</strong></p>
+            <p class="meta-line"><code>{{ item.relative_path }}</code></p>
+            <pre class="log-box">{{ item.tail or 'Log file exists but is currently empty.' }}</pre>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="empty" id="logs-empty">本地日志缓存还没有生成。任务开始后，这里会自动显示远端输出。</p>
+        {% endif %}
+      </div>
     </section>
   </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="/static/ply_viewer.js"></script>
+  <script src="/static/job_detail.js"></script>
 </body>
 </html>

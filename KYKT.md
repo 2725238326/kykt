@@ -1,27 +1,27 @@
 # KYKT Project Sync
 
-Last updated: 2026-04-06
+Last updated: 2026-04-06 (v0.4.0 — dark theme + multi-image + viewer)
 
 ## 1. Project Overview
 
-This workspace currently contains several parallel 3D vision lines. They are related, but they are **not the same task** and should not be mixed together:
+This workspace currently contains several related but distinct 3D vision lines:
 
 1. `MVSNet` on `DTU`
    - task: supervised multi-view stereo reconstruction
-   - main outputs: depth maps, fused point clouds, `.ply`
+   - outputs: depth maps, fused point clouds, `.ply`
 
 2. `SfMLearner` on `KITTI`
-   - task: unsupervised / self-supervised monocular depth estimation
-   - main outputs: depth evaluation metrics on KITTI
+   - task: self-supervised monocular depth estimation
+   - outputs: KITTI depth metrics and checkpoints
 
 3. `DUSt3R`
    - task: pointmap-based 3D reconstruction from image pairs or image sets
-   - main outputs: matches visualization, point clouds, poses / focals
+   - outputs: match visualizations, point clouds, poses, focals
 
 4. `MonST3R`
-   - not yet integrated locally
+   - not integrated yet
    - planned next-stage model after DUSt3R
-   - target use: video / dynamic scene reconstruction
+   - target use: video and dynamic-scene reconstruction
 
 
 ## 2. Workspace Layout
@@ -39,14 +39,13 @@ Important subfolders:
 - `E:\kykt\Coding\3.30`
   - DUSt3R work
 - `E:\kykt\Coding\4.06\vision_ui`
-  - new local frontend MVP
+  - local offline frontend MVP
 
 Important docs:
 
 - `E:\kykt\README.md`
-- `E:\kykt\近期工作历程_3.2-3.23.md`
-- `E:\kykt\Coding\3.23\KITTI服务器任务安排.md`
 - `E:\kykt\KYKT.md`
+- existing Chinese-named progress notes under the root and `Coding\3.23`
 
 
 ## 3. Proven Results So Far
@@ -59,10 +58,10 @@ Local result directory:
 
 Status:
 
-- training / inference / fusion pipeline has been run before
+- training, inference, and fusion have already been run
 - fused point cloud outputs already exist
 
-Server-side references used in prior work:
+Server references used in prior work:
 
 - `/hdd3/kykt26/code/MVSNet/checkpoints/d192_fast16`
 - `/hdd3/kykt26/code/MVSNet/outputs/d192_fast16_eval`
@@ -78,17 +77,17 @@ Server repo:
 
 - `/hdd3/kykt26/code/SfmLearner-Pytorch-master`
 
-Formatted KITTI data on server:
+KITTI data on server:
 
 - `/hdd3/kykt26/data/kitti/rectified`
 
-Main useful result:
+Main current result:
 
-- sequence length `5`
-- smooth loss `2.0`
-- batch size `8`
+- `sequence_length = 5`
+- `smooth_loss = 2.0`
+- `batch_size = 8`
 
-Formal depth evaluation result already obtained on KITTI Eigen split:
+Formal KITTI Eigen split result:
 
 - `abs_diff = 3.7107`
 - `abs_rel = 0.2095`
@@ -100,18 +99,11 @@ Formal depth evaluation result already obtained on KITTI Eigen split:
 - `a2 = 0.8862`
 - `a3 = 0.9573`
 
-This is currently the main unsupervised depth result.
+This remains the main self-supervised depth baseline.
 
 Key checkpoint directory:
 
 - `/hdd3/kykt26/code/SfmLearner-Pytorch-master/checkpoints/rectified,10epochs,epoch_size1000,seq5,b8,s2.0/03-29-10:55`
-
-Important engineering notes:
-
-- many old compatibility issues were patched
-- `path.py` style `.isfile()` had to be replaced with `.is_file()`
-- old NumPy API such as `np.int` also had to be patched in evaluation scripts
-- `m=0` is currently the stable choice for explainability mask
 
 
 ### 3.3 DUSt3R
@@ -126,11 +118,11 @@ Server repo:
 
 Current state:
 
-- environment on server was made usable after avoiding broken conda torch path
-- DUSt3R pairwise testing has been run
-- matches visualization and point cloud export were demonstrated
+- server-side DUSt3R pair testing has been run
+- match visualization and point cloud export were demonstrated
+- local examples proved that the repo, weights, and scripts can produce usable outputs
 
-Known server-side conventions used so far:
+Current server conventions:
 
 - test images:
   - `/hdd3/kykt26/code/dust3r-main/test_images`
@@ -141,84 +133,47 @@ Known server-side conventions used so far:
 
 Important clarification:
 
-- DUSt3R can process both image pairs and multiple images
-- two-image use is just the easiest first test
-- later work should support both pair and multi-image jobs without splitting the architecture too early
+- DUSt3R supports both pairs and image sets
+- current remote runner v1 still uses the first two uploaded images
+- the frontend should not split pair vs multi-image too early
+- the backend runner is what needs to evolve toward true multi-image support
 
 
-## 4. New Active Project: Local Frontend
+## 4. Local Frontend Project
 
-Current active work is now:
+Active project:
 
 - `E:\kykt\Coding\4.06\vision_ui`
 
-This is intended to become a **local offline frontend** that:
+Purpose:
+
+Build a local offline frontend that:
 
 1. runs on the local PC
-2. only communicates with the server through `ssh / scp`
+2. communicates with the server only through `ssh / scp`
 3. uploads images or video
 4. triggers remote model jobs
-5. downloads results back to the local UI
-6. displays matches, point clouds, and future model outputs
+5. downloads results back into a local cache
+6. shows progress, logs, outputs, and downloads in one dashboard
 
-Current MVP skeleton already created:
+Current project files:
 
-- `E:\kykt\Coding\4.06\vision_ui\app.py`
-- `E:\kykt\Coding\4.06\vision_ui\job_store.py`
-- `E:\kykt\Coding\4.06\vision_ui\ssh_runner.py`
-- `E:\kykt\Coding\4.06\vision_ui\templates\index.html`
-- `E:\kykt\Coding\4.06\vision_ui\templates\job_detail.html`
-- `E:\kykt\Coding\4.06\vision_ui\static\style.css`
-- `E:\kykt\Coding\4.06\vision_ui\requirements.txt`
+- `app.py`
+- `job_store.py`
+- `ssh_runner.py`
+- `templates/index.html`
+- `templates/job_detail.html`
+- `static/style.css`
+- `static/index.js`
+- `static/job_detail.js`
+- `static/ply_viewer.js` — Three.js point cloud viewer
+- `runners/dust3r_runner.py` — server-side multi-image DUSt3R runner
+- `requirements.txt`
 
-What this MVP already does:
-
-- local web page exists
-- supports local job creation
-- saves uploaded files under a local job directory
-- writes `job.json` and `status.json`
-- previews uploaded inputs in the browser
-- records model choice such as `dust3r` / `monst3r`
-- includes a first working `ssh/scp` integration path for DUSt3R pair jobs
-- supports a detail-page trigger that dispatches a remote DUSt3R job
-- downloads remote outputs back into the local job cache
-
-What it does **not** do yet:
-
-- no generic remote runner yet
-- no MonST3R remote execution yet
-- no point cloud rendering in browser yet
-
-
-## 5. Planned Local Frontend Architecture
-
-Recommended architecture:
-
-### Local side
-
-Run a local FastAPI web UI on:
-
-- `http://127.0.0.1:8000`
-
-Responsibilities:
-
-1. user selects model and files
-2. local app creates a `job_id`
-3. local app stores job inputs under local cache
-4. local app uploads files and `job.json` to the server using `scp`
-5. local app starts remote inference using `ssh`
-6. local app polls remote `status.json`
-7. local app downloads outputs back to local cache
-8. local app displays output images and offers point cloud download
-
-### Server side
-
-Only run models and runners. Do not open extra service ports.
-
-Suggested remote job layout:
+Current local cache structure:
 
 ```text
-/hdd3/kykt26/jobs/
+local_jobs/
   <job_id>/
     input/
     output/
@@ -227,117 +182,146 @@ Suggested remote job layout:
     status.json
 ```
 
-Suggested remote entry point:
+What the current version supports:
 
-```text
-python /hdd3/kykt26/code/vision_runner/run_job.py --job /hdd3/kykt26/jobs/<job_id>/job.json
-```
+- local job creation from the browser
+- local input caching
+- automatic filename normalization for uploads
+  - arbitrary upload names are accepted
+  - files are stored internally as stable names like `input_01.ext`
+- `job.json` and `status.json` generation
+- input preview rendering in the browser
+- **drag-and-drop file upload** with file chips and remove buttons
+- remote dispatch through system `ssh / scp`
+- **multi-image DUSt3R support** (N images, not just pairs)
+  - uses `GlobalAlignerMode.PointCloudOptimizer` for N>2
+  - unified `dust3r_runner.py` uploaded to server automatically
+- result download back into the local cache
+  - now also downloads `scene_meta.json` (poses, focals)
+- **browser point cloud viewer** (Three.js + OrbitControls)
+  - inline PLY rendering with orbit, zoom, pan
+  - auto-centers and auto-scales the point cloud
+  - reset view button + download link
+- live progress polling on:
+  - home page (3s interval)
+  - job detail page (2.5s interval)
+- approximate task progress bars with gradient styling
+- **elapsed time counter** on job detail page
+- live local log cache rendering with auto-scroll
+- task actions:
+  - run
+  - retry current job
+  - duplicate as a new job
+- **premium dark theme** with:
+  - glassmorphism cards
+  - gradient accents (cyan → indigo)
+  - Inter + JetBrains Mono fonts
+  - smooth micro-animations
+  - status glow effects
+  - responsive layout
+
+What is still missing:
+
+- MonST3R remote runner
+- cancel action for a running remote process
+- richer parameter controls in the UI
+- reusable presets
 
 
-## 6. Why SSH / SCP Was Chosen
+## 5. SSH / SCP Setup
 
-The current plan is to use **system `ssh / scp`** first instead of Paramiko.
+Chosen transport for MVP:
+
+- system `ssh`
+- system `scp`
 
 Reason:
 
-- the environment already allows SSH
-- no extra inbound service is needed on the server
-- local Windows machine can reuse existing OpenSSH tooling
-- simpler MVP for upload, trigger, download
+- no extra inbound service is required on the server
+- current environment already supports SSH
+- Windows local machine can reuse OpenSSH directly
+- enough for upload, trigger, download, and log sync
 
-Possible upgrade later:
+Current alias in local SSH config:
 
-- move to Paramiko if fine-grained connection control or streaming logs becomes necessary
+- `KYKT-UI`
 
+Server target:
 
-## 7. Immediate Next Steps
+- host: `172.17.140.97`
+- user: `kykt26`
+- remote root: `/hdd3/kykt26`
 
-### Step 1
+The current frontend assumes that:
 
-Connect `vision_ui` to the server for DUSt3R pair jobs:
-
-- first version already wired locally
-- next focus is end-to-end validation against the server:
-  - upload images via `scp`
-  - upload generated `job.json`
-  - run remote DUSt3R runner through `ssh`
-  - download:
-    - matches image
-    - point cloud
-    - logs
-
-### Step 2
-
-Standardize remote runner format:
-
-- `run_job.py`
-- `dust3r_runner.py`
-- `monst3r_runner.py`
-
-### Step 3
-
-Add browser-side result rendering:
-
-- image result cards
-- job status
-- downloadable `.ply`
-- later maybe `three.js` point cloud preview
-
-### Step 4
-
-Integrate MonST3R after DUSt3R flow is stable.
+- DUSt3R repo exists at `/hdd3/kykt26/code/dust3r-main`
+- DUSt3R weight exists at `/hdd3/kykt26/models/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth`
+- remote conda env name is `dust3r`
 
 
-## 8. MonST3R Onboarding Plan
+## 6. Current Remote Job Flow
 
-Recommended learning / integration sequence:
+Current DUSt3R remote flow (v2 — multi-image):
 
-1. finish DUSt3R pair job pipeline
-2. support DUSt3R multi-image jobs
-3. learn MonST3R by first running official inference on demo video
-4. only then add MonST3R as another backend runner in the same frontend system
-
-Important idea:
-
-- do **not** build a separate frontend for MonST3R
-- the frontend should dispatch by model name
-- only the server-side runner should differ
-
-
-## 9. Important Conventions For Future Agents
-
-1. Do not confuse the task families:
-   - `MVSNet != SfMLearner != DUSt3R != MonST3R`
-
-2. Prefer keeping all user-facing tooling separate from model repos:
-   - model repos stay mostly untouched
-   - orchestration lives in `vision_ui` and future server runners
-
-3. Prefer parameterized runners over hard-coded one-off scripts.
-
-4. Prefer writing status and outputs into structured job directories.
-
-5. When giving the user shell commands with placeholders, avoid fake placeholders like `<your_dir>` unless immediately replaced with a real path or variable example.
+1. create local job
+2. normalize uploaded filenames locally
+3. create remote directories:
+   - `/hdd3/kykt26/jobs/<job_id>/input`
+   - `/hdd3/kykt26/jobs/<job_id>/output`
+   - `/hdd3/kykt26/jobs/<job_id>/logs`
+4. upload all normalized inputs (with per-file progress)
+5. upload `job.json`
+6. upload `dust3r_runner.py` to `/hdd3/kykt26/runners/`
+7. run unified runner via SSH with conda env
+8. stream remote stdout back into local `.live.log` files
+9. auto-detect phase transitions from log content
+10. download:
+    - `matches.png`
+    - `pointcloud.ply`
+    - `scene_meta.json` (poses, focals, point count)
+    - remote logs
 
 
-## 10. Current Progress Snapshot
+## 7. Immediate Next Goals
 
-Done:
+Priority order:
 
-- MVSNet line reproduced enough to output point clouds
-- SfMLearner line trained and formally evaluated
-- DUSt3R pair testing ran successfully
-- local frontend MVP directory created
-- local frontend can already create and store jobs locally
-- local frontend now contains a first remote DUSt3R dispatch pipeline using system `ssh/scp`
-- unified project sync document added
+1. ~~improve remote observability further~~ ✅ done
+   - elapsed timer, auto-scroll logs, per-file upload progress
 
-In progress:
+2. ~~extend DUSt3R from pair-only to real image-set support~~ ✅ done
+   - unified `dust3r_runner.py` handles 2..N images
+   - uses `PointCloudOptimizer` for N>2
 
-- validating the local frontend against the real server-side DUSt3R setup
+3. ~~add browser-side point cloud preview~~ ✅ done
+   - Three.js inline viewer with orbit controls
 
-Not started:
+4. integrate MonST3R as the next model runner
+   - keep the same job architecture
+   - add a `monst3r_runner.py` on the server side
+   - support video or frame-sequence inputs
 
-- remote generic job runner
-- MonST3R integration into frontend
-- browser point cloud visualization
+5. add stronger task controls
+   - cancel running remote processes
+   - rerun with modified parameters
+   - reusable presets
+
+6. validate multi-image DUSt3R end-to-end on the server
+   - test with 3+ images
+   - verify scene_meta.json output
+   - tune point size and viewer behavior
+
+
+## 8. Guidance for Future Agents
+
+If another agent picks this up, the current best continuation path is:
+
+1. read this file first
+2. keep the frontend architecture centered on `job.json` + local cache + SSH/SCP
+3. do not split DUSt3R pair and multi-image into separate frontend products
+4. expand the backend runners instead
+5. preserve the current server assumptions unless the user changes them explicitly
+
+Current most important active repo:
+
+- `E:\kykt\Coding\4.06\vision_ui`

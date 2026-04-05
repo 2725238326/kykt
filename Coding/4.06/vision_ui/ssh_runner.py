@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import json
+import re
 import shlex
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from job_store import ROOT, get_job_dir, load_job, update_job
+from job_store import ROOT, get_job_dir, iter_input_items, load_job, update_job
+
+
+ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 
 @dataclass
@@ -17,27 +21,13 @@ class ServerConfig:
     port: int = 22
     remote_root: str = "/hdd3/kykt26"
     remote_jobs_dir: str = "/hdd3/kykt26/jobs"
+    remote_runners_dir: str = "/hdd3/kykt26/runners"
     remote_dust3r_repo: str = "/hdd3/kykt26/code/dust3r-main"
     remote_dust3r_model: str = "/hdd3/kykt26/models/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth"
     remote_dust3r_env: str = "dust3r"
 
 
-def describe_next_remote_steps(model: str) -> list[str]:
-    if model == "dust3r":
-        return [
-            "Upload local job input files to /hdd3/kykt26/jobs/<job_id>/input",
-            "Upload job.json to the same remote job directory",
-            "Run remote dust3r runner through ssh",
-            "Download output/result.json, matches image, and point cloud back to local cache",
-        ]
-    if model == "monst3r":
-        return [
-            "Upload local frames or video to /hdd3/kykt26/jobs/<job_id>/input",
-            "Upload job.json and choose the monst3r runner",
-            "Run remote monst3r inference through ssh",
-            "Download visualizations, dynamic point cloud, and logs back to local cache",
-        ]
-    return ["Define a model-specific remote runner before dispatching jobs."]
+LOCAL_RUNNERS_DIR = ROOT / "runners"
 
 
 def run_remote_job(job_id: str) -> None:
@@ -45,10 +35,16 @@ def run_remote_job(job_id: str) -> None:
     config = ServerConfig()
 
     try:
-        update_job(job_id, status="running", phase="preparing_remote")
         remote_job_dir = f"{config.remote_jobs_dir}/{job.job_id}"
-        update_job(job_id, remote_job_dir=remote_job_dir)
+        update_job(
+            job_id,
+            status="running",
+            phase="preparing_remote",
+            remote_job_dir=remote_job_dir,
+            progress_message="Creating the remote job directory...",
+        )
 
+        # Create remote directories
         _ssh(
             config,
             (
@@ -58,27 +54,63 @@ def run_remote_job(job_id: str) -> None:
             ),
         )
 
-        update_job(job_id, phase="uploading_inputs")
+        # Ensure runners dir exists
+        _ssh(config, f"mkdir -p {shlex.quote(config.remote_runners_dir)}")
+
+        # Upload inputs
+        update_job(job_id, phase="uploading_inputs", progress_message="Uploading local inputs to the server...")
         _upload_inputs(config, job.job_id, remote_job_dir)
+
+        # Upload job.json
+        update_job(job_id, phase="uploading_inputs", progress_message="Uploading job manifest...")
         _upload_remote_job_json(config, job.job_id, remote_job_dir)
 
+        # Upload runner script
+        update_job(job_id, phase="uploading_inputs", progress_message="Uploading runner script...")
+        _upload_runner(config, job.model)
+
+        # Dispatch model
         if job.model == "dust3r":
-            _run_dust3r(config, job.job_id, remote_job_dir)
+            _run_dust3r_v2(config, job.job_id, remote_job_dir)
         else:
             raise RuntimeError(f"Model '{job.model}' is not wired yet.")
 
-        update_job(job_id, phase="downloading_results")
+        # Download results
+        update_job(
+            job_id,
+            phase="downloading_results",
+            progress_message="Downloading outputs and logs back to the local cache...",
+        )
         output_files = _download_results(config, job.job_id, remote_job_dir)
-        update_job(job_id, status="finished", phase="finished", output_files=output_files, error_message=None)
+        update_job(
+            job_id,
+            status="finished",
+            phase="finished",
+            output_files=output_files,
+            error_message=None,
+            progress_message="Finished. Outputs are available below.",
+        )
     except Exception as exc:
-        update_job(job_id, status="failed", phase="failed", error_message=str(exc))
+        update_job(
+            job_id,
+            status="failed",
+            phase="failed",
+            error_message=str(exc),
+            progress_message="Remote job failed. Check the live logs below.",
+        )
 
 
 def _upload_inputs(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
     job = load_job(job_id)
-    for rel_path in job.input_files:
-        local_path = ROOT / rel_path
-        _scp_to_remote(config, local_path, f"{remote_job_dir}/input/{local_path.name}")
+    items = iter_input_items(job)
+    total = len(items)
+    for idx, item in enumerate(items, start=1):
+        local_path = ROOT / item["relative_path"]
+        update_job(
+            job_id,
+            progress_message=f"Uploading input {idx}/{total}: {item['stored_name']}",
+        )
+        _scp_to_remote(config, local_path, f"{remote_job_dir}/input/{item['stored_name']}")
 
 
 def _upload_remote_job_json(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
@@ -94,46 +126,55 @@ def _upload_remote_job_json(config: ServerConfig, job_id: str, remote_job_dir: s
     _scp_to_remote(config, local_tmp, f"{remote_job_dir}/job.json")
 
 
-def _run_dust3r(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+def _upload_runner(config: ServerConfig, model: str) -> None:
+    runner_map = {
+        "dust3r": "dust3r_runner.py",
+        "monst3r": "monst3r_runner.py",
+    }
+    runner_file = runner_map.get(model)
+    if not runner_file:
+        return
+
+    local_runner = LOCAL_RUNNERS_DIR / runner_file
+    if local_runner.exists():
+        _scp_to_remote(config, local_runner, f"{config.remote_runners_dir}/{runner_file}")
+
+
+def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+    """Run DUSt3R using the unified server-side runner (supports N images)."""
     job = load_job(job_id)
-    if len(job.input_files) < 2:
-        raise RuntimeError("DUSt3R currently requires at least two uploaded images.")
+    input_items = iter_input_items(job)
+    n_images = len(input_items)
 
-    image_names = [Path(p).name for p in job.input_files[:2]]
-    image1 = f"{remote_job_dir}/input/{image_names[0]}"
-    image2 = f"{remote_job_dir}/input/{image_names[1]}"
-    match_out = f"{remote_job_dir}/output/matches.png"
-    ply_out = f"{remote_job_dir}/output/pointcloud.ply"
-    matches_log = f"{remote_job_dir}/logs/matches.log"
-    pointcloud_log = f"{remote_job_dir}/logs/pointcloud.log"
+    if n_images < 2:
+        raise RuntimeError("DUSt3R requires at least two uploaded images.")
 
-    usage_cmd = (
+    runner_path = f"{config.remote_runners_dir}/dust3r_runner.py"
+    log_path = f"{remote_job_dir}/logs/runner.log"
+    local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
+
+    cmd = (
         f"cd {shlex.quote(config.remote_dust3r_repo)} && "
-        f"conda run -n {shlex.quote(config.remote_dust3r_env)} "
-        f"python usage.py "
+        f"conda run --no-banner -n {shlex.quote(config.remote_dust3r_env)} "
+        f"python {shlex.quote(runner_path)} "
+        f"--job-dir {shlex.quote(remote_job_dir)} "
         f"--model {shlex.quote(config.remote_dust3r_model)} "
-        f"--image1 {shlex.quote(image1)} "
-        f"--image2 {shlex.quote(image2)} "
-        f"--output {shlex.quote(match_out)} "
-        f"--n-viz 50 "
-        f"> {shlex.quote(matches_log)} 2>&1"
+        f"--repo {shlex.quote(config.remote_dust3r_repo)} "
+        f"2>&1 | tee {shlex.quote(log_path)}"
     )
 
-    pointcloud_cmd = (
-        f"cd {shlex.quote(config.remote_dust3r_repo)} && "
-        f"conda run -n {shlex.quote(config.remote_dust3r_env)} "
-        f"python usage_pointcloud.py "
-        f"--model {shlex.quote(config.remote_dust3r_model)} "
-        f"--image1 {shlex.quote(image1)} "
-        f"--image2 {shlex.quote(image2)} "
-        f"--output {shlex.quote(ply_out)} "
-        f"> {shlex.quote(pointcloud_log)} 2>&1"
+    update_job(
+        job_id,
+        phase="running_remote_matches",
+        progress_message=f"Starting DUSt3R with {n_images} images...",
     )
-
-    update_job(job_id, phase="running_remote_matches")
-    _ssh(config, usage_cmd)
-    update_job(job_id, phase="running_remote_pointcloud")
-    _ssh(config, pointcloud_cmd)
+    _ssh_stream(
+        config,
+        cmd,
+        job_id=job_id,
+        phase="running_remote_matches",
+        local_log_path=local_log,
+    )
 
 
 def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) -> list[str]:
@@ -143,24 +184,93 @@ def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) ->
     local_output_dir.mkdir(parents=True, exist_ok=True)
     local_logs_dir.mkdir(parents=True, exist_ok=True)
 
+    # Fixed expected outputs
     downloads = [
         ("output/matches.png", local_output_dir / "matches.png"),
         ("output/pointcloud.ply", local_output_dir / "pointcloud.ply"),
-        ("logs/matches.log", local_logs_dir / "matches.log"),
-        ("logs/pointcloud.log", local_logs_dir / "pointcloud.log"),
+        ("logs/runner.log", local_logs_dir / "runner.log"),
     ]
+
+    # Optional: scene metadata
+    downloads.append(("output/scene_meta.json", local_output_dir / "scene_meta.json"))
 
     output_files: list[str] = []
     for remote_suffix, local_path in downloads:
         remote_path = f"{remote_job_dir}/{remote_suffix}"
-        _scp_from_remote(config, remote_path, local_path)
-        output_files.append(str(local_path.relative_to(ROOT)))
+        try:
+            _scp_from_remote(config, remote_path, local_path)
+            output_files.append(str(local_path.relative_to(ROOT)))
+        except subprocess.CalledProcessError:
+            # Some outputs may not exist (e.g. scene_meta for older runs)
+            pass
+
     return output_files
 
 
+# ===== Low-level SSH/SCP helpers =====
+
 def _ssh(config: ServerConfig, shell_script: str) -> subprocess.CompletedProcess:
     remote_cmd = ["ssh", config.alias, f"bash -lc {shlex.quote(shell_script)}"]
-    return subprocess.run(remote_cmd, check=True, capture_output=True, text=True)
+    return subprocess.run(
+        remote_cmd,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+
+
+def _clean_progress_line(raw_line: str) -> str:
+    cleaned = ANSI_ESCAPE_RE.sub("", raw_line)
+    cleaned = cleaned.replace("\r", "\n").replace("\x00", "")
+    cleaned = "\n".join(segment.strip() for segment in cleaned.splitlines() if segment.strip())
+    return cleaned.strip()
+
+
+def _ssh_stream(
+    config: ServerConfig,
+    shell_script: str,
+    *,
+    job_id: str,
+    phase: str,
+    local_log_path: Path,
+) -> None:
+    local_log_path.parent.mkdir(parents=True, exist_ok=True)
+    remote_cmd = ["ssh", config.alias, f"bash -lc {shlex.quote(shell_script)}"]
+    process = subprocess.Popen(
+        remote_cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        bufsize=1,
+    )
+
+    last_message = ""
+    with local_log_path.open("w", encoding="utf-8") as log_file:
+        assert process.stdout is not None
+        for raw_line in process.stdout:
+            cleaned = _clean_progress_line(raw_line)
+            log_file.write(cleaned + ("\n" if cleaned else ""))
+            log_file.flush()
+            if cleaned:
+                last_message = cleaned[-400:]
+                # Auto-detect phase transitions from runner output
+                detected_phase = phase
+                if "alignment" in cleaned.lower():
+                    detected_phase = "running_remote_matches"
+                elif "point cloud" in cleaned.lower() or "exporting" in cleaned.lower():
+                    detected_phase = "running_remote_pointcloud"
+                update_job(job_id, phase=detected_phase, progress_message=last_message)
+
+    return_code = process.wait()
+    if return_code != 0:
+        raise RuntimeError(
+            f"Remote command failed during {phase}. "
+            f"Last message: {last_message or 'No remote log line was captured.'}"
+        )
 
 
 def _scp_to_remote(config: ServerConfig, local_path: Path, remote_path: str) -> subprocess.CompletedProcess:
@@ -169,6 +279,8 @@ def _scp_to_remote(config: ServerConfig, local_path: Path, remote_path: str) -> 
         check=True,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
 
 
@@ -179,4 +291,6 @@ def _scp_from_remote(config: ServerConfig, remote_path: str, local_path: Path) -
         check=True,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )

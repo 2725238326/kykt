@@ -1,0 +1,189 @@
+#!/usr/bin/env python3
+"""
+DUSt3R server-side job runner.
+
+This script runs on the remote server. It is uploaded by the local frontend
+and invoked via SSH. It handles both pair and multi-image DUSt3R jobs.
+
+Usage:
+    python dust3r_runner.py --job-dir /hdd3/kykt26/jobs/<job_id> \
+                            --model /path/to/model.pth \
+                            --repo  /hdd3/kykt26/code/dust3r-main
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+
+def write_status(job_dir: Path, phase: str, message: str, progress: str = "") -> None:
+    status = {
+        "phase": phase,
+        "message": message,
+        "progress": progress,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    }
+    (job_dir / "status.json").write_text(json.dumps(status, indent=2), encoding="utf-8")
+
+
+def find_images(input_dir: Path) -> list[Path]:
+    exts = {".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff"}
+    images = sorted(
+        p for p in input_dir.iterdir()
+        if p.is_file() and p.suffix.lower() in exts
+    )
+    return images
+
+
+def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> None:
+    """Run DUSt3R pair inference: match visualization + point cloud."""
+    sys.path.insert(0, args.repo)
+    os.chdir(args.repo)
+
+    output_dir = job_dir / "output"
+    logs_dir = job_dir / "logs"
+
+    img1, img2 = str(images[0]), str(images[1])
+
+    write_status(job_dir, "running_matches", f"Loading model and running pair match on {len(images)} images...")
+
+    # ---- Match visualization ----
+    print(f"[dust3r_runner] Loading model from {args.model}")
+    from dust3r.inference import inference
+    from dust3r.model import AsymmetricCroCo3DStereo
+    from dust3r.utils.image import load_images
+    from dust3r.image_pairs import make_pairs
+    from dust3r.cloud_opt import global_aligner, GlobalAlignerMode
+
+    device = "cuda" if __import__("torch").cuda.is_available() else "cpu"
+    model = AsymmetricCroCo3DStereo.from_pretrained(args.model).to(device)
+
+    print(f"[dust3r_runner] Loading images: {[str(p) for p in images]}")
+    imgs = load_images([str(p) for p in images], size=512)
+    pairs = make_pairs(imgs, scene_graph="complete", prefilter=None, symmetrize=True)
+    output = inference(pairs, model, device, batch_size=1)
+
+    print(f"[dust3r_runner] Running global alignment...")
+    write_status(job_dir, "running_alignment", "Running global alignment...")
+
+    mode = GlobalAlignerMode.PairViewer if len(images) == 2 else GlobalAlignerMode.PointCloudOptimizer
+    scene = global_aligner(output, device=device, mode=mode)
+
+    if len(images) > 2:
+        loss = scene.compute_global_alignment(init="mst", niter=300, schedule="cosine", lr=0.01)
+        print(f"[dust3r_runner] Global alignment loss: {loss}")
+
+    # ---- Save matches visualization ----
+    write_status(job_dir, "saving_outputs", "Saving match visualization...")
+    print("[dust3r_runner] Saving match visualization...")
+
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # Get images and confidence
+    imgs_array = scene.imgs
+    fig, axes = plt.subplots(1, len(imgs_array), figsize=(5 * len(imgs_array), 5))
+    if len(imgs_array) == 1:
+        axes = [axes]
+    for i, img in enumerate(imgs_array):
+        axes[i].imshow(img)
+        axes[i].set_title(f"View {i + 1}")
+        axes[i].axis("off")
+    plt.tight_layout()
+    match_path = output_dir / "matches.png"
+    plt.savefig(str(match_path), dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"[dust3r_runner] Saved matches to {match_path}")
+
+    # ---- Export point cloud ----
+    write_status(job_dir, "exporting_pointcloud", "Exporting point cloud...")
+    print("[dust3r_runner] Exporting point cloud...")
+
+    pts3d = scene.get_pts3d()
+    confidence = scene.get_masks()
+
+    all_pts = []
+    all_colors = []
+
+    for i in range(len(imgs_array)):
+        pts = pts3d[i].detach().cpu().numpy()
+        mask = confidence[i].detach().cpu().numpy().flatten() > 0
+        img_np = (np.array(imgs_array[i]) * 255).astype(np.uint8)
+
+        h, w = pts.shape[:2]
+        pts_flat = pts.reshape(-1, 3)
+        colors_flat = img_np[:h, :w].reshape(-1, 3)
+
+        all_pts.append(pts_flat[mask])
+        all_colors.append(colors_flat[mask])
+
+    all_pts = np.concatenate(all_pts, axis=0)
+    all_colors = np.concatenate(all_colors, axis=0)
+
+    # Write ASCII PLY
+    ply_path = output_dir / "pointcloud.ply"
+    with open(str(ply_path), "w") as f:
+        f.write("ply\n")
+        f.write("format ascii 1.0\n")
+        f.write(f"element vertex {len(all_pts)}\n")
+        f.write("property float x\n")
+        f.write("property float y\n")
+        f.write("property float z\n")
+        f.write("property uchar red\n")
+        f.write("property uchar green\n")
+        f.write("property uchar blue\n")
+        f.write("end_header\n")
+        for pt, col in zip(all_pts, all_colors):
+            f.write(f"{pt[0]:.6f} {pt[1]:.6f} {pt[2]:.6f} {col[0]} {col[1]} {col[2]}\n")
+
+    print(f"[dust3r_runner] Saved point cloud ({len(all_pts)} points) to {ply_path}")
+
+    # ---- Save poses and focals ----
+    try:
+        focals = scene.get_focals().detach().cpu().numpy().tolist()
+        poses = [p.detach().cpu().numpy().tolist() for p in scene.get_im_poses()]
+        meta = {"focals": focals, "poses": poses, "n_images": len(images), "n_points": len(all_pts)}
+        (output_dir / "scene_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+        print(f"[dust3r_runner] Saved scene metadata.")
+    except Exception as e:
+        print(f"[dust3r_runner] Warning: could not save scene metadata: {e}")
+
+    write_status(job_dir, "finished", f"Done. {len(all_pts)} points from {len(images)} images.")
+    print(f"[dust3r_runner] Finished successfully.")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="DUSt3R server-side job runner")
+    parser.add_argument("--job-dir", required=True, help="Path to the job directory")
+    parser.add_argument("--model", required=True, help="Path to the DUSt3R model weights")
+    parser.add_argument("--repo", required=True, help="Path to the dust3r repo")
+    args = parser.parse_args()
+
+    job_dir = Path(args.job_dir)
+    input_dir = job_dir / "input"
+    output_dir = job_dir / "output"
+    logs_dir = job_dir / "logs"
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    images = find_images(input_dir)
+    print(f"[dust3r_runner] Found {len(images)} images in {input_dir}")
+
+    if len(images) < 2:
+        write_status(job_dir, "failed", "Need at least 2 images for DUSt3R.")
+        print("[dust3r_runner] ERROR: Need at least 2 images.", file=sys.stderr)
+        sys.exit(1)
+
+    write_status(job_dir, "starting", f"Starting DUSt3R with {len(images)} images...")
+    run_pair(args, images, job_dir)
+
+
+if __name__ == "__main__":
+    main()
