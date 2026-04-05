@@ -113,7 +113,7 @@ class cityscapes_loader(object):
         img_file = city/'{}_{}_{}_leftImg8bit.png'.format(city.basename(),
                                                           frame_id,
                                                           scene_id)
-        if not img_file.isfile():
+        if not img_file.is_file():
             return None
         img = imread(img_file)
         img = imresize(img, (self.img_height, self.img_width))[:int(self.img_height*0.75)]

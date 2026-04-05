@@ -243,9 +243,9 @@ def main():
         disp_ckpt = args.save_path/'dispnet_checkpoint.pth.tar'
         pose_ckpt = args.save_path/'exp_pose_checkpoint.pth.tar'
         print("=> resuming from {}".format(args.save_path))
-        if not disp_ckpt.isfile():
+        if not disp_ckpt.is_file():
             raise FileNotFoundError("disp checkpoint not found at {}".format(disp_ckpt))
-        if not pose_ckpt.isfile():
+        if not pose_ckpt.is_file():
             raise FileNotFoundError("pose checkpoint not found at {}".format(pose_ckpt))
 
         disp_weights = torch.load(disp_ckpt, map_location='cpu')

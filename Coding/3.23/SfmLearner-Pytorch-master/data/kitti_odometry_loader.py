@@ -85,7 +85,7 @@ class KittiOdomLoader(object):
 
     def load_image(self, scene_data, i):
         img_file = scene_data['frame_path'][i]
-        if not img_file.isfile():
+        if not img_file.is_file():
             return None
         img = imread(img_file)
         zoom_y = self.img_height/img.shape[0]

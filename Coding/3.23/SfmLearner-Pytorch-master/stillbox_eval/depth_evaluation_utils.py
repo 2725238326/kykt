@@ -55,7 +55,7 @@ def read_scene_data(data_root, test_list, seq_length=3, step=1):
         scene = metadata_files[folder]['scenes'][int(scene_index)]
         tgt_img_path = data_root/sample
         folder_path = data_root/folder
-        if tgt_img_path.isfile():
+        if tgt_img_path.is_file():
             ref_indices = shift_range + np.clip(index, step*demi_length, scene['length'] - step * demi_length - 1)
             ref_imgs_path = [folder_path/'{}'.format(scene['imgs'][ref_index]) for ref_index in ref_indices]
 

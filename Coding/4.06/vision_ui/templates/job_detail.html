@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ job.job_id }} - KYKT Vision UI</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <div class="detail-header">
+        <div>
+          <p class="eyebrow">Job Detail</p>
+          <h1>{{ job.job_id }}</h1>
+        </div>
+        <a class="back-link" href="/">Back</a>
+      </div>
+
+      <div class="detail-grid">
+        <div class="kv"><span>Model</span><strong>{{ job.model }}</strong></div>
+        <div class="kv"><span>Source Type</span><strong>{{ job.source_type }}</strong></div>
+        <div class="kv"><span>Status</span><strong>{{ job.status }}</strong></div>
+        <div class="kv"><span>Phase</span><strong>{{ job.phase }}</strong></div>
+        <div class="kv"><span>Created At</span><strong>{{ job.created_at }}</strong></div>
+        <div class="kv"><span>Remote Runner</span><strong>{{ job.remote_runner }}</strong></div>
+      </div>
+
+      <form method="post" action="/jobs/{{ job.job_id }}/dispatch" class="dispatch-form">
+        <button type="submit">Run Remote Job</button>
+      </form>
+
+      {% if job.notes %}
+      <div class="notes-box">
+        <h2>Notes</h2>
+        <p>{{ job.notes }}</p>
+      </div>
+      {% endif %}
+
+      {% if job.error_message %}
+      <div class="notes-box error-box">
+        <h2>Error</h2>
+        <p>{{ job.error_message }}</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="panel">
+      <h2>Uploaded Inputs</h2>
+      <div class="preview-grid">
+        {% for item in previews %}
+        <div class="preview-card">
+          <p><code>{{ item.relative_path }}</code></p>
+          {% if item.is_image %}
+          <img src="{{ item.url }}" alt="{{ item.relative_path }}">
+          {% else %}
+          <p class="empty">当前预览只支持图片。该文件已正常保存。</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Next Remote Steps</h2>
+      <ol class="next-steps">
+        {% for step in next_steps %}
+        <li>{{ step }}</li>
+        {% endfor %}
+      </ol>
+    </section>
+
+    <section class="panel">
+      <h2>Outputs</h2>
+      {% if outputs %}
+      <div class="preview-grid">
+        {% for item in outputs %}
+        <div class="preview-card">
+          <p><code>{{ item.relative_path }}</code></p>
+          {% if item.is_image %}
+          <img src="{{ item.url }}" alt="{{ item.relative_path }}">
+          {% else %}
+          <p><a href="{{ item.url }}" target="_blank">Open / Download</a></p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty">结果还没有回传到本地。远程任务完成后，匹配图、点云和日志会出现在这里。</p>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

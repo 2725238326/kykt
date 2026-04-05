@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KYKT Vision UI</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Local Offline Frontend</p>
+        <h1>KYKT Vision UI</h1>
+        <p class="lead">本地网页前端负责收集输入、组织任务和后续 SSH 调度；模型继续只放在服务器端跑。</p>
+      </div>
+      <div class="server-card">
+        <h2>Current Target</h2>
+        <p><strong>{{ server.user }}@{{ server.host }}</strong></p>
+        <p>Remote root: <code>{{ server.remote_root }}</code></p>
+        <p>Transport: system <code>ssh / scp</code> (planned)</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Create Job</h2>
+      <form method="post" action="/jobs" enctype="multipart/form-data" class="job-form">
+        <label>
+          Model
+          <select name="model">
+            {% for value, label in models %}
+            <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>
+          Source Type
+          <select name="source_type">
+            <option value="images">Images</option>
+            <option value="video">Video</option>
+            <option value="frames">Frame Sequence</option>
+          </select>
+        </label>
+
+        <label class="full">
+          Notes
+          <textarea name="notes" rows="3" placeholder="记录这次任务的目的、想跑的模型、图片说明等。"></textarea>
+        </label>
+
+        <label class="full">
+          Input Files
+          <input type="file" name="files" multiple required>
+        </label>
+
+        <button type="submit">Create Local Job</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Recent Jobs</h2>
+        <p>首版 DUSt3R 远程任务链路已经接上。先创建任务，再进入详情页点击 <code>Run Remote Job</code>。</p>
+      </div>
+      {% if jobs %}
+      <div class="job-list">
+        {% for job in jobs %}
+        <a class="job-card" href="/jobs/{{ job.job_id }}">
+          <div class="job-head">
+            <span class="job-id">{{ job.job_id }}</span>
+            <span class="badge">{{ job.model }}</span>
+          </div>
+          <div class="job-meta">
+            <span>Status: {{ job.status }}</span>
+            <span>Phase: {{ job.phase }}</span>
+            <span>Inputs: {{ job.input_files|length }}</span>
+          </div>
+          {% if job.notes %}
+          <p class="job-notes">{{ job.notes }}</p>
+          {% endif %}
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty">还没有任务。先上传一组图片或视频，生成第一条本地任务。</p>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

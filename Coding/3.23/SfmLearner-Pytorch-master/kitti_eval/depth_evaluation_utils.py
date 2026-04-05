@@ -131,7 +131,7 @@ def read_scene_data(data_root, test_list, seq_length=3, step=1, use_gps=True):
         ref_imgs_path = [tgt_img_path.dirname()/'{:010d}.png'.format(i) for i in ref_indices]
         vel_path = data_root/date/scene/'velodyne_points'/'data'/'{}.bin'.format(index[:10])
 
-        if tgt_img_path.isfile():
+        if tgt_img_path.is_file():
             gt_files.append(vel_path)
             calib_dirs.append(data_root/date)
             im_files.append([tgt_img_path,ref_imgs_path])

@@ -33,7 +33,7 @@ class ShiftedSequenceFolder(SequenceFolder):
                 continue
 
             shifts_file = scene/'shifts.json'
-            if shifts_file.isfile():
+            if shifts_file.is_file():
                 with open(shifts_file, 'r') as f:
                     shifts = json.load(f)
             else:
