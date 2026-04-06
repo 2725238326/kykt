@@ -239,6 +239,28 @@ fieldset.param-box legend {
   font-weight: 800;
 }
 
+.preset-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.advanced-params {
+  margin-top: 14px;
+}
+
+.advanced-params summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.advanced-params .param-grid {
+  margin-top: 14px;
+}
+
 .param-grid,
 .param-summary {
   display: grid;

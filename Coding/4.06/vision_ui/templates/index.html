@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KYKT Vision UI local offline frontend for SSH/SCP remote model jobs.">
+  <meta name="description" content="KYKT Vision UI 本地离线前端，通过 SSH/SCP 调度服务器端视觉模型任务。">
   <title>KYKT Vision UI</title>
   <link rel="stylesheet" href="/static/style.css?v={{ asset_version }}">
 </head>
@@ -11,21 +11,21 @@
   <main class="page">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">Local Offline Frontend</p>
+        <p class="eyebrow">本地离线前端</p>
         <h1>KYKT Vision UI</h1>
         <p class="lead">
-          Prepare inputs locally, dispatch remote vision jobs over SSH/SCP, track progress,
-          and review outputs without opening extra server ports.
+          在本地整理输入、创建任务、追踪进度并查看结果。模型继续放在服务器端运行，
+          本地与服务器之间只通过 SSH/SCP 通信，不需要额外开放服务器端口。
         </p>
       </div>
 
       <aside class="server-card">
-        <p class="card-label">Current Target</p>
+        <p class="card-label">当前服务器</p>
         <h2>{{ server.user }}@{{ server.host }}</h2>
         <div class="server-meta">
-          <p><span>SSH alias</span><code>{{ server.alias }}</code></p>
-          <p><span>Remote root</span><code>{{ server.remote_root }}</code></p>
-          <p><span>Transport</span><code>ssh / scp</code></p>
+          <p><span>SSH 别名</span><code>{{ server.alias }}</code></p>
+          <p><span>远端根目录</span><code>{{ server.remote_root }}</code></p>
+          <p><span>传输方式</span><code>ssh / scp</code></p>
         </div>
       </aside>
     </section>
@@ -33,15 +33,15 @@
     <section class="panel">
       <div class="panel-header">
         <div>
-          <p class="eyebrow">Create Job</p>
-          <h2>New Job</h2>
+          <p class="eyebrow">创建任务</p>
+          <h2>新建任务</h2>
         </div>
-        <p class="panel-note">File names do not matter. Inputs are normalized before being uploaded.</p>
+        <p class="panel-note">文件名没有要求，上传后会自动转换成稳定的内部命名。</p>
       </div>
 
       <form method="post" action="/jobs" enctype="multipart/form-data" class="job-form" id="create-job-form">
         <label>
-          Model
+          模型
           <select name="model" id="model-select">
             {% for value, label in models %}
             <option value="{{ value }}">{{ label }}</option>
@@ -50,72 +50,86 @@
         </label>
 
         <label>
-          Source Type
+          输入类型
           <select name="source_type" id="source-type-select">
-            <option value="images">Images</option>
-            <option value="video">Video</option>
-            <option value="frames">Frame Sequence</option>
+            <option value="images">图片</option>
+            <option value="video">视频</option>
+            <option value="frames">帧序列</option>
           </select>
         </label>
 
         <label class="full">
-          Notes
-          <textarea name="notes" rows="3" placeholder="Purpose, scene notes, expected outputs, or parameter comments."></textarea>
+          备注
+          <textarea name="notes" rows="3" placeholder="可以记录任务目的、场景说明、期望输出或参数说明。"></textarea>
         </label>
 
         <fieldset class="full param-box" id="dust3r-params">
-          <legend>DUSt3R Parameters</legend>
-          <div class="param-grid">
-            <label>
-              Image Size
-              <select name="image_size">
-                <option value="512" selected>512 (default)</option>
-                <option value="224">224 (faster)</option>
-              </select>
-            </label>
-            <label>
-              Scene Graph
-              <select name="scene_graph">
-                <option value="complete" selected>complete (all pairs)</option>
-                <option value="swin-5">swin-5 (sliding window)</option>
-                <option value="swin-10">swin-10 (larger window)</option>
-                <option value="oneref-0">oneref-0 (anchor first image)</option>
-              </select>
-            </label>
-            <label>
-              Alignment Iterations
-              <input type="number" name="niter" value="300" min="0" max="1000" step="50">
-            </label>
-            <label>
-              Alignment LR
-              <input type="number" name="lr" value="0.01" min="0" max="1" step="0.001">
-            </label>
-            <label>
-              Batch Size
-              <input type="number" name="batch_size" value="1" min="1" max="8" step="1">
-            </label>
-            <label>
-              Max PLY Points
-              <input type="number" name="max_points" value="250000" min="1000" max="2000000" step="1000">
-            </label>
-          </div>
-          <p class="field-help">For many images, complete graph is expensive. Try swin-5 or oneref-0 when you upload a longer sequence.</p>
+          <legend>DUSt3R 参数</legend>
+          <label class="preset-label">
+            运行预设
+            <select id="dust3r-preset">
+              <option value="normal" selected>推荐：2-5 张图，正常质量</option>
+              <option value="fast">快速预览：低分辨率，点云更小</option>
+              <option value="multi">多视图：3-6 张图，全配对</option>
+              <option value="sequence">长序列：6 张以上，滑动窗口</option>
+            </select>
+          </label>
+          <p class="field-help">一般保持推荐预设即可。图像尺寸是模型内部缩放，不要求你的原图本身是 512。</p>
+
+          <details class="advanced-params">
+            <summary>高级参数（可选）</summary>
+            <div class="param-grid">
+              <label>
+                图像尺寸（内部缩放）
+                <select name="image_size" id="dust3r-image-size">
+                  <option value="512" selected>512（默认）</option>
+                  <option value="224">224（更快）</option>
+                </select>
+              </label>
+              <label>
+                场景图（Scene Graph）
+                <select name="scene_graph" id="dust3r-scene-graph">
+                  <option value="complete" selected>complete（全部两两配对）</option>
+                  <option value="swin-5">swin-5（滑动窗口）</option>
+                  <option value="swin-10">swin-10（更大窗口）</option>
+                  <option value="oneref-0">oneref-0（第一张作为锚点）</option>
+                </select>
+              </label>
+              <label>
+                对齐迭代次数
+                <input type="number" name="niter" id="dust3r-niter" value="300" min="0" max="1000" step="50">
+              </label>
+              <label>
+                对齐学习率
+                <input type="number" name="lr" id="dust3r-lr" value="0.01" min="0" max="1" step="0.001">
+              </label>
+              <label>
+                批大小
+                <input type="number" name="batch_size" id="dust3r-batch-size" value="1" min="1" max="8" step="1">
+              </label>
+              <label>
+                最大点云点数
+                <input type="number" name="max_points" id="dust3r-max-points" value="250000" min="1000" max="2000000" step="1000">
+              </label>
+            </div>
+            <p class="field-help">图片很多时，complete 会产生大量两两配对。上传长序列时建议用 swin-5 或 oneref-0。</p>
+          </details>
         </fieldset>
 
         <div class="full">
           <div class="drop-zone" id="drop-zone">
             <input type="file" name="files" id="file-input" multiple required>
             <div class="drop-zone-inner">
-              <p class="drop-zone-title">Drop files here, or click to choose</p>
-              <p class="drop-zone-text">DUSt3R accepts two or more images. Multi-image jobs are handled by the same runner.</p>
-              <p class="drop-zone-hint">Internal names: <code>input_01.ext</code>, <code>input_02.ext</code>, ...</p>
+              <p class="drop-zone-title">拖拽文件到这里，或点击选择</p>
+              <p class="drop-zone-text">DUSt3R 支持两张或更多图片，多图任务会走同一套 runner。</p>
+              <p class="drop-zone-hint">内部命名示例：<code>input_01.ext</code>、<code>input_02.ext</code>、...</p>
             </div>
           </div>
           <div class="file-list" id="file-list"></div>
         </div>
 
         <div class="form-actions full">
-          <button type="submit">Create Local Job</button>
+          <button type="submit">创建本地任务</button>
         </div>
       </form>
     </section>
@@ -123,10 +137,10 @@
     <section class="panel">
       <div class="panel-header">
         <div>
-          <p class="eyebrow">Recent Jobs</p>
-          <h2>Recent Jobs</h2>
+          <p class="eyebrow">最近任务</p>
+          <h2>任务列表</h2>
         </div>
-        <p class="panel-note">The list refreshes automatically. Open a job to inspect progress, logs, and outputs.</p>
+        <p class="panel-note">任务列表会自动刷新。点击任务卡片可以查看进度、日志和输出结果。</p>
       </div>
 
       <div class="job-list" id="job-list">
@@ -139,13 +153,13 @@
               <span class="badge {% if job.model == 'monst3r' %}badge-monst3r{% endif %}">{{ job.model }}</span>
             </div>
             <div class="job-meta">
-              <span>Status: {{ job.status }}</span>
-              <span>Phase: {{ phase_display.label }}</span>
-              <span>Inputs: {{ job.input_files|length }}</span>
-              <span>Outputs: {{ job.output_files|length }}</span>
+              <span>状态：{{ status_label(job.status) }}</span>
+              <span>阶段：{{ phase_display.label }}</span>
+              <span>输入：{{ job.input_files|length }}</span>
+              <span>输出：{{ job.output_files|length }}</span>
             </div>
             <div class="job-mini-progress">
-              <div class="status-pill status-{{ job.status }}">{{ job.status }}</div>
+              <div class="status-pill status-{{ job.status }}">{{ status_label(job.status) }}</div>
               <div class="mini-track" aria-hidden="true">
                 <div class="mini-fill" style="width: {{ phase_display.percent }}%;"></div>
               </div>
@@ -155,7 +169,7 @@
           </a>
           {% endfor %}
         {% else %}
-          <p class="empty" id="job-list-empty">No jobs yet. Upload inputs to create the first local job.</p>
+          <p class="empty" id="job-list-empty">还没有任务。先上传一组输入文件，创建第一条本地任务。</p>
         {% endif %}
       </div>
     </section>

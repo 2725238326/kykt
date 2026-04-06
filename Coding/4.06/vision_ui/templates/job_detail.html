@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KYKT Vision UI job detail page.">
+  <meta name="description" content="KYKT Vision UI 任务详情页。">
   <title>{{ job.job_id }} - KYKT Vision UI</title>
   <link rel="stylesheet" href="/static/style.css?v={{ asset_version }}">
 </head>
@@ -12,24 +12,24 @@
     <section class="panel">
       <div class="detail-header">
         <div>
-          <p class="eyebrow">Job Detail</p>
+          <p class="eyebrow">任务详情</p>
           <h1>{{ job.job_id }}</h1>
         </div>
         <div class="detail-header-actions">
-          <span class="elapsed-badge {% if job.status == 'running' %}is-running{% endif %}" id="elapsed-badge">Time --:--</span>
-          <a class="back-link" href="/">Back</a>
+          <span class="elapsed-badge {% if job.status == 'running' %}is-running{% endif %}" id="elapsed-badge">耗时 --:--</span>
+          <a class="back-link" href="/">返回</a>
         </div>
       </div>
 
       <div class="status-row">
-        <div class="status-pill status-{{ job.status }}" id="job-status-pill">{{ job.status }}</div>
+        <div class="status-pill status-{{ job.status }}" id="job-status-pill">{{ status_label(job.status) }}</div>
         <div class="status-summary" id="job-phase-text">{{ phase_display.label }}</div>
       </div>
 
       <section class="progress-panel">
         <div class="progress-header">
           <div>
-            <h2>Task Progress</h2>
+            <h2>任务进度</h2>
             <p id="job-progress-text">{{ phase_display.description }}</p>
           </div>
           <div class="progress-percent" id="job-progress-percent">{{ phase_display.percent }}%</div>
@@ -51,40 +51,43 @@
       </section>
 
       <div class="detail-grid">
-        <div class="kv"><span>Model</span><strong id="job-model">{{ job.model }}</strong></div>
-        <div class="kv"><span>Source Type</span><strong id="job-source-type">{{ job.source_type }}</strong></div>
-        <div class="kv"><span>Status</span><strong id="job-status">{{ job.status }}</strong></div>
-        <div class="kv"><span>Phase</span><strong id="job-phase">{{ job.phase }}</strong></div>
-        <div class="kv"><span>Created At</span><strong>{{ job.created_at }}</strong></div>
-        <div class="kv"><span>Remote Runner</span><strong>{{ job.remote_runner }}</strong></div>
+        <div class="kv"><span>模型</span><strong id="job-model">{{ job.model }}</strong></div>
+        <div class="kv"><span>输入类型</span><strong id="job-source-type">{{ job.source_type }}</strong></div>
+        <div class="kv"><span>状态</span><strong id="job-status">{{ status_label(job.status) }}</strong></div>
+        <div class="kv"><span>阶段</span><strong id="job-phase">{{ phase_display.label }}</strong></div>
+        <div class="kv"><span>创建时间</span><strong>{{ job.created_at }}</strong></div>
+        <div class="kv"><span>远端运行器</span><strong>{{ job.remote_runner }}</strong></div>
         <div class="kv full-span">
-          <span>Latest Progress</span>
-          <strong id="job-latest-progress">{{ job.progress_message or "Waiting for the first remote log line." }}</strong>
+          <span>最新进展</span>
+          <strong id="job-latest-progress">{{ job.progress_message or "正在等待远端状态更新。" }}</strong>
         </div>
       </div>
 
       <div class="action-row">
         <form method="post" action="/jobs/{{ job.job_id }}/dispatch" class="dispatch-form">
-          <button type="submit" id="run-job-button" {% if job.status == "running" %}disabled{% endif %}>Run Remote Job</button>
+          <button type="submit" id="run-job-button" {% if job.status == "running" %}disabled{% endif %}>运行远端任务</button>
         </form>
         <form method="post" action="/jobs/{{ job.job_id }}/retry" class="dispatch-form">
-          <button type="submit" id="retry-job-button" class="secondary-button" {% if job.status == "running" %}disabled{% endif %}>Retry Current Job</button>
+          <button type="submit" id="retry-job-button" class="secondary-button" {% if job.status == "running" %}disabled{% endif %}>重试当前任务</button>
         </form>
         <form method="post" action="/jobs/{{ job.job_id }}/duplicate" class="dispatch-form">
-          <button type="submit" class="secondary-button">Duplicate as New Job</button>
+          <button type="submit" class="secondary-button">复制为新任务</button>
+        </form>
+        <form method="post" action="/jobs/{{ job.job_id }}/mark-failed" class="dispatch-form">
+          <button type="submit" id="mark-failed-button" class="secondary-button">标记卡住为失败</button>
         </form>
       </div>
 
       {% if job.notes %}
       <div class="notes-box info-box">
-        <h2>Notes</h2>
+        <h2>备注</h2>
         <p>{{ job.notes }}</p>
       </div>
       {% endif %}
 
       {% if job.params %}
       <div class="notes-box info-box">
-        <h2>Parameters</h2>
+        <h2>运行参数</h2>
         <div class="param-summary">
           {% for key, value in job.params.items() %}
           <span><strong>{{ key }}</strong>: {{ value }}</span>
@@ -94,12 +97,12 @@
       {% endif %}
 
       <div class="notes-box info-box">
-        <h2>Input Naming</h2>
-        <p>Uploaded filenames do not matter. The UI stores stable internal names before syncing to the server.</p>
+        <h2>输入命名</h2>
+        <p>上传文件名没有要求。系统会在本地缓存中生成稳定的内部文件名，再同步到服务器。</p>
       </div>
 
       <div class="notes-box error-box {% if not job.error_message %}hidden{% endif %}" id="error-box">
-        <h2>Error</h2>
+        <h2>错误信息</h2>
         <p id="job-error-message">{{ job.error_message or '' }}</p>
       </div>
     </section>
@@ -107,7 +110,7 @@
     <section class="panel">
       <div class="panel-header">
         <div>
-          <p class="eyebrow">Uploaded Inputs</p>
+          <p class="eyebrow">已上传输入</p>
           <h2>输入文件</h2>
         </div>
       </div>
@@ -115,11 +118,11 @@
         {% for item in previews %}
         <div class="preview-card">
           <p><strong>{{ item.display_name }}</strong></p>
-          <p class="meta-line">Stored as <code>{{ item.stored_name }}</code></p>
+          <p class="meta-line">内部文件名 <code>{{ item.stored_name }}</code></p>
           {% if item.is_image %}
           <img src="{{ item.url }}" alt="{{ item.display_name }}" loading="lazy">
           {% else %}
-          <p class="empty">Preview is currently available for images only, but the file is saved and ready for execution.</p>
+          <p class="empty">当前只预览图片文件；该文件已经保存，可以继续用于远端任务。</p>
           {% endif %}
         </div>
         {% endfor %}
@@ -129,8 +132,8 @@
     <section class="panel">
       <div class="panel-header">
         <div>
-          <p class="eyebrow">Outputs</p>
-          <h2>输出结果</h2>
+          <p class="eyebrow">输出结果</p>
+          <h2>任务产物</h2>
         </div>
       </div>
       <div class="preview-grid" id="outputs-grid">
@@ -145,20 +148,20 @@
             <div class="viewer-container" id="viewer-{{ loop.index }}" data-ply-url="{{ item.url }}">
               <div class="viewer-loading" id="viewer-loading-{{ loop.index }}">
                 <div class="spinner"></div>
-                Loading point cloud...
+                正在加载点云...
               </div>
             </div>
             <div class="viewer-controls">
-              <button class="viewer-btn" onclick="resetViewer({{ loop.index }})" type="button">Reset View</button>
-              <a href="{{ item.url }}" download class="viewer-btn viewer-link">Download .ply</a>
+              <button class="viewer-btn" onclick="resetViewer({{ loop.index }})" type="button">重置视角</button>
+              <a href="{{ item.url }}" download class="viewer-btn viewer-link">下载 .ply</a>
             </div>
             {% else %}
-            <p><a class="inline-link" href="{{ item.url }}" target="_blank">Open / Download</a></p>
+            <p><a class="inline-link" href="{{ item.url }}" target="_blank">打开或下载</a></p>
             {% endif %}
           </div>
           {% endfor %}
         {% else %}
-          <p class="empty" id="outputs-empty">No outputs yet. They will appear here when the remote job finishes.</p>
+          <p class="empty" id="outputs-empty">还没有输出结果。远端任务完成后，匹配图、点云和日志会显示在这里。</p>
         {% endif %}
       </div>
     </section>
@@ -166,8 +169,8 @@
     <section class="panel">
       <div class="panel-header">
         <div>
-          <p class="eyebrow">Live Logs</p>
-          <h2>实时日志</h2>
+          <p class="eyebrow">实时日志</p>
+          <h2>运行日志</h2>
         </div>
       </div>
       <div class="log-grid" id="log-grid">
@@ -176,11 +179,11 @@
           <div class="preview-card">
             <p><strong>{{ item.name }}</strong></p>
             <p class="meta-line"><code>{{ item.relative_path }}</code></p>
-            <pre class="log-box">{{ item.tail or 'Log file exists but is currently empty.' }}</pre>
+            <pre class="log-box">{{ item.tail or '日志文件存在，但当前还是空的。' }}</pre>
           </div>
           {% endfor %}
         {% else %}
-          <p class="empty" id="logs-empty">No local log cache yet. Live logs will appear here once the remote task starts.</p>
+          <p class="empty" id="logs-empty">还没有本地日志缓存。远端任务开始后，日志会自动显示在这里。</p>
         {% endif %}
       </div>
     </section>

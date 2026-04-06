@@ -18,6 +18,7 @@ from job_store import (
     list_jobs,
     load_job,
     save_inputs,
+    update_job,
 )
 from ssh_runner import ServerConfig, run_remote_job
 
@@ -25,7 +26,7 @@ from ssh_runner import ServerConfig, run_remote_job
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
-templates.env.globals["asset_version"] = "20260406-1328"
+templates.env.globals["asset_version"] = "20260406-1405"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
@@ -35,18 +36,36 @@ app.mount("/local_jobs", StaticFiles(directory=str(ROOT / "local_jobs")), name="
 
 
 PHASE_FLOW = [
-    ("local_prepared", "Local Job Ready", "The local record and cached inputs are ready.", 4, 8),
-    ("preparing_remote", "Preparing Remote Space", "Creating remote folders and job files.", 8, 15),
-    ("uploading_inputs", "Uploading Inputs", "Sending files and the job manifest to the server.", 15, 25),
-    ("running_remote_matches", "Running DUSt3R Matches", "Building matches, alignment, and match visualization.", 25, 70),
-    ("running_remote_pointcloud", "Exporting Point Cloud", "Exporting the point cloud and finishing remote outputs.", 70, 90),
-    ("downloading_results", "Downloading Results", "Copying outputs and logs back to the local cache.", 90, 98),
-    ("finished", "Finished", "The job completed successfully.", 100, 100),
-    ("failed", "Failed", "The job stopped with an error. Check logs and retry.", 0, 0),
+    ("local_prepared", "本地任务已就绪", "本地任务记录和输入缓存已经准备好。", 4, 8),
+    ("preparing_remote", "准备服务器目录", "正在创建远端任务目录和任务文件。", 8, 15),
+    ("uploading_inputs", "上传输入文件", "正在把输入文件和任务清单发送到服务器。", 15, 25),
+    ("running_remote_matches", "运行 DUSt3R 重建", "正在构建图像配对、执行推理、全局对齐并生成匹配图。", 25, 70),
+    ("running_remote_pointcloud", "导出点云", "正在导出点云并完成远端输出文件。", 70, 90),
+    ("downloading_results", "下载结果", "正在把输出文件和日志拉回本地缓存。", 90, 98),
+    ("finished", "已完成", "任务已成功完成。", 100, 100),
+    ("failed", "失败", "任务因错误停止，请查看日志后重试。", 0, 0),
 ]
+
+STATUS_LABELS = {
+    "created": "已创建",
+    "ready": "已就绪",
+    "running": "运行中",
+    "finished": "已完成",
+    "failed": "失败",
+    "cancelled": "已取消",
+}
 
 ACTIVE_PHASE_CODES = [code for code, *_ in PHASE_FLOW[:6]]
 PROGRESS_PATTERN = re.compile(r"(\d+)\s*/\s*(\d+)")
+
+
+def status_label(status: str | None) -> str:
+    if not status:
+        return "未知"
+    return STATUS_LABELS.get(status, status)
+
+
+templates.env.globals["status_label"] = status_label
 
 
 def _extract_progress_ratio(progress_message: str | None) -> float | None:
@@ -181,8 +200,8 @@ async def index(request: Request):
             "jobs": jobs,
             "server": ServerConfig(),
             "models": [
-                ("dust3r", "DUSt3R (image set)"),
-                ("monst3r", "MonST3R (video or frame sequence)"),
+                ("dust3r", "DUSt3R（图像集）"),
+                ("monst3r", "MonST3R（视频或帧序列）"),
             ],
             "phase_builder": build_phase_display,
         },
@@ -203,7 +222,7 @@ async def create_job_view(
     files: list[UploadFile] = File(...),
 ):
     if not files:
-        raise HTTPException(status_code=400, detail="No input files were uploaded.")
+        raise HTTPException(status_code=400, detail="没有上传输入文件。")
 
     params = {}
     if model == "dust3r":
@@ -223,7 +242,7 @@ async def job_detail(request: Request, job_id: str):
     try:
         job = load_job(job_id)
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found.") from exc
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     payload = _job_payload(job)
     return templates.TemplateResponse(
@@ -241,10 +260,10 @@ async def dispatch_job(job_id: str, background_tasks: BackgroundTasks):
     try:
         job = load_job(job_id)
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found.") from exc
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     if len(job.input_files) < 2 and job.model == "dust3r":
-        raise HTTPException(status_code=400, detail="DUSt3R needs at least two input images.")
+        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
 
     clear_job_runtime(job_id)
     background_tasks.add_task(run_remote_job, job_id)
@@ -256,10 +275,10 @@ async def retry_job(job_id: str, background_tasks: BackgroundTasks):
     try:
         job = load_job(job_id)
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found.") from exc
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     if len(job.input_files) < 2 and job.model == "dust3r":
-        raise HTTPException(status_code=400, detail="DUSt3R needs at least two input images.")
+        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
 
     clear_job_runtime(job_id)
     background_tasks.add_task(run_remote_job, job_id)
@@ -271,9 +290,26 @@ async def duplicate_job_view(job_id: str):
     try:
         new_job = duplicate_job(job_id)
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found.") from exc
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     return RedirectResponse(url=f"/jobs/{new_job.job_id}", status_code=303)
+
+
+@app.post("/jobs/{job_id}/mark-failed")
+async def mark_job_failed(job_id: str):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    update_job(
+        job_id,
+        status="failed",
+        phase="failed",
+        error_message="用户已在本地将任务标记为失败。未尝试清理远端进程。",
+        progress_message="已在本地标记为失败。可以点击重试重新调度。",
+    )
+    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @app.get("/api/jobs")
@@ -295,6 +331,6 @@ async def job_detail_api(job_id: str):
     try:
         job = load_job(job_id)
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"Job {job_id} not found.") from exc
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     return JSONResponse(_job_payload(job))

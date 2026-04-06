@@ -109,7 +109,7 @@ function createViewer(container, plyUrl) {
   // Load PLY
   fetch(plyUrl)
     .then(res => {
-      if (!res.ok) throw new Error(`Failed to load PLY: ${res.status}`);
+      if (!res.ok) throw new Error(`PLY 加载失败：${res.status}`);
       return res.text();
     })
     .then(text => {
@@ -156,7 +156,7 @@ function createViewer(container, plyUrl) {
     })
     .catch(err => {
       const loading = document.getElementById(`viewer-loading-${id.replace("viewer-", "")}`);
-      if (loading) loading.innerHTML = `<span style="color:var(--danger);">Error: ${err.message}</span>`;
+      if (loading) loading.innerHTML = `<span style="color:var(--danger);">错误：${err.message}</span>`;
     });
 
   // Animation loop

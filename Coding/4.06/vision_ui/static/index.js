@@ -7,6 +7,18 @@ function escapeHtml(text) {
     .replaceAll("'", "&#39;");
 }
 
+function statusLabel(status) {
+  const labels = {
+    created: "已创建",
+    ready: "已就绪",
+    running: "运行中",
+    finished: "已完成",
+    failed: "失败",
+    cancelled: "已取消",
+  };
+  return labels[status] || status || "未知";
+}
+
 function initDropZone() {
   const zone = document.getElementById("drop-zone");
   const input = document.getElementById("file-input");
@@ -37,7 +49,7 @@ function initDropZone() {
         <span class="file-chip">
           <span>${escapeHtml(file.name)}</span>
           <span style="opacity:0.55;">(${size})</span>
-          <span class="chip-remove" data-index="${index}" title="Remove">x</span>
+          <span class="chip-remove" data-index="${index}" title="移除">×</span>
         </span>
       `;
     }).join("");
@@ -99,12 +111,71 @@ function initModelParams() {
   updateVisibility();
 }
 
+function initDust3rPreset() {
+  const preset = document.getElementById("dust3r-preset");
+  if (!preset) return;
+
+  const fields = {
+    imageSize: document.getElementById("dust3r-image-size"),
+    sceneGraph: document.getElementById("dust3r-scene-graph"),
+    niter: document.getElementById("dust3r-niter"),
+    lr: document.getElementById("dust3r-lr"),
+    batchSize: document.getElementById("dust3r-batch-size"),
+    maxPoints: document.getElementById("dust3r-max-points"),
+  };
+
+  const presets = {
+    normal: {
+      imageSize: "512",
+      sceneGraph: "complete",
+      niter: "300",
+      lr: "0.01",
+      batchSize: "1",
+      maxPoints: "250000",
+    },
+    fast: {
+      imageSize: "224",
+      sceneGraph: "complete",
+      niter: "100",
+      lr: "0.01",
+      batchSize: "1",
+      maxPoints: "100000",
+    },
+    multi: {
+      imageSize: "512",
+      sceneGraph: "complete",
+      niter: "300",
+      lr: "0.01",
+      batchSize: "1",
+      maxPoints: "300000",
+    },
+    sequence: {
+      imageSize: "512",
+      sceneGraph: "swin-5",
+      niter: "300",
+      lr: "0.01",
+      batchSize: "1",
+      maxPoints: "250000",
+    },
+  };
+
+  function applyPreset() {
+    const values = presets[preset.value] || presets.normal;
+    Object.entries(values).forEach(([key, value]) => {
+      if (fields[key]) fields[key].value = value;
+    });
+  }
+
+  preset.addEventListener("change", applyPreset);
+  applyPreset();
+}
+
 function renderJobs(items) {
   const container = document.getElementById("job-list");
   if (!container) return;
 
   if (!items.length) {
-    container.innerHTML = '<p class="empty" id="job-list-empty">No jobs yet. Upload inputs to create the first local job.</p>';
+    container.innerHTML = '<p class="empty" id="job-list-empty">还没有任务。先上传输入文件，创建第一条本地任务。</p>';
     return;
   }
 
@@ -117,13 +188,13 @@ function renderJobs(items) {
           <span class="${badgeClass}">${escapeHtml(job.model)}</span>
         </div>
         <div class="job-meta">
-          <span>Status: ${escapeHtml(job.status)}</span>
-          <span>Phase: ${escapeHtml(phase_display.label)}</span>
-          <span>Inputs: ${job.input_files.length}</span>
-          <span>Outputs: ${job.output_files.length}</span>
+          <span>状态：${escapeHtml(statusLabel(job.status))}</span>
+          <span>阶段：${escapeHtml(phase_display.label)}</span>
+          <span>输入：${job.input_files.length}</span>
+          <span>输出：${job.output_files.length}</span>
         </div>
         <div class="job-mini-progress">
-          <div class="status-pill status-${escapeHtml(job.status)}">${escapeHtml(job.status)}</div>
+            <div class="status-pill status-${escapeHtml(job.status)}">${escapeHtml(statusLabel(job.status))}</div>
           <div class="mini-track" aria-hidden="true">
             <div class="mini-fill" style="width: ${phase_display.percent}%;"></div>
           </div>
@@ -152,5 +223,6 @@ async function refreshJobs() {
 window.addEventListener("load", () => {
   initDropZone();
   initModelParams();
+  initDust3rPreset();
   refreshJobs();
 });

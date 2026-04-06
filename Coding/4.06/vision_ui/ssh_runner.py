@@ -4,6 +4,7 @@ import json
 import re
 import shlex
 import subprocess
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -40,6 +41,17 @@ SSH_CONNECT_OPTIONS = [
 ]
 SSH_SHORT_TIMEOUT_SECONDS = 120
 SCP_TIMEOUT_SECONDS = 900
+STATUS_POLL_INTERVAL_SECONDS = 4
+STATUS_POLL_TIMEOUT_SECONDS = 20
+REMOTE_PHASE_MAP = {
+    "starting": "running_remote_matches",
+    "running_matches": "running_remote_matches",
+    "running_alignment": "running_remote_matches",
+    "saving_outputs": "running_remote_matches",
+    "exporting_pointcloud": "running_remote_pointcloud",
+    "finished": "downloading_results",
+    "failed": "failed",
+}
 
 
 def _ssh_command(config: ServerConfig, shell_script: str) -> list[str]:
@@ -57,7 +69,7 @@ def run_remote_job(job_id: str) -> None:
             status="running",
             phase="preparing_remote",
             remote_job_dir=remote_job_dir,
-            progress_message="Creating the remote job directory...",
+            progress_message="正在创建远端任务目录...",
         )
 
         # Create remote directories
@@ -74,28 +86,28 @@ def run_remote_job(job_id: str) -> None:
         _ssh(config, f"mkdir -p {shlex.quote(config.remote_runners_dir)}")
 
         # Upload inputs
-        update_job(job_id, phase="uploading_inputs", progress_message="Uploading local inputs to the server...")
+        update_job(job_id, phase="uploading_inputs", progress_message="正在上传本地输入文件到服务器...")
         _upload_inputs(config, job.job_id, remote_job_dir)
 
         # Upload job.json
-        update_job(job_id, phase="uploading_inputs", progress_message="Uploading job manifest...")
+        update_job(job_id, phase="uploading_inputs", progress_message="正在上传任务清单...")
         _upload_remote_job_json(config, job.job_id, remote_job_dir)
 
         # Upload runner script
-        update_job(job_id, phase="uploading_inputs", progress_message="Uploading runner script...")
+        update_job(job_id, phase="uploading_inputs", progress_message="正在上传远端运行脚本...")
         _upload_runner(config, job.model)
 
         # Dispatch model
         if job.model == "dust3r":
             _run_dust3r_v2(config, job.job_id, remote_job_dir)
         else:
-            raise RuntimeError(f"Model '{job.model}' is not wired yet.")
+            raise RuntimeError(f"模型 '{job.model}' 还没有接入远端执行。")
 
         # Download results
         update_job(
             job_id,
             phase="downloading_results",
-            progress_message="Downloading outputs and logs back to the local cache...",
+            progress_message="正在把输出和日志下载回本地缓存...",
         )
         output_files = _download_results(config, job.job_id, remote_job_dir)
         update_job(
@@ -104,7 +116,7 @@ def run_remote_job(job_id: str) -> None:
             phase="finished",
             output_files=output_files,
             error_message=None,
-            progress_message="Finished. Outputs are available below.",
+            progress_message="任务完成。输出结果已回传到本地。",
         )
     except Exception as exc:
         update_job(
@@ -112,7 +124,7 @@ def run_remote_job(job_id: str) -> None:
             status="failed",
             phase="failed",
             error_message=str(exc),
-            progress_message="Remote job failed. Check the live logs below.",
+            progress_message="远端任务失败，请查看下方日志。",
         )
 
 
@@ -124,7 +136,7 @@ def _upload_inputs(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
         local_path = ROOT / item["relative_path"]
         update_job(
             job_id,
-            progress_message=f"Uploading input {idx}/{total}: {item['stored_name']}",
+            progress_message=f"正在上传输入 {idx}/{total}: {item['stored_name']}",
         )
         _scp_to_remote(config, local_path, f"{remote_job_dir}/input/{item['stored_name']}")
 
@@ -164,7 +176,7 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     params = job.params or {}
 
     if n_images < 2:
-        raise RuntimeError("DUSt3R requires at least two uploaded images.")
+        raise RuntimeError("DUSt3R 至少需要两张已上传图片。")
 
     runner_path = f"{config.remote_runners_dir}/dust3r_runner.py"
     log_path = f"{remote_job_dir}/logs/runner.log"
@@ -190,13 +202,14 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     update_job(
         job_id,
         phase="running_remote_matches",
-        progress_message=f"Starting DUSt3R with {n_images} images...",
+        progress_message=f"正在使用 {n_images} 张图片启动 DUSt3R...",
     )
     _ssh_stream(
         config,
         cmd,
         job_id=job_id,
         phase="running_remote_matches",
+        remote_job_dir=remote_job_dir,
         local_log_path=local_log,
     )
 
@@ -261,6 +274,7 @@ def _ssh_stream(
     *,
     job_id: str,
     phase: str,
+    remote_job_dir: str,
     local_log_path: Path,
 ) -> None:
     local_log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -276,28 +290,69 @@ def _ssh_stream(
     )
 
     last_message = ""
-    with local_log_path.open("w", encoding="utf-8") as log_file:
-        assert process.stdout is not None
-        for raw_line in process.stdout:
-            cleaned = _clean_progress_line(raw_line)
-            log_file.write(cleaned + ("\n" if cleaned else ""))
-            log_file.flush()
-            if cleaned:
-                last_message = cleaned[-400:]
-                # Auto-detect phase transitions from runner output
-                detected_phase = phase
-                if "alignment" in cleaned.lower():
-                    detected_phase = "running_remote_matches"
-                elif "point cloud" in cleaned.lower() or "exporting" in cleaned.lower():
-                    detected_phase = "running_remote_pointcloud"
-                update_job(job_id, phase=detected_phase, progress_message=last_message)
+    stop_event = threading.Event()
+    poller = threading.Thread(
+        target=_poll_remote_status,
+        args=(config, job_id, remote_job_dir, stop_event),
+        daemon=True,
+    )
+    poller.start()
 
-    return_code = process.wait()
+    try:
+        with local_log_path.open("w", encoding="utf-8") as log_file:
+            assert process.stdout is not None
+            for raw_line in process.stdout:
+                cleaned = _clean_progress_line(raw_line)
+                log_file.write(cleaned + ("\n" if cleaned else ""))
+                log_file.flush()
+                if cleaned:
+                    last_message = cleaned[-400:]
+                    # Auto-detect phase transitions from runner output
+                    detected_phase = phase
+                    if "alignment" in cleaned.lower():
+                        detected_phase = "running_remote_matches"
+                    elif "point cloud" in cleaned.lower() or "exporting" in cleaned.lower():
+                        detected_phase = "running_remote_pointcloud"
+                    update_job(job_id, phase=detected_phase, progress_message=last_message)
+
+        return_code = process.wait()
+    finally:
+        stop_event.set()
+        poller.join(timeout=2)
+        _sync_remote_status_once(config, job_id, remote_job_dir)
+
     if return_code != 0:
         raise RuntimeError(
-            f"Remote command failed during {phase}. "
-            f"Last message: {last_message or 'No remote log line was captured.'}"
+            f"远端命令在阶段 {phase} 失败。"
+            f"最后一条日志：{last_message or '没有捕获到远端日志。'}"
         )
+
+
+def _poll_remote_status(config: ServerConfig, job_id: str, remote_job_dir: str, stop_event: threading.Event) -> None:
+    while not stop_event.wait(STATUS_POLL_INTERVAL_SECONDS):
+        _sync_remote_status_once(config, job_id, remote_job_dir)
+
+
+def _sync_remote_status_once(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+    local_status = get_job_dir(job_id) / "logs" / "remote_status.json"
+    remote_status = f"{remote_job_dir}/status.json"
+    try:
+        _scp_from_remote(config, remote_status, local_status, timeout=STATUS_POLL_TIMEOUT_SECONDS)
+        payload = json.loads(local_status.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return
+
+    remote_phase = str(payload.get("phase") or "").strip()
+    local_phase = REMOTE_PHASE_MAP.get(remote_phase, "running_remote_matches")
+    message = str(payload.get("message") or payload.get("progress") or remote_phase or "远端状态已更新。")
+    progress = str(payload.get("progress") or "").strip()
+    progress_message = f"{message} ({progress})" if progress else message
+
+    if load_job(job_id).status != "running":
+        return
+
+    status = "failed" if remote_phase == "failed" else None
+    update_job(job_id, status=status, phase=local_phase, progress_message=progress_message)
 
 
 def _scp_to_remote(config: ServerConfig, local_path: Path, remote_path: str) -> subprocess.CompletedProcess:
@@ -312,7 +367,13 @@ def _scp_to_remote(config: ServerConfig, local_path: Path, remote_path: str) -> 
     )
 
 
-def _scp_from_remote(config: ServerConfig, remote_path: str, local_path: Path) -> subprocess.CompletedProcess:
+def _scp_from_remote(
+    config: ServerConfig,
+    remote_path: str,
+    local_path: Path,
+    *,
+    timeout: int = SCP_TIMEOUT_SECONDS,
+) -> subprocess.CompletedProcess:
     local_path.parent.mkdir(parents=True, exist_ok=True)
     return subprocess.run(
         ["scp", *SSH_CONNECT_OPTIONS, f"{config.alias}:{remote_path}", str(local_path)],
@@ -321,5 +382,5 @@ def _scp_from_remote(config: ServerConfig, remote_path: str, local_path: Path) -
         text=True,
         encoding="utf-8",
         errors="replace",
-        timeout=SCP_TIMEOUT_SECONDS,
+        timeout=timeout,
     )

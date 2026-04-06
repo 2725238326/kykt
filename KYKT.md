@@ -132,7 +132,10 @@ Current frontend capabilities:
   - `batch_size`
   - `max_points`
 - These parameters are stored in `job.json`, uploaded with the job manifest, passed to the remote runner, and written to `scene_meta.json`.
+- The UI now offers DUSt3R presets so normal users do not need to manually understand `image_size`; `image_size=512` is the model's internal resize, not a requirement for original uploaded files.
 - DUSt3R pair and multi-image jobs share the same frontend flow; N-image behavior is selected by the runner based on input count.
+- While a remote runner is active, the local SSH layer polls the remote job `status.json` and maps it into frontend phases.
+- Local job JSON updates are guarded with an in-process lock so the log stream and status poller do not write the same `job.json` concurrently.
 - Remote launcher uses `conda run -n dust3r` without `--no-banner` for compatibility with the server conda version.
 - SSH pipeline execution uses `set -o pipefail` so `tee` does not hide remote command failures.
 - Short SSH/SCP operations now use non-interactive OpenSSH options and timeouts to avoid jobs staying in `preparing_remote` forever.
@@ -155,6 +158,9 @@ Current frontend capabilities:
 - UI style is currently a clean light workspace theme.
 - The old dark/glass experimental theme was removed.
 - Visible mojibake text was cleaned from templates and page scripts.
+- 2026-04-06: The visible UI was localized to Chinese end-to-end.
+- Chinese localization covers index/detail templates, dynamic JS messages, task status labels, progress text, SSH runner progress messages, and DUSt3R runner status messages.
+- UTF-8/mojibake scan passed for templates, static page scripts, app entry, job store, SSH runner, and DUSt3R runner.
 
 Still missing:
 
@@ -166,6 +172,7 @@ Still missing:
 - Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
 - `start.ps1` and `start.bat` now check whether port `8000` is already occupied and run uvicorn without `--reload` for a simpler process tree.
 - End-to-end validation of the newly parameterized DUSt3R multi-image path on the server.
+- Remote process cleanup is still local-only; the UI can mark a stuck job failed, but it does not yet kill a remote runner by job id.
 
 ## SSH / SCP Setup
 

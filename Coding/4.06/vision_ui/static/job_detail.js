@@ -7,6 +7,18 @@ function escapeHtml(text) {
     .replaceAll("'", "&#39;");
 }
 
+function statusLabel(status) {
+  const labels = {
+    created: "已创建",
+    ready: "已就绪",
+    running: "运行中",
+    finished: "已完成",
+    failed: "失败",
+    cancelled: "已取消",
+  };
+  return labels[status] || status || "未知";
+}
+
 let elapsedInterval = null;
 let lastOutputsKey = "";
 let lastLogsKey = "";
@@ -20,7 +32,7 @@ function startElapsedTimer() {
 
   const created = new Date(page.dataset.jobCreated);
   if (Number.isNaN(created.getTime())) {
-    badge.textContent = "Time --:--";
+    badge.textContent = "耗时 --:--";
     return;
   }
 
@@ -36,7 +48,7 @@ function startElapsedTimer() {
     if (hours > 0) parts.push(String(hours).padStart(2, "0"));
     parts.push(String(minutes).padStart(2, "0"));
     parts.push(String(seconds).padStart(2, "0"));
-    badge.textContent = `Time ${parts.join(":")}`;
+    badge.textContent = `耗时 ${parts.join(":")}`;
 
     if (status === "running") {
       badge.classList.add("is-running");
@@ -58,7 +70,7 @@ function renderOutputs(outputs) {
   if (!grid) return;
 
   if (!outputs.length) {
-    grid.innerHTML = '<p class="empty" id="outputs-empty">No outputs yet. They will appear here when the remote job finishes.</p>';
+    grid.innerHTML = '<p class="empty" id="outputs-empty">还没有输出结果。远端任务完成后，匹配图、点云和日志会显示在这里。</p>';
     return;
   }
 
@@ -71,16 +83,16 @@ function renderOutputs(outputs) {
         <div class="viewer-container" id="viewer-${index + 1}" data-ply-url="${item.url}">
           <div class="viewer-loading" id="viewer-loading-${index + 1}">
             <div class="spinner"></div>
-            Loading point cloud...
+            正在加载点云...
           </div>
         </div>
         <div class="viewer-controls">
-          <button class="viewer-btn" onclick="resetViewer(${index + 1})" type="button">Reset View</button>
-          <a href="${item.url}" download class="viewer-btn viewer-link">Download .ply</a>
+          <button class="viewer-btn" onclick="resetViewer(${index + 1})" type="button">重置视角</button>
+          <a href="${item.url}" download class="viewer-btn viewer-link">下载 .ply</a>
         </div>
       `;
     } else {
-      body = `<p><a class="inline-link" href="${item.url}" target="_blank">Open / Download</a></p>`;
+      body = `<p><a class="inline-link" href="${item.url}" target="_blank">打开或下载</a></p>`;
     }
 
     return `
@@ -113,7 +125,7 @@ function renderLogs(logs) {
   if (!grid) return;
 
   if (!logs.length) {
-    grid.innerHTML = '<p class="empty" id="logs-empty">No local log cache yet. Live logs will appear here once the remote task starts.</p>';
+    grid.innerHTML = '<p class="empty" id="logs-empty">还没有本地日志缓存。远端任务开始后，日志会自动显示在这里。</p>';
     return;
   }
 
@@ -121,7 +133,7 @@ function renderLogs(logs) {
     <div class="preview-card">
       <p><strong>${escapeHtml(item.name)}</strong></p>
       <p class="meta-line"><code>${escapeHtml(item.relative_path)}</code></p>
-      <pre class="log-box">${escapeHtml(item.tail || "Log file exists but is currently empty.")}</pre>
+      <pre class="log-box">${escapeHtml(item.tail || "日志文件存在，但当前还是空的。")}</pre>
     </div>
   `).join("");
 
@@ -164,19 +176,19 @@ async function refreshJobState() {
 
   try {
     const response = await fetch(`/api/jobs/${jobId}`, { cache: "no-store" });
-    if (!response.ok) throw new Error("Failed to load job state");
+    if (!response.ok) throw new Error("读取任务状态失败");
 
     const data = await response.json();
     const job = data.job;
 
     page.dataset.jobStatus = job.status;
-    document.getElementById("job-status").textContent = job.status;
-    document.getElementById("job-phase").textContent = job.phase;
-    document.getElementById("job-latest-progress").textContent = job.progress_message || "Waiting for the first remote log line.";
+    document.getElementById("job-status").textContent = statusLabel(job.status);
+    document.getElementById("job-phase").textContent = data.phase_display.label;
+    document.getElementById("job-latest-progress").textContent = job.progress_message || "正在等待第一条远端日志。";
 
     const pill = document.getElementById("job-status-pill");
     if (pill) {
-      pill.textContent = job.status;
+      pill.textContent = statusLabel(job.status);
       pill.className = `status-pill status-${job.status}`;
     }
 

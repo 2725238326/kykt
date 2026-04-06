@@ -50,12 +50,12 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
     write_status(
         job_dir,
         "running_matches",
-        f"Loading model and running DUSt3R on {len(images)} images...",
+        f"正在加载模型，并对 {len(images)} 张图片运行 DUSt3R...",
         progress=f"0/{len(images)}",
     )
 
     # ---- Match visualization ----
-    print(f"[dust3r_runner] Loading model from {args.model}")
+    print(f"[dust3r_runner] 正在从 {args.model} 加载模型")
     from dust3r.inference import inference
     from dust3r.model import AsymmetricCroCo3DStereo
     from dust3r.utils.image import load_images
@@ -65,27 +65,27 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
     device = "cuda" if __import__("torch").cuda.is_available() else "cpu"
     model = AsymmetricCroCo3DStereo.from_pretrained(args.model).to(device)
 
-    print(f"[dust3r_runner] Parameters: image_size={args.image_size}, scene_graph={args.scene_graph}, "
+    print(f"[dust3r_runner] 参数：image_size={args.image_size}, scene_graph={args.scene_graph}, "
           f"niter={args.niter}, lr={args.lr}, batch_size={args.batch_size}, max_points={args.max_points}")
-    print(f"[dust3r_runner] Loading images: {[str(p) for p in images]}")
+    print(f"[dust3r_runner] 正在加载图片：{[str(p) for p in images]}")
     imgs = load_images([str(p) for p in images], size=args.image_size)
     pairs = make_pairs(imgs, scene_graph=args.scene_graph, prefilter=None, symmetrize=True)
-    print(f"[dust3r_runner] Built {len(pairs)} image pairs.")
+    print(f"[dust3r_runner] 已构建 {len(pairs)} 个图像配对。")
     output = inference(pairs, model, device, batch_size=args.batch_size)
 
-    print(f"[dust3r_runner] Running global alignment...")
-    write_status(job_dir, "running_alignment", "Running global alignment...")
+    print("[dust3r_runner] 正在运行全局对齐...")
+    write_status(job_dir, "running_alignment", "正在运行全局对齐...")
 
     mode = GlobalAlignerMode.PairViewer if len(images) == 2 else GlobalAlignerMode.PointCloudOptimizer
     scene = global_aligner(output, device=device, mode=mode)
 
     if len(images) > 2:
         loss = scene.compute_global_alignment(init="mst", niter=args.niter, schedule="cosine", lr=args.lr)
-        print(f"[dust3r_runner] Global alignment loss: {loss}")
+        print(f"[dust3r_runner] 全局对齐损失：{loss}")
 
     # ---- Save matches visualization ----
-    write_status(job_dir, "saving_outputs", "Saving match visualization...")
-    print("[dust3r_runner] Saving match visualization...")
+    write_status(job_dir, "saving_outputs", "正在保存匹配可视化图...")
+    print("[dust3r_runner] 正在保存匹配可视化图...")
 
     import matplotlib
     matplotlib.use("Agg")
@@ -105,11 +105,11 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
     match_path = output_dir / "matches.png"
     plt.savefig(str(match_path), dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"[dust3r_runner] Saved matches to {match_path}")
+    print(f"[dust3r_runner] 匹配可视化图已保存到 {match_path}")
 
     # ---- Export point cloud ----
-    write_status(job_dir, "exporting_pointcloud", "Exporting point cloud...")
-    print("[dust3r_runner] Exporting point cloud...")
+    write_status(job_dir, "exporting_pointcloud", "正在导出点云...")
+    print("[dust3r_runner] 正在导出点云...")
 
     pts3d = scene.get_pts3d()
     confidence = scene.get_masks()
@@ -141,7 +141,7 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
         keep = np.linspace(0, raw_point_count - 1, args.max_points).astype(np.int64)
         all_pts = all_pts[keep]
         all_colors = all_colors[keep]
-        print(f"[dust3r_runner] Downsampled point cloud from {raw_point_count} to {len(all_pts)} points.")
+        print(f"[dust3r_runner] 点云已从 {raw_point_count} 个点下采样到 {len(all_pts)} 个点。")
 
     # Write ASCII PLY
     ply_path = output_dir / "pointcloud.ply"
@@ -159,7 +159,7 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
         for pt, col in zip(all_pts, all_colors):
             f.write(f"{pt[0]:.6f} {pt[1]:.6f} {pt[2]:.6f} {col[0]} {col[1]} {col[2]}\n")
 
-    print(f"[dust3r_runner] Saved point cloud ({len(all_pts)} points) to {ply_path}")
+    print(f"[dust3r_runner] 点云已保存到 {ply_path}，共 {len(all_pts)} 个点。")
 
     # ---- Save poses and focals ----
     try:
@@ -183,12 +183,12 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
             },
         }
         (output_dir / "scene_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
-        print(f"[dust3r_runner] Saved scene metadata.")
+        print("[dust3r_runner] 场景元数据已保存。")
     except Exception as e:
-        print(f"[dust3r_runner] Warning: could not save scene metadata: {e}")
+        print(f"[dust3r_runner] 警告：场景元数据保存失败：{e}")
 
-    write_status(job_dir, "finished", f"Done. {len(all_pts)} points from {len(images)} images.")
-    print(f"[dust3r_runner] Finished successfully.")
+    write_status(job_dir, "finished", f"已完成。从 {len(images)} 张图片导出 {len(all_pts)} 个点。")
+    print("[dust3r_runner] 任务成功完成。")
 
 
 def main():
@@ -213,14 +213,14 @@ def main():
     logs_dir.mkdir(parents=True, exist_ok=True)
 
     images = find_images(input_dir)
-    print(f"[dust3r_runner] Found {len(images)} images in {input_dir}")
+    print(f"[dust3r_runner] 在 {input_dir} 中找到 {len(images)} 张图片。")
 
     if len(images) < 2:
-        write_status(job_dir, "failed", "Need at least 2 images for DUSt3R.")
-        print("[dust3r_runner] ERROR: Need at least 2 images.", file=sys.stderr)
+        write_status(job_dir, "failed", "DUSt3R 至少需要 2 张图片。")
+        print("[dust3r_runner] 错误：DUSt3R 至少需要 2 张图片。", file=sys.stderr)
         sys.exit(1)
 
-    write_status(job_dir, "starting", f"Starting DUSt3R with {len(images)} images...")
+    write_status(job_dir, "starting", f"正在启动 DUSt3R，输入图片数：{len(images)}。")
     run_pair(args, images, job_dir)
 
 

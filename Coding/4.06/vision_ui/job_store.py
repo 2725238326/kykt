@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import threading
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -10,6 +11,7 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parent
 LOCAL_JOBS_DIR = ROOT / "local_jobs"
+_JOB_STORE_LOCK = threading.RLock()
 
 
 @dataclass
@@ -72,7 +74,7 @@ def create_job(model: str, source_type: str, notes: str, params: dict | None = N
         notes=notes.strip(),
         params=params or {},
         remote_runner=_default_runner_for(model),
-        progress_message="Local job is ready. Upload any filenames; they will be normalized automatically.",
+        progress_message="本地任务已就绪。文件名没有要求，系统会自动规范化内部命名。",
     )
 
     job_dir = get_job_dir(job_id)
@@ -92,38 +94,41 @@ def _default_runner_for(model: str) -> str:
 
 
 def save_job(job: JobRecord) -> None:
-    job_dir = get_job_dir(job.job_id)
-    job_dir.mkdir(parents=True, exist_ok=True)
-    _write_json(job_dir / "job.json", job.to_dict())
-    _write_json(
-        job_dir / "status.json",
-        {
-            "status": job.status,
-            "phase": job.phase,
-            "error_message": job.error_message,
-            "progress_message": job.progress_message,
-        },
-    )
+    with _JOB_STORE_LOCK:
+        job_dir = get_job_dir(job.job_id)
+        job_dir.mkdir(parents=True, exist_ok=True)
+        _write_json(job_dir / "job.json", job.to_dict())
+        _write_json(
+            job_dir / "status.json",
+            {
+                "status": job.status,
+                "phase": job.phase,
+                "error_message": job.error_message,
+                "progress_message": job.progress_message,
+            },
+        )
 
 
 def load_job(job_id: str) -> JobRecord:
-    payload = _read_json(get_job_dir(job_id) / "job.json")
-    payload.setdefault("params", {})
-    payload.setdefault("input_items", [])
-    return JobRecord(**payload)
+    with _JOB_STORE_LOCK:
+        payload = _read_json(get_job_dir(job_id) / "job.json")
+        payload.setdefault("params", {})
+        payload.setdefault("input_items", [])
+        return JobRecord(**payload)
 
 
 def list_jobs(limit: int = 20) -> list[JobRecord]:
-    ensure_local_jobs_dir()
-    jobs: list[JobRecord] = []
-    for job_json in sorted(LOCAL_JOBS_DIR.glob("*/job.json"), reverse=True):
-        payload = _read_json(job_json)
-        payload.setdefault("params", {})
-        payload.setdefault("input_items", [])
-        jobs.append(JobRecord(**payload))
-        if len(jobs) >= limit:
-            break
-    return jobs
+    with _JOB_STORE_LOCK:
+        ensure_local_jobs_dir()
+        jobs: list[JobRecord] = []
+        for job_json in sorted(LOCAL_JOBS_DIR.glob("*/job.json"), reverse=True):
+            payload = _read_json(job_json)
+            payload.setdefault("params", {})
+            payload.setdefault("input_items", [])
+            jobs.append(JobRecord(**payload))
+            if len(jobs) >= limit:
+                break
+        return jobs
 
 
 def _normalized_suffix(filename: str) -> str:
@@ -197,7 +202,7 @@ def duplicate_job(job_id: str) -> JobRecord:
     save_inputs(new_job, uploads)
     update_job(
         new_job.job_id,
-        progress_message=f"Duplicated from {job_id}. Ready to run with the same inputs.",
+        progress_message=f"已从 {job_id} 复制任务，输入文件保持一致，可以直接运行。",
     )
     return load_job(new_job.job_id)
 
@@ -223,7 +228,7 @@ def clear_job_runtime(job_id: str) -> JobRecord:
     job.phase = "local_prepared"
     job.output_files = []
     job.error_message = None
-    job.progress_message = "Job reset locally. Ready to dispatch again."
+    job.progress_message = "任务已在本地重置，可以重新调度。"
     save_job(job)
     return job
 
@@ -259,17 +264,18 @@ def update_job(
     error_message: str | None = None,
     progress_message: str | None = None,
 ) -> JobRecord:
-    job = load_job(job_id)
-    if status is not None:
-        job.status = status
-    if phase is not None:
-        job.phase = phase
-    if remote_job_dir is not None:
-        job.remote_job_dir = remote_job_dir
-    if output_files is not None:
-        job.output_files = output_files
-    job.error_message = error_message
-    if progress_message is not None:
-        job.progress_message = progress_message
-    save_job(job)
-    return job
+    with _JOB_STORE_LOCK:
+        job = load_job(job_id)
+        if status is not None:
+            job.status = status
+        if phase is not None:
+            job.phase = phase
+        if remote_job_dir is not None:
+            job.remote_job_dir = remote_job_dir
+        if output_files is not None:
+            job.output_files = output_files
+        job.error_message = error_message
+        if progress_message is not None:
+            job.progress_message = progress_message
+        save_job(job)
+        return job
