@@ -19,6 +19,7 @@ class JobRecord:
     model: str
     source_type: str
     notes: str
+    params: dict = field(default_factory=dict)
     status: str = "draft"
     phase: str = "local_prepared"
     input_files: list[str] = field(default_factory=list)
@@ -52,7 +53,15 @@ def get_job_dir(job_id: str) -> Path:
     return ensure_local_jobs_dir() / job_id
 
 
-def create_job(model: str, source_type: str, notes: str) -> JobRecord:
+def _read_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def _write_json(path: Path, payload: dict) -> None:
+    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def create_job(model: str, source_type: str, notes: str, params: dict | None = None) -> JobRecord:
     job_id = make_job_id()
     created_at = datetime.now().isoformat(timespec="seconds")
     job = JobRecord(
@@ -61,6 +70,7 @@ def create_job(model: str, source_type: str, notes: str) -> JobRecord:
         model=model,
         source_type=source_type,
         notes=notes.strip(),
+        params=params or {},
         remote_runner=_default_runner_for(model),
         progress_message="Local job is ready. Upload any filenames; they will be normalized automatically.",
     )
@@ -84,27 +94,21 @@ def _default_runner_for(model: str) -> str:
 def save_job(job: JobRecord) -> None:
     job_dir = get_job_dir(job.job_id)
     job_dir.mkdir(parents=True, exist_ok=True)
-    (job_dir / "job.json").write_text(
-        json.dumps(job.to_dict(), indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-    (job_dir / "status.json").write_text(
-        json.dumps(
-            {
-                "status": job.status,
-                "phase": job.phase,
-                "error_message": job.error_message,
-                "progress_message": job.progress_message,
-            },
-            indent=2,
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
+    _write_json(job_dir / "job.json", job.to_dict())
+    _write_json(
+        job_dir / "status.json",
+        {
+            "status": job.status,
+            "phase": job.phase,
+            "error_message": job.error_message,
+            "progress_message": job.progress_message,
+        },
     )
 
 
 def load_job(job_id: str) -> JobRecord:
-    payload = json.loads((get_job_dir(job_id) / "job.json").read_text(encoding="utf-8"))
+    payload = _read_json(get_job_dir(job_id) / "job.json")
+    payload.setdefault("params", {})
     payload.setdefault("input_items", [])
     return JobRecord(**payload)
 
@@ -113,7 +117,8 @@ def list_jobs(limit: int = 20) -> list[JobRecord]:
     ensure_local_jobs_dir()
     jobs: list[JobRecord] = []
     for job_json in sorted(LOCAL_JOBS_DIR.glob("*/job.json"), reverse=True):
-        payload = json.loads(job_json.read_text(encoding="utf-8"))
+        payload = _read_json(job_json)
+        payload.setdefault("params", {})
         payload.setdefault("input_items", [])
         jobs.append(JobRecord(**payload))
         if len(jobs) >= limit:
@@ -177,7 +182,12 @@ def save_inputs(job: JobRecord, uploaded_files: Iterable[tuple[str, bytes]]) -> 
 
 def duplicate_job(job_id: str) -> JobRecord:
     source = load_job(job_id)
-    new_job = create_job(model=source.model, source_type=source.source_type, notes=source.notes)
+    new_job = create_job(
+        model=source.model,
+        source_type=source.source_type,
+        notes=source.notes,
+        params=dict(source.params),
+    )
 
     uploads = []
     for item in iter_input_items(source):

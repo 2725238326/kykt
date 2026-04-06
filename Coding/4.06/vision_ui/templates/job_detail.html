@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KYKT Vision UI 任务详情页。">
+  <meta name="description" content="KYKT Vision UI job detail page.">
   <title>{{ job.job_id }} - KYKT Vision UI</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v={{ asset_version }}">
 </head>
 <body>
   <main class="page" data-job-id="{{ job.job_id }}" data-job-status="{{ job.status }}" data-job-created="{{ job.created_at }}">
@@ -82,9 +82,20 @@
       </div>
       {% endif %}
 
+      {% if job.params %}
+      <div class="notes-box info-box">
+        <h2>Parameters</h2>
+        <div class="param-summary">
+          {% for key, value in job.params.items() %}
+          <span><strong>{{ key }}</strong>: {{ value }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <div class="notes-box info-box">
         <h2>Input Naming</h2>
-        <p>上传文件名没有要求。系统会自动改成稳定的内部名字，再同步到服务器。</p>
+        <p>Uploaded filenames do not matter. The UI stores stable internal names before syncing to the server.</p>
       </div>
 
       <div class="notes-box error-box {% if not job.error_message %}hidden{% endif %}" id="error-box">
@@ -108,7 +119,7 @@
           {% if item.is_image %}
           <img src="{{ item.url }}" alt="{{ item.display_name }}" loading="lazy">
           {% else %}
-          <p class="empty">当前只对图片提供预览，但文件已正常保存并可用于任务执行。</p>
+          <p class="empty">Preview is currently available for images only, but the file is saved and ready for execution.</p>
           {% endif %}
         </div>
         {% endfor %}
@@ -147,7 +158,7 @@
           </div>
           {% endfor %}
         {% else %}
-          <p class="empty" id="outputs-empty">结果还没有回传到本地，任务完成后会自动出现在这里。</p>
+          <p class="empty" id="outputs-empty">No outputs yet. They will appear here when the remote job finishes.</p>
         {% endif %}
       </div>
     </section>
@@ -169,15 +180,15 @@
           </div>
           {% endfor %}
         {% else %}
-          <p class="empty" id="logs-empty">本地日志缓存还没有生成。任务开始后，这里会自动显示远端输出。</p>
+          <p class="empty" id="logs-empty">No local log cache yet. Live logs will appear here once the remote task starts.</p>
         {% endif %}
       </div>
     </section>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="/static/ply_viewer.js"></script>
-  <script src="/static/job_detail.js"></script>
+  <script defer src="/static/vendor/three.min.js?v={{ asset_version }}"></script>
+  <script defer src="/static/vendor/OrbitControls.js?v={{ asset_version }}"></script>
+  <script defer src="/static/ply_viewer.js?v={{ asset_version }}"></script>
+  <script defer src="/static/job_detail.js?v={{ asset_version }}"></script>
 </body>
 </html>

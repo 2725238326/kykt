@@ -47,9 +47,12 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
     output_dir = job_dir / "output"
     logs_dir = job_dir / "logs"
 
-    img1, img2 = str(images[0]), str(images[1])
-
-    write_status(job_dir, "running_matches", f"Loading model and running pair match on {len(images)} images...")
+    write_status(
+        job_dir,
+        "running_matches",
+        f"Loading model and running DUSt3R on {len(images)} images...",
+        progress=f"0/{len(images)}",
+    )
 
     # ---- Match visualization ----
     print(f"[dust3r_runner] Loading model from {args.model}")
@@ -62,10 +65,13 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
     device = "cuda" if __import__("torch").cuda.is_available() else "cpu"
     model = AsymmetricCroCo3DStereo.from_pretrained(args.model).to(device)
 
+    print(f"[dust3r_runner] Parameters: image_size={args.image_size}, scene_graph={args.scene_graph}, "
+          f"niter={args.niter}, lr={args.lr}, batch_size={args.batch_size}, max_points={args.max_points}")
     print(f"[dust3r_runner] Loading images: {[str(p) for p in images]}")
-    imgs = load_images([str(p) for p in images], size=512)
-    pairs = make_pairs(imgs, scene_graph="complete", prefilter=None, symmetrize=True)
-    output = inference(pairs, model, device, batch_size=1)
+    imgs = load_images([str(p) for p in images], size=args.image_size)
+    pairs = make_pairs(imgs, scene_graph=args.scene_graph, prefilter=None, symmetrize=True)
+    print(f"[dust3r_runner] Built {len(pairs)} image pairs.")
+    output = inference(pairs, model, device, batch_size=args.batch_size)
 
     print(f"[dust3r_runner] Running global alignment...")
     write_status(job_dir, "running_alignment", "Running global alignment...")
@@ -74,7 +80,7 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
     scene = global_aligner(output, device=device, mode=mode)
 
     if len(images) > 2:
-        loss = scene.compute_global_alignment(init="mst", niter=300, schedule="cosine", lr=0.01)
+        loss = scene.compute_global_alignment(init="mst", niter=args.niter, schedule="cosine", lr=args.lr)
         print(f"[dust3r_runner] Global alignment loss: {loss}")
 
     # ---- Save matches visualization ----
@@ -113,7 +119,11 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
 
     for i in range(len(imgs_array)):
         pts = pts3d[i].detach().cpu().numpy()
-        mask = confidence[i].detach().cpu().numpy().flatten() > 0
+        conf_i = confidence[i]
+        if hasattr(conf_i, "detach"):
+            mask = conf_i.detach().cpu().numpy().reshape(-1) > 0
+        else:
+            mask = conf_i.reshape(-1) > 0
         img_np = (np.array(imgs_array[i]) * 255).astype(np.uint8)
 
         h, w = pts.shape[:2]
@@ -125,6 +135,13 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
 
     all_pts = np.concatenate(all_pts, axis=0)
     all_colors = np.concatenate(all_colors, axis=0)
+    raw_point_count = len(all_pts)
+
+    if args.max_points and raw_point_count > args.max_points:
+        keep = np.linspace(0, raw_point_count - 1, args.max_points).astype(np.int64)
+        all_pts = all_pts[keep]
+        all_colors = all_colors[keep]
+        print(f"[dust3r_runner] Downsampled point cloud from {raw_point_count} to {len(all_pts)} points.")
 
     # Write ASCII PLY
     ply_path = output_dir / "pointcloud.ply"
@@ -148,7 +165,23 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
     try:
         focals = scene.get_focals().detach().cpu().numpy().tolist()
         poses = [p.detach().cpu().numpy().tolist() for p in scene.get_im_poses()]
-        meta = {"focals": focals, "poses": poses, "n_images": len(images), "n_points": len(all_pts)}
+        meta = {
+            "focals": focals,
+            "poses": poses,
+            "n_images": len(images),
+            "n_pairs": len(pairs),
+            "n_points": len(all_pts),
+            "raw_point_count": raw_point_count,
+            "image_files": [p.name for p in images],
+            "params": {
+                "image_size": args.image_size,
+                "scene_graph": args.scene_graph,
+                "niter": args.niter,
+                "lr": args.lr,
+                "batch_size": args.batch_size,
+                "max_points": args.max_points,
+            },
+        }
         (output_dir / "scene_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
         print(f"[dust3r_runner] Saved scene metadata.")
     except Exception as e:
@@ -163,6 +196,12 @@ def main():
     parser.add_argument("--job-dir", required=True, help="Path to the job directory")
     parser.add_argument("--model", required=True, help="Path to the DUSt3R model weights")
     parser.add_argument("--repo", required=True, help="Path to the dust3r repo")
+    parser.add_argument("--image-size", type=int, default=512, help="DUSt3R input image size")
+    parser.add_argument("--scene-graph", default="complete", help="DUSt3R scene graph, e.g. complete, swin-5, oneref-0")
+    parser.add_argument("--niter", type=int, default=300, help="Global alignment iterations for multi-image jobs")
+    parser.add_argument("--lr", type=float, default=0.01, help="Global alignment learning rate")
+    parser.add_argument("--batch-size", type=int, default=1, help="DUSt3R pair inference batch size")
+    parser.add_argument("--max-points", type=int, default=250000, help="Maximum exported PLY points after downsampling")
     args = parser.parse_args()
 
     job_dir = Path(args.job_dir)

@@ -8,6 +8,10 @@ function escapeHtml(text) {
 }
 
 let elapsedInterval = null;
+let lastOutputsKey = "";
+let lastLogsKey = "";
+let refreshTimer = null;
+let isRefreshing = false;
 
 function startElapsedTimer() {
   const page = document.querySelector("[data-job-created]");
@@ -93,6 +97,17 @@ function renderOutputs(outputs) {
   }
 }
 
+function stableKey(items) {
+  return JSON.stringify(
+    (items || []).map((item) => [
+      item.relative_path,
+      item.url,
+      item.display_name,
+      item.tail,
+    ])
+  );
+}
+
 function renderLogs(logs) {
   const grid = document.getElementById("log-grid");
   if (!grid) return;
@@ -141,9 +156,11 @@ function renderProgress(phaseDisplay) {
 }
 
 async function refreshJobState() {
+  if (isRefreshing) return;
   const page = document.querySelector("[data-job-id]");
   if (!page) return;
   const jobId = page.getAttribute("data-job-id");
+  isRefreshing = true;
 
   try {
     const response = await fetch(`/api/jobs/${jobId}`, { cache: "no-store" });
@@ -179,16 +196,31 @@ async function refreshJobState() {
     if (retryButton) retryButton.disabled = job.status === "running";
 
     renderProgress(data.phase_display);
-    renderOutputs(data.outputs || []);
-    renderLogs(data.logs || []);
+    const outputs = data.outputs || [];
+    const logs = data.logs || [];
+    const outputsKey = stableKey(outputs);
+    const logsKey = stableKey(logs);
+
+    if (outputsKey !== lastOutputsKey) {
+      lastOutputsKey = outputsKey;
+      renderOutputs(outputs);
+    }
+    if (logsKey !== lastLogsKey) {
+      lastLogsKey = logsKey;
+      renderLogs(logs);
+    }
   } catch (_error) {
     // Keep current content and try again soon.
   } finally {
-    window.setTimeout(refreshJobState, 2500);
+    isRefreshing = false;
+    const pageStatus = page?.dataset?.jobStatus;
+    const delay = pageStatus === "running" ? 2500 : 10000;
+    refreshTimer = window.setTimeout(refreshJobState, delay);
   }
 }
 
 window.addEventListener("load", () => {
   startElapsedTimer();
+  if (refreshTimer) window.clearTimeout(refreshTimer);
   refreshJobState();
 });

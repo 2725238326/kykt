@@ -28,6 +28,22 @@ class ServerConfig:
 
 
 LOCAL_RUNNERS_DIR = ROOT / "runners"
+SSH_CONNECT_OPTIONS = [
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=12",
+    "-o",
+    "ServerAliveInterval=20",
+    "-o",
+    "ServerAliveCountMax=2",
+]
+SSH_SHORT_TIMEOUT_SECONDS = 120
+SCP_TIMEOUT_SECONDS = 900
+
+
+def _ssh_command(config: ServerConfig, shell_script: str) -> list[str]:
+    return ["ssh", *SSH_CONNECT_OPTIONS, config.alias, f"bash -lc {shlex.quote(shell_script)}"]
 
 
 def run_remote_job(job_id: str) -> None:
@@ -145,6 +161,7 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     job = load_job(job_id)
     input_items = iter_input_items(job)
     n_images = len(input_items)
+    params = job.params or {}
 
     if n_images < 2:
         raise RuntimeError("DUSt3R requires at least two uploaded images.")
@@ -154,12 +171,19 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
 
     cmd = (
+        f"set -o pipefail && "
         f"cd {shlex.quote(config.remote_dust3r_repo)} && "
-        f"conda run --no-banner -n {shlex.quote(config.remote_dust3r_env)} "
+        f"conda run -n {shlex.quote(config.remote_dust3r_env)} "
         f"python {shlex.quote(runner_path)} "
         f"--job-dir {shlex.quote(remote_job_dir)} "
         f"--model {shlex.quote(config.remote_dust3r_model)} "
         f"--repo {shlex.quote(config.remote_dust3r_repo)} "
+        f"--image-size {shlex.quote(str(params.get('image_size', 512)))} "
+        f"--scene-graph {shlex.quote(str(params.get('scene_graph', 'complete')))} "
+        f"--niter {shlex.quote(str(params.get('niter', 300)))} "
+        f"--lr {shlex.quote(str(params.get('lr', 0.01)))} "
+        f"--batch-size {shlex.quote(str(params.get('batch_size', 1)))} "
+        f"--max-points {shlex.quote(str(params.get('max_points', 250000)))} "
         f"2>&1 | tee {shlex.quote(log_path)}"
     )
 
@@ -184,24 +208,27 @@ def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) ->
     local_output_dir.mkdir(parents=True, exist_ok=True)
     local_logs_dir.mkdir(parents=True, exist_ok=True)
 
-    # Fixed expected outputs
-    downloads = [
+    required_downloads = [
         ("output/matches.png", local_output_dir / "matches.png"),
         ("output/pointcloud.ply", local_output_dir / "pointcloud.ply"),
+    ]
+    optional_downloads = [
         ("logs/runner.log", local_logs_dir / "runner.log"),
+        ("output/scene_meta.json", local_output_dir / "scene_meta.json"),
     ]
 
-    # Optional: scene metadata
-    downloads.append(("output/scene_meta.json", local_output_dir / "scene_meta.json"))
-
     output_files: list[str] = []
-    for remote_suffix, local_path in downloads:
+    for remote_suffix, local_path in required_downloads:
+        remote_path = f"{remote_job_dir}/{remote_suffix}"
+        _scp_from_remote(config, remote_path, local_path)
+        output_files.append(str(local_path.relative_to(ROOT)))
+
+    for remote_suffix, local_path in optional_downloads:
         remote_path = f"{remote_job_dir}/{remote_suffix}"
         try:
             _scp_from_remote(config, remote_path, local_path)
             output_files.append(str(local_path.relative_to(ROOT)))
         except subprocess.CalledProcessError:
-            # Some outputs may not exist (e.g. scene_meta for older runs)
             pass
 
     return output_files
@@ -210,14 +237,14 @@ def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) ->
 # ===== Low-level SSH/SCP helpers =====
 
 def _ssh(config: ServerConfig, shell_script: str) -> subprocess.CompletedProcess:
-    remote_cmd = ["ssh", config.alias, f"bash -lc {shlex.quote(shell_script)}"]
     return subprocess.run(
-        remote_cmd,
+        _ssh_command(config, shell_script),
         check=True,
         capture_output=True,
         text=True,
         encoding="utf-8",
         errors="replace",
+        timeout=SSH_SHORT_TIMEOUT_SECONDS,
     )
 
 
@@ -237,7 +264,7 @@ def _ssh_stream(
     local_log_path: Path,
 ) -> None:
     local_log_path.parent.mkdir(parents=True, exist_ok=True)
-    remote_cmd = ["ssh", config.alias, f"bash -lc {shlex.quote(shell_script)}"]
+    remote_cmd = _ssh_command(config, shell_script)
     process = subprocess.Popen(
         remote_cmd,
         stdout=subprocess.PIPE,
@@ -275,22 +302,24 @@ def _ssh_stream(
 
 def _scp_to_remote(config: ServerConfig, local_path: Path, remote_path: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        ["scp", str(local_path), f"{config.alias}:{remote_path}"],
+        ["scp", *SSH_CONNECT_OPTIONS, str(local_path), f"{config.alias}:{remote_path}"],
         check=True,
         capture_output=True,
         text=True,
         encoding="utf-8",
         errors="replace",
+        timeout=SCP_TIMEOUT_SECONDS,
     )
 
 
 def _scp_from_remote(config: ServerConfig, remote_path: str, local_path: Path) -> subprocess.CompletedProcess:
     local_path.parent.mkdir(parents=True, exist_ok=True)
     return subprocess.run(
-        ["scp", f"{config.alias}:{remote_path}", str(local_path)],
+        ["scp", *SSH_CONNECT_OPTIONS, f"{config.alias}:{remote_path}", str(local_path)],
         check=True,
         capture_output=True,
         text=True,
         encoding="utf-8",
         errors="replace",
+        timeout=SCP_TIMEOUT_SECONDS,
     )

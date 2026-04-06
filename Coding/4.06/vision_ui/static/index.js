@@ -86,6 +86,19 @@ function initDropZone() {
   });
 }
 
+function initModelParams() {
+  const modelSelect = document.getElementById("model-select");
+  const dust3rParams = document.getElementById("dust3r-params");
+  if (!modelSelect || !dust3rParams) return;
+
+  function updateVisibility() {
+    dust3rParams.classList.toggle("hidden", modelSelect.value !== "dust3r");
+  }
+
+  modelSelect.addEventListener("change", updateVisibility);
+  updateVisibility();
+}
+
 function renderJobs(items) {
   const container = document.getElementById("job-list");
   if (!container) return;
@@ -138,5 +151,6 @@ async function refreshJobs() {
 
 window.addEventListener("load", () => {
   initDropZone();
+  initModelParams();
   refreshJobs();
 });

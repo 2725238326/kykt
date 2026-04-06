@@ -25,6 +25,7 @@ from ssh_runner import ServerConfig, run_remote_job
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
+templates.env.globals["asset_version"] = "20260406-1328"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
@@ -152,6 +153,24 @@ def _job_payload(job) -> dict:
     }
 
 
+def _dust3r_params(
+    image_size: int,
+    scene_graph: str,
+    niter: int,
+    lr: float,
+    batch_size: int,
+    max_points: int,
+) -> dict:
+    return {
+        "image_size": min(max(int(image_size), 224), 1024),
+        "scene_graph": scene_graph.strip() or "complete",
+        "niter": min(max(int(niter), 0), 1000),
+        "lr": max(float(lr), 0.0),
+        "batch_size": min(max(int(batch_size), 1), 8),
+        "max_points": min(max(int(max_points), 1000), 2_000_000),
+    }
+
+
 @app.get("/")
 async def index(request: Request):
     jobs = list_jobs(limit=50)
@@ -175,12 +194,22 @@ async def create_job_view(
     model: str = Form(...),
     source_type: str = Form(...),
     notes: str = Form(""),
+    image_size: int = Form(512),
+    scene_graph: str = Form("complete"),
+    niter: int = Form(300),
+    lr: float = Form(0.01),
+    batch_size: int = Form(1),
+    max_points: int = Form(250000),
     files: list[UploadFile] = File(...),
 ):
     if not files:
         raise HTTPException(status_code=400, detail="No input files were uploaded.")
 
-    job = create_job(model=model, source_type=source_type, notes=notes)
+    params = {}
+    if model == "dust3r":
+        params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points)
+
+    job = create_job(model=model, source_type=source_type, notes=notes, params=params)
     uploaded = []
     for upload in files:
         uploaded.append((upload.filename or "unnamed.bin", await upload.read()))

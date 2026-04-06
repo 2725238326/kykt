@@ -225,6 +225,47 @@ textarea {
   min-height: 100px;
 }
 
+fieldset.param-box {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 253, 248, 0.72);
+}
+
+fieldset.param-box legend {
+  padding: 0 8px;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.param-grid,
+.param-summary {
+  display: grid;
+  gap: 14px;
+}
+
+.param-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.param-summary {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin-top: 12px;
+}
+
+.param-summary span {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card-strong);
+  color: var(--muted);
+}
+
+.param-summary strong {
+  color: var(--ink);
+}
+
 .drop-zone {
   position: relative;
   border: 1.5px dashed var(--line-strong);
@@ -739,6 +780,7 @@ button[disabled] {
 
   .progress-steps,
   .preview-grid,
+  .param-grid,
   .log-grid {
     grid-template-columns: 1fr;
   }

@@ -1,4 +1,4 @@
-/* ===== KYKT Vision UI — PLY Point Cloud Viewer (Three.js) ===== */
+/* ===== KYKT Vision UI - PLY Point Cloud Viewer (Three.js) ===== */
 
 /**
  * Lightweight PLY viewer using Three.js.
