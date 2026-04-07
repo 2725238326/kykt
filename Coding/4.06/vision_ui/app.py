@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 
@@ -20,13 +21,13 @@ from job_store import (
     save_inputs,
     update_job,
 )
-from ssh_runner import ServerConfig, run_remote_job
+from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 
 
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
-templates.env.globals["asset_version"] = "20260406-1405"
+templates.env.globals["asset_version"] = "20260407-1110"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
@@ -44,6 +45,7 @@ PHASE_FLOW = [
     ("downloading_results", "下载结果", "正在把输出文件和日志拉回本地缓存。", 90, 98),
     ("finished", "已完成", "任务已成功完成。", 100, 100),
     ("failed", "失败", "任务因错误停止，请查看日志后重试。", 0, 0),
+    ("cancelled", "已取消", "任务已在本地取消，必要时请检查服务器端是否还有残留进程。", 0, 0),
 ]
 
 STATUS_LABELS = {
@@ -103,7 +105,12 @@ def build_phase_display(phase: str, status: str, progress_message: str | None = 
         percent = end
 
     steps = []
-    current_index = ACTIVE_PHASE_CODES.index(phase) if phase in ACTIVE_PHASE_CODES else len(ACTIVE_PHASE_CODES)
+    if phase in ACTIVE_PHASE_CODES:
+        current_index = ACTIVE_PHASE_CODES.index(phase)
+    elif status == "cancelled":
+        current_index = 0
+    else:
+        current_index = len(ACTIVE_PHASE_CODES)
     for idx, code in enumerate(ACTIVE_PHASE_CODES):
         item_label, item_hint, *_ = known_phases[code]
         state = "todo"
@@ -132,6 +139,8 @@ def serialize_outputs(job) -> list[dict]:
     outputs = []
     for rel_path in job.output_files:
         suffix = Path(rel_path).suffix.lower()
+        if suffix in {".json", ".log"}:
+            continue
         outputs.append(
             {
                 "relative_path": rel_path,
@@ -143,6 +152,22 @@ def serialize_outputs(job) -> list[dict]:
             }
         )
     return outputs
+
+
+def resolve_local_output(job, relative_path: str) -> Path:
+    if relative_path not in job.output_files:
+        raise HTTPException(status_code=404, detail="任务中没有这个输出文件。")
+
+    root = ROOT.resolve()
+    target = (ROOT / relative_path).resolve()
+    try:
+        target.relative_to(root)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="输出文件路径不合法。") from exc
+
+    if not target.exists():
+        raise HTTPException(status_code=404, detail="本地输出文件不存在。")
+    return target
 
 
 def serialize_previews(job) -> list[dict]:
@@ -179,6 +204,7 @@ def _dust3r_params(
     lr: float,
     batch_size: int,
     max_points: int,
+    match_viz_count: int,
 ) -> dict:
     return {
         "image_size": min(max(int(image_size), 224), 1024),
@@ -187,6 +213,7 @@ def _dust3r_params(
         "lr": max(float(lr), 0.0),
         "batch_size": min(max(int(batch_size), 1), 8),
         "max_points": min(max(int(max_points), 1000), 2_000_000),
+        "match_viz_count": min(max(int(match_viz_count), 0), 500),
     }
 
 
@@ -219,6 +246,7 @@ async def create_job_view(
     lr: float = Form(0.01),
     batch_size: int = Form(1),
     max_points: int = Form(250000),
+    match_viz_count: int = Form(50),
     files: list[UploadFile] = File(...),
 ):
     if not files:
@@ -226,7 +254,7 @@ async def create_job_view(
 
     params = {}
     if model == "dust3r":
-        params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points)
+        params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
 
     job = create_job(model=model, source_type=source_type, notes=notes, params=params)
     uploaded = []
@@ -310,6 +338,35 @@ async def mark_job_failed(job_id: str):
         progress_message="已在本地标记为失败。可以点击重试重新调度。",
     )
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
+
+
+@app.post("/jobs/{job_id}/cancel")
+async def cancel_job_view(job_id: str):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    cancel_remote_job(job_id)
+    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
+
+
+@app.post("/jobs/{job_id}/open-output")
+async def open_output_file(job_id: str, relative_path: str = Form(...)):
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    target = resolve_local_output(job, relative_path)
+    try:
+        os.startfile(str(target))  # type: ignore[attr-defined]
+    except AttributeError as exc:
+        raise HTTPException(status_code=400, detail="当前系统不支持用默认程序打开本地文件。") from exc
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"打开本地文件失败：{exc}") from exc
+
+    return JSONResponse({"ok": True, "path": str(target)})
 
 
 @app.get("/api/jobs")

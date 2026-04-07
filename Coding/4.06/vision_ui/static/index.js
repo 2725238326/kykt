@@ -122,6 +122,7 @@ function initDust3rPreset() {
     lr: document.getElementById("dust3r-lr"),
     batchSize: document.getElementById("dust3r-batch-size"),
     maxPoints: document.getElementById("dust3r-max-points"),
+    matchVizCount: document.getElementById("dust3r-match-viz-count"),
   };
 
   const presets = {
@@ -132,6 +133,7 @@ function initDust3rPreset() {
       lr: "0.01",
       batchSize: "1",
       maxPoints: "250000",
+      matchVizCount: "50",
     },
     fast: {
       imageSize: "224",
@@ -140,6 +142,7 @@ function initDust3rPreset() {
       lr: "0.01",
       batchSize: "1",
       maxPoints: "100000",
+      matchVizCount: "20",
     },
     multi: {
       imageSize: "512",
@@ -148,6 +151,7 @@ function initDust3rPreset() {
       lr: "0.01",
       batchSize: "1",
       maxPoints: "300000",
+      matchVizCount: "50",
     },
     sequence: {
       imageSize: "512",
@@ -156,6 +160,7 @@ function initDust3rPreset() {
       lr: "0.01",
       batchSize: "1",
       maxPoints: "250000",
+      matchVizCount: "30",
     },
   };
 

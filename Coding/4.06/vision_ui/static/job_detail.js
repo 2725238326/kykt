@@ -80,14 +80,16 @@ function renderOutputs(outputs) {
       body = `<img src="${item.url}" alt="${escapeHtml(item.display_name)}" loading="lazy">`;
     } else if (item.is_pointcloud) {
       body = `
-        <div class="viewer-container" id="viewer-${index + 1}" data-ply-url="${item.url}">
-          <div class="viewer-loading" id="viewer-loading-${index + 1}">
-            <div class="spinner"></div>
-            正在加载点云...
+        <div class="pointcloud-placeholder">
+          <span class="pointcloud-icon">PLY</span>
+          <div>
+            <strong>点云文件已就绪</strong>
+            <p>为避免页面卡顿，点云不会在卡片里自动渲染。点击“放大查看”后再加载预览。</p>
           </div>
         </div>
         <div class="viewer-controls">
-          <button class="viewer-btn" onclick="resetViewer(${index + 1})" type="button">重置视角</button>
+          <button class="viewer-btn js-open-pointcloud-modal" data-ply-url="${escapeHtml(item.url)}" data-title="${escapeHtml(item.display_name)}" type="button">放大查看</button>
+          <button class="viewer-btn js-open-local-output" data-relative-path="${escapeHtml(item.relative_path)}" type="button">本地打开</button>
           <a href="${item.url}" download class="viewer-btn viewer-link">下载 .ply</a>
         </div>
       `;
@@ -104,9 +106,7 @@ function renderOutputs(outputs) {
     `;
   }).join("");
 
-  if (typeof initAllViewers === "function") {
-    window.setTimeout(initAllViewers, 120);
-  }
+  bindOutputActions();
 }
 
 function stableKey(items) {
@@ -118,6 +118,87 @@ function stableKey(items) {
       item.tail,
     ])
   );
+}
+
+function bindOutputActions() {
+  document.querySelectorAll(".js-open-pointcloud-modal").forEach((button) => {
+    button.onclick = () => {
+      openPointCloudModal(button.dataset.plyUrl || "", button.dataset.title || "点云");
+    };
+  });
+
+  document.querySelectorAll(".js-open-local-output").forEach((button) => {
+    button.onclick = () => {
+      openLocalOutput(button.dataset.relativePath || "");
+    };
+  });
+}
+
+function openPointCloudModal(plyUrl, title) {
+  if (!plyUrl) return;
+  const modal = document.getElementById("pointcloud-modal");
+  const titleEl = document.getElementById("pointcloud-modal-title");
+  const viewer = document.getElementById("pointcloud-modal-viewer");
+  const download = document.getElementById("pointcloud-modal-download");
+  if (!modal || !viewer) return;
+
+  if (titleEl) titleEl.textContent = title || "点云";
+  if (download) download.href = plyUrl;
+  if (typeof destroyViewer === "function") {
+    destroyViewer("pointcloud-modal-viewer");
+  }
+  viewer.innerHTML = `
+    <div class="viewer-loading" id="viewer-loading-modal">
+      <div class="spinner"></div>
+      正在加载点云...
+    </div>
+  `;
+  viewer.dataset.plyUrl = plyUrl;
+
+  modal.classList.remove("hidden");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+
+  window.setTimeout(() => {
+    if (typeof createViewer === "function") {
+      createViewer(viewer, plyUrl);
+    }
+  }, 80);
+}
+
+function closePointCloudModal() {
+  const modal = document.getElementById("pointcloud-modal");
+  const viewer = document.getElementById("pointcloud-modal-viewer");
+  if (!modal || !viewer) return;
+  modal.classList.add("hidden");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  if (typeof destroyViewer === "function") {
+    destroyViewer("pointcloud-modal-viewer");
+  }
+  viewer.innerHTML = "";
+  viewer.dataset.plyUrl = "";
+}
+
+async function openLocalOutput(relativePath) {
+  const page = document.querySelector("[data-job-id]");
+  if (!page || !relativePath) return;
+  const jobId = page.getAttribute("data-job-id");
+  const formData = new FormData();
+  formData.append("relative_path", relativePath);
+
+  try {
+    const response = await fetch(`/jobs/${jobId}/open-output`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || "打开本地文件失败");
+    }
+  } catch (error) {
+    window.alert(`本地打开失败：${error.message || error}`);
+  }
 }
 
 function renderLogs(logs) {
@@ -204,8 +285,10 @@ async function refreshJobState() {
 
     const runButton = document.getElementById("run-job-button");
     const retryButton = document.getElementById("retry-job-button");
+    const cancelButton = document.getElementById("cancel-job-button");
     if (runButton) runButton.disabled = job.status === "running";
     if (retryButton) retryButton.disabled = job.status === "running";
+    if (cancelButton) cancelButton.disabled = job.status !== "running";
 
     renderProgress(data.phase_display);
     const outputs = data.outputs || [];
@@ -233,6 +316,13 @@ async function refreshJobState() {
 
 window.addEventListener("load", () => {
   startElapsedTimer();
+  bindOutputActions();
+  document.querySelectorAll("[data-close-modal]").forEach((button) => {
+    button.addEventListener("click", closePointCloudModal);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closePointCloudModal();
+  });
   if (refreshTimer) window.clearTimeout(refreshTimer);
   refreshJobState();
 });

@@ -76,6 +76,9 @@
         <form method="post" action="/jobs/{{ job.job_id }}/mark-failed" class="dispatch-form">
           <button type="submit" id="mark-failed-button" class="secondary-button">标记卡住为失败</button>
         </form>
+        <form method="post" action="/jobs/{{ job.job_id }}/cancel" class="dispatch-form">
+          <button type="submit" id="cancel-job-button" class="secondary-button" {% if job.status != "running" %}disabled{% endif %}>取消任务</button>
+        </form>
       </div>
 
       {% if job.notes %}
@@ -145,14 +148,16 @@
             {% if item.is_image %}
             <img src="{{ item.url }}" alt="{{ item.display_name }}" loading="lazy">
             {% elif item.is_pointcloud %}
-            <div class="viewer-container" id="viewer-{{ loop.index }}" data-ply-url="{{ item.url }}">
-              <div class="viewer-loading" id="viewer-loading-{{ loop.index }}">
-                <div class="spinner"></div>
-                正在加载点云...
+            <div class="pointcloud-placeholder">
+              <span class="pointcloud-icon">PLY</span>
+              <div>
+                <strong>点云文件已就绪</strong>
+                <p>为避免页面卡顿，点云不会在卡片里自动渲染。点击“放大查看”后再加载预览。</p>
               </div>
             </div>
             <div class="viewer-controls">
-              <button class="viewer-btn" onclick="resetViewer({{ loop.index }})" type="button">重置视角</button>
+              <button class="viewer-btn js-open-pointcloud-modal" data-ply-url="{{ item.url }}" data-title="{{ item.display_name }}" type="button">放大查看</button>
+              <button class="viewer-btn js-open-local-output" data-relative-path="{{ item.relative_path }}" type="button">本地打开</button>
               <a href="{{ item.url }}" download class="viewer-btn viewer-link">下载 .ply</a>
             </div>
             {% else %}
@@ -188,6 +193,29 @@
       </div>
     </section>
   </main>
+
+  <div class="modal hidden" id="pointcloud-modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal="true"></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="pointcloud-modal-title">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">点云预览</p>
+          <h2 id="pointcloud-modal-title">点云</h2>
+        </div>
+        <button class="secondary-button compact-button" data-close-modal="true" type="button">关闭</button>
+      </div>
+      <div class="viewer-container viewer-container-large" id="pointcloud-modal-viewer" data-ply-url="">
+        <div class="viewer-loading" id="viewer-loading-modal">
+          <div class="spinner"></div>
+          正在加载点云...
+        </div>
+      </div>
+      <div class="viewer-controls">
+        <button class="viewer-btn" onclick="resetViewerById('pointcloud-modal-viewer')" type="button">重置视角</button>
+        <a class="viewer-btn viewer-link" id="pointcloud-modal-download" href="#" download>下载 .ply</a>
+      </div>
+    </section>
+  </div>
 
   <script defer src="/static/vendor/three.min.js?v={{ asset_version }}"></script>
   <script defer src="/static/vendor/OrbitControls.js?v={{ asset_version }}"></script>

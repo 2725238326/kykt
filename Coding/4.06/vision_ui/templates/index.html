@@ -111,8 +111,12 @@
                 最大点云点数
                 <input type="number" name="max_points" id="dust3r-max-points" value="250000" min="1000" max="2000000" step="1000">
               </label>
+              <label>
+                匹配线数量
+                <input type="number" name="match_viz_count" id="dust3r-match-viz-count" value="50" min="0" max="500" step="10">
+              </label>
             </div>
-            <p class="field-help">图片很多时，complete 会产生大量两两配对。上传长序列时建议用 swin-5 或 oneref-0。</p>
+            <p class="field-help">图片很多时，complete 会产生大量两两配对。上传长序列时建议用 swin-5 或 oneref-0。匹配线数量设为 0 时，只输出视图预览。</p>
           </details>
         </fieldset>
 

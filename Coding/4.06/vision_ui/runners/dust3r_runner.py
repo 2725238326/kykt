@@ -94,17 +94,73 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
 
     # Get images and confidence
     imgs_array = scene.imgs
-    fig, axes = plt.subplots(1, len(imgs_array), figsize=(5 * len(imgs_array), 5))
-    if len(imgs_array) == 1:
-        axes = [axes]
-    for i, img in enumerate(imgs_array):
-        axes[i].imshow(img)
-        axes[i].set_title(f"View {i + 1}")
-        axes[i].axis("off")
-    plt.tight_layout()
     match_path = output_dir / "matches.png"
-    plt.savefig(str(match_path), dpi=150, bbox_inches="tight")
-    plt.close()
+    saved_match_lines = False
+
+    if len(imgs_array) >= 2 and args.match_viz_count > 0:
+        try:
+            from dust3r.utils.geometry import find_reciprocal_matches, xy_grid
+
+            pts3d_for_matches = scene.get_pts3d()
+            confidence_for_matches = scene.get_masks()
+            pts2d_list, pts3d_list = [], []
+
+            for view_idx in range(2):
+                conf_i = confidence_for_matches[view_idx]
+                if hasattr(conf_i, "detach"):
+                    conf_i = conf_i.detach().cpu().numpy()
+                conf_i = conf_i.astype(bool)
+
+                pts3d_i = pts3d_for_matches[view_idx]
+                if hasattr(pts3d_i, "detach"):
+                    pts3d_i = pts3d_i.detach().cpu().numpy()
+
+                pts2d_list.append(xy_grid(*imgs_array[view_idx].shape[:2][::-1])[conf_i])
+                pts3d_list.append(pts3d_i[conf_i])
+
+            reciprocal_in_p2, nn2_in_p1, num_matches = find_reciprocal_matches(*pts3d_list)
+            n_viz = min(args.match_viz_count, int(num_matches))
+
+            if n_viz > 0:
+                matches_im1 = pts2d_list[1][reciprocal_in_p2]
+                matches_im0 = pts2d_list[0][nn2_in_p1][reciprocal_in_p2]
+                match_idx_to_viz = np.round(np.linspace(0, num_matches - 1, n_viz)).astype(int)
+                viz_matches_im0 = matches_im0[match_idx_to_viz]
+                viz_matches_im1 = matches_im1[match_idx_to_viz]
+
+                h0, w0, h1, w1 = *imgs_array[0].shape[:2], *imgs_array[1].shape[:2]
+                img0 = np.pad(imgs_array[0], ((0, max(h1 - h0, 0)), (0, 0), (0, 0)), "constant")
+                img1 = np.pad(imgs_array[1], ((0, max(h0 - h1, 0)), (0, 0), (0, 0)), "constant")
+                canvas = np.concatenate((img0, img1), axis=1)
+
+                fig, ax = plt.subplots(1, 1, figsize=(12, 6))
+                ax.imshow(canvas)
+                ax.axis("off")
+                ax.set_title(f"前两张图匹配：展示 {n_viz}/{num_matches} 条")
+                cmap = plt.get_cmap("jet")
+                for line_idx in range(n_viz):
+                    (x0, y0), (x1, y1) = viz_matches_im0[line_idx].T, viz_matches_im1[line_idx].T
+                    ax.plot([x0, x1 + w0], [y0, y1], "-+", color=cmap(line_idx / max(n_viz - 1, 1)), scalex=False, scaley=False)
+
+                plt.tight_layout()
+                plt.savefig(str(match_path), dpi=150, bbox_inches="tight")
+                plt.close()
+                saved_match_lines = True
+                print(f"[dust3r_runner] 匹配图已绘制 {n_viz}/{num_matches} 条匹配线。")
+        except Exception as exc:
+            print(f"[dust3r_runner] 警告：匹配线绘制失败，改为保存输入视图预览：{exc}")
+
+    if not saved_match_lines:
+        fig, axes = plt.subplots(1, len(imgs_array), figsize=(5 * len(imgs_array), 5))
+        if len(imgs_array) == 1:
+            axes = [axes]
+        for i, img in enumerate(imgs_array):
+            axes[i].imshow(img)
+            axes[i].set_title(f"视图 {i + 1}")
+            axes[i].axis("off")
+        plt.tight_layout()
+        plt.savefig(str(match_path), dpi=150, bbox_inches="tight")
+        plt.close()
     print(f"[dust3r_runner] 匹配可视化图已保存到 {match_path}")
 
     # ---- Export point cloud ----
@@ -180,6 +236,7 @@ def run_pair(args: argparse.Namespace, images: list[Path], job_dir: Path) -> Non
                 "lr": args.lr,
                 "batch_size": args.batch_size,
                 "max_points": args.max_points,
+                "match_viz_count": args.match_viz_count,
             },
         }
         (output_dir / "scene_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -202,6 +259,7 @@ def main():
     parser.add_argument("--lr", type=float, default=0.01, help="Global alignment learning rate")
     parser.add_argument("--batch-size", type=int, default=1, help="DUSt3R pair inference batch size")
     parser.add_argument("--max-points", type=int, default=250000, help="Maximum exported PLY points after downsampling")
+    parser.add_argument("--match-viz-count", type=int, default=50, help="Number of reciprocal match lines to draw for the first image pair")
     args = parser.parse_args()
 
     job_dir = Path(args.job_dir)

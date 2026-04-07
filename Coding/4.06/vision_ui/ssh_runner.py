@@ -110,6 +110,8 @@ def run_remote_job(job_id: str) -> None:
             progress_message="正在把输出和日志下载回本地缓存...",
         )
         output_files = _download_results(config, job.job_id, remote_job_dir)
+        if load_job(job_id).status == "cancelled":
+            return
         update_job(
             job_id,
             status="finished",
@@ -119,6 +121,8 @@ def run_remote_job(job_id: str) -> None:
             progress_message="任务完成。输出结果已回传到本地。",
         )
     except Exception as exc:
+        if load_job(job_id).status == "cancelled":
+            return
         update_job(
             job_id,
             status="failed",
@@ -126,6 +130,28 @@ def run_remote_job(job_id: str) -> None:
             error_message=str(exc),
             progress_message="远端任务失败，请查看下方日志。",
         )
+
+
+def cancel_remote_job(job_id: str) -> None:
+    config = ServerConfig()
+    job = load_job(job_id)
+    remote_job_dir = job.remote_job_dir
+
+    cleanup_message = "已请求取消任务。"
+    if remote_job_dir:
+        try:
+            _ssh(config, f"pkill -f {shlex.quote(remote_job_dir)} || true")
+            cleanup_message = "已请求取消任务，并尝试清理远端进程。"
+        except Exception as exc:
+            cleanup_message = f"已在本地取消任务，但远端清理失败：{exc}"
+
+    update_job(
+        job_id,
+        status="cancelled",
+        phase="cancelled",
+        error_message=None,
+        progress_message=cleanup_message,
+    )
 
 
 def _upload_inputs(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
@@ -196,6 +222,7 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
         f"--lr {shlex.quote(str(params.get('lr', 0.01)))} "
         f"--batch-size {shlex.quote(str(params.get('batch_size', 1)))} "
         f"--max-points {shlex.quote(str(params.get('max_points', 250000)))} "
+        f"--match-viz-count {shlex.quote(str(params.get('match_viz_count', 50)))} "
         f"2>&1 | tee {shlex.quote(log_path)}"
     )
 

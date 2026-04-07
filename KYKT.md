@@ -161,11 +161,18 @@ Current frontend capabilities:
 - 2026-04-06: The visible UI was localized to Chinese end-to-end.
 - Chinese localization covers index/detail templates, dynamic JS messages, task status labels, progress text, SSH runner progress messages, and DUSt3R runner status messages.
 - UTF-8/mojibake scan passed for templates, static page scripts, app entry, job store, SSH runner, and DUSt3R runner.
+- 2026-04-07: Output presentation was refined. The task artifact grid now focuses on core results and hides JSON/log files there; logs remain in the dedicated live log section.
+- Point cloud cards now support an enlarged in-page modal viewer, `.ply` download, and local default-app opening via the local FastAPI backend.
+- DUSt3R match visualization gained `match_viz_count`, exposed in the advanced parameters. The remote runner now draws reciprocal match lines for the first image pair when this value is greater than zero; otherwise it falls back to a view preview.
+- A lightweight cancel action was added. It marks a running job as cancelled locally and tries to `pkill` the remote process by matching the remote job directory string.
+- 2026-04-07: Point cloud rendering was changed to on-demand only. The result card no longer auto-renders `.ply`; it shows a lightweight placeholder and loads the viewer only after the user clicks the enlarged preview.
+- Browser-side PLY preview now downsamples large point clouds to a preview cap to avoid freezing the page. The downloaded `.ply` remains the full exported file.
+- The enlarged point-cloud modal loading bug was fixed by using the viewer container's own loading layer instead of deriving an invalid loading element id.
 
 Still missing:
 
 - MonST3R remote runner.
-- Cancel action for a running remote process.
+- Stronger remote process cleanup and verification after cancellation.
 - Richer parameter controls.
 - Reusable presets.
 - More exact server-written `status.json` ingestion.

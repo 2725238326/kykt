@@ -7,8 +7,10 @@
  */
 
 const viewers = {};
+window.viewers = viewers;
+const MAX_PREVIEW_POINTS = 80000;
 
-function parsePLY(text) {
+function parsePLY(text, maxPreviewPoints = MAX_PREVIEW_POINTS) {
   const lines = text.split("\n");
   let vertexCount = 0;
   let headerEnd = 0;
@@ -47,40 +49,51 @@ function parsePLY(text) {
 
   hasColor = rIdx !== -1 && gIdx !== -1 && bIdx !== -1;
 
-  const positions = new Float32Array(vertexCount * 3);
-  const colors = new Float32Array(vertexCount * 3);
+  const sampleStep = Math.max(1, Math.ceil(vertexCount / maxPreviewPoints));
+  const previewCount = Math.ceil(vertexCount / sampleStep);
+  const positions = new Float32Array(previewCount * 3);
+  const colors = new Float32Array(previewCount * 3);
 
   // Parse vertices
+  let outIdx = 0;
   for (let i = 0; i < vertexCount; i++) {
+    if (i % sampleStep !== 0) continue;
     const lineIdx = headerEnd + i;
     if (lineIdx >= lines.length) break;
 
     const parts = lines[lineIdx].trim().split(/\s+/);
-    positions[i * 3] = parseFloat(parts[xIdx]) || 0;
-    positions[i * 3 + 1] = parseFloat(parts[yIdx]) || 0;
-    positions[i * 3 + 2] = parseFloat(parts[zIdx]) || 0;
+    positions[outIdx * 3] = parseFloat(parts[xIdx]) || 0;
+    positions[outIdx * 3 + 1] = parseFloat(parts[yIdx]) || 0;
+    positions[outIdx * 3 + 2] = parseFloat(parts[zIdx]) || 0;
 
     if (hasColor) {
-      colors[i * 3] = (parseFloat(parts[rIdx]) || 0) / 255;
-      colors[i * 3 + 1] = (parseFloat(parts[gIdx]) || 0) / 255;
-      colors[i * 3 + 2] = (parseFloat(parts[bIdx]) || 0) / 255;
+      colors[outIdx * 3] = (parseFloat(parts[rIdx]) || 0) / 255;
+      colors[outIdx * 3 + 1] = (parseFloat(parts[gIdx]) || 0) / 255;
+      colors[outIdx * 3 + 2] = (parseFloat(parts[bIdx]) || 0) / 255;
     } else {
       // Default gradient color based on Y position
-      colors[i * 3] = 0.13;
-      colors[i * 3 + 1] = 0.83;
-      colors[i * 3 + 2] = 0.93;
+      colors[outIdx * 3] = 0.13;
+      colors[outIdx * 3 + 1] = 0.83;
+      colors[outIdx * 3 + 2] = 0.93;
     }
+    outIdx += 1;
   }
 
-  return { positions, colors, vertexCount };
+  return {
+    positions: positions.slice(0, outIdx * 3),
+    colors: colors.slice(0, outIdx * 3),
+    vertexCount,
+    previewCount: outIdx,
+    sampleStep,
+  };
 }
 
 function createViewer(container, plyUrl) {
   const id = container.id;
   if (viewers[id]) return; // Already initialized
 
-  const width = container.clientWidth;
-  const height = container.clientHeight;
+  const width = Math.max(container.clientWidth, 320);
+  const height = Math.max(container.clientHeight, 240);
 
   // Scene
   const scene = new THREE.Scene();
@@ -104,7 +117,7 @@ function createViewer(container, plyUrl) {
   controls.zoomSpeed = 1.2;
 
   // Store viewer
-  viewers[id] = { scene, camera, renderer, controls, container };
+  viewers[id] = { scene, camera, renderer, controls, container, active: true, frameId: null };
 
   // Load PLY
   fetch(plyUrl)
@@ -113,7 +126,7 @@ function createViewer(container, plyUrl) {
       return res.text();
     })
     .then(text => {
-      const { positions, colors, vertexCount } = parsePLY(text);
+      const { positions, colors, vertexCount, previewCount, sampleStep } = parsePLY(text);
 
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
@@ -151,17 +164,23 @@ function createViewer(container, plyUrl) {
       viewers[id].initialTarget = controls.target.clone();
 
       // Hide loading
-      const loading = document.getElementById(`viewer-loading-${id.replace("viewer-", "")}`);
-      if (loading) loading.style.display = "none";
+      const loading = container.querySelector(".viewer-loading");
+      if (loading) {
+        loading.innerHTML = `已加载 ${previewCount.toLocaleString()} / ${vertexCount.toLocaleString()} 个点${sampleStep > 1 ? "（预览已下采样）" : ""}`;
+        window.setTimeout(() => {
+          loading.style.display = "none";
+        }, 450);
+      }
     })
     .catch(err => {
-      const loading = document.getElementById(`viewer-loading-${id.replace("viewer-", "")}`);
+      const loading = container.querySelector(".viewer-loading");
       if (loading) loading.innerHTML = `<span style="color:var(--danger);">错误：${err.message}</span>`;
     });
 
   // Animation loop
   function animate() {
-    requestAnimationFrame(animate);
+    if (!viewers[id]?.active) return;
+    viewers[id].frameId = requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
   }
@@ -178,8 +197,28 @@ function createViewer(container, plyUrl) {
   observer.observe(container);
 }
 
+function destroyViewer(id) {
+  const v = viewers[id];
+  if (!v) return;
+  v.active = false;
+  if (v.frameId) cancelAnimationFrame(v.frameId);
+  if (v.points) {
+    v.points.geometry?.dispose?.();
+    v.points.material?.dispose?.();
+    v.scene?.remove?.(v.points);
+  }
+  v.controls?.dispose?.();
+  v.renderer?.dispose?.();
+  v.renderer?.domElement?.remove?.();
+  delete viewers[id];
+}
+
 function resetViewer(index) {
   const id = `viewer-${index}`;
+  resetViewerById(id);
+}
+
+function resetViewerById(id) {
   const v = viewers[id];
   if (!v) return;
 
@@ -196,9 +235,6 @@ function initAllViewers() {
     }
   });
 }
-
-// Initialize on page load
-window.addEventListener("load", () => {
-  // Small delay to ensure Three.js is fully loaded
-  setTimeout(initAllViewers, 200);
-});
+window.destroyViewer = destroyViewer;
+window.createViewer = createViewer;
+window.resetViewerById = resetViewerById;
