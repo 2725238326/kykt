@@ -27,7 +27,7 @@ from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
-templates.env.globals["asset_version"] = "20260407-1110"
+templates.env.globals["asset_version"] = "20260407-1130"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)

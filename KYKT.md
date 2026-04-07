@@ -165,9 +165,9 @@ Current frontend capabilities:
 - Point cloud cards now support an enlarged in-page modal viewer, `.ply` download, and local default-app opening via the local FastAPI backend.
 - DUSt3R match visualization gained `match_viz_count`, exposed in the advanced parameters. The remote runner now draws reciprocal match lines for the first image pair when this value is greater than zero; otherwise it falls back to a view preview.
 - A lightweight cancel action was added. It marks a running job as cancelled locally and tries to `pkill` the remote process by matching the remote job directory string.
-- 2026-04-07: Point cloud rendering was changed to on-demand only. The result card no longer auto-renders `.ply`; it shows a lightweight placeholder and loads the viewer only after the user clicks the enlarged preview.
-- Browser-side PLY preview now downsamples large point clouds to a preview cap to avoid freezing the page. The downloaded `.ply` remains the full exported file.
-- The enlarged point-cloud modal loading bug was fixed by using the viewer container's own loading layer instead of deriving an invalid loading element id.
+- 2026-04-07: Browser-side point cloud preview was removed because `.ply` parsing still made the page feel sluggish.
+- Point cloud cards now only provide two actions: open the `.ply` with the local default application, intended for MeshLab, and download the `.ply`.
+- The Three.js/OrbitControls/PLY viewer scripts are no longer loaded by the job detail page.
 
 Still missing:
 

@@ -84,12 +84,11 @@ function renderOutputs(outputs) {
           <span class="pointcloud-icon">PLY</span>
           <div>
             <strong>点云文件已就绪</strong>
-            <p>为避免页面卡顿，点云不会在卡片里自动渲染。点击“放大查看”后再加载预览。</p>
+            <p>浏览器点云预览已关闭，避免页面卡顿。建议用 MeshLab 打开，或直接下载 .ply 文件。</p>
           </div>
         </div>
         <div class="viewer-controls">
-          <button class="viewer-btn js-open-pointcloud-modal" data-ply-url="${escapeHtml(item.url)}" data-title="${escapeHtml(item.display_name)}" type="button">放大查看</button>
-          <button class="viewer-btn js-open-local-output" data-relative-path="${escapeHtml(item.relative_path)}" type="button">本地打开</button>
+          <button class="viewer-btn js-open-local-output" data-relative-path="${escapeHtml(item.relative_path)}" type="button">用 MeshLab 打开</button>
           <a href="${item.url}" download class="viewer-btn viewer-link">下载 .ply</a>
         </div>
       `;
@@ -121,63 +120,11 @@ function stableKey(items) {
 }
 
 function bindOutputActions() {
-  document.querySelectorAll(".js-open-pointcloud-modal").forEach((button) => {
-    button.onclick = () => {
-      openPointCloudModal(button.dataset.plyUrl || "", button.dataset.title || "点云");
-    };
-  });
-
   document.querySelectorAll(".js-open-local-output").forEach((button) => {
     button.onclick = () => {
       openLocalOutput(button.dataset.relativePath || "");
     };
   });
-}
-
-function openPointCloudModal(plyUrl, title) {
-  if (!plyUrl) return;
-  const modal = document.getElementById("pointcloud-modal");
-  const titleEl = document.getElementById("pointcloud-modal-title");
-  const viewer = document.getElementById("pointcloud-modal-viewer");
-  const download = document.getElementById("pointcloud-modal-download");
-  if (!modal || !viewer) return;
-
-  if (titleEl) titleEl.textContent = title || "点云";
-  if (download) download.href = plyUrl;
-  if (typeof destroyViewer === "function") {
-    destroyViewer("pointcloud-modal-viewer");
-  }
-  viewer.innerHTML = `
-    <div class="viewer-loading" id="viewer-loading-modal">
-      <div class="spinner"></div>
-      正在加载点云...
-    </div>
-  `;
-  viewer.dataset.plyUrl = plyUrl;
-
-  modal.classList.remove("hidden");
-  modal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
-
-  window.setTimeout(() => {
-    if (typeof createViewer === "function") {
-      createViewer(viewer, plyUrl);
-    }
-  }, 80);
-}
-
-function closePointCloudModal() {
-  const modal = document.getElementById("pointcloud-modal");
-  const viewer = document.getElementById("pointcloud-modal-viewer");
-  if (!modal || !viewer) return;
-  modal.classList.add("hidden");
-  modal.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("modal-open");
-  if (typeof destroyViewer === "function") {
-    destroyViewer("pointcloud-modal-viewer");
-  }
-  viewer.innerHTML = "";
-  viewer.dataset.plyUrl = "";
 }
 
 async function openLocalOutput(relativePath) {
@@ -317,12 +264,6 @@ async function refreshJobState() {
 window.addEventListener("load", () => {
   startElapsedTimer();
   bindOutputActions();
-  document.querySelectorAll("[data-close-modal]").forEach((button) => {
-    button.addEventListener("click", closePointCloudModal);
-  });
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closePointCloudModal();
-  });
   if (refreshTimer) window.clearTimeout(refreshTimer);
   refreshJobState();
 });
