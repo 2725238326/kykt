@@ -5,10 +5,11 @@ import re
 import shlex
 import subprocess
 import threading
+from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
 
-from job_store import ROOT, get_job_dir, iter_input_items, load_job, update_job
+from job_store import ROOT, get_job_dir, iter_input_items, load_job, update_job, write_result_summary
 
 
 ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
@@ -26,6 +27,8 @@ class ServerConfig:
     remote_dust3r_repo: str = "/hdd3/kykt26/code/dust3r-main"
     remote_dust3r_model: str = "/hdd3/kykt26/models/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth"
     remote_dust3r_env: str = "dust3r"
+    remote_monst3r_repo: str = "/hdd3/kykt26/code/monst3r"
+    remote_monst3r_env: str = "monst3r"
 
 
 LOCAL_RUNNERS_DIR = ROOT / "runners"
@@ -100,6 +103,8 @@ def run_remote_job(job_id: str) -> None:
         # Dispatch model
         if job.model == "dust3r":
             _run_dust3r_v2(config, job.job_id, remote_job_dir)
+        elif job.model == "monst3r":
+            _run_monst3r_v1(config, job.job_id, remote_job_dir)
         else:
             raise RuntimeError(f"模型 '{job.model}' 还没有接入远端执行。")
 
@@ -112,6 +117,7 @@ def run_remote_job(job_id: str) -> None:
         output_files = _download_results(config, job.job_id, remote_job_dir)
         if load_job(job_id).status == "cancelled":
             return
+        _generate_result_summary(job_id, output_files)
         update_job(
             job_id,
             status="finished",
@@ -241,6 +247,35 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     )
 
 
+def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+    runner_path = f"{config.remote_runners_dir}/monst3r_runner.py"
+    log_path = f"{remote_job_dir}/logs/runner.log"
+    local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
+
+    cmd = (
+        f"set -o pipefail && "
+        f"cd {shlex.quote(config.remote_monst3r_repo)} 2>/dev/null || cd {shlex.quote(remote_job_dir)} && "
+        f"python {shlex.quote(runner_path)} "
+        f"--job-dir {shlex.quote(remote_job_dir)} "
+        f"--repo {shlex.quote(config.remote_monst3r_repo)} "
+        f"2>&1 | tee {shlex.quote(log_path)}"
+    )
+
+    update_job(
+        job_id,
+        phase="running_remote_matches",
+        progress_message="正在执行 MonST3R 远端准备检查...",
+    )
+    _ssh_stream(
+        config,
+        cmd,
+        job_id=job_id,
+        phase="running_remote_matches",
+        remote_job_dir=remote_job_dir,
+        local_log_path=local_log,
+    )
+
+
 def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) -> list[str]:
     job_dir = get_job_dir(job_id)
     local_output_dir = job_dir / "output"
@@ -272,6 +307,78 @@ def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) ->
             pass
 
     return output_files
+
+
+def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
+    job = load_job(job_id)
+    job_dir = get_job_dir(job_id)
+    scene_meta_path = job_dir / "output" / "scene_meta.json"
+    scene_meta = None
+    if scene_meta_path.exists():
+        try:
+            scene_meta = json.loads(scene_meta_path.read_text(encoding="utf-8-sig"))
+        except Exception:
+            scene_meta = None
+
+    created_at = None
+    try:
+        created_at = datetime.fromisoformat(job.created_at)
+    except ValueError:
+        created_at = None
+    duration_seconds = None
+    if created_at is not None:
+        duration_seconds = max(0, int((datetime.now() - created_at).total_seconds()))
+
+    highlights = [
+        f"本次任务共处理 {len(job.input_files)} 个输入文件。",
+        f"共回传 {len(output_files)} 个本地产物。",
+    ]
+    if scene_meta:
+        if scene_meta.get("n_pairs") is not None:
+            highlights.append(f"远端共构建了 {scene_meta['n_pairs']} 个图像配对。")
+        if scene_meta.get("n_points") is not None:
+            highlights.append(f"最终导出的点云包含 {scene_meta['n_points']} 个点。")
+        if scene_meta.get("raw_point_count") is not None and scene_meta.get("n_points") is not None:
+            raw_points = scene_meta["raw_point_count"]
+            final_points = scene_meta["n_points"]
+            if raw_points != final_points:
+                highlights.append(f"点云从 {raw_points} 个原始点下采样到了 {final_points} 个点。")
+
+    next_actions = [
+        "优先在 MeshLab 中检查 pointcloud.ply 的结构是否完整、是否存在大块噪声或断裂。",
+        "结合 matches.png 判断前几张图的重叠区域和匹配是否合理。",
+    ]
+    if job.model == "dust3r":
+        next_actions.append("如果这是多图任务，建议再对比 scene graph 与点云质量，决定是否需要改成 swin-5 或调整点云上限。")
+    elif job.model == "monst3r":
+        next_actions.append("当前 MonST3R 仍处于部署准备阶段，先完成服务器环境和权重检查，再尝试真实视频任务。")
+
+    payload = {
+        "job_id": job.job_id,
+        "model": job.model,
+        "status": job.status,
+        "status_label": "已完成" if job.status == "finished" else job.status,
+        "source_type": job.source_type,
+        "created_at": job.created_at,
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "duration_seconds": duration_seconds,
+        "inputs": {
+            "count": len(job.input_files),
+            "names": [item["original_name"] for item in iter_input_items(job)],
+        },
+        "artifacts": [
+            {
+                "name": Path(rel_path).name,
+                "relative_path": rel_path,
+            }
+            for rel_path in output_files
+        ],
+        "params": job.params,
+        "scene_meta": scene_meta,
+        "highlights": highlights,
+        "next_actions": next_actions,
+    }
+    write_result_summary(job_id, payload)
 
 
 # ===== Low-level SSH/SCP helpers =====

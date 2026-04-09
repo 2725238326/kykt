@@ -25,6 +25,79 @@ let lastLogsKey = "";
 let refreshTimer = null;
 let isRefreshing = false;
 
+function renderResultSummary(summary) {
+  const box = document.getElementById("result-summary-box");
+  const content = document.getElementById("result-summary-content");
+  if (!box || !content) return;
+
+  if (!summary) {
+    box.classList.add("hidden");
+    content.innerHTML = "";
+    return;
+  }
+
+  box.classList.remove("hidden");
+
+  const summaryCards = [];
+  summaryCards.push(`
+    <div class="summary-kv">
+      <span>输入数量</span>
+      <strong>${summary.inputs?.count ?? 0}</strong>
+    </div>
+  `);
+  summaryCards.push(`
+    <div class="summary-kv">
+      <span>产物数量</span>
+      <strong>${(summary.artifacts || []).length}</strong>
+    </div>
+  `);
+  if (summary.scene_meta?.n_pairs !== undefined) {
+    summaryCards.push(`
+      <div class="summary-kv">
+        <span>图像配对数</span>
+        <strong>${summary.scene_meta.n_pairs}</strong>
+      </div>
+    `);
+  }
+  if (summary.scene_meta?.n_points !== undefined) {
+    summaryCards.push(`
+      <div class="summary-kv">
+        <span>点云点数</span>
+        <strong>${summary.scene_meta.n_points}</strong>
+      </div>
+    `);
+  }
+
+  const blocks = [];
+  if ((summary.highlights || []).length) {
+    blocks.push(`
+      <div class="summary-list-block">
+        <strong>关键结果</strong>
+        <ul>
+          ${(summary.highlights || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+        </ul>
+      </div>
+    `);
+  }
+  if ((summary.next_actions || []).length) {
+    blocks.push(`
+      <div class="summary-list-block">
+        <strong>建议后续动作</strong>
+        <ul>
+          ${(summary.next_actions || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+        </ul>
+      </div>
+    `);
+  }
+
+  content.innerHTML = `
+    <div class="result-summary-grid">
+      ${summaryCards.join("")}
+    </div>
+    ${blocks.join("")}
+  `;
+}
+
 function startElapsedTimer() {
   const page = document.querySelector("[data-job-created]");
   const badge = document.getElementById("elapsed-badge");
@@ -240,6 +313,7 @@ async function refreshJobState() {
     renderProgress(data.phase_display);
     const outputs = data.outputs || [];
     const logs = data.logs || [];
+    renderResultSummary(data.result_summary || null);
     const outputsKey = stableKey(outputs);
     const logsKey = stableKey(logs);
 

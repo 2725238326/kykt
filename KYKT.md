@@ -169,13 +169,15 @@ Current frontend capabilities:
 - Point cloud cards now only provide two actions: open the `.ply` with the local default application, intended for MeshLab, and download the `.ply`.
 - The Three.js/OrbitControls/PLY viewer scripts are no longer loaded by the job detail page.
 - 2026-04-10: The home page now includes a delivery overview panel with task totals and a visible checklist of major unfinished items, so the current gap to a real handoff is visible inside the product itself.
+- 2026-04-10: Finished jobs now automatically generate `result_summary.json` and `result_summary.md` in the local job directory. The detail page also renders a human-readable summary block from that data.
+- 2026-04-10: A local `monst3r_runner.py` preparation skeleton now exists. It does not run real inference yet, but it can return a clear deployment-preparation message instead of failing as a black box.
+- 2026-04-10: Added `E:\kykt\Coding\4.06\vision_ui\SERVER_PREPARATION.md` to track the server-side DUSt3R optimization path and MonST3R deployment checklist.
 
 Still missing:
 
 - End-to-end validation of the newly parameterized DUSt3R multi-image path on the server.
 - Stronger remote process cleanup and verification after cancellation.
-- MonST3R remote runner and its input/output contract.
-- Automatic task summary / delivery report generation for each finished job.
+- A real MonST3R remote inference runner and its final input/output contract.
 - Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
 - Exact server-written progress ingestion for every major phase, instead of only mixed local/remote progress approximation.
 - More complete task controls such as one-click rerun presets, richer retry guidance, and clearer recovery hints when a job is partially finished.

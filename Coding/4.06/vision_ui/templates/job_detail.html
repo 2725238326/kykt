@@ -104,6 +104,56 @@
         <p>上传文件名没有要求。系统会在本地缓存中生成稳定的内部文件名，再同步到服务器。</p>
       </div>
 
+      <div class="notes-box success-box {% if not result_summary %}hidden{% endif %}" id="result-summary-box">
+        <h2>任务摘要</h2>
+        <div id="result-summary-content">
+          {% if result_summary %}
+          <div class="result-summary-grid">
+            <div class="summary-kv">
+              <span>输入数量</span>
+              <strong>{{ result_summary.inputs.count }}</strong>
+            </div>
+            <div class="summary-kv">
+              <span>产物数量</span>
+              <strong>{{ result_summary.artifacts|length }}</strong>
+            </div>
+            {% if result_summary.scene_meta and result_summary.scene_meta.n_pairs is not none %}
+            <div class="summary-kv">
+              <span>图像配对数</span>
+              <strong>{{ result_summary.scene_meta.n_pairs }}</strong>
+            </div>
+            {% endif %}
+            {% if result_summary.scene_meta and result_summary.scene_meta.n_points is not none %}
+            <div class="summary-kv">
+              <span>点云点数</span>
+              <strong>{{ result_summary.scene_meta.n_points }}</strong>
+            </div>
+            {% endif %}
+          </div>
+          {% if result_summary.highlights %}
+          <div class="summary-list-block">
+            <strong>关键结果</strong>
+            <ul>
+              {% for item in result_summary.highlights %}
+              <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          {% if result_summary.next_actions %}
+          <div class="summary-list-block">
+            <strong>建议后续动作</strong>
+            <ul>
+              {% for item in result_summary.next_actions %}
+              <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
       <div class="notes-box error-box {% if not job.error_message %}hidden{% endif %}" id="error-box">
         <h2>错误信息</h2>
         <p id="job-error-message">{{ job.error_message or '' }}</p>

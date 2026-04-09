@@ -254,6 +254,58 @@ def get_log_snippets(job_id: str, limit: int = 60) -> list[dict]:
     return snippets
 
 
+def _render_summary_markdown(payload: dict) -> str:
+    lines = [
+        f"# 任务摘要：{payload.get('job_id', 'unknown')}",
+        "",
+        f"- 模型：{payload.get('model', 'unknown')}",
+        f"- 状态：{payload.get('status_label', payload.get('status', 'unknown'))}",
+        f"- 输入类型：{payload.get('source_type', 'unknown')}",
+        f"- 生成时间：{payload.get('generated_at', '-')}",
+        "",
+    ]
+
+    highlights = payload.get("highlights") or []
+    if highlights:
+        lines.extend(["## 关键结果", ""])
+        lines.extend([f"- {item}" for item in highlights])
+        lines.append("")
+
+    params = payload.get("params") or {}
+    if params:
+        lines.extend(["## 运行参数", ""])
+        lines.extend([f"- {key}: {value}" for key, value in params.items()])
+        lines.append("")
+
+    artifacts = payload.get("artifacts") or []
+    if artifacts:
+        lines.extend(["## 产物列表", ""])
+        for item in artifacts:
+            lines.append(f"- {item.get('name', 'unknown')}: {item.get('relative_path', '-')}")
+        lines.append("")
+
+    next_actions = payload.get("next_actions") or []
+    if next_actions:
+        lines.extend(["## 建议后续动作", ""])
+        lines.extend([f"- {item}" for item in next_actions])
+        lines.append("")
+
+    return "\n".join(lines).strip() + "\n"
+
+
+def write_result_summary(job_id: str, payload: dict) -> None:
+    job_dir = get_job_dir(job_id)
+    _write_json(job_dir / "result_summary.json", payload)
+    (job_dir / "result_summary.md").write_text(_render_summary_markdown(payload), encoding="utf-8")
+
+
+def load_result_summary(job_id: str) -> dict | None:
+    path = get_job_dir(job_id) / "result_summary.json"
+    if not path.exists():
+        return None
+    return _read_json(path)
+
+
 def update_job(
     job_id: str,
     *,

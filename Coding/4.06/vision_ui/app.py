@@ -17,6 +17,7 @@ from job_store import (
     get_log_snippets,
     iter_input_items,
     list_jobs,
+    load_result_summary,
     load_job,
     save_inputs,
     update_job,
@@ -27,7 +28,7 @@ from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
-templates.env.globals["asset_version"] = "20260410-1530"
+templates.env.globals["asset_version"] = "20260410-1615"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
@@ -71,8 +72,8 @@ DELIVERY_GAPS = [
         "detail": "前端已经预留模型入口，但服务器侧 runner、输入约定和结果回传都还没实现。",
     },
     {
-        "title": "任务报告与结果归档还没自动化",
-        "detail": "目前有 job.json、日志和结果文件，但还缺可以直接汇报的任务摘要与交付打包。",
+        "title": "结果归档仍然不够完整",
+        "detail": "现在已经会自动生成任务摘要，但还缺更正式的交付打包、汇总报告和归档策略。",
     },
     {
         "title": "交互恢复能力还需要加强",
@@ -232,6 +233,7 @@ def _job_payload(job) -> dict:
         "outputs": serialize_outputs(job),
         "previews": serialize_previews(job),
         "logs": get_log_snippets(job.job_id),
+        "result_summary": load_result_summary(job.job_id),
     }
 
 
