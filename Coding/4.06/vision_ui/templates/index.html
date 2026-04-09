@@ -33,6 +33,64 @@
     <section class="panel">
       <div class="panel-header">
         <div>
+          <p class="eyebrow">交付总览</p>
+          <h2>当前进度与未完成项</h2>
+        </div>
+        <p class="panel-note">这里会给出任务总体情况，以及目前离“可交付”还差哪些关键环节。</p>
+      </div>
+
+      <div class="overview-grid">
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-label">总任务</span>
+            <strong class="stat-value" id="summary-total">{{ summary.total }}</strong>
+            <p class="stat-note">当前本地缓存中的任务总数。</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">运行中</span>
+            <strong class="stat-value" id="summary-running">{{ summary.running }}</strong>
+            <p class="stat-note">仍在本地或远端执行的任务。</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">已完成</span>
+            <strong class="stat-value" id="summary-finished">{{ summary.finished }}</strong>
+            <p class="stat-note">已经拿回结果、可继续查看的任务。</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">失败</span>
+            <strong class="stat-value" id="summary-failed">{{ summary.failed }}</strong>
+            <p class="stat-note">需要复盘错误、重新调度的任务。</p>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">已取消</span>
+            <strong class="stat-value" id="summary-cancelled">{{ summary.cancelled }}</strong>
+            <p class="stat-note">已在本地取消，可能还需检查远端残留。</p>
+          </article>
+        </div>
+
+        <div class="gaps-card">
+          <div class="gaps-head">
+            <h3>还没做完的关键项</h3>
+            <p>这些内容完成之后，整个工具才更接近真正可交付。</p>
+          </div>
+          <ul class="gaps-list">
+            {% for gap in delivery_gaps %}
+            <li class="gap-item">
+              <div class="gap-badge">未完成</div>
+              <div class="gap-copy">
+                <strong>{{ gap.title }}</strong>
+                <p>{{ gap.detail }}</p>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
           <p class="eyebrow">创建任务</p>
           <h2>新建任务</h2>
         </div>

@@ -168,6 +168,107 @@ code {
   margin-bottom: 20px;
 }
 
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1.08fr 1fr;
+  gap: 18px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.stat-card,
+.gaps-card {
+  padding: 18px;
+  border: 1px solid rgba(217, 208, 196, 0.9);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 253, 248, 0.88);
+  box-shadow: var(--shadow-soft);
+}
+
+.stat-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.stat-label {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.stat-value {
+  display: block;
+  color: var(--accent);
+  font-size: 2.2rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.stat-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.gaps-head h3 {
+  margin: 0 0 8px;
+  font-size: 1.06rem;
+}
+
+.gaps-head p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.gaps-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gap-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--card-strong);
+}
+
+.gap-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--warning-bg);
+  color: var(--warning-ink);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.gap-copy strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.gap-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .panel-header {
   display: flex;
   justify-content: space-between;
@@ -780,6 +881,7 @@ button[disabled] {
 
 @media (max-width: 960px) {
   .hero,
+  .overview-grid,
   .job-form,
   .detail-grid {
     grid-template-columns: 1fr;
@@ -803,7 +905,8 @@ button[disabled] {
   .progress-steps,
   .preview-grid,
   .param-grid,
-  .log-grid {
+  .log-grid,
+  .stats-grid {
     grid-template-columns: 1fr;
   }
 }

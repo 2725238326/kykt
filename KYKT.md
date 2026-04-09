@@ -1,6 +1,6 @@
 # KYKT Project Sync
 
-Last updated: 2026-04-06
+Last updated: 2026-04-10
 
 ## Project Lines
 
@@ -168,18 +168,17 @@ Current frontend capabilities:
 - 2026-04-07: Browser-side point cloud preview was removed because `.ply` parsing still made the page feel sluggish.
 - Point cloud cards now only provide two actions: open the `.ply` with the local default application, intended for MeshLab, and download the `.ply`.
 - The Three.js/OrbitControls/PLY viewer scripts are no longer loaded by the job detail page.
+- 2026-04-10: The home page now includes a delivery overview panel with task totals and a visible checklist of major unfinished items, so the current gap to a real handoff is visible inside the product itself.
 
 Still missing:
 
-- MonST3R remote runner.
-- Stronger remote process cleanup and verification after cancellation.
-- Richer parameter controls.
-- Reusable presets.
-- More exact server-written `status.json` ingestion.
-- Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
-- `start.ps1` and `start.bat` now check whether port `8000` is already occupied and run uvicorn without `--reload` for a simpler process tree.
 - End-to-end validation of the newly parameterized DUSt3R multi-image path on the server.
-- Remote process cleanup is still local-only; the UI can mark a stuck job failed, but it does not yet kill a remote runner by job id.
+- Stronger remote process cleanup and verification after cancellation.
+- MonST3R remote runner and its input/output contract.
+- Automatic task summary / delivery report generation for each finished job.
+- Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
+- Exact server-written progress ingestion for every major phase, instead of only mixed local/remote progress approximation.
+- More complete task controls such as one-click rerun presets, richer retry guidance, and clearer recovery hints when a job is partially finished.
 
 ## SSH / SCP Setup
 
@@ -228,6 +227,16 @@ Priority order:
 4. Add better browser-side point cloud/result viewing.
 5. Integrate MonST3R as a new remote runner for video/frame-sequence tasks.
 6. Add stronger task controls such as cancel and parameterized reruns.
+
+## Current Delivery Gaps
+
+These are the main blockers between the current state and a more deliverable tool:
+
+1. DUSt3R multi-image flow needs one full validation run with 3 to 5 images and reviewed outputs.
+2. Remote cancellation and cleanup still need to become more reliable.
+3. MonST3R is still only planned, not truly integrated.
+4. Result packaging and task reporting are still too manual.
+5. Recovery and operator guidance still need to be clearer when something hangs or only partially finishes.
 
 ## Guidance for Future Agents
 

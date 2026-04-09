@@ -27,7 +27,7 @@ from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
-templates.env.globals["asset_version"] = "20260407-1130"
+templates.env.globals["asset_version"] = "20260410-1530"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
@@ -57,6 +57,29 @@ STATUS_LABELS = {
     "cancelled": "已取消",
 }
 
+DELIVERY_GAPS = [
+    {
+        "title": "DUSt3R 多图链路还缺一次完整验收",
+        "detail": "前端、参数和远端 runner 都已接通，但还需要用 3 到 5 张图完整验证输出质量与稳定性。",
+    },
+    {
+        "title": "远端取消与清理仍然不够硬",
+        "detail": "现在可以本地标记取消并尝试 pkill，但还缺更可靠的远端进程确认和残留目录清理。",
+    },
+    {
+        "title": "MonST3R 还没有真正接入",
+        "detail": "前端已经预留模型入口，但服务器侧 runner、输入约定和结果回传都还没实现。",
+    },
+    {
+        "title": "任务报告与结果归档还没自动化",
+        "detail": "目前有 job.json、日志和结果文件，但还缺可以直接汇报的任务摘要与交付打包。",
+    },
+    {
+        "title": "交互恢复能力还需要加强",
+        "detail": "Windows 侧旧 uvicorn/ssh 进程卡住时，仍然需要更明确的检测、提示和一键恢复动作。",
+    },
+]
+
 ACTIVE_PHASE_CODES = [code for code, *_ in PHASE_FLOW[:6]]
 PROGRESS_PATTERN = re.compile(r"(\d+)\s*/\s*(\d+)")
 
@@ -68,6 +91,21 @@ def status_label(status: str | None) -> str:
 
 
 templates.env.globals["status_label"] = status_label
+
+
+def build_dashboard_stats(jobs) -> dict:
+    summary = {
+        "total": len(jobs),
+        "running": 0,
+        "finished": 0,
+        "failed": 0,
+        "cancelled": 0,
+    }
+    for job in jobs:
+        key = job.status if job.status in summary else None
+        if key:
+            summary[key] += 1
+    return summary
 
 
 def _extract_progress_ratio(progress_message: str | None) -> float | None:
@@ -220,11 +258,14 @@ def _dust3r_params(
 @app.get("/")
 async def index(request: Request):
     jobs = list_jobs(limit=50)
+    summary = build_dashboard_stats(jobs)
     return templates.TemplateResponse(
         request,
         "index.html",
         {
             "jobs": jobs,
+            "summary": summary,
+            "delivery_gaps": DELIVERY_GAPS,
             "server": ServerConfig(),
             "models": [
                 ("dust3r", "DUSt3R（图像集）"),
@@ -380,7 +421,7 @@ async def jobs_api():
                 "phase_display": build_phase_display(job.phase, job.status, job.progress_message),
             }
         )
-    return JSONResponse({"jobs": payload})
+    return JSONResponse({"jobs": payload, "summary": build_dashboard_stats(jobs)})
 
 
 @app.get("/api/jobs/{job_id}")

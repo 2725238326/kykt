@@ -19,6 +19,24 @@ function statusLabel(status) {
   return labels[status] || status || "未知";
 }
 
+function updateSummary(summary) {
+  if (!summary) return;
+
+  const mapping = {
+    total: document.getElementById("summary-total"),
+    running: document.getElementById("summary-running"),
+    finished: document.getElementById("summary-finished"),
+    failed: document.getElementById("summary-failed"),
+    cancelled: document.getElementById("summary-cancelled"),
+  };
+
+  Object.entries(mapping).forEach(([key, node]) => {
+    if (node && Object.prototype.hasOwnProperty.call(summary, key)) {
+      node.textContent = String(summary[key]);
+    }
+  });
+}
+
 function initDropZone() {
   const zone = document.getElementById("drop-zone");
   const input = document.getElementById("file-input");
@@ -217,6 +235,7 @@ async function refreshJobs() {
     if (response.ok) {
       const data = await response.json();
       renderJobs(data.jobs || []);
+      updateSummary(data.summary || null);
     }
   } catch (_error) {
     // Keep existing content on transient failures.
