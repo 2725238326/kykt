@@ -1,27 +1,32 @@
 # KYKT Vision Client
 
-React + TypeScript rebuild skeleton for the local vision desktop-style client.
+React + TypeScript rebuild for the local vision desktop-style client. The desktop shell is now scaffolded with Tauri 2.
 
 ## Run
 
-Start the existing FastAPI backend first:
+Web dev entry:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File E:\kykt\Coding\4.06\vision_ui\start.ps1
+powershell -ExecutionPolicy Bypass -File E:\kykt\Coding\4.06\vision_ui\start_client_rebuild.ps1
 ```
 
-Then start the new client:
+Desktop dev entry:
 
 ```powershell
-cd E:\kykt\Coding\4.06\vision_ui\client
-npm run dev
+powershell -ExecutionPolicy Bypass -File E:\kykt\Coding\4.06\vision_ui\start_desktop_client.ps1
 ```
 
-Open:
+The web entry opens Vite on:
 
 ```text
 http://127.0.0.1:5173
 ```
+
+The desktop entry starts:
+
+- existing FastAPI backend on `127.0.0.1:8000`
+- Vite dev server through Tauri
+- Tauri 2 desktop shell
 
 ## Current scope
 
@@ -31,10 +36,11 @@ http://127.0.0.1:5173
 - selected job detail
 - polling against FastAPI JSON APIs
 - Apple-inspired visual direction
+- output cards with local open / view / download actions
+- Tauri 2 shell scaffold under `src-tauri`
 
 ## Next
 
-- replace current Jinja entry pages
-- add richer output handling
+- replace current Jinja entry pages as the default launch target
 - add MonST3R-specific creation flow
-- wrap with Tauri
+- decide how Python backend should be embedded or bundled for release builds

@@ -1,5 +1,10 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import type { BootstrapPayload, JobPayload, JobsListPayload } from "./types";
+import type {
+  BootstrapPayload,
+  JobPayload,
+  JobsListPayload,
+  ResultSummary
+} from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
@@ -19,7 +24,9 @@ function App() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobPayload | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [actionKey, setActionKey] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [formState, setFormState] = useState({
     model: "dust3r",
@@ -64,11 +71,32 @@ function App() {
     [bootstrap?.models, formState.model]
   );
 
+  const isDust3r = formState.model === "dust3r";
+  const selectedFileCount = files.length;
+  const runningSelectedJob = selectedJob?.job.status === "running";
+  const canDispatchSelectedJob = selectedJob
+    ? selectedJob.job.status === "draft" ||
+      selectedJob.job.status === "ready" ||
+      selectedJob.job.status === "failed" ||
+      selectedJob.job.status === "cancelled"
+    : false;
+
   async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await fetch(`${API_BASE}${path}`, init);
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text || `Request failed: ${response.status}`);
+      let message = `Request failed: ${response.status}`;
+      try {
+        const payload = (await response.json()) as { detail?: string };
+        if (payload.detail) {
+          message = payload.detail;
+        }
+      } catch {
+        const text = await response.text();
+        if (text) {
+          message = text;
+        }
+      }
+      throw new Error(message);
     }
     return (await response.json()) as T;
   }
@@ -105,31 +133,52 @@ function App() {
     }
   }
 
+  function updateFormField(key: keyof typeof formState, value: string) {
+    setFormState((current) => ({ ...current, [key]: value }));
+  }
+
+  function removePendingFile(targetName: string, targetSize: number) {
+    setFiles((current) =>
+      current.filter((item) => !(item.name === targetName && item.size === targetSize))
+    );
+  }
+
   async function handleCreateJob(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setErrorMessage(null);
+    setInfoMessage(null);
+
     if (files.length === 0) {
       setErrorMessage("请先选择输入文件。");
       return;
     }
 
+    if (isDust3r && files.length < 2) {
+      setErrorMessage("DUSt3R 至少需要两张图片才能创建任务。");
+      return;
+    }
+
     setSubmitting(true);
-    setErrorMessage(null);
     const formData = new FormData();
     formData.append("model", formState.model);
     formData.append("source_type", formState.source_type);
     formData.append("notes", formState.notes);
-    if (formState.model === "dust3r") {
+
+    if (isDust3r) {
       Object.keys(defaultDust3rParams).forEach((key) => {
         formData.append(key, formState[key as keyof typeof formState]);
       });
     }
+
     files.forEach((file) => formData.append("files", file, file.name));
 
     try {
       const payload = await fetchJson<JobPayload>("/api/jobs", { method: "POST", body: formData });
       setFiles([]);
       setSelectedJobId(payload.job.job_id);
-      await Promise.all([loadJobs(false), loadJobDetail(payload.job.job_id, false)]);
+      setSelectedJob(payload);
+      setInfoMessage(`任务 ${payload.job.job_id} 已创建，本地输入已经缓存。`);
+      await loadJobs(false);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "创建任务失败。");
     } finally {
@@ -137,14 +186,45 @@ function App() {
     }
   }
 
-  async function postJobAction(path: string) {
+  async function postJobAction(path: string, key: string) {
+    setActionKey(key);
+    setErrorMessage(null);
+    setInfoMessage(null);
     try {
       const payload = await fetchJson<JobPayload>(path, { method: "POST" });
       setSelectedJob(payload);
       setSelectedJobId(payload.job.job_id);
+      setInfoMessage(buildActionMessage(key, payload.job.job_id));
       await loadJobs(false);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "执行任务操作失败。");
+    } finally {
+      setActionKey(null);
+    }
+  }
+
+  async function openOutput(relativePath: string) {
+    if (!selectedJob) {
+      return;
+    }
+
+    setActionKey(`open:${relativePath}`);
+    setErrorMessage(null);
+    setInfoMessage(null);
+
+    const formData = new FormData();
+    formData.append("relative_path", relativePath);
+
+    try {
+      const payload = await fetchJson<{ ok: boolean; path: string }>(
+        `/api/jobs/${selectedJob.job.job_id}/open-output`,
+        { method: "POST", body: formData }
+      );
+      setInfoMessage(`已尝试用本地默认程序打开：${payload.path}`);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "打开本地产物失败。");
+    } finally {
+      setActionKey(null);
     }
   }
 
@@ -153,8 +233,11 @@ function App() {
       <header className="topbar">
         <div>
           <div className="eyebrow">KYKT Vision Client</div>
-          <h1>全面重构版客户端</h1>
-          <p>React + TypeScript 先接现有后端，后续直接包进 Tauri。</p>
+          <h1>把旧网页换成真正顺手的本地客户端。</h1>
+          <p>
+            新界面先用 React + TypeScript 重建工作流，再接进 Tauri 2 做桌面壳。视觉方向按
+            Apple 风格收敛，重点放在任务创建、远端进度、结果查看和本地操作都在一个界面里完成。
+          </p>
         </div>
         <div className="server-chip-group">
           <div className="server-chip">
@@ -167,16 +250,20 @@ function App() {
             <span>远端根目录</span>
             <strong>{bootstrap?.server.remote_root ?? "/hdd3/kykt26"}</strong>
           </div>
+          <div className="server-chip muted">
+            <span>客户端阶段</span>
+            <strong>React Rebuild + Tauri Shell</strong>
+          </div>
         </div>
       </header>
 
       <main className="grid">
         <section className="panel hero">
           <div>
-            <div className="eyebrow dark">Apple-inspired interface</div>
-            <h2>把旧网页换成更像产品的本地实验台。</h2>
+            <div className="eyebrow dark">Desktop-first rebuild</div>
+            <h2>统一输入、SSH 调度、结果和归档。</h2>
             <p>
-              视觉基调按 Apple 的黑、灰、蓝体系来做，核心目标不是再补一个页面，而是把本地文件、SSH 调度、任务状态和结果查看统一到一个桌面式工作流里。
+              这版不再沿着旧模板页面堆功能，而是直接按本地客户端的思路来组织：任务创建区像控制台，任务详情区像实验记录，产物区像桌面工作区。
             </p>
           </div>
           <div className="stat-grid">
@@ -186,6 +273,9 @@ function App() {
             <MetricCard label="失败/取消" value={String(summary.failed + summary.cancelled)} />
           </div>
         </section>
+
+        {infoMessage ? <MessageBanner kind="info" message={infoMessage} /> : null}
+        {errorMessage ? <MessageBanner kind="error" message={errorMessage} /> : null}
 
         <section className="panel composer">
           <div className="section-head">
@@ -202,9 +292,7 @@ function App() {
                 <span>模型</span>
                 <select
                   value={formState.model}
-                  onChange={(event) =>
-                    setFormState((current) => ({ ...current, model: event.target.value }))
-                  }
+                  onChange={(event) => updateFormField("model", event.target.value)}
                 >
                   {bootstrap?.models.map((item) => (
                     <option key={item.value} value={item.value}>
@@ -218,9 +306,7 @@ function App() {
                 <span>输入类型</span>
                 <select
                   value={formState.source_type}
-                  onChange={(event) =>
-                    setFormState((current) => ({ ...current, source_type: event.target.value }))
-                  }
+                  onChange={(event) => updateFormField("source_type", event.target.value)}
                 >
                   {bootstrap?.source_types.map((item) => (
                     <option key={item.value} value={item.value}>
@@ -236,30 +322,33 @@ function App() {
               <textarea
                 rows={4}
                 value={formState.notes}
-                onChange={(event) =>
-                  setFormState((current) => ({ ...current, notes: event.target.value }))
-                }
-                placeholder="记录目标、数据说明、预期输出。"
+                onChange={(event) => updateFormField("notes", event.target.value)}
+                placeholder="记录目标、数据说明、预期输出或后续想比较的参数。"
               />
             </label>
 
-            {formState.model === "dust3r" ? (
-              <div className="param-grid">
-                {Object.keys(defaultDust3rParams).map((key) => (
-                  <label className="field compact" key={key}>
-                    <span>{formatParamLabel(key)}</span>
-                    <input
-                      value={formState[key as keyof typeof formState]}
-                      onChange={(event) =>
-                        setFormState((current) => ({ ...current, [key]: event.target.value }))
-                      }
-                    />
-                  </label>
-                ))}
-              </div>
+            {isDust3r ? (
+              <>
+                <div className="inline-callout">
+                  DUSt3R 当前默认按多图也能跑的参数来建任务。双图和多图不再强行分开，只要求至少两张输入图。
+                </div>
+                <div className="param-grid">
+                  {Object.keys(defaultDust3rParams).map((key) => (
+                    <label className="field compact" key={key}>
+                      <span>{formatParamLabel(key)}</span>
+                      <input
+                        value={formState[key as keyof typeof formState]}
+                        onChange={(event) =>
+                          setFormState((current) => ({ ...current, [key]: event.target.value }))
+                        }
+                      />
+                    </label>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="monst3r-note">
-                MonST3R 会在下一阶段补成“视频或帧序列一键上传 + 远端 demo 启动 + 结果回传”的完整桌面流。
+                MonST3R 入口已经预留。这一阶段先把桌面客户端骨架、结果面板和 Tauri 外壳补完整，接下来就能把视频/帧序列的专属流程接进来。
               </div>
             )}
 
@@ -269,15 +358,28 @@ function App() {
                 multiple
                 onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
               />
-              <span>拖入文件或点击选择，系统会自动规范内部命名。</span>
+              <span>
+                拖入文件或点击选择。内部命名会自动规范化，不需要你手动改文件名。
+              </span>
             </label>
+
+            <div className="selection-strip">
+              <span className="soft-tag">已选 {selectedFileCount} 个文件</span>
+              {isDust3r ? <span className="soft-tag">至少 2 张图</span> : null}
+            </div>
 
             {files.length > 0 ? (
               <div className="chip-row">
                 {files.map((file) => (
-                  <span className="chip" key={`${file.name}-${file.size}`}>
-                    {file.name}
-                  </span>
+                  <button
+                    key={`${file.name}-${file.size}`}
+                    className="chip removable"
+                    type="button"
+                    onClick={() => removePendingFile(file.name, file.size)}
+                  >
+                    <span>{file.name}</span>
+                    <span className="chip-close">×</span>
+                  </button>
                 ))}
               </div>
             ) : null}
@@ -286,8 +388,6 @@ function App() {
               {submitting ? "正在创建..." : "创建本地任务"}
             </button>
           </form>
-
-          {errorMessage ? <div className="error-banner">{errorMessage}</div> : null}
         </section>
 
         <section className="panel jobs">
@@ -296,26 +396,38 @@ function App() {
               <div className="eyebrow">Jobs</div>
               <h3>任务列表</h3>
             </div>
+            <span className="soft-tag">每 4 秒自动刷新</span>
           </div>
           <div className="job-list">
-            {jobs.map((item) => (
-              <button
-                key={item.job.job_id}
-                className={`job-card ${selectedJobId === item.job.job_id ? "active" : ""}`}
-                onClick={() => setSelectedJobId(item.job.job_id)}
-              >
-                <div className="job-card-top">
-                  <strong>{item.job.job_id}</strong>
-                  <StatusPill status={item.job.status} />
-                </div>
-                <div className="job-model">{item.job.model}</div>
-                <div className="job-note">{item.job.notes || "无备注"}</div>
-                <div className="progress-track">
-                  <div className="progress-fill" style={{ width: `${item.phase_display.percent}%` }} />
-                </div>
-                <small>{item.phase_display.label}</small>
-              </button>
-            ))}
+            {jobs.length > 0 ? (
+              jobs.map((item) => (
+                <button
+                  key={item.job.job_id}
+                  className={`job-card ${selectedJobId === item.job.job_id ? "active" : ""}`}
+                  onClick={() => setSelectedJobId(item.job.job_id)}
+                  type="button"
+                >
+                  <div className="job-card-top">
+                    <strong>{item.job.job_id}</strong>
+                    <StatusPill status={item.job.status} />
+                  </div>
+                  <div className="job-model">{statusModelLabel(item.job.model)}</div>
+                  <div className="job-note">{item.job.notes || "无备注"}</div>
+                  <div className="job-meta-line">
+                    <span>{sourceTypeLabel(item.job.source_type)}</span>
+                    <span>{formatDateTime(item.job.created_at)}</span>
+                  </div>
+                  <div className="progress-track">
+                    <div className="progress-fill" style={{ width: `${item.phase_display.percent}%` }} />
+                  </div>
+                  <small>{item.phase_display.label}</small>
+                </button>
+              ))
+            ) : (
+              <div className="empty-state">
+                还没有任务。先上传一组图片或视频，新的客户端会把它整理成标准任务。
+              </div>
+            )}
           </div>
         </section>
 
@@ -331,47 +443,81 @@ function App() {
           {selectedJob ? (
             <div className="stack detail-stack">
               <div className="detail-hero">
-                <div>
+                <div className="detail-copy">
                   <div className="job-id">{selectedJob.job.job_id}</div>
                   <div className="detail-phase">{selectedJob.phase_display.label}</div>
                   <p>{selectedJob.job.progress_message || selectedJob.phase_display.description}</p>
+                  <div className="detail-meta-list">
+                    <span>{statusModelLabel(selectedJob.job.model)}</span>
+                    <span>{sourceTypeLabel(selectedJob.job.source_type)}</span>
+                    <span>{formatDateTime(selectedJob.job.created_at)}</span>
+                    {selectedJob.job.remote_runner ? <span>{selectedJob.job.remote_runner}</span> : null}
+                  </div>
                 </div>
-                <div className="detail-score">{selectedJob.phase_display.percent}%</div>
+                <div className="detail-score-block">
+                  <div className="detail-score">{selectedJob.phase_display.percent}%</div>
+                  <div className="soft-tag">
+                    {selectedJob.previews.length} 输入 / {selectedJob.outputs.length} 产物
+                  </div>
+                </div>
               </div>
 
               <div className="action-row">
-                <button onClick={() => postJobAction(`/api/jobs/${selectedJob.job.job_id}/dispatch`)}>运行</button>
-                <button onClick={() => postJobAction(`/api/jobs/${selectedJob.job.job_id}/retry`)}>重试</button>
-                <button onClick={() => postJobAction(`/api/jobs/${selectedJob.job.job_id}/duplicate`)}>复制</button>
-                <button className="danger" onClick={() => postJobAction(`/api/jobs/${selectedJob.job.job_id}/cancel`)}>
-                  取消
+                <button
+                  disabled={!canDispatchSelectedJob || actionKey === "dispatch"}
+                  onClick={() => postJobAction(`/api/jobs/${selectedJob.job.job_id}/dispatch`, "dispatch")}
+                  type="button"
+                >
+                  {actionKey === "dispatch" ? "正在启动..." : "运行"}
+                </button>
+                <button
+                  disabled={runningSelectedJob || actionKey === "retry"}
+                  onClick={() => postJobAction(`/api/jobs/${selectedJob.job.job_id}/retry`, "retry")}
+                  type="button"
+                >
+                  {actionKey === "retry" ? "正在重试..." : "重试"}
+                </button>
+                <button
+                  disabled={actionKey === "duplicate"}
+                  onClick={() => postJobAction(`/api/jobs/${selectedJob.job.job_id}/duplicate`, "duplicate")}
+                  type="button"
+                >
+                  {actionKey === "duplicate" ? "正在复制..." : "复制"}
+                </button>
+                <button
+                  className="danger"
+                  disabled={!runningSelectedJob || actionKey === "cancel"}
+                  onClick={() => postJobAction(`/api/jobs/${selectedJob.job.job_id}/cancel`, "cancel")}
+                  type="button"
+                >
+                  {actionKey === "cancel" ? "正在取消..." : "取消"}
                 </button>
               </div>
 
               <div className="detail-grid">
                 <article className="card-block">
-                  <h4>输入</h4>
-                  <div className="preview-grid">
-                    {selectedJob.previews.map((preview) => (
-                      <a key={preview.relative_path} className="preview-card" href={preview.url} target="_blank" rel="noreferrer">
-                        {preview.is_image ? <img src={preview.url} alt={preview.display_name} /> : null}
-                        <span>{preview.display_name}</span>
-                      </a>
-                    ))}
-                  </div>
+                  <h4>任务概览</h4>
+                  <SummaryPanel summary={selectedJob.result_summary} />
                 </article>
 
                 <article className="card-block">
-                  <h4>输出</h4>
-                  <div className="output-list">
-                    {selectedJob.outputs.length > 0 ? (
-                      selectedJob.outputs.map((output) => (
-                        <a key={output.relative_path} href={output.url} target="_blank" rel="noreferrer">
-                          {output.display_name}
+                  <h4>输入预览</h4>
+                  <div className="preview-grid">
+                    {selectedJob.previews.length > 0 ? (
+                      selectedJob.previews.map((preview) => (
+                        <a
+                          key={preview.relative_path}
+                          className="preview-card"
+                          href={preview.url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {preview.is_image ? <img src={preview.url} alt={preview.display_name} /> : null}
+                          <span>{preview.display_name}</span>
                         </a>
                       ))
                     ) : (
-                      <span className="muted-text">结果还没有回传。</span>
+                      <span className="muted-text">暂时没有输入预览。</span>
                     )}
                   </div>
                 </article>
@@ -379,7 +525,53 @@ function App() {
 
               <div className="detail-grid">
                 <article className="card-block">
-                  <h4>阶段</h4>
+                  <h4>输出产物</h4>
+                  {selectedJob.outputs.length > 0 ? (
+                    <div className="output-grid">
+                      {selectedJob.outputs.map((output) => (
+                        <article className="output-card" key={output.relative_path}>
+                          {output.is_image ? (
+                            <a href={output.url} target="_blank" rel="noreferrer">
+                              <img
+                                className="output-preview"
+                                src={output.url}
+                                alt={output.display_name}
+                              />
+                            </a>
+                          ) : (
+                            <div className={`output-preview placeholder ${output.is_pointcloud ? "pointcloud" : ""}`}>
+                              {output.is_pointcloud ? "PLY" : fileExtensionLabel(output.display_name)}
+                            </div>
+                          )}
+                          <div className="output-body">
+                            <strong>{output.display_name}</strong>
+                            <span className="muted-text">{describeOutput(output.display_name)}</span>
+                            <div className="output-actions">
+                              <a href={output.url} target="_blank" rel="noreferrer">
+                                查看
+                              </a>
+                              <a href={output.url} download>
+                                下载
+                              </a>
+                              <button
+                                disabled={actionKey === `open:${output.relative_path}`}
+                                onClick={() => openOutput(output.relative_path)}
+                                type="button"
+                              >
+                                {actionKey === `open:${output.relative_path}` ? "打开中..." : "本地打开"}
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="muted-text">结果还没有回传到本地缓存。</span>
+                  )}
+                </article>
+
+                <article className="card-block">
+                  <h4>阶段与日志</h4>
                   <div className="timeline">
                     {selectedJob.phase_display.steps.map((step) => (
                       <div className={`timeline-step ${step.state}`} key={step.code}>
@@ -388,10 +580,6 @@ function App() {
                       </div>
                     ))}
                   </div>
-                </article>
-
-                <article className="card-block">
-                  <h4>日志</h4>
                   <div className="log-list">
                     {selectedJob.logs.length > 0 ? (
                       selectedJob.logs.map((log) => (
@@ -408,15 +596,15 @@ function App() {
               </div>
             </div>
           ) : (
-            <div className="empty-state">先从左侧选择一个任务，或新建一条任务。</div>
+            <div className="empty-state">先从左侧选择一个任务，或先创建一条新的任务。</div>
           )}
         </section>
 
         <section className="panel rebuild-notes">
           <div className="section-head">
             <div>
-              <div className="eyebrow">Notes</div>
-              <h3>重构关注点</h3>
+              <div className="eyebrow">Rebuild</div>
+              <h3>当前还在推进的部分</h3>
             </div>
           </div>
           <div className="note-list">
@@ -442,8 +630,107 @@ function MetricCard(props: { label: string; value: string }) {
   );
 }
 
+function MessageBanner(props: { kind: "info" | "error"; message: string }) {
+  return (
+    <section className={`panel message-panel ${props.kind}`}>
+      <div className="message-title">{props.kind === "info" ? "提示" : "错误"}</div>
+      <div>{props.message}</div>
+    </section>
+  );
+}
+
+function SummaryPanel(props: { summary: ResultSummary | null }) {
+  if (!props.summary) {
+    return <span className="muted-text">任务摘要会在远端结果回传后自动生成。</span>;
+  }
+
+  const highlights = props.summary.highlights ?? [];
+  const nextActions = props.summary.next_actions ?? [];
+  const sceneMeta = props.summary.scene_meta ?? {};
+
+  return (
+    <div className="summary-panel">
+      <div className="summary-stats">
+        <SummaryStat label="状态" value={props.summary.status_label} />
+        <SummaryStat
+          label="耗时"
+          value={formatDuration(props.summary.duration_seconds ?? null)}
+        />
+        <SummaryStat
+          label="输入数"
+          value={String(props.summary.inputs?.count ?? props.summary.inputs?.names?.length ?? 0)}
+        />
+        <SummaryStat
+          label="产物数"
+          value={String(props.summary.artifacts?.length ?? 0)}
+        />
+      </div>
+
+      {Object.keys(sceneMeta).length > 0 ? (
+        <div className="summary-meta-grid">
+          {sceneMeta.n_pairs !== undefined ? (
+            <SummaryStat label="图像配对" value={String(sceneMeta.n_pairs)} compact />
+          ) : null}
+          {sceneMeta.n_points !== undefined ? (
+            <SummaryStat label="最终点数" value={String(sceneMeta.n_points)} compact />
+          ) : null}
+          {sceneMeta.raw_point_count !== undefined ? (
+            <SummaryStat label="原始点数" value={String(sceneMeta.raw_point_count)} compact />
+          ) : null}
+        </div>
+      ) : null}
+
+      {highlights.length > 0 ? (
+        <div className="summary-block">
+          <h5>关键结果</h5>
+          <ul>
+            {highlights.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {nextActions.length > 0 ? (
+        <div className="summary-block">
+          <h5>建议下一步</h5>
+          <ul>
+            {nextActions.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SummaryStat(props: { label: string; value: string; compact?: boolean }) {
+  return (
+    <div className={`summary-stat ${props.compact ? "compact" : ""}`}>
+      <span>{props.label}</span>
+      <strong>{props.value}</strong>
+    </div>
+  );
+}
+
 function StatusPill(props: { status: string }) {
   return <span className={`status-pill ${props.status}`}>{statusLabel(props.status)}</span>;
+}
+
+function buildActionMessage(action: string, jobId: string) {
+  switch (action) {
+    case "dispatch":
+      return `任务 ${jobId} 已开始调度。`;
+    case "retry":
+      return `任务 ${jobId} 已重新进入调度流程。`;
+    case "duplicate":
+      return `已复制出新的任务 ${jobId}。`;
+    case "cancel":
+      return `任务 ${jobId} 已请求取消。`;
+    default:
+      return `任务 ${jobId} 已更新。`;
+  }
 }
 
 function statusLabel(status: string) {
@@ -458,13 +745,90 @@ function statusLabel(status: string) {
       return "已取消";
     case "draft":
       return "草稿";
+    case "ready":
+      return "已就绪";
     default:
       return status;
   }
 }
 
+function statusModelLabel(model: string) {
+  switch (model) {
+    case "dust3r":
+      return "DUSt3R";
+    case "monst3r":
+      return "MonST3R";
+    default:
+      return model;
+  }
+}
+
+function sourceTypeLabel(sourceType: string) {
+  switch (sourceType) {
+    case "images":
+      return "图片";
+    case "video":
+      return "视频";
+    case "frames":
+      return "帧序列";
+    default:
+      return sourceType;
+  }
+}
+
 function formatParamLabel(key: string) {
   return key.replace(/_/g, " ").replace(/\b\w/g, (char: string) => char.toUpperCase());
+}
+
+function describeOutput(filename: string) {
+  const suffix = filename.split(".").pop()?.toLowerCase();
+  switch (suffix) {
+    case "png":
+    case "jpg":
+    case "jpeg":
+    case "webp":
+      return "图像预览或匹配可视化";
+    case "ply":
+      return "点云模型，可在 MeshLab 中进一步检查";
+    default:
+      return "本地任务产物";
+  }
+}
+
+function fileExtensionLabel(filename: string) {
+  const suffix = filename.split(".").pop()?.toUpperCase();
+  return suffix || "FILE";
+}
+
+function formatDateTime(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(parsed);
+}
+
+function formatDuration(value: number | null) {
+  if (!value || value <= 0) {
+    return "-";
+  }
+
+  const hours = Math.floor(value / 3600);
+  const minutes = Math.floor((value % 3600) / 60);
+  const seconds = value % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
 }
 
 export default App;

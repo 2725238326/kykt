@@ -436,6 +436,24 @@ async def open_output_file(job_id: str, relative_path: str = Form(...)):
     return JSONResponse({"ok": True, "path": str(target)})
 
 
+@app.post("/api/jobs/{job_id}/open-output")
+async def open_output_file_api(job_id: str, relative_path: str = Form(...)):
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    target = resolve_local_output(job, relative_path)
+    try:
+        os.startfile(str(target))  # type: ignore[attr-defined]
+    except AttributeError as exc:
+        raise HTTPException(status_code=400, detail="当前系统不支持用默认程序打开本地文件。") from exc
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=f"打开本地文件失败：{exc}") from exc
+
+    return JSONResponse({"ok": True, "path": str(target)})
+
+
 @app.get("/api/jobs")
 async def jobs_api():
     jobs = list_jobs(limit=50)

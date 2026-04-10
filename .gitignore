@@ -25,3 +25,6 @@ vscode-server-insiders-*.tar.gz
 # Frontend build artifacts
 node_modules/
 dist/
+*.tsbuildinfo
+Coding/4.06/vision_ui/client/src-tauri/target/
+Coding/4.06/vision_ui/client/vite.config.js

@@ -149,6 +149,11 @@ Current frontend capabilities:
 - Browser-based local job creation.
 - A new Apple-inspired client rebuild skeleton now exists under `E:\kykt\Coding\4.06\vision_ui\client`.
 - The rebuild stack choice is React + TypeScript first, with Tauri recommended as the future desktop shell.
+- 2026-04-10: The React rebuild now has a richer task detail view with result summary cards, output action cards, and local output opening through the FastAPI bridge.
+- 2026-04-10: A Tauri 2 desktop shell scaffold now exists under `E:\kykt\Coding\4.06\vision_ui\client\src-tauri`.
+- 2026-04-10: New launch scripts were added:
+  - `E:\kykt\Coding\4.06\vision_ui\start_client_rebuild.ps1`
+  - `E:\kykt\Coding\4.06\vision_ui\start_desktop_client.ps1`
 - FastAPI now exposes JSON endpoints for the rebuild client:
   - `GET /api/bootstrap`
   - `POST /api/jobs`
@@ -219,7 +224,7 @@ Current frontend capabilities:
 Still missing:
 
 - Replacing the current Jinja entry pages with the new React client as the default visible UI.
-- Wrapping the rebuild client with Tauri and moving local shell/file helpers into the desktop layer.
+- Moving beyond the current Tauri scaffold so the desktop client can bundle or supervise the Python backend more cleanly.
 - End-to-end validation of the newly parameterized DUSt3R multi-image path on the server.
 - Stronger remote process cleanup and verification after cancellation.
 - MonST3R checkpoint acquisition, one official demo run, and then a real remote inference runner with a final input/output contract.

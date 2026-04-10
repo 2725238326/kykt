@@ -33,6 +33,29 @@ export type PhaseDisplay = {
   }>;
 };
 
+export type ResultSummary = {
+  job_id: string;
+  model: string;
+  status: string;
+  status_label: string;
+  source_type: string;
+  created_at: string;
+  generated_at: string;
+  duration_seconds?: number | null;
+  inputs?: {
+    count?: number;
+    names?: string[];
+  } | null;
+  artifacts?: Array<{
+    name: string;
+    relative_path: string;
+  }> | null;
+  params?: Record<string, unknown> | null;
+  scene_meta?: Record<string, unknown> | null;
+  highlights?: string[] | null;
+  next_actions?: string[] | null;
+};
+
 export type JobPayload = {
   job: JobRecord;
   phase_display: PhaseDisplay;
@@ -56,10 +79,7 @@ export type JobPayload = {
     relative_path: string;
     tail: string;
   }>;
-  result_summary: {
-    markdown?: string | null;
-    text?: string | null;
-  } | null;
+  result_summary: ResultSummary | null;
 };
 
 export type BootstrapPayload = {
