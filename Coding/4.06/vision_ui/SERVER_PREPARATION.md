@@ -41,6 +41,16 @@ Current frontend state:
 - local runner skeleton exists at `runners/monst3r_runner.py`.
 - remote execution currently returns a preparation message instead of real inference.
 
+Current server state:
+
+- Repo exists at `/hdd3/kykt26/code/monst3r`.
+- Repo commit is `574cc77`.
+- Submodules `croco` and `viser` are present.
+- Conda env `monst3r` exists.
+- Torch check passed: `2.5.1+cu121`, CUDA available, 4 GPUs visible.
+- Requirements were installed with `torch` and `torchvision` excluded to preserve the working CUDA stack.
+- Official checkpoint download is not complete. A residual interrupted `download_ckpt.sh` / `wget models.zip` process was stopped on 2026-04-10.
+
 ### What needs to be prepared on the server
 
 1. Clone the MonST3R repo to a stable location, for example:
@@ -54,6 +64,18 @@ Current frontend state:
 4. Download and store the required pretrained checkpoints.
 5. Run the official demo manually once on the server.
 6. Decide the standard remote output contract.
+
+Progress:
+
+- Steps 1 to 3 are done enough for the first demo attempt.
+- Step 4 is the active blocker.
+
+Checkpoint sources from `data/download_ckpt.sh`:
+
+- Main MonST3R checkpoint from Google Drive file id `1Z1jO_JmfZj0z3bgMvCwqfUhyZ1bIbc9E`, saved under `/hdd3/kykt26/code/monst3r/checkpoints`.
+- SEA-RAFT `models.zip` from Dropbox URL `https://www.dropbox.com/s/4j4z58wuv8o0mfz/models.zip`, unzipped under `/hdd3/kykt26/code/monst3r/third_party/RAFT/models`.
+- Additional RAFT checkpoint from Google Drive file id `1a0C5FTdhjM4rKrfXiGhec7eq2YM141lu`, saved under `/hdd3/kykt26/code/monst3r/third_party/RAFT/models`.
+- SAM2 checkpoint `sam2.1_hiera_large.pt` from Meta's public file host, saved under `/hdd3/kykt26/code/monst3r/third_party/sam2/checkpoints`.
 
 ### Recommended MonST3R output contract
 
