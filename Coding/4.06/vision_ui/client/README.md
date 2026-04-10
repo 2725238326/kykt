@@ -24,7 +24,7 @@ http://127.0.0.1:5173
 
 The desktop entry starts:
 
-- FastAPI backend on `127.0.0.1:8000`
+- FastAPI backend on `127.0.0.1:8765`
 - Vite dev server through Tauri
 - Tauri 2 desktop shell
 
@@ -39,7 +39,7 @@ E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\nsis\KYKT V
 E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\msi\KYKT Vision Client_0.1.0_x64_en-US.msi
 ```
 
-The release executable checks `127.0.0.1:8000` on startup. If the backend is not already running, it locates the `vision_ui` project root and starts `.venv\Scripts\python.exe -m uvicorn app:app` in the background. The backend log is written to:
+The release executable checks `127.0.0.1:8765` on startup. If the backend is not already running, it locates the `vision_ui` project root and starts `.venv\Scripts\python.exe -m uvicorn app:app --port 8765` in the background. The backend log is written to:
 
 ```text
 E:\kykt\Coding\4.06\vision_ui\local_jobs\_desktop\backend.log

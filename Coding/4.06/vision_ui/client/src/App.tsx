@@ -8,7 +8,7 @@ import type {
   ResultSummary
 } from "./types";
 
-const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8765").replace(/\/$/, "");
 
 const DEFAULT_BOOTSTRAP: BootstrapPayload = {
   summary: { total: 0, running: 0, finished: 0, failed: 0, cancelled: 0 },
@@ -50,10 +50,10 @@ const defaultDust3rParams = {
 };
 
 const defaultMonst3rParams = {
-  image_size: "512",
+  image_size: "224",
   batch_size: "1",
   fps: "0",
-  num_frames: "80",
+  num_frames: "24",
   not_batchify: "true",
   real_time: "false",
   window_wise: "false",

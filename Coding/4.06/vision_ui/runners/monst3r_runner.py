@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import select
 import shutil
 import subprocess
 import sys
@@ -137,7 +139,7 @@ def build_demo_command(repo: Path, job_dir: Path, job: dict, weights: Path, inpu
         "image_size": image_size,
         "batch_size": param_int(params, "batch_size", 1, minimum=1, maximum=16),
         "fps": param_int(params, "fps", 0, minimum=0, maximum=120),
-        "num_frames": param_int(params, "num_frames", 80, minimum=1, maximum=2000),
+        "num_frames": param_int(params, "num_frames", 24, minimum=1, maximum=2000),
         "not_batchify": param_bool(params, "not_batchify", True),
         "real_time": param_bool(params, "real_time", False),
         "window_wise": param_bool(params, "window_wise", False),
@@ -166,7 +168,6 @@ def build_demo_command(repo: Path, job_dir: Path, job: dict, weights: Path, inpu
         str(normalized["fps"]),
         "--num_frames",
         str(normalized["num_frames"]),
-        "--silent",
     ]
 
     if normalized["not_batchify"]:
@@ -188,8 +189,13 @@ def build_demo_command(repo: Path, job_dir: Path, job: dict, weights: Path, inpu
 
 
 def run_demo(command: list[str], repo: Path, job_dir: Path) -> None:
-    write_status(job_dir, "running_matches", "正在启动 MonST3R 官方 demo...", "0/1")
+    write_status(job_dir, "running_matches", "正在启动 MonST3R 官方 demo，首次加载模型会比较慢...", "0/1")
     print("MonST3R command:", " ".join(command), flush=True)
+
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+    env["MPLBACKEND"] = "Agg"
+    env["GRADIO_ANALYTICS_ENABLED"] = "False"
 
     process = subprocess.Popen(
         command,
@@ -200,28 +206,69 @@ def run_demo(command: list[str], repo: Path, job_dir: Path) -> None:
         encoding="utf-8",
         errors="replace",
         bufsize=1,
+        env=env,
     )
 
     last_line = ""
+    started_at = time.monotonic()
+    last_heartbeat = 0.0
     assert process.stdout is not None
+
+    while process.poll() is None:
+        ready, _, _ = select.select([process.stdout], [], [], 5)
+        if ready:
+            raw_line = process.stdout.readline()
+            if not raw_line:
+                continue
+            line = raw_line.rstrip()
+            if not line:
+                continue
+            last_line = line[-500:]
+            print(line, flush=True)
+            status_line = classify_status_line(line)
+            if status_line is not None:
+                phase, message = status_line
+                write_status(job_dir, phase, message)
+            continue
+
+        elapsed = int(time.monotonic() - started_at)
+        if elapsed - last_heartbeat >= 15:
+            last_heartbeat = float(elapsed)
+            write_status(
+                job_dir,
+                "running_matches",
+                f"MonST3R 正在加载模型/读取输入/推理中，已运行 {elapsed} 秒。首次运行几分钟内没有详细日志是正常的。",
+            )
+
     for raw_line in process.stdout:
         line = raw_line.rstrip()
-        if not line:
-            continue
-        last_line = line[-500:]
-        print(line, flush=True)
-        lower = line.lower()
-        phase = "running_matches"
-        if "global alignment" in lower or "optim" in lower:
-            phase = "running_alignment"
-        elif "save" in lower or "output" in lower or "processing completed" in lower:
-            phase = "saving_outputs"
-        write_status(job_dir, phase, last_line)
+        if line:
+            last_line = line[-500:]
+            print(line, flush=True)
+            status_line = classify_status_line(line)
+            if status_line is not None:
+                phase, message = status_line
+                write_status(job_dir, phase, message)
 
     return_code = process.wait()
     if return_code != 0:
         write_status(job_dir, "failed", f"MonST3R demo.py 运行失败，返回码 {return_code}。最后日志：{last_line}")
         raise RuntimeError(f"MonST3R demo.py failed with exit code {return_code}: {last_line}")
+
+
+def classify_status_line(line: str) -> tuple[str, str] | None:
+    lower = line.lower()
+    if "futurewarning" in lower or "torch.cuda.amp.autocast" in lower:
+        return None
+    if "processing completed" in lower:
+        return ("saving_outputs", "MonST3R 推理完成，正在整理输出。")
+    if "global alignment" in lower or "optim" in lower:
+        return ("running_alignment", line[-400:])
+    if "save" in lower or "output" in lower:
+        return ("saving_outputs", line[-400:])
+    if "loading" in lower or "loaded" in lower or "model" in lower:
+        return ("running_matches", line[-400:])
+    return ("running_matches", line[-400:])
 
 
 def copy_artifacts(demo_seq_dir: Path, output_dir: Path) -> list[dict]:

@@ -10,9 +10,16 @@ function Invoke-RemoteBash {
         [string]$Script
     )
 
-    $Script | ssh $HostAlias bash -s --
-    if ($LASTEXITCODE -ne 0) {
-        throw "Remote command failed with exit code $LASTEXITCODE."
+    $Script = $Script -replace [string][char]0xFEFF, ""
+    $tmp = New-TemporaryFile
+    try {
+        [System.IO.File]::WriteAllText($tmp.FullName, $Script, [System.Text.UTF8Encoding]::new($false))
+        cmd /c "type `"$($tmp.FullName)`" | ssh $HostAlias bash -s --"
+        if ($LASTEXITCODE -ne 0) {
+            throw "Remote command failed with exit code $LASTEXITCODE."
+        }
+    } finally {
+        Remove-Item -LiteralPath $tmp.FullName -Force -ErrorAction SilentlyContinue
     }
 }
 

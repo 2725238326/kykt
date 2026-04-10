@@ -147,10 +147,10 @@ def cancel_remote_job(job_id: str) -> None:
     cleanup_message = "已请求取消任务。"
     if remote_job_dir:
         try:
-            _ssh(config, f"pkill -f {shlex.quote(remote_job_dir)} || true")
+            _kill_remote_job_processes(config, remote_job_dir)
             cleanup_message = "已请求取消任务，并尝试清理远端进程。"
         except Exception as exc:
-            cleanup_message = f"已在本地取消任务，但远端清理失败：{exc}"
+            cleanup_message = f"已在本地取消任务；远端清理未确认成功，可稍后检查 GPU 进程。原因：{exc}"
 
     update_job(
         job_id,
@@ -218,8 +218,8 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     cmd = (
         f"set -o pipefail && "
         f"cd {shlex.quote(config.remote_dust3r_repo)} && "
-        f"conda run -n {shlex.quote(config.remote_dust3r_env)} "
-        f"python {shlex.quote(runner_path)} "
+        f"conda run --no-capture-output -n {shlex.quote(config.remote_dust3r_env)} "
+        f"python -u {shlex.quote(runner_path)} "
         f"--job-dir {shlex.quote(remote_job_dir)} "
         f"--model {shlex.quote(config.remote_dust3r_model)} "
         f"--repo {shlex.quote(config.remote_dust3r_repo)} "
@@ -257,8 +257,8 @@ def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> N
     cmd = (
         f"set -o pipefail && "
         f"cd {shlex.quote(config.remote_monst3r_repo)} && "
-        f"conda run -n {shlex.quote(config.remote_monst3r_env)} "
-        f"python {shlex.quote(runner_path)} "
+        f"conda run --no-capture-output -n {shlex.quote(config.remote_monst3r_env)} "
+        f"python -u {shlex.quote(runner_path)} "
         f"--job-dir {shlex.quote(remote_job_dir)} "
         f"--repo {shlex.quote(config.remote_monst3r_repo)} "
         f"--weights {shlex.quote(weights_path)} "
@@ -278,6 +278,62 @@ def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> N
         remote_job_dir=remote_job_dir,
         local_log_path=local_log,
     )
+
+
+def _kill_remote_job_processes(config: ServerConfig, remote_job_dir: str) -> None:
+    """Terminate only MonST3R/DUSt3R processes that reference this job directory.
+
+    Avoid `pkill -f <job_dir>` because that can match and kill the SSH shell
+    currently running the cancellation command, which reports as a scary local
+    SSH failure even when the user's intent was simply "cancel".
+    """
+    script = f"""
+python3 - <<'PY'
+import os
+import signal
+import subprocess
+import time
+
+job = {remote_job_dir!r}
+needles = ("monst3r_runner.py", "dust3r_runner.py", "demo.py")
+current = os.getpid()
+
+def matching_pids():
+    out = subprocess.check_output(["ps", "-eo", "pid=,args="], text=True, errors="ignore")
+    pids = []
+    for line in out.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        pid_text, _, args = stripped.partition(" ")
+        try:
+            pid = int(pid_text)
+        except ValueError:
+            continue
+        if pid == current:
+            continue
+        if job in args and any(needle in args for needle in needles):
+            pids.append(pid)
+    return sorted(set(pids))
+
+pids = matching_pids()
+for pid in pids:
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+
+time.sleep(2)
+for pid in matching_pids():
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+
+print("cancelled_pids=" + ",".join(map(str, pids)))
+PY
+"""
+    _ssh(config, script)
 
 
 def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) -> list[str]:
@@ -456,6 +512,28 @@ def _clean_progress_line(raw_line: str) -> str:
     return cleaned.strip()
 
 
+def _displayable_remote_progress(cleaned: str) -> str | None:
+    """Return a user-facing progress line, filtering noisy framework warnings."""
+    if not cleaned:
+        return None
+
+    lower = cleaned.lower()
+    ignored_fragments = [
+        "futurewarning",
+        "torch.cuda.amp.autocast",
+        "cannot find cuda-compiled version of rope2d",
+        "using a slow pytorch version instead",
+    ]
+    if any(fragment in lower for fragment in ignored_fragments):
+        return None
+
+    if cleaned.startswith("MonST3R command:"):
+        return "MonST3R 命令已启动，正在等待模型加载和推理输出..."
+    if cleaned.startswith("DUSt3R command:"):
+        return "DUSt3R 命令已启动，正在等待模型加载和重建输出..."
+    return cleaned
+
+
 def _ssh_stream(
     config: ServerConfig,
     shell_script: str,
@@ -493,13 +571,15 @@ def _ssh_stream(
                 cleaned = _clean_progress_line(raw_line)
                 log_file.write(cleaned + ("\n" if cleaned else ""))
                 log_file.flush()
-                if cleaned:
-                    last_message = cleaned[-400:]
+                display_line = _displayable_remote_progress(cleaned)
+                if display_line:
+                    last_message = display_line[-400:]
                     # Auto-detect phase transitions from runner output
                     detected_phase = phase
-                    if "alignment" in cleaned.lower():
+                    lowered = display_line.lower()
+                    if "alignment" in lowered:
                         detected_phase = "running_remote_matches"
-                    elif "point cloud" in cleaned.lower() or "exporting" in cleaned.lower():
+                    elif "point cloud" in lowered or "exporting" in lowered:
                         detected_phase = "running_remote_pointcloud"
                     update_job(job_id, phase=detected_phase, progress_message=last_message)
 

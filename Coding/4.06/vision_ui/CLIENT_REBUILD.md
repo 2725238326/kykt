@@ -56,7 +56,7 @@ The Tauri 2 shell has now been scaffolded under:
 
 Current assumption:
 
-- Tauri checks `127.0.0.1:8000` on startup.
+- Tauri checks `127.0.0.1:8765` on startup.
 - If no backend is listening, Tauri starts the local FastAPI backend from the `vision_ui` project root.
 - Backend logs from the desktop-supervised process are written to `local_jobs\_desktop\backend.log`.
 - The React client reads the Tauri backend status command and shows whether the backend was reused or started by the desktop shell.

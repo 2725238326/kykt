@@ -28,9 +28,9 @@ KYKT Vision Client_0.1.0_x64_en-US.msi
 
 这版桌面程序会自动托管本地后端：
 
-1. 启动时先检查 `127.0.0.1:8000`。
+1. 启动时先检查 `127.0.0.1:8765`。
 2. 如果 FastAPI 已经在运行，就直接复用。
-3. 如果没有运行，就从 `E:\kykt\Coding\4.06\vision_ui` 找到 `.venv\Scripts\python.exe`，自动执行 `python -m uvicorn app:app --host 127.0.0.1 --port 8000`。
+3. 如果没有运行，就从 `E:\kykt\Coding\4.06\vision_ui` 找到 `.venv\Scripts\python.exe`，自动执行 `python -m uvicorn app:app --host 127.0.0.1 --port 8765`。
 4. 后端日志写到 `E:\kykt\Coding\4.06\vision_ui\local_jobs\_desktop\backend.log`。
 
 最新体验修正：
@@ -38,6 +38,7 @@ KYKT Vision Client_0.1.0_x64_en-US.msi
 - release 版不再弹出黑色命令行窗口。
 - 打开时如果后端还没完全启动，会显示“正在准备本地服务”，不会直接显示裸 `fetch` 报错。
 - 首页已经收敛为简洁工作台，高级参数默认折叠。
+- 桌面端改用专用后端端口 `8765`，避免误连到旧的 `8000` 调试服务。
 
 ## 如果换目录
 

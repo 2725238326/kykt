@@ -24,8 +24,8 @@ export default defineConfig({
       ignored: ["**/src-tauri/**"]
     },
     proxy: {
-      "/api": "http://127.0.0.1:8000",
-      "/local_jobs": "http://127.0.0.1:8000"
+      "/api": "http://127.0.0.1:8765",
+      "/local_jobs": "http://127.0.0.1:8765"
     }
   },
   build: {

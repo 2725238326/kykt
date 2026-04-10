@@ -3,11 +3,12 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $clientDir = Join-Path $root "client"
 $nodeModules = Join-Path $clientDir "node_modules"
+$backendPort = 8765
 
 function Ensure-Backend {
-    $listener = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue
+    $listener = Get-NetTCPConnection -LocalPort $backendPort -State Listen -ErrorAction SilentlyContinue
     if ($listener) {
-        Write-Host "Backend already listening on 127.0.0.1:8000" -ForegroundColor Green
+        Write-Host "Backend already listening on 127.0.0.1:$backendPort" -ForegroundColor Green
         return
     }
 
@@ -17,7 +18,9 @@ function Ensure-Backend {
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        (Join-Path $root "start.ps1")
+        (Join-Path $root "start.ps1"),
+        "-Port",
+        "$backendPort"
     ) | Out-Null
 
     Start-Sleep -Seconds 2
@@ -41,4 +44,5 @@ Ensure-Backend
 Ensure-NodeModules
 
 Set-Location $clientDir
+$env:VITE_API_BASE = "http://127.0.0.1:$backendPort"
 npm run desktop:dev

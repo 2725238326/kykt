@@ -16,7 +16,7 @@ use tauri::Manager;
 use std::os::windows::process::CommandExt;
 
 const BACKEND_HOST: &str = "127.0.0.1";
-const BACKEND_PORT: u16 = 8000;
+const BACKEND_PORT: u16 = 8765;
 const BACKEND_WAIT_SECS: u64 = 20;
 
 #[cfg(windows)]
@@ -92,7 +92,7 @@ fn ensure_backend(app: &tauri::App) -> BackendStatus {
         return BackendStatus {
             running: true,
             managed_by_tauri: false,
-            message: "FastAPI backend is already listening on 127.0.0.1:8000.".to_string(),
+            message: "FastAPI backend is already listening on 127.0.0.1:8765.".to_string(),
             backend_root: None,
             log_path: None,
         };
@@ -131,7 +131,7 @@ fn ensure_backend(app: &tauri::App) -> BackendStatus {
                 BackendStatus {
                     running: false,
                     managed_by_tauri: true,
-                    message: "Backend process started, but port 8000 did not become ready in time.".to_string(),
+                    message: "Backend process started, but port 8765 did not become ready in time.".to_string(),
                     backend_root: Some(backend_root.display().to_string()),
                     log_path: Some(log_path.display().to_string()),
                 }

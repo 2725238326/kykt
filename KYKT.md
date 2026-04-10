@@ -1,6 +1,6 @@
 # KYKT Project Sync
 
-Last updated: 2026-04-10
+Last updated: 2026-04-11
 
 ## Project Lines
 
@@ -154,7 +154,8 @@ Current frontend capabilities:
 - The rebuild stack choice is React + TypeScript first, with Tauri recommended as the future desktop shell.
 - 2026-04-10: The React rebuild now has a richer task detail view with result summary cards, output action cards, and local output opening through the FastAPI bridge.
 - 2026-04-10: A Tauri 2 desktop shell scaffold now exists under `E:\kykt\Coding\4.06\vision_ui\client\src-tauri`.
-- 2026-04-10: The Tauri desktop release now supervises the local FastAPI backend automatically. If port `127.0.0.1:8000` is already in use, it reuses that backend; otherwise it starts `.venv\Scripts\python.exe -m uvicorn app:app` from the project root and writes backend logs to `E:\kykt\Coding\4.06\vision_ui\local_jobs\_desktop\backend.log`.
+- 2026-04-10: The Tauri desktop release now supervises the local FastAPI backend automatically. It starts `.venv\Scripts\python.exe -m uvicorn app:app` from the project root and writes backend logs to `E:\kykt\Coding\4.06\vision_ui\local_jobs\_desktop\backend.log`.
+- 2026-04-11: The desktop/rebuild client backend was moved to the dedicated local port `127.0.0.1:8765` to avoid accidentally reusing old `8000` debug backends.
 - 2026-04-11: Easy-to-find desktop release copies are available at `E:\kykt\release\kykt_vision_client`.
 - Desktop build artifacts are also available at:
   - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\kykt_vision_client.exe`
@@ -162,6 +163,7 @@ Current frontend capabilities:
   - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\msi\KYKT Vision Client_0.1.0_x64_en-US.msi`
 - The desktop React UI now shows local backend status when it is running inside Tauri, including whether the backend was started by the desktop shell and where the backend log is written.
 - 2026-04-11: Desktop UX cleanup pass: the release executable now uses the Windows GUI subsystem to avoid a black console window, the React app waits/retries while the local FastAPI backend starts instead of exposing raw `fetch` errors, and the first screen was simplified into a clean task workbench with advanced parameters folded away by default.
+- 2026-04-11: MonST3R dispatch hardening pass: the remote runner defaults were made conservative for first tests (`image_size=224`, `num_frames=24` from the client), `conda run --no-capture-output` is used so stdout reaches the local live log, noisy PyTorch/RoPE warning lines are filtered out of the user-facing progress, and the runner emits heartbeat status while model loading/inference is quiet.
 - 2026-04-10: New launch scripts were added:
   - `E:\kykt\Coding\4.06\vision_ui\start_client_rebuild.ps1`
   - `E:\kykt\Coding\4.06\vision_ui\start_desktop_client.ps1`
@@ -221,7 +223,7 @@ Current frontend capabilities:
 - 2026-04-07: Output presentation was refined. The task artifact grid now focuses on core results and hides JSON/log files there; logs remain in the dedicated live log section.
 - Point cloud cards now support an enlarged in-page modal viewer, `.ply` download, and local default-app opening via the local FastAPI backend.
 - DUSt3R match visualization gained `match_viz_count`, exposed in the advanced parameters. The remote runner now draws reciprocal match lines for the first image pair when this value is greater than zero; otherwise it falls back to a view preview.
-- A lightweight cancel action was added. It marks a running job as cancelled locally and tries to `pkill` the remote process by matching the remote job directory string.
+- A lightweight cancel action was added. It marks a running job as cancelled locally and uses a safer remote process scan that targets only DUSt3R/MonST3R runner processes referencing the remote job directory.
 - 2026-04-07: Browser-side point cloud preview was removed because `.ply` parsing still made the page feel sluggish.
 - Point cloud cards now only provide two actions: open the `.ply` with the local default application, intended for MeshLab, and download the `.ply`.
 - The Three.js/OrbitControls/PLY viewer scripts are no longer loaded by the job detail page.
@@ -238,8 +240,8 @@ Still missing:
 - Replacing the current Jinja entry pages with the new React client as the default visible UI.
 - A fully portable package that bundles Python/runtime dependencies. The current desktop exe supervises the existing project `.venv`; if the project root is moved, set `KYKT_BACKEND_ROOT` to `E:\kykt\Coding\4.06\vision_ui` or the new backend root.
 - End-to-end validation of the newly parameterized DUSt3R multi-image path on the server.
-- Stronger remote process cleanup and verification after cancellation.
-- First end-to-end MonST3R client run with one video or one frame sequence, followed by output quality inspection.
+- Stronger remote process cleanup verification after cancellation.
+- First end-to-end MonST3R client run with one short video or one small frame sequence, followed by output quality inspection.
 - A final MonST3R input/output contract after observing the real `.glb`, trajectory, depth, and confidence artifacts on a few examples.
 - Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
 - Exact server-written progress ingestion for every major phase, instead of only mixed local/remote progress approximation.
@@ -295,7 +297,7 @@ Priority order:
 
 1. Stabilize the frontend task system.
 2. Improve remote observability with richer server-written status.
-3. Use the new pure-SSH helper scripts to finish one MonST3R checkpoint validation and then one official demo run.
+3. Use the rebuilt client or pure-SSH helper scripts to finish one short MonST3R validation run and inspect returned GLB/depth/trajectory artifacts.
 4. Make DUSt3R multi-image jobs more reliable and configurable.
 5. Add better result viewing for GLB / trajectory / depth / confidence artifacts after observing real MonST3R outputs.
 6. Validate MonST3R as a remote runner for video/frame-sequence tasks.
@@ -306,8 +308,8 @@ Priority order:
 These are the main blockers between the current state and a more deliverable tool:
 
 1. DUSt3R multi-image flow needs one full validation run with 3 to 5 images and reviewed outputs.
-2. Remote cancellation and cleanup still need to become more reliable.
-3. MonST3R runner integration exists, but it still needs the first complete client-triggered server run and output quality inspection.
+2. Remote cancellation cleanup is safer than before, but still needs post-cancel verification in a real stuck job.
+3. MonST3R runner integration now has better logging/defaults, but it still needs the first complete client-triggered server run and output quality inspection.
 4. Result packaging and task reporting are still too manual.
 5. Recovery and operator guidance still need to be clearer when something hangs or only partially finishes.
 
