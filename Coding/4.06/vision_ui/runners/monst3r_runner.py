@@ -22,6 +22,7 @@ from pathlib import Path
 DEFAULT_WEIGHTS = "checkpoints/MonST3R_PO-TA-S-W_ViTLarge_BaseDecoder_512_dpt.pth"
 REQUIRED_RELATIVE_PATHS = [
     DEFAULT_WEIGHTS,
+    "third_party/RAFT/models/raft-things.pth",
     "third_party/RAFT/models/Tartan-C-T-TSKH-spring540x960-M.pth",
     "third_party/sam2/checkpoints/sam2.1_hiera_large.pt",
 ]
