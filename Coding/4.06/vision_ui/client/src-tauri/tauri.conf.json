@@ -14,10 +14,10 @@
       {
         "label": "main",
         "title": "KYKT Vision Client",
-        "width": 1480,
-        "height": 960,
-        "minWidth": 1180,
-        "minHeight": 760,
+        "width": 1200,
+        "height": 820,
+        "minWidth": 960,
+        "minHeight": 680,
         "resizable": true,
         "center": true
       }

@@ -161,6 +161,7 @@ Current frontend capabilities:
   - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\nsis\KYKT Vision Client_0.1.0_x64-setup.exe`
   - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\msi\KYKT Vision Client_0.1.0_x64_en-US.msi`
 - The desktop React UI now shows local backend status when it is running inside Tauri, including whether the backend was started by the desktop shell and where the backend log is written.
+- 2026-04-11: Desktop UX cleanup pass: the release executable now uses the Windows GUI subsystem to avoid a black console window, the React app waits/retries while the local FastAPI backend starts instead of exposing raw `fetch` errors, and the first screen was simplified into a clean task workbench with advanced parameters folded away by default.
 - 2026-04-10: New launch scripts were added:
   - `E:\kykt\Coding\4.06\vision_ui\start_client_rebuild.ps1`
   - `E:\kykt\Coding\4.06\vision_ui\start_desktop_client.ps1`

@@ -33,6 +33,12 @@ KYKT Vision Client_0.1.0_x64_en-US.msi
 3. 如果没有运行，就从 `E:\kykt\Coding\4.06\vision_ui` 找到 `.venv\Scripts\python.exe`，自动执行 `python -m uvicorn app:app --host 127.0.0.1 --port 8000`。
 4. 后端日志写到 `E:\kykt\Coding\4.06\vision_ui\local_jobs\_desktop\backend.log`。
 
+最新体验修正：
+
+- release 版不再弹出黑色命令行窗口。
+- 打开时如果后端还没完全启动，会显示“正在准备本地服务”，不会直接显示裸 `fetch` 报错。
+- 首页已经收敛为简洁工作台，高级参数默认折叠。
+
 ## 如果换目录
 
 当前不是完全便携版，它依赖现有项目目录和 `.venv`。
