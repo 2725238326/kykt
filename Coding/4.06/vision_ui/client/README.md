@@ -1,6 +1,6 @@
 # KYKT Vision Client
 
-React + TypeScript rebuild for the local vision desktop-style client. The desktop shell is now scaffolded with Tauri 2.
+React + TypeScript rebuild for the local vision desktop-style client. The desktop shell uses Tauri 2 and can supervise the local FastAPI backend.
 
 ## Run
 
@@ -24,9 +24,25 @@ http://127.0.0.1:5173
 
 The desktop entry starts:
 
-- existing FastAPI backend on `127.0.0.1:8000`
+- FastAPI backend on `127.0.0.1:8000`
 - Vite dev server through Tauri
 - Tauri 2 desktop shell
+
+Release app / installers:
+
+```text
+E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\kykt_vision_client.exe
+E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\nsis\KYKT Vision Client_0.1.0_x64-setup.exe
+E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\msi\KYKT Vision Client_0.1.0_x64_en-US.msi
+```
+
+The release executable checks `127.0.0.1:8000` on startup. If the backend is not already running, it locates the `vision_ui` project root and starts `.venv\Scripts\python.exe -m uvicorn app:app` in the background. The backend log is written to:
+
+```text
+E:\kykt\Coding\4.06\vision_ui\local_jobs\_desktop\backend.log
+```
+
+If the project root moves, set `KYKT_BACKEND_ROOT` to the `vision_ui` directory before launching the app.
 
 ## Current scope
 
@@ -38,9 +54,10 @@ The desktop entry starts:
 - Apple-inspired visual direction
 - output cards with local open / view / download actions
 - Tauri 2 shell scaffold under `src-tauri`
+- Tauri-managed local backend process for the release executable
 
 ## Next
 
 - replace current Jinja entry pages as the default launch target
-- add MonST3R-specific creation flow
-- decide how Python backend should be embedded or bundled for release builds
+- first end-to-end MonST3R validation through the desktop client
+- decide whether to fully bundle Python/.venv for portable release builds
