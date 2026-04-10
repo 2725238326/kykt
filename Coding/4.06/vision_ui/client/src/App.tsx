@@ -69,6 +69,15 @@ type FormState = {
   typeof defaultMonst3rParams;
 
 type ServiceState = "starting" | "ready" | "degraded";
+type OutputItem = JobPayload["outputs"][number];
+type OutputSection = {
+  key: string;
+  title: string;
+  description: string;
+  accent: "blue" | "green" | "gold" | "slate";
+  defaultOpen: boolean;
+  items: OutputItem[];
+};
 
 function App() {
   const [bootstrap, setBootstrap] = useState<BootstrapPayload | null>(null);
@@ -95,7 +104,6 @@ function App() {
   const serviceReady = serviceState === "ready";
   const isDust3r = formState.model === "dust3r";
   const isMonst3r = formState.model === "monst3r";
-  const selectedFileCount = files.length;
   const selectedModel = useMemo(
     () => bootstrapData.models.find((item) => item.value === formState.model),
     [bootstrapData.models, formState.model]
@@ -504,11 +512,16 @@ function App() {
                     onClick={() => setSelectedJobId(item.job.job_id)}
                     type="button"
                   >
-                    <div>
+                    <div className="job-card-head">
                       <strong>{item.job.job_id}</strong>
-                      <p>{item.job.notes || statusModelLabel(item.job.model)}</p>
+                      <span className="job-card-percent">{item.phase_display.percent}%</span>
                     </div>
-                    <StatusBadge state={item.job.status} label={statusLabel(item.job.status)} />
+                    <div>
+                      <p>{item.phase_display.label}</p>
+                      <span className="job-card-meta">
+                        {statusModelLabel(item.job.model)} · {statusLabel(item.job.status)}
+                      </span>
+                    </div>
                     <div className="progress-track">
                       <div className="progress-fill" style={{ width: `${item.phase_display.percent}%` }} />
                     </div>
@@ -556,15 +569,49 @@ function JobDetail(props: {
   onOpenOutput: (relativePath: string) => Promise<void>;
 }) {
   const job = props.selectedJob.job;
+  const summary = props.selectedJob.result_summary;
+  const latestLogLine = getLatestLogLine(props.selectedJob.logs);
+  const outputSections = buildOutputSections(props.selectedJob.outputs, job.model);
+  const progress = props.selectedJob.phase_display;
+
   return (
     <div className="detail-stack">
-      <div className="detail-topline">
-        <div>
-          <StatusBadge state={job.status} label={statusLabel(job.status)} />
-          <h3>{props.selectedJob.phase_display.label}</h3>
-          <p>{job.progress_message || props.selectedJob.phase_display.description}</p>
+      <div className={`detail-hero ${job.status}`}>
+        <div className="detail-hero-head">
+          <div className="hero-copy">
+            <div className="hero-badges">
+              <StatusBadge state={job.status} label={statusLabel(job.status)} />
+              <span className="hero-tag">{statusModelLabel(job.model)}</span>
+              <span className="hero-tag">{sourceTypeLabel(job.source_type)}</span>
+            </div>
+            <h3>{progress.label}</h3>
+            <p>{job.progress_message || progress.description}</p>
+          </div>
+          <div className="detail-score-block">
+            <div className="detail-score">{progress.percent}%</div>
+            <span>{currentStepLabel(progress.steps)}</span>
+          </div>
         </div>
-        <div className="detail-score">{props.selectedJob.phase_display.percent}%</div>
+
+        <div className="hero-progress">
+          <div className="hero-progress-track">
+            <div className="hero-progress-fill" style={{ width: `${progress.percent}%` }} />
+          </div>
+          <div className="hero-progress-labels">
+            <span>当前阶段：{progress.label}</span>
+            <span>{job.job_id}</span>
+          </div>
+        </div>
+
+        <div className="step-grid">
+          {progress.steps.map((step, index) => (
+            <article className={`step-card ${step.state}`} key={step.code}>
+              <span className="step-index">{index + 1}</span>
+              <strong>{step.label}</strong>
+              <p>{step.hint}</p>
+            </article>
+          ))}
+        </div>
       </div>
 
       <div className="action-row">
@@ -599,6 +646,20 @@ function JobDetail(props: {
         </button>
       </div>
 
+      <div className="meta-grid">
+        <MetaCard label="创建时间" value={formatDateTime(job.created_at)} />
+        <MetaCard label="输入数量" value={String(summary?.inputs?.count ?? job.input_items.length ?? 0)} />
+        <MetaCard label="回传产物" value={String(summary?.artifacts?.length ?? props.selectedJob.outputs.length)} />
+        <MetaCard label="最新日志" value={latestLogLine || "尚无有效日志"} compact />
+      </div>
+
+      {job.error_message ? (
+        <article className="soft-panel error-panel">
+          <h4>错误原因</h4>
+          <p>{job.error_message}</p>
+        </article>
+      ) : null}
+
       <div className="result-grid">
         <article className="soft-panel">
           <h4>结果摘要</h4>
@@ -628,36 +689,55 @@ function JobDetail(props: {
       </div>
 
       <article className="soft-panel">
-        <h4>输出</h4>
-        {props.selectedJob.outputs.length > 0 ? (
-          <div className="output-grid">
-            {props.selectedJob.outputs.map((output) => (
-              <article className="output-card" key={output.relative_path}>
-                {output.is_image ? (
-                  <a href={props.assetUrl(output.url)} target="_blank" rel="noreferrer">
-                    <img className="output-preview" src={props.assetUrl(output.url)} alt={output.display_name} />
-                  </a>
-                ) : (
-                  <div className="output-preview placeholder">
-                    {output.is_pointcloud ? "PLY" : output.is_model3d ? "GLB" : fileExtensionLabel(output.display_name)}
+        <div className="section-head">
+          <div>
+            <h4>输出结果</h4>
+            <p>按用途分组展示，不再把 MonST3R / DUSt3R 产物全都摊成一排。</p>
+          </div>
+          <span className="section-pill">{props.selectedJob.outputs.length} 个文件</span>
+        </div>
+        {outputSections.length > 0 ? (
+          <div className="output-section-list">
+            {outputSections.map((section) => (
+              <details className={`output-section ${section.accent}`} key={section.key} open={section.defaultOpen}>
+                <summary>
+                  <div>
+                    <strong>{section.title}</strong>
+                    <p>{section.description}</p>
                   </div>
-                )}
-                <div>
-                  <strong>{output.display_name}</strong>
-                  <p>{describeOutput(output.display_name)}</p>
-                  <div className="output-actions">
-                    <a href={props.assetUrl(output.url)} target="_blank" rel="noreferrer">
-                      查看
-                    </a>
-                    <a href={props.assetUrl(output.url)} download>
-                      下载
-                    </a>
-                    <button onClick={() => props.onOpenOutput(output.relative_path)} type="button">
-                      本地打开
-                    </button>
-                  </div>
+                  <span className="section-pill">{section.items.length}</span>
+                </summary>
+                <div className="output-grid">
+                  {section.items.map((output) => (
+                    <article className="output-card" key={output.relative_path}>
+                      {output.is_image ? (
+                        <a href={props.assetUrl(output.url)} target="_blank" rel="noreferrer">
+                          <img className="output-preview" src={props.assetUrl(output.url)} alt={output.display_name} />
+                        </a>
+                      ) : (
+                        <div className="output-preview placeholder">
+                          {output.is_pointcloud ? "PLY" : output.is_model3d ? "GLB" : fileExtensionLabel(output.display_name)}
+                        </div>
+                      )}
+                      <div>
+                        <strong>{output.display_name}</strong>
+                        <p>{describeOutput(output.display_name)}</p>
+                        <div className="output-actions">
+                          <a href={props.assetUrl(output.url)} target="_blank" rel="noreferrer">
+                            查看
+                          </a>
+                          <a href={props.assetUrl(output.url)} download>
+                            下载
+                          </a>
+                          <button onClick={() => props.onOpenOutput(output.relative_path)} type="button">
+                            本地打开
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-              </article>
+              </details>
             ))}
           </div>
         ) : (
@@ -666,7 +746,14 @@ function JobDetail(props: {
       </article>
 
       <article className="soft-panel">
-        <h4>日志</h4>
+        <div className="section-head">
+          <div>
+            <h4>日志</h4>
+            <p>优先看最新一条有效进展，再往下翻完整日志尾部。</p>
+          </div>
+          <span className="section-pill">{props.selectedJob.logs.length} 份</span>
+        </div>
+        {latestLogLine ? <div className="latest-log-banner">{latestLogLine}</div> : null}
         {props.selectedJob.logs.length > 0 ? (
           <div className="log-list">
             {props.selectedJob.logs.map((log) => (
@@ -682,6 +769,122 @@ function JobDetail(props: {
       </article>
     </div>
   );
+}
+
+function MetaCard(props: { label: string; value: string; compact?: boolean }) {
+  return (
+    <article className={`meta-card ${props.compact ? "compact" : ""}`}>
+      <span>{props.label}</span>
+      <strong>{props.value}</strong>
+    </article>
+  );
+}
+
+function currentStepLabel(steps: JobPayload["phase_display"]["steps"]) {
+  const currentIndex = steps.findIndex((step) => step.state === "current");
+  if (currentIndex >= 0) {
+    return `第 ${currentIndex + 1} / ${steps.length} 阶段`;
+  }
+  if (steps.every((step) => step.state === "done")) {
+    return "全部阶段完成";
+  }
+  return `共 ${steps.length} 个阶段`;
+}
+
+function getLatestLogLine(logs: JobPayload["logs"]) {
+  for (const log of logs) {
+    const lines = (log.tail || "")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    for (let index = lines.length - 1; index >= 0; index -= 1) {
+      const line = lines[index];
+      if (!/futurewarning|warning, cannot find cuda-compiled version of rope2d/i.test(line)) {
+        return line;
+      }
+    }
+  }
+  return "";
+}
+
+function buildOutputSections(outputs: OutputItem[], model: string): OutputSection[] {
+  const buckets: Record<string, OutputSection> = {
+    main: {
+      key: "main",
+      title: "核心成果",
+      description: model === "monst3r" ? "优先查看三维场景、点云和主要导出结果。" : "优先查看重建点云和主要可视化结果。",
+      accent: "blue",
+      defaultOpen: true,
+      items: []
+    },
+    camera: {
+      key: "camera",
+      title: "相机与轨迹",
+      description: "相机内参、位姿、轨迹等文本产物。",
+      accent: "slate",
+      defaultOpen: true,
+      items: []
+    },
+    masks: {
+      key: "masks",
+      title: "掩膜与动态区域",
+      description: "动态 mask、扩张 mask 等辅助可视化。",
+      accent: "gold",
+      defaultOpen: true,
+      items: []
+    },
+    confidence: {
+      key: "confidence",
+      title: "置信度与数组",
+      description: "置信图、深度数组和中间数值文件。",
+      accent: "slate",
+      defaultOpen: false,
+      items: []
+    },
+    visuals: {
+      key: "visuals",
+      title: "图像可视化",
+      description: "可直接浏览的 PNG/JPG 结果图。",
+      accent: "green",
+      defaultOpen: true,
+      items: []
+    },
+    other: {
+      key: "other",
+      title: "其他产物",
+      description: "未归类但仍可下载查看的文件。",
+      accent: "slate",
+      defaultOpen: false,
+      items: []
+    }
+  };
+
+  outputs.forEach((output) => {
+    const name = output.display_name.toLowerCase();
+    if (output.is_model3d || output.is_pointcloud || /scene\.glb|pointcloud|matches\./i.test(name)) {
+      buckets.main.items.push(output);
+      return;
+    }
+    if (/traj|intrinsics|poses?|focal|camera/i.test(name) || name.endsWith(".txt")) {
+      buckets.camera.items.push(output);
+      return;
+    }
+    if (/mask/i.test(name)) {
+      buckets.masks.items.push(output);
+      return;
+    }
+    if (/conf|depth|frame_.*\.npy|\.npy$/i.test(name)) {
+      buckets.confidence.items.push(output);
+      return;
+    }
+    if (output.is_image) {
+      buckets.visuals.items.push(output);
+      return;
+    }
+    buckets.other.items.push(output);
+  });
+
+  return Object.values(buckets).filter((section) => section.items.length > 0);
 }
 
 function Monst3rParams(props: {
@@ -773,6 +976,13 @@ function SummaryPanel(props: { summary: ResultSummary | null }) {
 
   const highlights = props.summary.highlights ?? [];
   const nextActions = props.summary.next_actions ?? [];
+  const sceneMeta = props.summary.scene_meta ?? {};
+  const sceneStats = [
+    typeof sceneMeta["artifact_count"] === "number" ? { label: "远端整理", value: String(sceneMeta["artifact_count"]) } : null,
+    typeof sceneMeta["glb_count"] === "number" ? { label: "GLB", value: String(sceneMeta["glb_count"]) } : null,
+    typeof sceneMeta["n_points"] === "number" ? { label: "点数", value: String(sceneMeta["n_points"]) } : null,
+    typeof sceneMeta["input_count"] === "number" ? { label: "输入", value: String(sceneMeta["input_count"]) } : null
+  ].filter(Boolean) as Array<{ label: string; value: string }>;
 
   return (
     <div className="summary-panel">
@@ -782,6 +992,13 @@ function SummaryPanel(props: { summary: ResultSummary | null }) {
         <SummaryStat label="输入" value={String(props.summary.inputs?.count ?? 0)} />
         <SummaryStat label="产物" value={String(props.summary.artifacts?.length ?? 0)} />
       </div>
+      {sceneStats.length > 0 ? (
+        <div className="summary-strip secondary">
+          {sceneStats.map((item) => (
+            <SummaryStat key={item.label} label={item.label} value={item.value} />
+          ))}
+        </div>
+      ) : null}
       {highlights.length > 0 ? (
         <ul>
           {highlights.map((item) => (
@@ -901,6 +1118,19 @@ function statusModelLabel(model: string) {
   }
 }
 
+function sourceTypeLabel(sourceType: string) {
+  switch (sourceType) {
+    case "images":
+      return "图片";
+    case "video":
+      return "视频";
+    case "frames":
+      return "帧序列";
+    default:
+      return sourceType;
+  }
+}
+
 function formatParamLabel(key: string) {
   const labels: Record<string, string> = {
     image_size: "图像尺寸",
@@ -967,6 +1197,20 @@ function formatDuration(value: number | null) {
     return `${minutes}m ${seconds}s`;
   }
   return `${seconds}s`;
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 }
 
 export default App;

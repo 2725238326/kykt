@@ -163,6 +163,7 @@ Current frontend capabilities:
   - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\msi\KYKT Vision Client_0.1.0_x64_en-US.msi`
 - The desktop React UI now shows local backend status when it is running inside Tauri, including whether the backend was started by the desktop shell and where the backend log is written.
 - 2026-04-11: Desktop UX cleanup pass: the release executable now uses the Windows GUI subsystem to avoid a black console window, the React app waits/retries while the local FastAPI backend starts instead of exposing raw `fetch` errors, and the first screen was simplified into a clean task workbench with advanced parameters folded away by default.
+- 2026-04-11: The React/Tauri detail page now behaves more like a task console instead of a file dump. The top area uses a large hero progress block with stage cards, percent, current-phase text, and compact job metadata; outputs are grouped by purpose such as core results, camera/trajectory, masks, confidence arrays, and image visualizations; logs now highlight the latest meaningful line first.
 - 2026-04-11: MonST3R dispatch hardening pass: the remote runner defaults were made conservative for first tests (`image_size=224`, `num_frames=24` from the client), `conda run --no-capture-output` is used so stdout reaches the local live log, noisy PyTorch/RoPE warning lines are filtered out of the user-facing progress, and the runner emits heartbeat status while model loading/inference is quiet.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:
@@ -246,7 +247,7 @@ Still missing:
 - A final MonST3R input/output contract after observing the real `.glb`, trajectory, depth, and confidence artifacts on a few examples.
 - Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
 - Exact server-written progress ingestion for every major phase, instead of only mixed local/remote progress approximation.
-- More complete task controls such as one-click rerun presets, richer retry guidance, and clearer recovery hints when a job is partially finished.
+- More complete task controls such as one-click rerun presets, clearer recovery hints when a job is partially finished, and richer large-result handling for GLB / point-cloud opening workflows.
 
 ## SSH / SCP Setup
 
