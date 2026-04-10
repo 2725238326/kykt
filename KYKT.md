@@ -104,6 +104,8 @@ Current MonST3R status:
 - The temporary local upload area `E:\kykt\Coding\4.10` was cleaned up on 2026-04-10.
 - The local MonST3R tarball was deleted after successful server extraction.
 - Server upload archives were moved out of `/hdd3/kykt26/code` into `/hdd3/kykt26/archive/code_uploads_20260410`.
+- Local helper script for uploading manually downloaded MonST3R weights: `E:\kykt\tools\upload_monst3r_weights.ps1`.
+- Local weight staging directory, ignored by git: `E:\kykt\model_uploads\monst3r`.
 
 Notes:
 

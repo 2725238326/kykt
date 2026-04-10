@@ -15,3 +15,6 @@ Thumbs.db
 
 # External upstream repositories and upload staging copies are kept locally only.
 Coding/external_sources/
+
+# Local model/weight staging. Large binary files must not be committed.
+model_uploads/
