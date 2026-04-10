@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import type {
+  BackendStatusPayload,
   BootstrapPayload,
   JobPayload,
   JobsListPayload,
@@ -46,6 +48,7 @@ function App() {
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [backendStatus, setBackendStatus] = useState<BackendStatusPayload | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [formState, setFormState] = useState<FormState>({
     model: "dust3r",
@@ -58,6 +61,7 @@ function App() {
   useEffect(() => {
     void loadBootstrap();
     void loadJobs();
+    void loadDesktopBackendStatus();
     const timer = window.setInterval(() => void loadJobs(false), 4000);
     return () => window.clearInterval(timer);
   }, []);
@@ -136,6 +140,14 @@ function App() {
       if (showError) {
         setErrorMessage(error instanceof Error ? error.message : "加载初始化信息失败。");
       }
+    }
+  }
+
+  async function loadDesktopBackendStatus() {
+    try {
+      setBackendStatus(await invoke<BackendStatusPayload>("backend_status"));
+    } catch {
+      setBackendStatus(null);
     }
   }
 
@@ -314,6 +326,11 @@ function App() {
           <div className="server-chip muted">
             <span>客户端阶段</span>
             <strong>React Rebuild + Tauri Shell</strong>
+          </div>
+          <div className={`server-chip ${backendStatusClass(backendStatus)}`}>
+            <span>本地后端</span>
+            <strong>{backendStatusLabel(backendStatus)}</strong>
+            <small>{backendStatusHint(backendStatus)}</small>
           </div>
         </div>
       </header>
@@ -915,6 +932,42 @@ function statusLabel(status: string) {
     default:
       return status;
   }
+}
+
+function backendStatusClass(status: BackendStatusPayload | null) {
+  if (!status) {
+    return "muted";
+  }
+  if (status.running) {
+    return "healthy";
+  }
+  return "warning";
+}
+
+function backendStatusLabel(status: BackendStatusPayload | null) {
+  if (!status) {
+    return "浏览器预览";
+  }
+  if (status.running && status.managed_by_tauri) {
+    return "桌面端已托管";
+  }
+  if (status.running) {
+    return "已连接现有后端";
+  }
+  return "未启动";
+}
+
+function backendStatusHint(status: BackendStatusPayload | null) {
+  if (!status) {
+    return "网页模式下不读取 Tauri 状态";
+  }
+  if (status.running && status.log_path) {
+    return `日志：${status.log_path}`;
+  }
+  if (status.backend_root) {
+    return `根目录：${status.backend_root}`;
+  }
+  return status.message || "暂无状态信息";
 }
 
 function statusModelLabel(model: string) {

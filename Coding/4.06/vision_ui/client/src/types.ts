@@ -121,3 +121,11 @@ export type JobsListPayload = {
   }>;
   summary: BootstrapPayload["summary"];
 };
+
+export type BackendStatusPayload = {
+  running: boolean;
+  managed_by_tauri: boolean;
+  message: string;
+  backend_root: string | null;
+  log_path: string | null;
+};

@@ -31,6 +31,9 @@ The desktop entry starts:
 Release app / installers:
 
 ```text
+E:\kykt\release\kykt_vision_client\kykt_vision_client.exe
+E:\kykt\release\kykt_vision_client\KYKT Vision Client_0.1.0_x64-setup.exe
+E:\kykt\release\kykt_vision_client\KYKT Vision Client_0.1.0_x64_en-US.msi
 E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\kykt_vision_client.exe
 E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\nsis\KYKT Vision Client_0.1.0_x64-setup.exe
 E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\msi\KYKT Vision Client_0.1.0_x64_en-US.msi
@@ -55,6 +58,7 @@ If the project root moves, set `KYKT_BACKEND_ROOT` to the `vision_ui` directory 
 - output cards with local open / view / download actions
 - Tauri 2 shell scaffold under `src-tauri`
 - Tauri-managed local backend process for the release executable
+- desktop UI backend status chip showing whether FastAPI was reused or started by Tauri
 
 ## Next
 

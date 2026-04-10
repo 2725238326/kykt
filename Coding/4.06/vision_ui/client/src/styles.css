@@ -109,6 +109,16 @@ img {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.server-chip.healthy {
+  background: rgba(52, 199, 89, 0.18);
+  border-color: rgba(52, 199, 89, 0.22);
+}
+
+.server-chip.warning {
+  background: rgba(255, 159, 10, 0.18);
+  border-color: rgba(255, 159, 10, 0.24);
+}
+
 .server-chip span,
 .metric-card span,
 .field span,
@@ -120,6 +130,17 @@ img {
 
 .server-chip span {
   color: rgba(255, 255, 255, 0.6);
+}
+
+.server-chip small {
+  display: -webkit-box;
+  max-width: 260px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 12px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .soft-tag,

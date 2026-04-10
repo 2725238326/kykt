@@ -59,6 +59,7 @@ Current assumption:
 - Tauri checks `127.0.0.1:8000` on startup.
 - If no backend is listening, Tauri starts the local FastAPI backend from the `vision_ui` project root.
 - Backend logs from the desktop-supervised process are written to `local_jobs\_desktop\backend.log`.
+- The React client reads the Tauri backend status command and shows whether the backend was reused or started by the desktop shell.
 - Full portable bundling of Python/.venv is still a later step; the current release executable uses the existing project `.venv`.
 
 ## Migration strategy
@@ -100,6 +101,7 @@ Desktop entry:
 
 Release outputs:
 
+- Easy release folder: `E:\kykt\release\kykt_vision_client`
 - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\kykt_vision_client.exe`
 - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\nsis\KYKT Vision Client_0.1.0_x64-setup.exe`
 - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\msi\KYKT Vision Client_0.1.0_x64_en-US.msi`

@@ -155,10 +155,12 @@ Current frontend capabilities:
 - 2026-04-10: The React rebuild now has a richer task detail view with result summary cards, output action cards, and local output opening through the FastAPI bridge.
 - 2026-04-10: A Tauri 2 desktop shell scaffold now exists under `E:\kykt\Coding\4.06\vision_ui\client\src-tauri`.
 - 2026-04-10: The Tauri desktop release now supervises the local FastAPI backend automatically. If port `127.0.0.1:8000` is already in use, it reuses that backend; otherwise it starts `.venv\Scripts\python.exe -m uvicorn app:app` from the project root and writes backend logs to `E:\kykt\Coding\4.06\vision_ui\local_jobs\_desktop\backend.log`.
-- 2026-04-10: Desktop build artifacts are available at:
+- 2026-04-11: Easy-to-find desktop release copies are available at `E:\kykt\release\kykt_vision_client`.
+- Desktop build artifacts are also available at:
   - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\kykt_vision_client.exe`
   - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\nsis\KYKT Vision Client_0.1.0_x64-setup.exe`
   - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri\target\release\bundle\msi\KYKT Vision Client_0.1.0_x64_en-US.msi`
+- The desktop React UI now shows local backend status when it is running inside Tauri, including whether the backend was started by the desktop shell and where the backend log is written.
 - 2026-04-10: New launch scripts were added:
   - `E:\kykt\Coding\4.06\vision_ui\start_client_rebuild.ps1`
   - `E:\kykt\Coding\4.06\vision_ui\start_desktop_client.ps1`
