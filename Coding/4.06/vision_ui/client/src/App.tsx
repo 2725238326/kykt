@@ -6,7 +6,7 @@ import type {
   ResultSummary
 } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "";
+const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 const defaultDust3rParams = {
   image_size: "512",
@@ -120,6 +120,13 @@ function App() {
       throw new Error(message);
     }
     return (await response.json()) as T;
+  }
+
+  function assetUrl(path: string) {
+    if (/^(https?:|data:|blob:)/.test(path)) {
+      return path;
+    }
+    return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
   }
 
   async function loadBootstrap(showError = true) {
@@ -658,11 +665,11 @@ function App() {
                         <a
                           key={preview.relative_path}
                           className="preview-card"
-                          href={preview.url}
+                          href={assetUrl(preview.url)}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          {preview.is_image ? <img src={preview.url} alt={preview.display_name} /> : null}
+                          {preview.is_image ? <img src={assetUrl(preview.url)} alt={preview.display_name} /> : null}
                           <span>{preview.display_name}</span>
                         </a>
                       ))
@@ -681,10 +688,10 @@ function App() {
                       {selectedJob.outputs.map((output) => (
                         <article className="output-card" key={output.relative_path}>
                           {output.is_image ? (
-                            <a href={output.url} target="_blank" rel="noreferrer">
+                            <a href={assetUrl(output.url)} target="_blank" rel="noreferrer">
                               <img
                                 className="output-preview"
-                                src={output.url}
+                                src={assetUrl(output.url)}
                                 alt={output.display_name}
                               />
                             </a>
@@ -705,10 +712,10 @@ function App() {
                             <strong>{output.display_name}</strong>
                             <span className="muted-text">{describeOutput(output.display_name)}</span>
                             <div className="output-actions">
-                              <a href={output.url} target="_blank" rel="noreferrer">
+                              <a href={assetUrl(output.url)} target="_blank" rel="noreferrer">
                                 查看
                               </a>
-                              <a href={output.url} download>
+                              <a href={assetUrl(output.url)} download>
                                 下载
                               </a>
                               <button
