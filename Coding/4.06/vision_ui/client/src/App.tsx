@@ -69,6 +69,8 @@ type FormState = {
   typeof defaultMonst3rParams;
 
 type ServiceState = "starting" | "ready" | "degraded";
+type JobFilter = "all" | "running" | "attention" | "finished";
+type JobListItem = JobsListPayload["jobs"][number];
 type OutputItem = JobPayload["outputs"][number];
 type OutputSection = {
   key: string;
@@ -89,6 +91,7 @@ function App() {
   const [serviceMessage, setServiceMessage] = useState("正在准备本地服务...");
   const [submitting, setSubmitting] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
+  const [jobFilter, setJobFilter] = useState<JobFilter>("all");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
@@ -107,6 +110,36 @@ function App() {
   const selectedModel = useMemo(
     () => bootstrapData.models.find((item) => item.value === formState.model),
     [bootstrapData.models, formState.model]
+  );
+  const selectedListJob = useMemo(
+    () => (selectedJobId ? jobs.find((item) => item.job.job_id === selectedJobId) ?? null : null),
+    [jobs, selectedJobId]
+  );
+  const runningJobs = useMemo(() => jobs.filter((item) => item.job.status === "running"), [jobs]);
+  const attentionJobs = useMemo(
+    () => jobs.filter((item) => item.job.status === "failed" || item.job.status === "cancelled"),
+    [jobs]
+  );
+  const finishedJobs = useMemo(() => jobs.filter((item) => item.job.status === "finished"), [jobs]);
+  const focusJob = useMemo(
+    () => selectedListJob ?? runningJobs[0] ?? attentionJobs[0] ?? jobs[0] ?? null,
+    [selectedListJob, runningJobs, attentionJobs, jobs]
+  );
+  const filteredJobs = useMemo(() => {
+    switch (jobFilter) {
+      case "running":
+        return runningJobs;
+      case "attention":
+        return attentionJobs;
+      case "finished":
+        return finishedJobs;
+      default:
+        return jobs;
+    }
+  }, [attentionJobs, finishedJobs, jobFilter, jobs, runningJobs]);
+  const createGuidance = useMemo(
+    () => buildCreateGuidance(formState.model, formState.source_type, files.length),
+    [files.length, formState.model, formState.source_type]
   );
   const summary = bootstrap?.summary ?? {
     total: jobs.length,
@@ -406,6 +439,61 @@ function App() {
         {infoMessage ? <MessageBanner kind="info" message={infoMessage} /> : null}
         {errorMessage ? <MessageBanner kind="error" message={errorMessage} /> : null}
 
+        <section className="overview-grid">
+          <article className="panel overview-hero-panel">
+            <PanelTitle eyebrow="任务总览" title={focusJob ? `焦点任务 ${focusJob.job.job_id}` : "准备开始今晚测试"} />
+            {focusJob ? (
+              <div className={`focus-card ${focusJob.job.status}`}>
+                <div className="focus-main">
+                  <div className="focus-copy">
+                    <div className="hero-badges">
+                      <StatusBadge state={focusJob.job.status} label={statusLabel(focusJob.job.status)} />
+                      <span className="hero-tag">{statusModelLabel(focusJob.job.model)}</span>
+                      <span className="hero-tag">{sourceTypeLabel(focusJob.job.source_type)}</span>
+                    </div>
+                    <h3>{focusJob.phase_display.label}</h3>
+                    <p>{focusJob.job.progress_message || focusJob.phase_display.description}</p>
+                  </div>
+                  <div className="focus-score">{focusJob.phase_display.percent}%</div>
+                </div>
+                <div className="progress-track large">
+                  <div className="progress-fill" style={{ width: `${focusJob.phase_display.percent}%` }} />
+                </div>
+                <div className="focus-meta">
+                  <span>{currentStepLabel(focusJob.phase_display.steps)}</span>
+                  <span>{formatDateTime(focusJob.job.created_at)}</span>
+                  <button
+                    className="ghost-button small"
+                    onClick={() => setSelectedJobId(focusJob.job.job_id)}
+                    type="button"
+                  >
+                    查看详情
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="empty-state large">
+                还没有任务。建议先从 2 张图片的 DUSt3R 或 1 段短视频的 MonST3R 开始，今晚先把一条样例完整跑通。
+              </div>
+            )}
+          </article>
+
+          <aside className="panel overview-side-panel">
+            <PanelTitle eyebrow="调度状态" title="当前面板" />
+            <div className="kpi-grid">
+              <MiniStat label="总任务" value={summary.total} />
+              <MiniStat label="运行中" value={summary.running} />
+              <MiniStat label="待处理" value={attentionJobs.length} />
+              <MiniStat label="已完成" value={summary.finished} />
+            </div>
+            <div className={`overview-callout ${focusJob?.job.status ?? "neutral"}`}>
+              <span className="mini-label">当前建议</span>
+              <strong>{buildOverviewHeadline(focusJob, runningJobs.length, attentionJobs.length)}</strong>
+              <p>{buildOverviewMessage(focusJob, runningJobs.length, attentionJobs.length)}</p>
+            </div>
+          </aside>
+        </section>
+
         <section className="layout-grid">
           <article className="panel create-panel">
             <PanelTitle eyebrow="新建任务" title="选择模型和输入" />
@@ -445,6 +533,21 @@ function App() {
                   placeholder="比如：箱子双图测试 / 室内视频 / 想比较 MonST3R 和 DUSt3R"
                 />
               </label>
+
+              <article className="create-guidance">
+                <div className="guide-head">
+                  <div>
+                    <strong>当前建议</strong>
+                    <p>{selectedModel?.description ?? "根据模型类型自动给出最稳妥的起步建议。"}</p>
+                  </div>
+                  <span className="section-pill">{files.length} 个待上传</span>
+                </div>
+                <ul className="guide-list">
+                  {createGuidance.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </article>
 
               <label className="dropzone">
                 <input
@@ -499,16 +602,45 @@ function App() {
           <aside className="panel side-panel">
             <PanelTitle eyebrow="最近任务" title={`${summary.total} 个任务`} />
             <div className="mini-stats">
+              <MiniStat label="总任务" value={summary.total} />
               <MiniStat label="运行" value={summary.running} />
+              <MiniStat label="待处理" value={attentionJobs.length} />
               <MiniStat label="完成" value={summary.finished} />
-              <MiniStat label="失败" value={summary.failed} />
+            </div>
+            <div className="job-toolbar">
+              <div className="filter-pills">
+                <FilterPill
+                  active={jobFilter === "all"}
+                  count={summary.total}
+                  label="全部"
+                  onClick={() => setJobFilter("all")}
+                />
+                <FilterPill
+                  active={jobFilter === "running"}
+                  count={runningJobs.length}
+                  label="运行中"
+                  onClick={() => setJobFilter("running")}
+                />
+                <FilterPill
+                  active={jobFilter === "attention"}
+                  count={attentionJobs.length}
+                  label="待处理"
+                  onClick={() => setJobFilter("attention")}
+                />
+                <FilterPill
+                  active={jobFilter === "finished"}
+                  count={finishedJobs.length}
+                  label="已完成"
+                  onClick={() => setJobFilter("finished")}
+                />
+              </div>
             </div>
             <div className="job-list">
-              {jobs.length > 0 ? (
-                jobs.map((item) => (
+              {filteredJobs.length > 0 ? (
+                filteredJobs.map((item) => (
                   <button
                     key={item.job.job_id}
-                    className={`job-card ${selectedJobId === item.job.job_id ? "active" : ""}`}
+                    className={`job-card ${selectedJobId === item.job.job_id ? "active" : ""} ${item.job.status}`}
                     onClick={() => setSelectedJobId(item.job.job_id)}
                     type="button"
                   >
@@ -521,6 +653,10 @@ function App() {
                       <span className="job-card-meta">
                         {statusModelLabel(item.job.model)} · {statusLabel(item.job.status)}
                       </span>
+                      <span className="job-card-stage">{currentStepLabel(item.phase_display.steps)}</span>
+                      <p className="job-card-message">
+                        {item.job.progress_message || item.phase_display.description}
+                      </p>
                     </div>
                     <div className="progress-track">
                       <div className="progress-fill" style={{ width: `${item.phase_display.percent}%` }} />
@@ -529,7 +665,9 @@ function App() {
                 ))
               ) : (
                 <div className="empty-state">
-                  暂无任务。先在左侧选择输入文件，创建第一条任务。
+                  {jobFilter === "all"
+                    ? "暂无任务。先在左侧选择输入文件，创建第一条任务。"
+                    : `当前筛选下没有${jobFilterLabel(jobFilter)}任务。`}
                 </div>
               )}
             </div>
@@ -947,12 +1085,30 @@ function PanelTitle(props: { eyebrow: string; title: string }) {
   );
 }
 
-function MiniStat(props: { label: string; value: number }) {
+function MiniStat(props: { label: string; value: number | string }) {
   return (
     <div className="mini-stat">
       <span>{props.label}</span>
       <strong>{props.value}</strong>
     </div>
+  );
+}
+
+function FilterPill(props: {
+  active: boolean;
+  count: number;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={`filter-pill ${props.active ? "active" : ""}`}
+      onClick={props.onClick}
+      type="button"
+    >
+      {props.label}
+      <span>{props.count}</span>
+    </button>
   );
 }
 
@@ -1073,6 +1229,28 @@ function inputHint(model: string, sourceType: string) {
   return "上传 2 张或更多图片";
 }
 
+function buildCreateGuidance(model: string, sourceType: string, fileCount: number) {
+  if (model === "monst3r" && sourceType === "video") {
+    return [
+      "先用 1 段短视频做样例测试，长度尽量控制在几十帧以内。",
+      "今晚优先保持默认：图像尺寸 224、最大帧数 24、批大小 1。",
+      fileCount === 1 ? "当前文件数量正确，可以直接创建任务。" : "视频模式请只放 1 个视频文件。"
+    ];
+  }
+  if (model === "monst3r") {
+    return [
+      "帧序列建议选连续视角变化的小样本，先用 3 到 12 张测试。",
+      "如果只是先验证流程，不建议一开始就把帧数和窗口参数拉高。",
+      fileCount >= 2 ? "当前已满足最小输入要求。" : "帧序列模式至少需要 2 张图片。"
+    ];
+  }
+  return [
+    "DUSt3R 最稳妥的起步方式是先用同一场景的 2 到 5 张图片。",
+    "如果图片超过 6 张，建议把场景图改成 swin-5，避免 complete 配对过多。",
+    fileCount >= 2 ? "当前已满足 DUSt3R 的最小输入要求。" : "DUSt3R 至少需要 2 张图片。"
+  ];
+}
+
 function buildActionMessage(action: string, jobId: string) {
   switch (action) {
     case "dispatch":
@@ -1129,6 +1307,51 @@ function sourceTypeLabel(sourceType: string) {
     default:
       return sourceType;
   }
+}
+
+function jobFilterLabel(filter: JobFilter) {
+  switch (filter) {
+    case "running":
+      return "运行中";
+    case "attention":
+      return "待处理";
+    case "finished":
+      return "已完成";
+    default:
+      return "全部";
+  }
+}
+
+function buildOverviewHeadline(job: JobListItem | null, runningCount: number, attentionCount: number) {
+  if (!job) {
+    return "先创建一条小任务，把整条链路确认跑通。";
+  }
+  if (job.job.status === "running") {
+    return runningCount > 1 ? `当前有 ${runningCount} 条任务在跑，先盯住这一条。` : "当前有任务在跑，先观察这条的阶段推进。";
+  }
+  if (attentionCount > 0) {
+    return "有任务需要人工处理，先看错误原因和最新日志。";
+  }
+  if (job.job.status === "finished") {
+    return "已有结果回传，下一步优先检查核心成果和日志摘要。";
+  }
+  return "当前没有正在执行的任务，可以直接发起新的测试。";
+}
+
+function buildOverviewMessage(job: JobListItem | null, runningCount: number, attentionCount: number) {
+  if (!job) {
+    return "建议今晚先完成一条 DUSt3R 或 MonST3R 的正式样例，确认输入、远端执行、结果回传三段都稳定。";
+  }
+  if (job.job.status === "running") {
+    return `${statusModelLabel(job.job.model)} 正在执行“${job.phase_display.label}”。如果进度长期不动，就先看详情页里的最新日志和阶段卡片。`;
+  }
+  if (attentionCount > 0) {
+    return "失败或取消的任务已经单独归到“待处理”筛选里，先修复那里的阻塞，再继续批量测试。";
+  }
+  if (job.job.status === "finished") {
+    return `当前焦点任务已经完成。建议先检查 ${statusModelLabel(job.job.model)} 的核心结果，再决定是否复制参数继续跑更多样例。`;
+  }
+  return runningCount > 0 ? "后台仍有其他任务在执行。" : "当前后端空闲，适合立刻发起下一条任务。";
 }
 
 function formatParamLabel(key: string) {
