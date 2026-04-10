@@ -18,3 +18,10 @@ Coding/external_sources/
 
 # Local model/weight staging. Large binary files must not be committed.
 model_uploads/
+
+# Temporary manual VS Code Server downloads should stay local only.
+vscode-server-insiders-*.tar.gz
+
+# Frontend build artifacts
+node_modules/
+dist/

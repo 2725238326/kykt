@@ -69,6 +69,21 @@ Progress:
 
 - Steps 1 to 3 are done enough for the first demo attempt.
 - Step 4 is the active blocker.
+- A terminal-first validation workflow now exists locally:
+  - `E:\kykt\tools\check_monst3r_remote.ps1`
+  - `E:\kykt\tools\run_monst3r_demo_remote.ps1`
+
+### Terminal-first workflow
+
+Recommended when VS Code Remote-SSH is unreliable:
+
+1. Use Electerm or another SSH/SFTP tool to browse `/hdd3/kykt26` and upload files.
+2. Run the readiness check locally:
+   - `powershell -ExecutionPolicy Bypass -File E:\kykt\tools\check_monst3r_remote.ps1`
+3. After all weights are ready, launch the official demo remotely:
+   - `powershell -ExecutionPolicy Bypass -File E:\kykt\tools\run_monst3r_demo_remote.ps1 -RemoteInputPath /hdd3/kykt26/<your_input_dir> -SeqName <seq_name>`
+4. Inspect the remote output under:
+   - `/hdd3/kykt26/code/monst3r/demo_tmp/<seq_name>`
 
 Checkpoint sources from `data/download_ckpt.sh`:
 

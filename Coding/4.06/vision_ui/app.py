@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -26,6 +27,20 @@ from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 
 
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:1420",
+        "http://localhost:1420",
+        "http://tauri.localhost",
+        "tauri://localhost",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
 templates.env.globals["asset_version"] = "20260410-1615"
@@ -83,6 +98,15 @@ DELIVERY_GAPS = [
 
 ACTIVE_PHASE_CODES = [code for code, *_ in PHASE_FLOW[:6]]
 PROGRESS_PATTERN = re.compile(r"(\d+)\s*/\s*(\d+)")
+MODEL_OPTIONS = [
+    {"value": "dust3r", "label": "DUSt3R", "description": "双图或多图重建"},
+    {"value": "monst3r", "label": "MonST3R", "description": "视频或帧序列重建"},
+]
+SOURCE_TYPE_OPTIONS = [
+    {"value": "images", "label": "图片"},
+    {"value": "video", "label": "视频"},
+    {"value": "frames", "label": "帧序列"},
+]
 
 
 def status_label(status: str | None) -> str:
@@ -434,3 +458,103 @@ async def job_detail_api(job_id: str):
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     return JSONResponse(_job_payload(job))
+
+
+@app.get("/api/bootstrap")
+async def bootstrap_api():
+    jobs = list_jobs(limit=50)
+    return JSONResponse(
+        {
+            "summary": build_dashboard_stats(jobs),
+            "delivery_gaps": DELIVERY_GAPS,
+            "server": {
+                "alias": ServerConfig.alias,
+                "host": ServerConfig.host,
+                "user": ServerConfig.user,
+                "port": ServerConfig.port,
+                "remote_root": ServerConfig.remote_root,
+            },
+            "models": MODEL_OPTIONS,
+            "source_types": SOURCE_TYPE_OPTIONS,
+        }
+    )
+
+
+@app.post("/api/jobs")
+async def create_job_api(
+    model: str = Form(...),
+    source_type: str = Form(...),
+    notes: str = Form(""),
+    image_size: int = Form(512),
+    scene_graph: str = Form("complete"),
+    niter: int = Form(300),
+    lr: float = Form(0.01),
+    batch_size: int = Form(1),
+    max_points: int = Form(250000),
+    match_viz_count: int = Form(50),
+    files: list[UploadFile] = File(...),
+):
+    if not files:
+        raise HTTPException(status_code=400, detail="没有上传输入文件。")
+
+    params = {}
+    if model == "dust3r":
+        params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
+
+    job = create_job(model=model, source_type=source_type, notes=notes, params=params)
+    uploaded = []
+    for upload in files:
+        uploaded.append((upload.filename or "unnamed.bin", await upload.read()))
+    save_inputs(job, uploaded)
+    return JSONResponse(_job_payload(load_job(job.job_id)))
+
+
+@app.post("/api/jobs/{job_id}/dispatch")
+async def dispatch_job_api(job_id: str, background_tasks: BackgroundTasks):
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    if len(job.input_files) < 2 and job.model == "dust3r":
+        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+
+    clear_job_runtime(job_id)
+    background_tasks.add_task(run_remote_job, job_id)
+    return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})
+
+
+@app.post("/api/jobs/{job_id}/retry")
+async def retry_job_api(job_id: str, background_tasks: BackgroundTasks):
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    if len(job.input_files) < 2 and job.model == "dust3r":
+        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+
+    clear_job_runtime(job_id)
+    background_tasks.add_task(run_remote_job, job_id)
+    return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})
+
+
+@app.post("/api/jobs/{job_id}/duplicate")
+async def duplicate_job_api(job_id: str):
+    try:
+        new_job = duplicate_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    return JSONResponse({"ok": True, **_job_payload(load_job(new_job.job_id))})
+
+
+@app.post("/api/jobs/{job_id}/cancel")
+async def cancel_job_api(job_id: str):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    cancel_remote_job(job_id)
+    return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})

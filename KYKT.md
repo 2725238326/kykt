@@ -105,7 +105,10 @@ Current MonST3R status:
 - The local MonST3R tarball was deleted after successful server extraction.
 - Server upload archives were moved out of `/hdd3/kykt26/code` into `/hdd3/kykt26/archive/code_uploads_20260410`.
 - Local helper script for uploading manually downloaded MonST3R weights: `E:\kykt\tools\upload_monst3r_weights.ps1`.
+- Local helper script for checking remote MonST3R readiness through pure SSH: `E:\kykt\tools\check_monst3r_remote.ps1`.
+- Local helper script for launching the official MonST3R demo on the server after weights are ready: `E:\kykt\tools\run_monst3r_demo_remote.ps1`.
 - Local weight staging directory, ignored by git: `E:\kykt\model_uploads\monst3r`.
+- Current recommended server workflow is terminal-first: use Electerm or another SSH/SFTP client for remote browsing, and use the helper scripts above for validation / launch. VS Code Remote-SSH is currently optional, not required.
 
 Notes:
 
@@ -118,6 +121,7 @@ Notes:
 Active project:
 
 - `E:\kykt\Coding\4.06\vision_ui`
+- `E:\kykt\Coding\4.06\vision_ui\client` (new React + TypeScript rebuild skeleton)
 
 Purpose:
 
@@ -143,6 +147,15 @@ local_jobs/
 Current frontend capabilities:
 
 - Browser-based local job creation.
+- A new Apple-inspired client rebuild skeleton now exists under `E:\kykt\Coding\4.06\vision_ui\client`.
+- The rebuild stack choice is React + TypeScript first, with Tauri recommended as the future desktop shell.
+- FastAPI now exposes JSON endpoints for the rebuild client:
+  - `GET /api/bootstrap`
+  - `POST /api/jobs`
+  - `POST /api/jobs/{job_id}/dispatch`
+  - `POST /api/jobs/{job_id}/retry`
+  - `POST /api/jobs/{job_id}/duplicate`
+  - `POST /api/jobs/{job_id}/cancel`
 - Local input caching.
 - Automatic filename normalization.
 - Arbitrary upload names are accepted.
@@ -199,11 +212,14 @@ Current frontend capabilities:
 - 2026-04-10: The home page now includes a delivery overview panel with task totals and a visible checklist of major unfinished items, so the current gap to a real handoff is visible inside the product itself.
 - 2026-04-10: Finished jobs now automatically generate `result_summary.json` and `result_summary.md` in the local job directory. The detail page also renders a human-readable summary block from that data.
 - 2026-04-10: A local `monst3r_runner.py` preparation skeleton now exists. It does not run real inference yet, but it can return a clear deployment-preparation message instead of failing as a black box.
+- 2026-04-10: The MonST3R preparation runner now performs a more concrete remote readiness check: repo, conda env, required checkpoint paths, and `demo.py --help` smoke test.
 - 2026-04-10: Added `E:\kykt\Coding\4.06\vision_ui\SERVER_PREPARATION.md` to track the server-side DUSt3R optimization path and MonST3R deployment checklist.
 - 2026-04-10: MonST3R server preparation advanced: repo uploaded to `/hdd3/kykt26/code/monst3r`, env `monst3r` created, dependencies installed, and the remaining blocker is checkpoint acquisition.
 
 Still missing:
 
+- Replacing the current Jinja entry pages with the new React client as the default visible UI.
+- Wrapping the rebuild client with Tauri and moving local shell/file helpers into the desktop layer.
 - End-to-end validation of the newly parameterized DUSt3R multi-image path on the server.
 - Stronger remote process cleanup and verification after cancellation.
 - MonST3R checkpoint acquisition, one official demo run, and then a real remote inference runner with a final input/output contract.
@@ -258,6 +274,7 @@ Priority order:
 
 1. Stabilize the frontend task system.
 2. Improve remote observability with richer server-written status.
+3. Use the new pure-SSH helper scripts to finish one MonST3R checkpoint validation and then one official demo run.
 3. Make DUSt3R multi-image jobs more reliable and configurable.
 4. Add better browser-side point cloud/result viewing.
 5. Integrate MonST3R as a new remote runner for video/frame-sequence tasks.
