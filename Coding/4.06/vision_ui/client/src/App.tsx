@@ -18,6 +18,25 @@ const defaultDust3rParams = {
   match_viz_count: "50"
 };
 
+const defaultMonst3rParams = {
+  image_size: "512",
+  batch_size: "1",
+  fps: "0",
+  num_frames: "80",
+  not_batchify: "true",
+  real_time: "false",
+  window_wise: "false",
+  window_size: "100",
+  window_overlap_ratio: "0.5"
+};
+
+type FormState = {
+  model: string;
+  source_type: string;
+  notes: string;
+} & typeof defaultDust3rParams &
+  typeof defaultMonst3rParams;
+
 function App() {
   const [bootstrap, setBootstrap] = useState<BootstrapPayload | null>(null);
   const [jobs, setJobs] = useState<JobsListPayload["jobs"]>([]);
@@ -28,11 +47,12 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
-  const [formState, setFormState] = useState({
+  const [formState, setFormState] = useState<FormState>({
     model: "dust3r",
     source_type: "images",
     notes: "",
-    ...defaultDust3rParams
+    ...defaultDust3rParams,
+    ...defaultMonst3rParams
   });
 
   useEffect(() => {
@@ -72,6 +92,7 @@ function App() {
   );
 
   const isDust3r = formState.model === "dust3r";
+  const isMonst3r = formState.model === "monst3r";
   const selectedFileCount = files.length;
   const runningSelectedJob = selectedJob?.job.status === "running";
   const canDispatchSelectedJob = selectedJob
@@ -137,6 +158,25 @@ function App() {
     setFormState((current) => ({ ...current, [key]: value }));
   }
 
+  function updateModel(value: string) {
+    setFormState((current) => {
+      if (value === "monst3r") {
+        return {
+          ...current,
+          ...defaultMonst3rParams,
+          model: value,
+          source_type: current.source_type === "images" ? "frames" : current.source_type
+        };
+      }
+      return {
+        ...current,
+        ...defaultDust3rParams,
+        model: value,
+        source_type: current.source_type === "video" ? "images" : current.source_type
+      };
+    });
+  }
+
   function removePendingFile(targetName: string, targetSize: number) {
     setFiles((current) =>
       current.filter((item) => !(item.name === targetName && item.size === targetSize))
@@ -158,6 +198,16 @@ function App() {
       return;
     }
 
+    if (isMonst3r && formState.source_type === "video" && files.length !== 1) {
+      setErrorMessage("MonST3R 视频模式请上传 1 个视频文件；如果是一组图片，请选择“帧序列”。");
+      return;
+    }
+
+    if (isMonst3r && formState.source_type !== "video" && files.length < 2) {
+      setErrorMessage("MonST3R 帧序列模式建议至少上传 2 张图片。");
+      return;
+    }
+
     setSubmitting(true);
     const formData = new FormData();
     formData.append("model", formState.model);
@@ -166,6 +216,10 @@ function App() {
 
     if (isDust3r) {
       Object.keys(defaultDust3rParams).forEach((key) => {
+        formData.append(key, formState[key as keyof typeof formState]);
+      });
+    } else if (isMonst3r) {
+      Object.keys(defaultMonst3rParams).forEach((key) => {
         formData.append(key, formState[key as keyof typeof formState]);
       });
     }
@@ -292,7 +346,7 @@ function App() {
                 <span>模型</span>
                 <select
                   value={formState.model}
-                  onChange={(event) => updateFormField("model", event.target.value)}
+                  onChange={(event) => updateModel(event.target.value)}
                 >
                   {bootstrap?.models.map((item) => (
                     <option key={item.value} value={item.value}>
@@ -347,9 +401,104 @@ function App() {
                 </div>
               </>
             ) : (
-              <div className="monst3r-note">
-                MonST3R 入口已经预留。这一阶段先把桌面客户端骨架、结果面板和 Tauri 外壳补完整，接下来就能把视频/帧序列的专属流程接进来。
-              </div>
+              <>
+                <div className="inline-callout">
+                  MonST3R 已接入服务器端官方 demo。视频模式上传 1 个视频；帧序列模式上传同一场景的多张连续图片。
+                </div>
+                <div className="param-grid monst3r-param-grid">
+                  <label className="field compact">
+                    <span>{formatParamLabel("image_size")}</span>
+                    <select
+                      value={formState.image_size}
+                      onChange={(event) => updateFormField("image_size", event.target.value)}
+                    >
+                      <option value="512">512（质量优先）</option>
+                      <option value="224">224（更快更省显存）</option>
+                    </select>
+                  </label>
+                  <label className="field compact">
+                    <span>{formatParamLabel("num_frames")}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="2000"
+                      value={formState.num_frames}
+                      onChange={(event) => updateFormField("num_frames", event.target.value)}
+                    />
+                  </label>
+                  <label className="field compact">
+                    <span>{formatParamLabel("fps")}</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="120"
+                      value={formState.fps}
+                      onChange={(event) => updateFormField("fps", event.target.value)}
+                    />
+                  </label>
+                  <label className="field compact">
+                    <span>{formatParamLabel("batch_size")}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="16"
+                      value={formState.batch_size}
+                      onChange={(event) => updateFormField("batch_size", event.target.value)}
+                    />
+                  </label>
+                  <label className="field compact">
+                    <span>{formatParamLabel("not_batchify")}</span>
+                    <select
+                      value={formState.not_batchify}
+                      onChange={(event) => updateFormField("not_batchify", event.target.value)}
+                    >
+                      <option value="true">开启（推荐，省显存）</option>
+                      <option value="false">关闭（更激进）</option>
+                    </select>
+                  </label>
+                  <label className="field compact">
+                    <span>{formatParamLabel("real_time")}</span>
+                    <select
+                      value={formState.real_time}
+                      onChange={(event) => updateFormField("real_time", event.target.value)}
+                    >
+                      <option value="false">关闭（默认，高质量输出）</option>
+                      <option value="true">开启（实时路径）</option>
+                    </select>
+                  </label>
+                  <label className="field compact">
+                    <span>{formatParamLabel("window_wise")}</span>
+                    <select
+                      value={formState.window_wise}
+                      onChange={(event) => updateFormField("window_wise", event.target.value)}
+                    >
+                      <option value="false">关闭（默认）</option>
+                      <option value="true">开启（长序列）</option>
+                    </select>
+                  </label>
+                  <label className="field compact">
+                    <span>{formatParamLabel("window_size")}</span>
+                    <input
+                      type="number"
+                      min="2"
+                      max="500"
+                      value={formState.window_size}
+                      onChange={(event) => updateFormField("window_size", event.target.value)}
+                    />
+                  </label>
+                  <label className="field compact">
+                    <span>{formatParamLabel("window_overlap_ratio")}</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="0.95"
+                      step="0.05"
+                      value={formState.window_overlap_ratio}
+                      onChange={(event) => updateFormField("window_overlap_ratio", event.target.value)}
+                    />
+                  </label>
+                </div>
+              </>
             )}
 
             <label className="dropzone">
@@ -366,6 +515,7 @@ function App() {
             <div className="selection-strip">
               <span className="soft-tag">已选 {selectedFileCount} 个文件</span>
               {isDust3r ? <span className="soft-tag">至少 2 张图</span> : null}
+              {isMonst3r ? <span className="soft-tag">视频 1 个 / 帧序列至少 2 张</span> : null}
             </div>
 
             {files.length > 0 ? (
@@ -539,8 +689,16 @@ function App() {
                               />
                             </a>
                           ) : (
-                            <div className={`output-preview placeholder ${output.is_pointcloud ? "pointcloud" : ""}`}>
-                              {output.is_pointcloud ? "PLY" : fileExtensionLabel(output.display_name)}
+                            <div
+                              className={`output-preview placeholder ${
+                                output.is_pointcloud || output.is_model3d ? "pointcloud" : ""
+                              }`}
+                            >
+                              {output.is_pointcloud
+                                ? "PLY"
+                                : output.is_model3d
+                                  ? "GLB"
+                                  : fileExtensionLabel(output.display_name)}
                             </div>
                           )}
                           <div className="output-body">
@@ -777,7 +935,23 @@ function sourceTypeLabel(sourceType: string) {
 }
 
 function formatParamLabel(key: string) {
-  return key.replace(/_/g, " ").replace(/\b\w/g, (char: string) => char.toUpperCase());
+  const labels: Record<string, string> = {
+    image_size: "图像尺寸",
+    scene_graph: "场景图",
+    niter: "对齐迭代",
+    lr: "学习率",
+    batch_size: "批大小",
+    max_points: "最大点数",
+    match_viz_count: "匹配线数量",
+    fps: "抽帧 FPS",
+    num_frames: "最大帧数",
+    not_batchify: "省显存模式",
+    real_time: "实时模式",
+    window_wise: "窗口模式",
+    window_size: "窗口大小",
+    window_overlap_ratio: "窗口重叠率"
+  };
+  return labels[key] ?? key.replace(/_/g, " ");
 }
 
 function describeOutput(filename: string) {
@@ -790,6 +964,19 @@ function describeOutput(filename: string) {
       return "图像预览或匹配可视化";
     case "ply":
       return "点云模型，可在 MeshLab 中进一步检查";
+    case "glb":
+    case "gltf":
+      return "MonST3R 三维场景，可用 3D 查看器或 MeshLab 打开";
+    case "txt":
+      return "轨迹或相机内参文本，可用于复盘和报告";
+    case "npy":
+      return "数组产物，通常是深度、置信度或中间几何结果";
+    case "mp4":
+    case "mov":
+    case "avi":
+    case "mkv":
+    case "webm":
+      return "视频产物，可本地播放或归档展示";
     default:
       return "本地任务产物";
   }

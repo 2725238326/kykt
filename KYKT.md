@@ -9,7 +9,7 @@ This workspace currently has four related but separate 3D vision lines:
 - `MVSNet` on `DTU`: supervised multi-view stereo reconstruction. Main outputs are depth maps and fused `.ply` point clouds.
 - `SfMLearner` on `KITTI`: self-supervised monocular depth. Main output is KITTI depth metrics and checkpoints.
 - `DUSt3R`: pointmap-based 3D reconstruction from image pairs or image sets. Main outputs are match visualizations, point clouds, poses, and focals.
-- `MonST3R`: next-stage dynamic/video reconstruction model. Server repo, env, and Python dependencies are prepared, but pretrained checkpoints are not fully downloaded yet.
+- `MonST3R`: next-stage dynamic/video reconstruction model. Server repo, env, Python dependencies, and required checkpoints are now in place; the local client is being wired to run official demo-equivalent inference and pull back artifacts.
 
 ## Workspace Layout
 
@@ -99,7 +99,10 @@ Current MonST3R status:
 - Conda env `monst3r` was cloned from the working `dust3r` env.
 - Torch check passed in that env: `2.5.1+cu121`, CUDA available, 4 GPUs visible.
 - Python requirements were installed after excluding `torch` and `torchvision` to avoid breaking the CUDA stack.
-- Official checkpoint download is still blocked by slow or unreliable Google Drive / Dropbox access.
+- Required checkpoints are now present on the server:
+  - `/hdd3/kykt26/code/monst3r/checkpoints/MonST3R_PO-TA-S-W_ViTLarge_BaseDecoder_512_dpt.pth`
+  - `/hdd3/kykt26/code/monst3r/third_party/RAFT/models/Tartan-C-T-TSKH-spring540x960-M.pth`
+  - `/hdd3/kykt26/code/monst3r/third_party/sam2/checkpoints/sam2.1_hiera_large.pt`
 - A residual interrupted `download_ckpt.sh` / `wget models.zip` process was found and stopped on 2026-04-10.
 - The temporary local upload area `E:\kykt\Coding\4.10` was cleaned up on 2026-04-10.
 - The local MonST3R tarball was deleted after successful server extraction.
@@ -216,10 +219,11 @@ Current frontend capabilities:
 - The Three.js/OrbitControls/PLY viewer scripts are no longer loaded by the job detail page.
 - 2026-04-10: The home page now includes a delivery overview panel with task totals and a visible checklist of major unfinished items, so the current gap to a real handoff is visible inside the product itself.
 - 2026-04-10: Finished jobs now automatically generate `result_summary.json` and `result_summary.md` in the local job directory. The detail page also renders a human-readable summary block from that data.
-- 2026-04-10: A local `monst3r_runner.py` preparation skeleton now exists. It does not run real inference yet, but it can return a clear deployment-preparation message instead of failing as a black box.
-- 2026-04-10: The MonST3R preparation runner now performs a more concrete remote readiness check: repo, conda env, required checkpoint paths, and `demo.py --help` smoke test.
+- 2026-04-10: `runners/monst3r_runner.py` was upgraded from deployment-check mode to a real non-interactive runner. It reads the uploaded `job.json`, runs the official MonST3R `demo.py`, and copies GLB / trajectory / depth / confidence / image artifacts into the standard local job output flow.
+- 2026-04-10: The FastAPI JSON API and React client now expose MonST3R parameters including `image_size`, `num_frames`, `fps`, `batch_size`, `not_batchify`, `real_time`, and window-wise options.
+- 2026-04-10: MonST3R result download now pulls the actual remote `output/` and `logs/` tree instead of assuming DUSt3R-only `matches.png` and `pointcloud.ply` files.
 - 2026-04-10: Added `E:\kykt\Coding\4.06\vision_ui\SERVER_PREPARATION.md` to track the server-side DUSt3R optimization path and MonST3R deployment checklist.
-- 2026-04-10: MonST3R server preparation advanced: repo uploaded to `/hdd3/kykt26/code/monst3r`, env `monst3r` created, dependencies installed, and the remaining blocker is checkpoint acquisition.
+- 2026-04-10: MonST3R server preparation advanced: repo uploaded to `/hdd3/kykt26/code/monst3r`, env `monst3r` created, dependencies installed, checkpoints confirmed, and the remaining blocker is the first end-to-end validation run through the client.
 
 Still missing:
 
@@ -227,7 +231,8 @@ Still missing:
 - Moving beyond the current Tauri scaffold so the desktop client can bundle or supervise the Python backend more cleanly.
 - End-to-end validation of the newly parameterized DUSt3R multi-image path on the server.
 - Stronger remote process cleanup and verification after cancellation.
-- MonST3R checkpoint acquisition, one official demo run, and then a real remote inference runner with a final input/output contract.
+- First end-to-end MonST3R client run with one video or one frame sequence, followed by output quality inspection.
+- A final MonST3R input/output contract after observing the real `.glb`, trajectory, depth, and confidence artifacts on a few examples.
 - Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
 - Exact server-written progress ingestion for every major phase, instead of only mixed local/remote progress approximation.
 - More complete task controls such as one-click rerun presets, richer retry guidance, and clearer recovery hints when a job is partially finished.
@@ -256,7 +261,10 @@ Frontend assumptions:
 - Remote conda env name is `dust3r`.
 - MonST3R repo exists at `/hdd3/kykt26/code/monst3r`.
 - MonST3R conda env name is `monst3r`.
-- MonST3R checkpoints are not ready yet.
+- MonST3R checkpoints are expected at:
+  - `/hdd3/kykt26/code/monst3r/checkpoints/MonST3R_PO-TA-S-W_ViTLarge_BaseDecoder_512_dpt.pth`
+  - `/hdd3/kykt26/code/monst3r/third_party/RAFT/models/Tartan-C-T-TSKH-spring540x960-M.pth`
+  - `/hdd3/kykt26/code/monst3r/third_party/sam2/checkpoints/sam2.1_hiera_large.pt`
 - Old uploaded archives are stored at `/hdd3/kykt26/archive/code_uploads_20260410`.
 
 ## Current Remote Job Flow

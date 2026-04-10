@@ -43,7 +43,7 @@ app.add_middleware(
 )
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
-templates.env.globals["asset_version"] = "20260410-1615"
+templates.env.globals["asset_version"] = "20260410-2130"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
@@ -56,8 +56,8 @@ PHASE_FLOW = [
     ("local_prepared", "本地任务已就绪", "本地任务记录和输入缓存已经准备好。", 4, 8),
     ("preparing_remote", "准备服务器目录", "正在创建远端任务目录和任务文件。", 8, 15),
     ("uploading_inputs", "上传输入文件", "正在把输入文件和任务清单发送到服务器。", 15, 25),
-    ("running_remote_matches", "运行 DUSt3R 重建", "正在构建图像配对、执行推理、全局对齐并生成匹配图。", 25, 70),
-    ("running_remote_pointcloud", "导出点云", "正在导出点云并完成远端输出文件。", 70, 90),
+    ("running_remote_matches", "运行模型推理与重建", "正在执行远端模型推理、匹配或序列重建流程。", 25, 70),
+    ("running_remote_pointcloud", "整理三维产物", "正在导出点云、三维场景或其他远端输出文件。", 70, 90),
     ("downloading_results", "下载结果", "正在把输出文件和日志拉回本地缓存。", 90, 98),
     ("finished", "已完成", "任务已成功完成。", 100, 100),
     ("failed", "失败", "任务因错误停止，请查看日志后重试。", 0, 0),
@@ -83,8 +83,8 @@ DELIVERY_GAPS = [
         "detail": "现在可以本地标记取消并尝试 pkill，但还缺更可靠的远端进程确认和残留目录清理。",
     },
     {
-        "title": "MonST3R 还没有真正接入",
-        "detail": "前端已经预留模型入口，但服务器侧 runner、输入约定和结果回传都还没实现。",
+        "title": "MonST3R 真实推理链路正在接入",
+        "detail": "服务器权重已经就位，当前目标是跑通官方 demo、拉回 GLB/轨迹/深度等产物，并形成稳定样例。",
     },
     {
         "title": "结果归档仍然不够完整",
@@ -211,6 +211,8 @@ def serialize_outputs(job) -> list[dict]:
                 "url": "/" + rel_path.replace("\\", "/"),
                 "is_image": suffix in {".png", ".jpg", ".jpeg", ".bmp", ".webp"},
                 "is_pointcloud": suffix == ".ply",
+                "is_model3d": suffix in {".glb", ".gltf"},
+                "is_video": suffix in {".mp4", ".mov", ".avi", ".mkv", ".webm"},
                 "is_log": suffix == ".log",
             }
         )
@@ -281,6 +283,63 @@ def _dust3r_params(
     }
 
 
+def _parse_bool(value: str | bool | None, default: bool = False) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _monst3r_params(
+    image_size: int,
+    batch_size: int,
+    fps: int,
+    num_frames: int,
+    not_batchify: str | bool,
+    real_time: str | bool,
+    window_wise: str | bool,
+    window_size: int,
+    window_overlap_ratio: float,
+) -> dict:
+    normalized_image_size = int(image_size)
+    if normalized_image_size not in {224, 512}:
+        normalized_image_size = 512
+    return {
+        "image_size": normalized_image_size,
+        "batch_size": min(max(int(batch_size), 1), 16),
+        "fps": min(max(int(fps), 0), 120),
+        "num_frames": min(max(int(num_frames), 1), 2000),
+        "not_batchify": _parse_bool(not_batchify, True),
+        "real_time": _parse_bool(real_time, False),
+        "window_wise": _parse_bool(window_wise, False),
+        "window_size": min(max(int(window_size), 2), 500),
+        "window_overlap_ratio": min(max(float(window_overlap_ratio), 0.0), 0.95),
+    }
+
+
+def _validate_new_job(model: str, source_type: str, files: list[UploadFile]) -> None:
+    model_values = {item["value"] for item in MODEL_OPTIONS}
+    source_values = {item["value"] for item in SOURCE_TYPE_OPTIONS}
+    if model not in model_values:
+        raise HTTPException(status_code=400, detail=f"不支持的模型：{model}")
+    if source_type not in source_values:
+        raise HTTPException(status_code=400, detail=f"不支持的输入类型：{source_type}")
+    if not files:
+        raise HTTPException(status_code=400, detail="没有上传输入文件。")
+    if model == "dust3r" and len(files) < 2:
+        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+    if model == "monst3r" and source_type == "video" and len(files) != 1:
+        raise HTTPException(status_code=400, detail="MonST3R 视频模式请上传 1 个视频文件；多张图片请改选“帧序列”。")
+
+
+def _validate_dispatchable(job) -> None:
+    if job.model == "dust3r" and len(job.input_files) < 2:
+        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+    if job.model == "monst3r" and len(job.input_files) < 1:
+        raise HTTPException(status_code=400, detail="MonST3R 至少需要 1 个视频或一组帧序列。")
+
+
 @app.get("/")
 async def index(request: Request):
     jobs = list_jobs(limit=50)
@@ -314,14 +373,32 @@ async def create_job_view(
     batch_size: int = Form(1),
     max_points: int = Form(250000),
     match_viz_count: int = Form(50),
+    fps: int = Form(0),
+    num_frames: int = Form(80),
+    not_batchify: str = Form("true"),
+    real_time: str = Form("false"),
+    window_wise: str = Form("false"),
+    window_size: int = Form(100),
+    window_overlap_ratio: float = Form(0.5),
     files: list[UploadFile] = File(...),
 ):
-    if not files:
-        raise HTTPException(status_code=400, detail="没有上传输入文件。")
+    _validate_new_job(model, source_type, files)
 
     params = {}
     if model == "dust3r":
         params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
+    elif model == "monst3r":
+        params = _monst3r_params(
+            image_size,
+            batch_size,
+            fps,
+            num_frames,
+            not_batchify,
+            real_time,
+            window_wise,
+            window_size,
+            window_overlap_ratio,
+        )
 
     job = create_job(model=model, source_type=source_type, notes=notes, params=params)
     uploaded = []
@@ -357,8 +434,7 @@ async def dispatch_job(job_id: str, background_tasks: BackgroundTasks):
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
-    if len(job.input_files) < 2 and job.model == "dust3r":
-        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+    _validate_dispatchable(job)
 
     clear_job_runtime(job_id)
     background_tasks.add_task(run_remote_job, job_id)
@@ -372,8 +448,7 @@ async def retry_job(job_id: str, background_tasks: BackgroundTasks):
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
-    if len(job.input_files) < 2 and job.model == "dust3r":
-        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+    _validate_dispatchable(job)
 
     clear_job_runtime(job_id)
     background_tasks.add_task(run_remote_job, job_id)
@@ -510,14 +585,32 @@ async def create_job_api(
     batch_size: int = Form(1),
     max_points: int = Form(250000),
     match_viz_count: int = Form(50),
+    fps: int = Form(0),
+    num_frames: int = Form(80),
+    not_batchify: str = Form("true"),
+    real_time: str = Form("false"),
+    window_wise: str = Form("false"),
+    window_size: int = Form(100),
+    window_overlap_ratio: float = Form(0.5),
     files: list[UploadFile] = File(...),
 ):
-    if not files:
-        raise HTTPException(status_code=400, detail="没有上传输入文件。")
+    _validate_new_job(model, source_type, files)
 
     params = {}
     if model == "dust3r":
         params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
+    elif model == "monst3r":
+        params = _monst3r_params(
+            image_size,
+            batch_size,
+            fps,
+            num_frames,
+            not_batchify,
+            real_time,
+            window_wise,
+            window_size,
+            window_overlap_ratio,
+        )
 
     job = create_job(model=model, source_type=source_type, notes=notes, params=params)
     uploaded = []
@@ -534,8 +627,7 @@ async def dispatch_job_api(job_id: str, background_tasks: BackgroundTasks):
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
-    if len(job.input_files) < 2 and job.model == "dust3r":
-        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+    _validate_dispatchable(job)
 
     clear_job_runtime(job_id)
     background_tasks.add_task(run_remote_job, job_id)
@@ -549,8 +641,7 @@ async def retry_job_api(job_id: str, background_tasks: BackgroundTasks):
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
-    if len(job.input_files) < 2 and job.model == "dust3r":
-        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+    _validate_dispatchable(job)
 
     clear_job_runtime(job_id)
     background_tasks.add_task(run_remote_job, job_id)

@@ -65,6 +65,8 @@ export type JobPayload = {
     url: string;
     is_image: boolean;
     is_pointcloud: boolean;
+    is_model3d: boolean;
+    is_video: boolean;
     is_log: boolean;
   }>;
   previews: Array<{

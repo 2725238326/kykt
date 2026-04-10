@@ -1,19 +1,43 @@
 #!/usr/bin/env python3
 """
-MonST3R server-side preparation runner.
+MonST3R server-side runner.
 
-This is intentionally a deployment-preparation skeleton. It does not yet run
-full MonST3R inference. Instead, it validates the remote layout and writes a
-clear status file so the local frontend can surface an actionable message.
+The local client uploads a normalized job folder, then this script runs the
+official MonST3R demo in non-interactive mode and copies useful artifacts into
+the standard job output directory.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+
+DEFAULT_WEIGHTS = "checkpoints/MonST3R_PO-TA-S-W_ViTLarge_BaseDecoder_512_dpt.pth"
+REQUIRED_RELATIVE_PATHS = [
+    DEFAULT_WEIGHTS,
+    "third_party/RAFT/models/Tartan-C-T-TSKH-spring540x960-M.pth",
+    "third_party/sam2/checkpoints/sam2.1_hiera_large.pt",
+]
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".webp"}
+VIDEO_SUFFIXES = {".mp4", ".mov", ".avi", ".mkv", ".webm"}
+EXPORT_SUFFIXES = {
+    ".glb",
+    ".ply",
+    ".txt",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".bmp",
+    ".webp",
+    ".mp4",
+    ".npy",
+    ".json",
+}
 
 
 def write_status(job_dir: Path, phase: str, message: str, progress: str = "") -> None:
@@ -23,117 +47,282 @@ def write_status(job_dir: Path, phase: str, message: str, progress: str = "") ->
         "progress": progress,
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
-    (job_dir / "status.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    (job_dir / "status.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def run_check(command: list[str], cwd: Path | None = None) -> tuple[bool, str]:
+def load_job(job_dir: Path) -> dict:
+    job_json = job_dir / "job.json"
+    if not job_json.exists():
+        raise FileNotFoundError(f"缺少远端任务清单：{job_json}")
+    return json.loads(job_json.read_text(encoding="utf-8-sig"))
+
+
+def param_bool(params: dict, key: str, default: bool = False) -> bool:
+    value = params.get(key, default)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return bool(value)
+
+
+def param_int(params: dict, key: str, default: int, *, minimum: int, maximum: int) -> int:
     try:
-        completed = subprocess.run(
-            command,
-            cwd=str(cwd) if cwd else None,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            check=False,
-        )
-    except Exception as exc:
-        return False, str(exc)
+        value = int(params.get(key, default))
+    except (TypeError, ValueError):
+        value = default
+    return min(max(value, minimum), maximum)
 
-    output = (completed.stdout or "").strip()
-    return completed.returncode == 0, output
+
+def param_float(params: dict, key: str, default: float, *, minimum: float, maximum: float) -> float:
+    try:
+        value = float(params.get(key, default))
+    except (TypeError, ValueError):
+        value = default
+    return min(max(value, minimum), maximum)
+
+
+def check_remote_layout(repo: Path, weights: Path) -> list[str]:
+    missing = []
+    if not repo.exists():
+        return [f"缺少 MonST3R 仓库目录：{repo}"]
+    if not (repo / "demo.py").exists():
+        missing.append(f"缺少官方 demo.py：{repo / 'demo.py'}")
+    for rel_path in REQUIRED_RELATIVE_PATHS:
+        candidate = repo / rel_path
+        if rel_path == DEFAULT_WEIGHTS:
+            candidate = weights
+        if not candidate.exists():
+            missing.append(f"缺少权重或依赖文件：{candidate}")
+    return missing
+
+
+def resolve_input_path(job_dir: Path, source_type: str) -> tuple[Path, list[Path], list[str]]:
+    input_dir = job_dir / "input"
+    input_files = sorted(path for path in input_dir.iterdir() if path.is_file())
+    warnings: list[str] = []
+
+    if not input_files:
+        raise RuntimeError("没有发现已上传输入文件。")
+
+    if source_type == "video":
+        video_files = [path for path in input_files if path.suffix.lower() in VIDEO_SUFFIXES]
+        if len(video_files) == 1:
+            return video_files[0], input_files, warnings
+        if len(input_files) == 1:
+            warnings.append("输入类型是视频，但扩展名不在常见视频列表中；仍按单个视频文件传给 demo.py。")
+            return input_files[0], input_files, warnings
+        warnings.append("输入类型是视频，但上传了多个文件；已改按帧序列目录传给 demo.py。")
+
+    image_like = [path for path in input_files if path.suffix.lower() in IMAGE_SUFFIXES]
+    if not image_like:
+        warnings.append("没有检测到常见图片扩展名；MonST3R 会按目录内容排序处理。")
+    elif len(image_like) < len(input_files):
+        warnings.append("输入目录中混有非图片文件；MonST3R 官方 demo 会按目录内容排序读取。")
+
+    return input_dir, input_files, warnings
+
+
+def build_demo_command(repo: Path, job_dir: Path, job: dict, weights: Path, input_path: Path) -> tuple[list[str], Path, str, dict]:
+    params = job.get("params") or {}
+    seq_name = str(job.get("job_id") or job_dir.name)
+    demo_output_root = job_dir / "monst3r_demo"
+    demo_output_root.mkdir(parents=True, exist_ok=True)
+
+    image_size = param_int(params, "image_size", 512, minimum=224, maximum=512)
+    if image_size not in {224, 512}:
+        image_size = 512
+
+    normalized = {
+        "image_size": image_size,
+        "batch_size": param_int(params, "batch_size", 1, minimum=1, maximum=16),
+        "fps": param_int(params, "fps", 0, minimum=0, maximum=120),
+        "num_frames": param_int(params, "num_frames", 80, minimum=1, maximum=2000),
+        "not_batchify": param_bool(params, "not_batchify", True),
+        "real_time": param_bool(params, "real_time", False),
+        "window_wise": param_bool(params, "window_wise", False),
+        "window_size": param_int(params, "window_size", 100, minimum=2, maximum=500),
+        "window_overlap_ratio": param_float(params, "window_overlap_ratio", 0.5, minimum=0.0, maximum=0.95),
+    }
+
+    command = [
+        sys.executable,
+        str(repo / "demo.py"),
+        "--input_dir",
+        str(input_path),
+        "--output_dir",
+        str(demo_output_root),
+        "--seq_name",
+        seq_name,
+        "--weights",
+        str(weights),
+        "--image_size",
+        str(normalized["image_size"]),
+        "--device",
+        "cuda",
+        "--batch_size",
+        str(normalized["batch_size"]),
+        "--fps",
+        str(normalized["fps"]),
+        "--num_frames",
+        str(normalized["num_frames"]),
+        "--silent",
+    ]
+
+    if normalized["not_batchify"]:
+        command.append("--not_batchify")
+    if normalized["real_time"]:
+        command.append("--real_time")
+    if normalized["window_wise"]:
+        command.extend(
+            [
+                "--window_wise",
+                "--window_size",
+                str(normalized["window_size"]),
+                "--window_overlap_ratio",
+                str(normalized["window_overlap_ratio"]),
+            ]
+        )
+
+    return command, demo_output_root / seq_name, seq_name, normalized
+
+
+def run_demo(command: list[str], repo: Path, job_dir: Path) -> None:
+    write_status(job_dir, "running_matches", "正在启动 MonST3R 官方 demo...", "0/1")
+    print("MonST3R command:", " ".join(command), flush=True)
+
+    process = subprocess.Popen(
+        command,
+        cwd=str(repo),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        bufsize=1,
+    )
+
+    last_line = ""
+    assert process.stdout is not None
+    for raw_line in process.stdout:
+        line = raw_line.rstrip()
+        if not line:
+            continue
+        last_line = line[-500:]
+        print(line, flush=True)
+        lower = line.lower()
+        phase = "running_matches"
+        if "global alignment" in lower or "optim" in lower:
+            phase = "running_alignment"
+        elif "save" in lower or "output" in lower or "processing completed" in lower:
+            phase = "saving_outputs"
+        write_status(job_dir, phase, last_line)
+
+    return_code = process.wait()
+    if return_code != 0:
+        write_status(job_dir, "failed", f"MonST3R demo.py 运行失败，返回码 {return_code}。最后日志：{last_line}")
+        raise RuntimeError(f"MonST3R demo.py failed with exit code {return_code}: {last_line}")
+
+
+def copy_artifacts(demo_seq_dir: Path, output_dir: Path) -> list[dict]:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    copied: list[dict] = []
+    if not demo_seq_dir.exists():
+        raise RuntimeError(f"MonST3R 没有生成预期输出目录：{demo_seq_dir}")
+
+    for source in sorted(path for path in demo_seq_dir.rglob("*") if path.is_file()):
+        if source.suffix.lower() not in EXPORT_SUFFIXES:
+            continue
+        relative_source = source.relative_to(demo_seq_dir)
+        target = output_dir / relative_source
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        copied.append(
+            {
+                "name": source.name,
+                "relative_source": str(relative_source),
+                "size_bytes": target.stat().st_size,
+                "suffix": source.suffix.lower(),
+            }
+        )
+
+    if not copied:
+        raise RuntimeError(f"MonST3R 输出目录存在，但没有发现可回传产物：{demo_seq_dir}")
+    return copied
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="MonST3R preparation runner")
+    parser = argparse.ArgumentParser(description="Run MonST3R for a KYKT remote job")
     parser.add_argument("--job-dir", required=True, help="Path to the remote job directory")
-    parser.add_argument("--repo", required=True, help="Expected remote MonST3R repo path")
-    parser.add_argument("--env", default="monst3r", help="Expected conda env name")
+    parser.add_argument("--repo", required=True, help="Remote MonST3R repo path")
+    parser.add_argument("--weights", default=None, help="Optional explicit MonST3R checkpoint path")
     args = parser.parse_args()
 
-    job_dir = Path(args.job_dir)
-    job_dir.mkdir(parents=True, exist_ok=True)
-    (job_dir / "logs").mkdir(parents=True, exist_ok=True)
-    (job_dir / "output").mkdir(parents=True, exist_ok=True)
+    job_dir = Path(args.job_dir).resolve()
+    repo = Path(args.repo).resolve()
+    output_dir = job_dir / "output"
+    logs_dir = job_dir / "logs"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir.mkdir(parents=True, exist_ok=True)
 
-    write_status(job_dir, "starting", "正在检查 MonST3R 服务器环境...")
+    try:
+        job = load_job(job_dir)
+        source_type = str(job.get("source_type") or "frames")
+        weights = Path(args.weights).resolve() if args.weights else repo / DEFAULT_WEIGHTS
 
-    repo = Path(args.repo)
-    missing = []
-    checks = []
+        write_status(job_dir, "starting", "正在检查 MonST3R 仓库、依赖和权重...")
+        missing = check_remote_layout(repo, weights)
+        if missing:
+            raise RuntimeError("\n".join(missing))
 
-    if not repo.exists():
-        missing.append(f"缺少仓库目录：{repo}")
-    elif not (repo / "demo.py").exists():
-        missing.append(f"仓库目录存在，但未发现 demo.py：{repo}")
-    else:
-        checks.append(f"仓库目录正常：{repo}")
+        input_path, input_files, warnings = resolve_input_path(job_dir, source_type)
+        command, demo_seq_dir, seq_name, normalized_params = build_demo_command(repo, job_dir, job, weights, input_path)
+        (logs_dir / "monst3r_command.json").write_text(
+            json.dumps(
+                {
+                    "command": command,
+                    "repo": str(repo),
+                    "input_path": str(input_path),
+                    "demo_output_dir": str(demo_seq_dir),
+                    "warnings": warnings,
+                    "params": normalized_params,
+                },
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
 
-    write_status(job_dir, "starting", "正在检查 MonST3R conda 环境...")
-    env_ok, env_output = run_check(["conda", "run", "-n", args.env, "python", "-c", "import torch; print(torch.__version__)"])
-    if env_ok:
-        checks.append(f"conda 环境可用：{args.env}（torch={env_output.splitlines()[-1] if env_output else 'unknown'}）")
-    else:
-        missing.append(f"conda 环境不可用：{args.env}")
+        run_demo(command, repo, job_dir)
 
-    write_status(job_dir, "starting", "正在检查 MonST3R 所需权重...")
-    required_paths = [
-        repo / "checkpoints" / "MonST3R_PO-TA-S-W_ViTLarge_BaseDecoder_512_dpt.pth",
-        repo / "third_party" / "RAFT" / "models" / "Tartan-C-T-TSKH-spring540x960-M.pth",
-        repo / "third_party" / "sam2" / "checkpoints" / "sam2.1_hiera_large.pt",
-    ]
-    for path in required_paths:
-        if path.exists():
-            checks.append(f"权重已就位：{path}")
-        else:
-            missing.append(f"缺少权重：{path}")
-
-    if repo.exists() and (repo / "demo.py").exists() and env_ok:
-        write_status(job_dir, "starting", "正在执行 MonST3R demo.py 冒烟检查...")
-        help_ok, help_output = run_check(["conda", "run", "-n", args.env, "python", "demo.py", "--help"], cwd=repo)
-        if help_ok:
-            checks.append("demo.py --help 可正常运行，说明基础依赖已基本打通。")
-        else:
-            missing.append("demo.py --help 失败，说明依赖仍有缺口。")
-            if help_output:
-                checks.append(f"demo.py --help 输出摘要：{help_output.splitlines()[-1]}")
-
-    report_payload = {
-        "repo": str(repo),
-        "env": args.env,
-        "checks": checks,
-        "missing": missing,
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
-    }
-    (job_dir / "output" / "preparation_report.json").write_text(
-        json.dumps(report_payload, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-
-    message_lines = [
-        "MonST3R 当前仍按“部署检查模式”运行：前端入口已经接好，但正式推理 runner 还未完成最后集成。",
-    ]
-    if checks:
-        message_lines.append("")
-        message_lines.append("已通过的检查：")
-        message_lines.extend([f"- {item}" for item in checks])
-
-    if missing:
-        message_lines.append("")
-        message_lines.append("当前检查到的缺失项：")
-        message_lines.extend([f"- {item}" for item in missing])
-        message_lines.append("")
-        message_lines.append("建议下一步：")
-        message_lines.append("1. 用本地下载 + scp 或 Electerm SFTP 把缺失权重传到服务器。")
-        message_lines.append("2. 在服务器终端运行 `python demo.py --help` 做最后一次环境冒烟检查。")
-        message_lines.append("3. 再用一段视频或一组帧序列跑官方 demo，确认标准输出目录结构。")
-    else:
-        message_lines.append("")
-        message_lines.append("环境与权重检查已基本通过，可以开始跑官方 demo，并把真实推理接入前端。")
-
-    final_message = "\n".join(message_lines)
-    write_status(job_dir, "failed", final_message)
-    print(final_message, file=sys.stderr)
-    sys.exit(1)
+        write_status(job_dir, "saving_outputs", "MonST3R 已完成推理，正在整理输出文件...")
+        artifacts = copy_artifacts(demo_seq_dir, output_dir)
+        scene_meta = {
+            "model": "monst3r",
+            "seq_name": seq_name,
+            "source_type": source_type,
+            "input_count": len(input_files),
+            "input_path": str(input_path),
+            "weights": str(weights),
+            "demo_output_dir": str(demo_seq_dir),
+            "params": normalized_params,
+            "warnings": warnings,
+            "artifacts": artifacts,
+            "artifact_count": len(artifacts),
+            "glb_count": sum(1 for item in artifacts if item["suffix"] == ".glb"),
+            "image_count": sum(1 for item in artifacts if item["suffix"] in IMAGE_SUFFIXES),
+            "npy_count": sum(1 for item in artifacts if item["suffix"] == ".npy"),
+        }
+        (output_dir / "scene_meta.json").write_text(
+            json.dumps(scene_meta, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        write_status(job_dir, "finished", f"MonST3R 完成，已整理 {len(artifacts)} 个输出产物。")
+        print(f"MonST3R finished. Exported {len(artifacts)} artifacts to {output_dir}", flush=True)
+    except Exception as exc:
+        write_status(job_dir, "failed", str(exc))
+        print(str(exc), file=sys.stderr, flush=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

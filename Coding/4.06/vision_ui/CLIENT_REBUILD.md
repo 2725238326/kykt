@@ -44,6 +44,9 @@ It already has:
 - output cards with view / download / local open
 - summary panel generated from returned result metadata
 - Apple-inspired visual baseline
+- DUSt3R parameter panel for image-set jobs
+- MonST3R parameter panel for video or frame-sequence jobs
+- output recognition for images, PLY point clouds, GLB scenes, video files, trajectory text, and NPY artifacts
 
 ### Desktop shell
 
@@ -78,6 +81,12 @@ Replace the current Jinja pages as the primary interface once the new client cov
 - output preview / download / local open
 - MonST3R task flow
 
+### Phase 4
+
+After the first MonST3R validation examples are stable, make the React client the
+default product surface and keep the old Jinja pages only as a fallback/debug
+interface.
+
 ## Current launch paths
 
 Web entry:
@@ -90,7 +99,8 @@ Desktop entry:
 
 ## Remaining high-priority work
 
-- MonST3R-specific task creation and result flow
+- first end-to-end MonST3R validation run through the rebuilt client
+- result grouping for MonST3R artifacts such as GLB scene, trajectory, depth, confidence, and dynamic masks
 - better output grouping and richer result summary cards
 - embed or bundle the Python backend for release builds
 - switch the project default entry away from the legacy Jinja pages

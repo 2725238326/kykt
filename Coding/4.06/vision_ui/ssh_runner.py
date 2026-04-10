@@ -4,6 +4,7 @@ import json
 import re
 import shlex
 import subprocess
+import tarfile
 import threading
 from datetime import datetime
 from dataclasses import dataclass
@@ -50,7 +51,7 @@ REMOTE_PHASE_MAP = {
     "starting": "running_remote_matches",
     "running_matches": "running_remote_matches",
     "running_alignment": "running_remote_matches",
-    "saving_outputs": "running_remote_matches",
+    "saving_outputs": "running_remote_pointcloud",
     "exporting_pointcloud": "running_remote_pointcloud",
     "finished": "downloading_results",
     "failed": "failed",
@@ -251,20 +252,23 @@ def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> N
     runner_path = f"{config.remote_runners_dir}/monst3r_runner.py"
     log_path = f"{remote_job_dir}/logs/runner.log"
     local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
+    weights_path = f"{config.remote_monst3r_repo}/checkpoints/MonST3R_PO-TA-S-W_ViTLarge_BaseDecoder_512_dpt.pth"
 
     cmd = (
         f"set -o pipefail && "
-        f"cd {shlex.quote(config.remote_monst3r_repo)} 2>/dev/null || cd {shlex.quote(remote_job_dir)} && "
+        f"cd {shlex.quote(config.remote_monst3r_repo)} && "
+        f"conda run -n {shlex.quote(config.remote_monst3r_env)} "
         f"python {shlex.quote(runner_path)} "
         f"--job-dir {shlex.quote(remote_job_dir)} "
         f"--repo {shlex.quote(config.remote_monst3r_repo)} "
+        f"--weights {shlex.quote(weights_path)} "
         f"2>&1 | tee {shlex.quote(log_path)}"
     )
 
     update_job(
         job_id,
         phase="running_remote_matches",
-        progress_message="正在执行 MonST3R 远端准备检查...",
+        progress_message="正在启动 MonST3R 官方 demo 推理...",
     )
     _ssh_stream(
         config,
@@ -277,11 +281,15 @@ def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> N
 
 
 def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) -> list[str]:
+    job = load_job(job_id)
     job_dir = get_job_dir(job_id)
     local_output_dir = job_dir / "output"
     local_logs_dir = job_dir / "logs"
     local_output_dir.mkdir(parents=True, exist_ok=True)
     local_logs_dir.mkdir(parents=True, exist_ok=True)
+
+    if job.model == "monst3r":
+        return _download_remote_tree(config, remote_job_dir, job_dir)
 
     required_downloads = [
         ("output/matches.png", local_output_dir / "matches.png"),
@@ -307,6 +315,42 @@ def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) ->
             pass
 
     return output_files
+
+
+def _download_remote_tree(config: ServerConfig, remote_job_dir: str, local_job_dir: Path) -> list[str]:
+    remote_archive = f"{remote_job_dir}/result_bundle.tar.gz"
+    local_archive = local_job_dir / "logs" / "remote_results.tar.gz"
+    _ssh(
+        config,
+        f"cd {shlex.quote(remote_job_dir)} && tar -czf {shlex.quote(remote_archive)} output logs",
+    )
+    _scp_from_remote(config, remote_archive, local_archive)
+    _safe_extract_tar(local_archive, local_job_dir)
+
+    output_files = []
+    for folder_name in ("output", "logs"):
+        folder = local_job_dir / folder_name
+        for path in sorted(folder.rglob("*")):
+            if not path.is_file() or path == local_archive:
+                continue
+            output_files.append(str(path.relative_to(ROOT)))
+
+    if not any(path.replace("\\", "/").endswith("output/scene_meta.json") for path in output_files):
+        raise RuntimeError("MonST3R 远端执行结束，但没有下载到 output/scene_meta.json。")
+
+    return output_files
+
+
+def _safe_extract_tar(archive_path: Path, target_dir: Path) -> None:
+    target_root = target_dir.resolve()
+    with tarfile.open(archive_path, "r:gz") as archive:
+        for member in archive.getmembers():
+            member_path = (target_root / member.name).resolve()
+            try:
+                member_path.relative_to(target_root)
+            except ValueError as exc:
+                raise RuntimeError(f"远端结果压缩包包含非法路径：{member.name}") from exc
+        archive.extractall(target_root)
 
 
 def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
@@ -343,15 +387,25 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
             final_points = scene_meta["n_points"]
             if raw_points != final_points:
                 highlights.append(f"点云从 {raw_points} 个原始点下采样到了 {final_points} 个点。")
+        if scene_meta.get("artifact_count") is not None:
+            highlights.append(f"MonST3R 官方 demo 共整理了 {scene_meta['artifact_count']} 个远端产物。")
+        if scene_meta.get("glb_count") is not None:
+            highlights.append(f"其中包含 {scene_meta['glb_count']} 个 GLB 三维场景文件。")
 
-    next_actions = [
-        "优先在 MeshLab 中检查 pointcloud.ply 的结构是否完整、是否存在大块噪声或断裂。",
-        "结合 matches.png 判断前几张图的重叠区域和匹配是否合理。",
-    ]
     if job.model == "dust3r":
+        next_actions = [
+            "优先在 MeshLab 中检查 pointcloud.ply 的结构是否完整、是否存在大块噪声或断裂。",
+            "结合 matches.png 判断前几张图的重叠区域和匹配是否合理。",
+        ]
         next_actions.append("如果这是多图任务，建议再对比 scene graph 与点云质量，决定是否需要改成 swin-5 或调整点云上限。")
     elif job.model == "monst3r":
-        next_actions.append("当前 MonST3R 仍处于部署准备阶段，先完成服务器环境和权重检查，再尝试真实视频任务。")
+        next_actions = [
+            "优先打开 .glb 三维场景文件，检查相机轨迹、主体结构和动态区域是否稳定。",
+            "对照 pred_traj.txt、pred_intrinsics.txt 和保存的深度/置信图，确认视频或帧序列是否适合作为展示样例。",
+            "如果显存或耗时压力较大，下一轮可把 Image Size 改为 224，或降低 Num Frames。",
+        ]
+    else:
+        next_actions = ["查看输出产物和 runner.log，确认模型任务是否符合预期。"]
 
     payload = {
         "job_id": job.job_id,
