@@ -80,6 +80,12 @@ type OutputSection = {
   defaultOpen: boolean;
   items: OutputItem[];
 };
+type PreviewAsset = {
+  url: string;
+  name: string;
+  kind: "image" | "video";
+  note?: string;
+};
 
 function App() {
   const [bootstrap, setBootstrap] = useState<BootstrapPayload | null>(null);
@@ -96,6 +102,7 @@ function App() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [recoveringService, setRecoveringService] = useState(false);
+  const [previewAsset, setPreviewAsset] = useState<PreviewAsset | null>(null);
   const recoveryInFlightRef = useRef(false);
   const [formState, setFormState] = useState<FormState>({
     model: "dust3r",
@@ -199,6 +206,21 @@ function App() {
     const timer = window.setInterval(() => void loadDesktopBackendStatus(), serviceReady ? 8000 : 1200);
     return () => window.clearInterval(timer);
   }, [serviceReady]);
+
+  useEffect(() => {
+    if (!previewAsset) {
+      return;
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setPreviewAsset(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [previewAsset]);
 
   useEffect(() => {
     if (!serviceReady) {
@@ -492,6 +514,10 @@ function App() {
     } finally {
       setActionKey(null);
     }
+  }
+
+  function openPreviewAsset(asset: PreviewAsset) {
+    setPreviewAsset(asset);
   }
 
   return (
@@ -797,6 +823,7 @@ function App() {
               assetUrl={assetUrl}
               onAction={postJobAction}
               onOpenOutput={openOutput}
+              onPreviewAsset={openPreviewAsset}
             />
           ) : (
             <div className="empty-state large">
@@ -805,6 +832,30 @@ function App() {
           )}
         </section>
       </main>
+
+      {previewAsset ? (
+        <div className="preview-modal-backdrop" onClick={() => setPreviewAsset(null)} role="presentation">
+          <div className="preview-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="preview-modal-head">
+              <div>
+                <span className="mini-label">结果预览</span>
+                <strong>{previewAsset.name}</strong>
+                {previewAsset.note ? <p>{previewAsset.note}</p> : null}
+              </div>
+              <button className="ghost-button small" onClick={() => setPreviewAsset(null)} type="button">
+                关闭
+              </button>
+            </div>
+            <div className="preview-modal-body">
+              {previewAsset.kind === "image" ? (
+                <img src={previewAsset.url} alt={previewAsset.name} className="preview-modal-image" />
+              ) : (
+                <video src={previewAsset.url} className="preview-modal-video" controls autoPlay />
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -817,6 +868,7 @@ function JobDetail(props: {
   assetUrl: (path: string) => string;
   onAction: (path: string, key: string) => Promise<void>;
   onOpenOutput: (relativePath: string) => Promise<void>;
+  onPreviewAsset: (asset: PreviewAsset) => void;
 }) {
   const job = props.selectedJob.job;
   const summary = props.selectedJob.result_summary;
@@ -920,16 +972,22 @@ function JobDetail(props: {
           <div className="preview-grid">
             {props.selectedJob.previews.length > 0 ? (
               props.selectedJob.previews.map((preview) => (
-                <a
+                <button
                   key={preview.relative_path}
                   className="preview-card"
-                  href={props.assetUrl(preview.url)}
-                  target="_blank"
-                  rel="noreferrer"
+                  type="button"
+                  onClick={() =>
+                    props.onPreviewAsset({
+                      url: props.assetUrl(preview.url),
+                      name: preview.display_name,
+                      kind: "image",
+                      note: "这是输入预览，不会跳转离开主界面。"
+                    })
+                  }
                 >
                   {preview.is_image ? <img src={props.assetUrl(preview.url)} alt={preview.display_name} /> : null}
                   <span>{preview.display_name}</span>
-                </a>
+                </button>
               ))
             ) : (
               <span className="muted-text">暂无输入预览。</span>
@@ -961,9 +1019,38 @@ function JobDetail(props: {
                   {section.items.map((output) => (
                     <article className="output-card" key={output.relative_path}>
                       {output.is_image ? (
-                        <a href={props.assetUrl(output.url)} target="_blank" rel="noreferrer">
+                        <button
+                          className="output-preview-button"
+                          type="button"
+                          onClick={() =>
+                            props.onPreviewAsset({
+                              url: props.assetUrl(output.url),
+                              name: output.display_name,
+                              kind: "image",
+                              note:
+                                section.key === "masks"
+                                  ? "这是黑白掩膜/中间结果，不是最终彩色重建。MonST3R 的主要成果请优先看 scene.glb、相机轨迹和 frame_*.png。"
+                                  : "这是图像产物预览。"
+                            })
+                          }
+                        >
                           <img className="output-preview" src={props.assetUrl(output.url)} alt={output.display_name} />
-                        </a>
+                        </button>
+                      ) : output.is_video ? (
+                        <button
+                          className="output-preview-button"
+                          type="button"
+                          onClick={() =>
+                            props.onPreviewAsset({
+                              url: props.assetUrl(output.url),
+                              name: output.display_name,
+                              kind: "video",
+                              note: "这是视频产物预览。"
+                            })
+                          }
+                        >
+                          <div className="output-preview placeholder">VIDEO</div>
+                        </button>
                       ) : (
                         <div className="output-preview placeholder">
                           {output.is_pointcloud ? "PLY" : output.is_model3d ? "GLB" : fileExtensionLabel(output.display_name)}
@@ -973,9 +1060,26 @@ function JobDetail(props: {
                         <strong>{output.display_name}</strong>
                         <p>{describeOutput(output.display_name)}</p>
                         <div className="output-actions">
-                          <a href={props.assetUrl(output.url)} target="_blank" rel="noreferrer">
-                            查看
-                          </a>
+                          {output.is_image || output.is_video ? (
+                            <button
+                              onClick={() =>
+                                props.onPreviewAsset({
+                                  url: props.assetUrl(output.url),
+                                  name: output.display_name,
+                                  kind: output.is_video ? "video" : "image",
+                                  note:
+                                    section.key === "masks"
+                                      ? "这是黑白掩膜/中间结果，不是最终彩色重建。"
+                                      : output.is_video
+                                        ? "这是视频产物预览。"
+                                        : "这是图像产物预览。"
+                                })
+                              }
+                              type="button"
+                            >
+                              预览
+                            </button>
+                          ) : null}
                           <a href={props.assetUrl(output.url)} download>
                             下载
                           </a>
@@ -1078,9 +1182,9 @@ function buildOutputSections(outputs: OutputItem[], model: string): OutputSectio
     masks: {
       key: "masks",
       title: "掩膜与动态区域",
-      description: "动态 mask、扩张 mask 等辅助可视化。",
+      description: "黑白动态 mask、扩张 mask 等辅助可视化，不是最终彩色重建。",
       accent: "gold",
-      defaultOpen: true,
+      defaultOpen: false,
       items: []
     },
     confidence: {
@@ -1134,7 +1238,14 @@ function buildOutputSections(outputs: OutputItem[], model: string): OutputSectio
     buckets.other.items.push(output);
   });
 
-  return Object.values(buckets).filter((section) => section.items.length > 0);
+  const orderedKeys =
+    model === "monst3r"
+      ? ["main", "visuals", "camera", "masks", "confidence", "other"]
+      : ["main", "visuals", "camera", "masks", "confidence", "other"];
+
+  return orderedKeys
+    .map((key) => buckets[key])
+    .filter((section) => section && section.items.length > 0);
 }
 
 function Monst3rParams(props: {
@@ -1487,6 +1598,16 @@ function formatParamLabel(key: string) {
 }
 
 function describeOutput(filename: string) {
+  const lower = filename.toLowerCase();
+  if (/dynamic_mask|enlarged_dynamic_mask/.test(lower)) {
+    return "黑白动态掩膜，用来标记运动区域，不是最终重建结果";
+  }
+  if (/scene\.glb/.test(lower)) {
+    return "MonST3R 三维场景，优先查看这个";
+  }
+  if (/frame_\d+\.png/.test(lower)) {
+    return "彩色帧预览，可用来快速确认输入抽帧";
+  }
   const suffix = filename.split(".").pop()?.toLowerCase();
   switch (suffix) {
     case "png":
