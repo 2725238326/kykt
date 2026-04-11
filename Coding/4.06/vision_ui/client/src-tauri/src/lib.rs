@@ -67,12 +67,32 @@ pub fn run() {
             log_path: None,
         })))
         .setup(|app| {
-            let status = ensure_backend(app);
-            if let Some(state) = app.try_state::<BackendStatusState>() {
-                if let Ok(mut guard) = state.0.lock() {
-                    *guard = status;
-                }
-            }
+            set_backend_status(
+                &app.handle(),
+                BackendStatus {
+                    running: false,
+                    managed_by_tauri: false,
+                    message: "Checking local backend availability...".to_string(),
+                    backend_root: None,
+                    log_path: None,
+                },
+            );
+
+            let app_handle = app.handle().clone();
+            thread::spawn(move || {
+                set_backend_status(
+                    &app_handle,
+                    BackendStatus {
+                        running: false,
+                        managed_by_tauri: false,
+                        message: "Starting or reusing the local FastAPI backend...".to_string(),
+                        backend_root: None,
+                        log_path: None,
+                    },
+                );
+                let status = ensure_backend(&app_handle);
+                set_backend_status(&app_handle, status);
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![app_ready_message, backend_status])
@@ -87,7 +107,15 @@ pub fn run() {
     });
 }
 
-fn ensure_backend(app: &tauri::App) -> BackendStatus {
+fn set_backend_status(app: &tauri::AppHandle, status: BackendStatus) {
+    if let Some(state) = app.try_state::<BackendStatusState>() {
+        if let Ok(mut guard) = state.0.lock() {
+            *guard = status;
+        }
+    }
+}
+
+fn ensure_backend(app: &tauri::AppHandle) -> BackendStatus {
     if backend_is_listening() {
         return BackendStatus {
             running: true,
@@ -163,7 +191,7 @@ fn wait_for_backend() -> bool {
     false
 }
 
-fn find_backend_root(app: &tauri::App) -> Result<PathBuf, String> {
+fn find_backend_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     if let Ok(root) = env::var("KYKT_BACKEND_ROOT") {
         let path = PathBuf::from(root);
         if is_backend_root(&path) {

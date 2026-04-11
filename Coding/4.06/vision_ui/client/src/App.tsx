@@ -194,6 +194,11 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const timer = window.setInterval(() => void loadDesktopBackendStatus(), serviceReady ? 8000 : 1200);
+    return () => window.clearInterval(timer);
+  }, [serviceReady]);
+
+  useEffect(() => {
     if (!serviceReady) {
       return;
     }
