@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shlex
 import subprocess
 import tarfile
 import threading
+import traceback
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
@@ -47,6 +49,7 @@ SSH_SHORT_TIMEOUT_SECONDS = 120
 SCP_TIMEOUT_SECONDS = 900
 STATUS_POLL_INTERVAL_SECONDS = 4
 STATUS_POLL_TIMEOUT_SECONDS = 20
+WINDOWS_NO_WINDOW = 0x08000000
 REMOTE_PHASE_MAP = {
     "starting": "running_remote_matches",
     "running_matches": "running_remote_matches",
@@ -59,7 +62,27 @@ REMOTE_PHASE_MAP = {
 
 
 def _ssh_command(config: ServerConfig, shell_script: str) -> list[str]:
-    return ["ssh", *SSH_CONNECT_OPTIONS, config.alias, f"bash -lc {shlex.quote(shell_script)}"]
+    return ["ssh", "-T", *SSH_CONNECT_OPTIONS, config.alias, f"bash -lc {shlex.quote(shell_script)}"]
+
+
+def _subprocess_options() -> dict:
+    options: dict = {"stdin": subprocess.DEVNULL}
+    if os.name == "nt":
+        options["creationflags"] = WINDOWS_NO_WINDOW
+    return options
+
+
+def _write_debug_log(job_id: str, message: str) -> None:
+    log_path = get_job_dir(job_id) / "logs" / "dispatch.debug.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().isoformat(timespec="seconds")
+    with log_path.open("a", encoding="utf-8") as handle:
+        handle.write(f"[{timestamp}] {message}\n")
+
+
+def _raise_if_cancelled(job_id: str) -> None:
+    if load_job(job_id).status == "cancelled":
+        raise RuntimeError("__job_cancelled__")
 
 
 def run_remote_job(job_id: str) -> None:
@@ -67,6 +90,7 @@ def run_remote_job(job_id: str) -> None:
     config = ServerConfig()
 
     try:
+        _write_debug_log(job_id, "Remote job thread started.")
         remote_job_dir = f"{config.remote_jobs_dir}/{job.job_id}"
         update_job(
             job_id,
@@ -75,8 +99,10 @@ def run_remote_job(job_id: str) -> None:
             remote_job_dir=remote_job_dir,
             progress_message="正在创建远端任务目录...",
         )
+        _write_debug_log(job_id, f"Preparing remote directory: {remote_job_dir}")
 
         # Create remote directories
+        _raise_if_cancelled(job_id)
         _ssh(
             config,
             (
@@ -85,31 +111,45 @@ def run_remote_job(job_id: str) -> None:
                 f"{shlex.quote(remote_job_dir)}/logs"
             ),
         )
+        _write_debug_log(job_id, "Remote job directories created.")
 
         # Ensure runners dir exists
+        _raise_if_cancelled(job_id)
+        update_job(job_id, phase="preparing_remote", progress_message="正在确认远端运行脚本目录...")
         _ssh(config, f"mkdir -p {shlex.quote(config.remote_runners_dir)}")
+        _write_debug_log(job_id, f"Remote runners dir ready: {config.remote_runners_dir}")
 
         # Upload inputs
+        _raise_if_cancelled(job_id)
         update_job(job_id, phase="uploading_inputs", progress_message="正在上传本地输入文件到服务器...")
+        _write_debug_log(job_id, "Uploading inputs...")
         _upload_inputs(config, job.job_id, remote_job_dir)
+        _write_debug_log(job_id, "Inputs uploaded.")
 
         # Upload job.json
+        _raise_if_cancelled(job_id)
         update_job(job_id, phase="uploading_inputs", progress_message="正在上传任务清单...")
         _upload_remote_job_json(config, job.job_id, remote_job_dir)
+        _write_debug_log(job_id, "Remote job.json uploaded.")
 
         # Upload runner script
+        _raise_if_cancelled(job_id)
         update_job(job_id, phase="uploading_inputs", progress_message="正在上传远端运行脚本...")
         _upload_runner(config, job.model)
+        _write_debug_log(job_id, f"Remote runner prepared for model: {job.model}")
 
         # Dispatch model
+        _raise_if_cancelled(job_id)
         if job.model == "dust3r":
             _run_dust3r_v2(config, job.job_id, remote_job_dir)
         elif job.model == "monst3r":
             _run_monst3r_v1(config, job.job_id, remote_job_dir)
         else:
             raise RuntimeError(f"模型 '{job.model}' 还没有接入远端执行。")
+        _write_debug_log(job_id, "Remote model execution finished, starting download.")
 
         # Download results
+        _raise_if_cancelled(job_id)
         update_job(
             job_id,
             phase="downloading_results",
@@ -117,6 +157,7 @@ def run_remote_job(job_id: str) -> None:
         )
         output_files = _download_results(config, job.job_id, remote_job_dir)
         if load_job(job_id).status == "cancelled":
+            _write_debug_log(job_id, "Job was cancelled during result download.")
             return
         _generate_result_summary(job_id, output_files)
         update_job(
@@ -127,7 +168,12 @@ def run_remote_job(job_id: str) -> None:
             error_message=None,
             progress_message="任务完成。输出结果已回传到本地。",
         )
+        _write_debug_log(job_id, f"Job finished successfully with {len(output_files)} files.")
     except Exception as exc:
+        if str(exc) == "__job_cancelled__":
+            _write_debug_log(job_id, "Job cancellation acknowledged; stopping remote workflow.")
+            return
+        _write_debug_log(job_id, "Job failed with exception:\n" + traceback.format_exc())
         if load_job(job_id).status == "cancelled":
             return
         update_job(
@@ -166,6 +212,7 @@ def _upload_inputs(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     items = iter_input_items(job)
     total = len(items)
     for idx, item in enumerate(items, start=1):
+        _raise_if_cancelled(job_id)
         local_path = ROOT / item["relative_path"]
         update_job(
             job_id,
@@ -494,15 +541,19 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
 # ===== Low-level SSH/SCP helpers =====
 
 def _ssh(config: ServerConfig, shell_script: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        _ssh_command(config, shell_script),
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=SSH_SHORT_TIMEOUT_SECONDS,
-    )
+    try:
+        return subprocess.run(
+            _ssh_command(config, shell_script),
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=SSH_SHORT_TIMEOUT_SECONDS,
+            **_subprocess_options(),
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"SSH 命令超时（{SSH_SHORT_TIMEOUT_SECONDS}s）：{shell_script[:160]}") from exc
 
 
 def _clean_progress_line(raw_line: str) -> str:
@@ -553,6 +604,7 @@ def _ssh_stream(
         encoding="utf-8",
         errors="replace",
         bufsize=1,
+        **_subprocess_options(),
     )
 
     last_message = ""
@@ -624,15 +676,19 @@ def _sync_remote_status_once(config: ServerConfig, job_id: str, remote_job_dir: 
 
 
 def _scp_to_remote(config: ServerConfig, local_path: Path, remote_path: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        ["scp", *SSH_CONNECT_OPTIONS, str(local_path), f"{config.alias}:{remote_path}"],
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=SCP_TIMEOUT_SECONDS,
-    )
+    try:
+        return subprocess.run(
+            ["scp", *SSH_CONNECT_OPTIONS, str(local_path), f"{config.alias}:{remote_path}"],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=SCP_TIMEOUT_SECONDS,
+            **_subprocess_options(),
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"SCP 上传超时（{SCP_TIMEOUT_SECONDS}s）：{local_path.name}") from exc
 
 
 def _scp_from_remote(
@@ -643,12 +699,16 @@ def _scp_from_remote(
     timeout: int = SCP_TIMEOUT_SECONDS,
 ) -> subprocess.CompletedProcess:
     local_path.parent.mkdir(parents=True, exist_ok=True)
-    return subprocess.run(
-        ["scp", *SSH_CONNECT_OPTIONS, f"{config.alias}:{remote_path}", str(local_path)],
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=timeout,
-    )
+    try:
+        return subprocess.run(
+            ["scp", *SSH_CONNECT_OPTIONS, f"{config.alias}:{remote_path}", str(local_path)],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+            **_subprocess_options(),
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"SCP 下载超时（{timeout}s）：{remote_path}") from exc

@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type {
   BackendStatusPayload,
@@ -95,6 +95,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [recoveringService, setRecoveringService] = useState(false);
+  const recoveryInFlightRef = useRef(false);
   const [formState, setFormState] = useState<FormState>({
     model: "dust3r",
     source_type: "images",
@@ -257,10 +259,84 @@ function App() {
 
   async function loadDesktopBackendStatus() {
     try {
-      setBackendStatus(await invoke<BackendStatusPayload>("backend_status"));
+      const status = await invoke<BackendStatusPayload>("backend_status");
+      setBackendStatus(status);
+      if (!status.running) {
+        setServiceState((current) => (current === "starting" ? current : "degraded"));
+        setServiceMessage(status.message || "本地服务暂时不可用。");
+      }
     } catch {
       setBackendStatus(null);
     }
+  }
+
+  async function recoverBackend(mode: "ensure" | "restart", announce = false) {
+    if (recoveryInFlightRef.current) {
+      return;
+    }
+    recoveryInFlightRef.current = true;
+    setRecoveringService(true);
+    setServiceState("starting");
+    setServiceMessage(mode === "restart" ? "正在重启本地服务..." : "正在尝试恢复本地服务...");
+
+    try {
+      const command = mode === "restart" ? "restart_backend" : "ensure_backend_now";
+      const status = await invoke<BackendStatusPayload>(command);
+      setBackendStatus(status);
+
+      if (!status.running) {
+        setServiceState("degraded");
+        setServiceMessage(status.message || "本地服务恢复失败。");
+        if (announce) {
+          setErrorMessage(status.message || "本地服务恢复失败。");
+        }
+        return;
+      }
+
+      const payload = await fetchJson<BootstrapPayload>("/api/bootstrap");
+      setBootstrap(payload);
+      setServiceState("ready");
+      setServiceMessage("本地服务已恢复并重新连通。");
+      setErrorMessage(null);
+      if (announce) {
+        setInfoMessage(mode === "restart" ? "本地服务已重启。" : "本地服务已恢复。");
+      }
+      await loadJobs(false);
+      if (selectedJobId) {
+        await loadJobDetail(selectedJobId, false);
+      }
+    } catch (error) {
+      const message = friendlyError(error, "本地服务恢复失败。");
+      setServiceState("degraded");
+      setServiceMessage(message);
+      if (announce) {
+        setErrorMessage(message);
+      }
+    } finally {
+      recoveryInFlightRef.current = false;
+      setRecoveringService(false);
+    }
+  }
+
+  function handleServiceFailure(error: unknown, fallbackMessage: string, showError: boolean) {
+    const message = friendlyError(error, fallbackMessage);
+    setServiceState("degraded");
+    setServiceMessage("本地服务连接中断，正在尝试自动恢复...");
+    setBackendStatus((current) =>
+      current
+        ? { ...current, running: false, message }
+        : {
+            running: false,
+            managed_by_tauri: false,
+            message,
+            backend_root: null,
+            log_path: null
+          }
+    );
+    if (showError) {
+      setErrorMessage(message);
+    }
+    void recoverBackend("ensure", false);
   }
 
   async function loadJobs(showError = true) {
@@ -268,20 +344,24 @@ function App() {
       const payload = await fetchJson<JobsListPayload>("/api/jobs");
       setJobs(payload.jobs);
       setBootstrap((current) => (current ? { ...current, summary: payload.summary } : current));
-    } catch (error) {
-      if (showError) {
-        setErrorMessage(friendlyError(error, "加载任务列表失败。"));
+      if (serviceState !== "ready") {
+        setServiceState("ready");
+        setServiceMessage("本地服务已就绪");
       }
+    } catch (error) {
+      handleServiceFailure(error, "加载任务列表失败。", showError);
     }
   }
 
   async function loadJobDetail(jobId: string, showError = true) {
     try {
       setSelectedJob(await fetchJson<JobPayload>(`/api/jobs/${jobId}`));
-    } catch (error) {
-      if (showError) {
-        setErrorMessage(friendlyError(error, "加载任务详情失败。"));
+      if (serviceState !== "ready") {
+        setServiceState("ready");
+        setServiceMessage("本地服务已就绪");
       }
+    } catch (error) {
+      handleServiceFailure(error, "加载任务详情失败。", showError);
     }
   }
 
@@ -426,6 +506,13 @@ function App() {
         </div>
         <div className="header-actions">
           <StatusBadge state={serviceState} label={serviceStatusLabel(serviceState)} />
+          <button
+            className="ghost-button"
+            onClick={() => void recoverBackend("restart", true)}
+            disabled={recoveringService}
+          >
+            {recoveringService ? "恢复中..." : "重启本地服务"}
+          </button>
           <button className="ghost-button" onClick={() => void loadJobs(true)} disabled={!serviceReady}>
             刷新
           </button>
@@ -438,7 +525,27 @@ function App() {
             <span className="mini-label">本地服务</span>
             <strong>{serviceMessage}</strong>
           </div>
-          <p>{backendStatusText(backendStatus)}</p>
+          <div className="service-card-copy">
+            <p>{backendStatusText(backendStatus)}</p>
+            <div className="service-card-actions">
+              <button
+                className="ghost-button small"
+                onClick={() => void recoverBackend("ensure", true)}
+                disabled={recoveringService}
+                type="button"
+              >
+                立即探测
+              </button>
+              <button
+                className="ghost-button small"
+                onClick={() => void recoverBackend("restart", true)}
+                disabled={recoveringService}
+                type="button"
+              >
+                强制重启
+              </button>
+            </div>
+          </div>
         </section>
 
         {infoMessage ? <MessageBanner kind="info" message={infoMessage} /> : null}

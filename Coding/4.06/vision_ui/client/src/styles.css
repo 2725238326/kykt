@@ -167,6 +167,19 @@ img {
   box-shadow: none;
 }
 
+.service-card-copy {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.service-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .service-card.ready {
   border-color: rgba(22, 138, 74, 0.18);
   background: rgba(244, 251, 247, 0.92);
@@ -1115,8 +1128,17 @@ img {
   .focus-main,
   .focus-meta,
   .guide-head,
-  .job-toolbar {
+  .job-toolbar,
+  .service-card,
+  .service-card-actions {
     flex-direction: column;
+  }
+
+  .service-card-copy,
+  .service-card-actions {
+    justify-items: start;
+    justify-content: flex-start;
+    align-items: flex-start;
   }
 
   .detail-score-block {

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import os
 import re
+import threading
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -24,6 +25,9 @@ from job_store import (
     update_job,
 )
 from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
+
+_RUNNER_THREADS: dict[str, threading.Thread] = {}
+_RUNNER_THREADS_LOCK = threading.Lock()
 
 
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
@@ -340,6 +344,31 @@ def _validate_dispatchable(job) -> None:
         raise HTTPException(status_code=400, detail="MonST3R 至少需要 1 个视频或一组帧序列。")
 
 
+def _runner_thread_target(job_id: str) -> None:
+    try:
+        run_remote_job(job_id)
+    finally:
+        with _RUNNER_THREADS_LOCK:
+            existing = _RUNNER_THREADS.get(job_id)
+            if existing is threading.current_thread():
+                _RUNNER_THREADS.pop(job_id, None)
+
+
+def _launch_remote_job(job_id: str) -> None:
+    with _RUNNER_THREADS_LOCK:
+        existing = _RUNNER_THREADS.get(job_id)
+        if existing and existing.is_alive():
+            raise HTTPException(status_code=409, detail=f"任务 {job_id} 已经在后台运行。")
+        thread = threading.Thread(
+            target=_runner_thread_target,
+            args=(job_id,),
+            daemon=True,
+            name=f"vision-remote-job-{job_id}",
+        )
+        _RUNNER_THREADS[job_id] = thread
+        thread.start()
+
+
 @app.get("/")
 async def index(request: Request):
     jobs = list_jobs(limit=50)
@@ -428,7 +457,7 @@ async def job_detail(request: Request, job_id: str):
 
 
 @app.post("/jobs/{job_id}/dispatch")
-async def dispatch_job(job_id: str, background_tasks: BackgroundTasks):
+async def dispatch_job(job_id: str):
     try:
         job = load_job(job_id)
     except FileNotFoundError as exc:
@@ -437,12 +466,19 @@ async def dispatch_job(job_id: str, background_tasks: BackgroundTasks):
     _validate_dispatchable(job)
 
     clear_job_runtime(job_id)
-    background_tasks.add_task(run_remote_job, job_id)
+    update_job(
+        job_id,
+        status="running",
+        phase="preparing_remote",
+        error_message=None,
+        progress_message="正在启动远端调度线程...",
+    )
+    _launch_remote_job(job_id)
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @app.post("/jobs/{job_id}/retry")
-async def retry_job(job_id: str, background_tasks: BackgroundTasks):
+async def retry_job(job_id: str):
     try:
         job = load_job(job_id)
     except FileNotFoundError as exc:
@@ -451,7 +487,14 @@ async def retry_job(job_id: str, background_tasks: BackgroundTasks):
     _validate_dispatchable(job)
 
     clear_job_runtime(job_id)
-    background_tasks.add_task(run_remote_job, job_id)
+    update_job(
+        job_id,
+        status="running",
+        phase="preparing_remote",
+        error_message=None,
+        progress_message="正在重新启动远端调度线程...",
+    )
+    _launch_remote_job(job_id)
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
@@ -621,7 +664,7 @@ async def create_job_api(
 
 
 @app.post("/api/jobs/{job_id}/dispatch")
-async def dispatch_job_api(job_id: str, background_tasks: BackgroundTasks):
+async def dispatch_job_api(job_id: str):
     try:
         job = load_job(job_id)
     except FileNotFoundError as exc:
@@ -630,12 +673,19 @@ async def dispatch_job_api(job_id: str, background_tasks: BackgroundTasks):
     _validate_dispatchable(job)
 
     clear_job_runtime(job_id)
-    background_tasks.add_task(run_remote_job, job_id)
+    update_job(
+        job_id,
+        status="running",
+        phase="preparing_remote",
+        error_message=None,
+        progress_message="正在启动远端调度线程...",
+    )
+    _launch_remote_job(job_id)
     return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})
 
 
 @app.post("/api/jobs/{job_id}/retry")
-async def retry_job_api(job_id: str, background_tasks: BackgroundTasks):
+async def retry_job_api(job_id: str):
     try:
         job = load_job(job_id)
     except FileNotFoundError as exc:
@@ -644,7 +694,14 @@ async def retry_job_api(job_id: str, background_tasks: BackgroundTasks):
     _validate_dispatchable(job)
 
     clear_job_runtime(job_id)
-    background_tasks.add_task(run_remote_job, job_id)
+    update_job(
+        job_id,
+        status="running",
+        phase="preparing_remote",
+        error_message=None,
+        progress_message="正在重新启动远端调度线程...",
+    )
+    _launch_remote_job(job_id)
     return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})
 
 

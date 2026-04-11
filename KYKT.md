@@ -237,6 +237,11 @@ Current frontend capabilities:
 - 2026-04-10: MonST3R result download now pulls the actual remote `output/` and `logs/` tree instead of assuming DUSt3R-only `matches.png` and `pointcloud.ply` files.
 - 2026-04-10: Added `E:\kykt\Coding\4.06\vision_ui\SERVER_PREPARATION.md` to track the server-side DUSt3R optimization path and MonST3R deployment checklist.
 - 2026-04-10: MonST3R server preparation advanced: repo uploaded to `/hdd3/kykt26/code/monst3r`, env `monst3r` created, dependencies installed, checkpoints confirmed, and the remaining blocker is the first end-to-end validation run through the client.
+- 2026-04-11: Root cause of the “stuck at preparing remote directory” report was clarified. The job itself could move forward, but the desktop UI was capable of showing stale progress when the local FastAPI backend disappeared or when port `8765` was occupied by another `uvicorn app:app` process started outside the managed desktop flow.
+- 2026-04-11: The desktop shell now starts the backend asynchronously so the window does not freeze during startup, and it now exposes stronger backend supervision commands instead of only a one-time stale status snapshot.
+- 2026-04-11: The React client now degrades gracefully when API polling fails, marks the local service as disconnected, and offers explicit “probe/restart local service” recovery actions instead of silently keeping old task cards on screen.
+- 2026-04-11: The Tauri layer now distinguishes “TCP port is occupied” from “backend API is actually healthy”, and a manual restart path can reclaim port `8765` from an old conflicting local process.
+- 2026-04-11: MonST3R retry validation passed locally through the JSON API. Job `20260411-124006` advanced across remote directory creation, input upload, remote runner upload, and into official MonST3R model loading / pointcloud export stages.
 
 Still missing:
 
@@ -247,6 +252,7 @@ Still missing:
 - First end-to-end MonST3R client run with one short video or one small frame sequence, followed by output quality inspection.
 - A final MonST3R input/output contract after observing the real `.glb`, trajectory, depth, and confidence artifacts on a few examples.
 - Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
+- Automatic stale-job recovery after a local backend crash. Right now the UI can reconnect and restart the backend, but partially running jobs are still not rehydrated into an explicit “interrupted / safe to retry” state.
 - Exact server-written progress ingestion for every major phase, instead of only mixed local/remote progress approximation.
 - More complete task controls such as one-click rerun presets, clearer recovery hints when a job is partially finished, and richer large-result handling for GLB / point-cloud opening workflows.
 
@@ -305,6 +311,7 @@ Priority order:
 5. Add better result viewing for GLB / trajectory / depth / confidence artifacts after observing real MonST3R outputs.
 6. Validate MonST3R as a remote runner for video/frame-sequence tasks.
 7. Add stronger task controls such as cancel and parameterized reruns.
+8. Convert backend crash / port-conflict cases into first-class UI states so operators can see whether they are looking at live progress or stale cached progress.
 
 ## Current Delivery Gaps
 

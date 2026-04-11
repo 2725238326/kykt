@@ -2,7 +2,7 @@ use serde::Serialize;
 use std::{
     env,
     fs::{self, OpenOptions},
-    io::Write,
+    io::{Read, Write},
     net::{SocketAddr, TcpStream},
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
@@ -42,7 +42,7 @@ fn app_ready_message() -> &'static str {
 
 #[tauri::command]
 fn backend_status(state: tauri::State<'_, BackendStatusState>) -> BackendStatus {
-    state
+    let mut status = state
         .0
         .lock()
         .map(|status| status.clone())
@@ -52,7 +52,52 @@ fn backend_status(state: tauri::State<'_, BackendStatusState>) -> BackendStatus 
             message: "backend status lock is poisoned".to_string(),
             backend_root: None,
             log_path: None,
-        })
+        });
+
+    if backend_api_is_healthy() {
+        status.running = true;
+        if status.message.is_empty() || status.message.contains("did not become ready") {
+            status.message = if status.managed_by_tauri {
+                "FastAPI backend is healthy and managed by the desktop client.".to_string()
+            } else {
+                "FastAPI backend is healthy on 127.0.0.1:8765.".to_string()
+            };
+        }
+    } else {
+        status.running = false;
+        if let Some(pid) = find_listener_pid(BACKEND_PORT) {
+            status.message = format!(
+                "端口 8765 被 PID {pid} 占用，但本地后端 API 没有正常响应。建议点击“重启本地服务”。"
+            );
+        } else {
+            status.message = "本地后端当前未监听 127.0.0.1:8765。".to_string();
+        }
+    }
+
+    status
+}
+
+#[tauri::command]
+fn ensure_backend_now(app: tauri::AppHandle) -> BackendStatus {
+    let status = ensure_backend(&app);
+    set_backend_status(&app, status.clone());
+    status
+}
+
+#[tauri::command]
+fn restart_backend(app: tauri::AppHandle) -> BackendStatus {
+    if let Some(state) = app.try_state::<BackendProcess>() {
+        stop_backend(&state);
+    }
+
+    if let Some(pid) = find_listener_pid(BACKEND_PORT) {
+        let _ = kill_process(pid);
+        thread::sleep(Duration::from_millis(600));
+    }
+
+    let status = ensure_backend(&app);
+    set_backend_status(&app, status.clone());
+    status
 }
 
 pub fn run() {
@@ -95,7 +140,12 @@ pub fn run() {
             });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![app_ready_message, backend_status])
+        .invoke_handler(tauri::generate_handler![
+            app_ready_message,
+            backend_status,
+            ensure_backend_now,
+            restart_backend
+        ])
         .build(context)
         .expect("failed to build KYKT Vision Client");
 
@@ -116,11 +166,26 @@ fn set_backend_status(app: &tauri::AppHandle, status: BackendStatus) {
 }
 
 fn ensure_backend(app: &tauri::AppHandle) -> BackendStatus {
-    if backend_is_listening() {
+    if backend_api_is_healthy() {
         return BackendStatus {
             running: true,
             managed_by_tauri: false,
-            message: "FastAPI backend is already listening on 127.0.0.1:8765.".to_string(),
+            message: "FastAPI backend is already healthy on 127.0.0.1:8765.".to_string(),
+            backend_root: None,
+            log_path: None,
+        };
+    }
+
+    if backend_is_listening() {
+        let listener_hint = find_listener_pid(BACKEND_PORT)
+            .map(|pid| format!("当前占用进程 PID={pid}。"))
+            .unwrap_or_else(|| "当前占用进程未知。".to_string());
+        return BackendStatus {
+            running: false,
+            managed_by_tauri: false,
+            message: format!(
+                "127.0.0.1:8765 已被其他进程占用，但后端 API 没有正常响应。{listener_hint} 请点击“重启本地服务”接管它。"
+            ),
             backend_root: None,
             log_path: None,
         };
@@ -178,6 +243,35 @@ fn ensure_backend(app: &tauri::AppHandle) -> BackendStatus {
 fn backend_is_listening() -> bool {
     let addr = SocketAddr::from(([127, 0, 0, 1], BACKEND_PORT));
     TcpStream::connect_timeout(&addr, Duration::from_millis(250)).is_ok()
+}
+
+fn backend_api_is_healthy() -> bool {
+    let addr = SocketAddr::from(([127, 0, 0, 1], BACKEND_PORT));
+    let mut stream = match TcpStream::connect_timeout(&addr, Duration::from_millis(400)) {
+        Ok(stream) => stream,
+        Err(_) => return false,
+    };
+
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(1200)));
+    let _ = stream.set_write_timeout(Some(Duration::from_millis(1200)));
+
+    if stream
+        .write_all(
+            b"GET /api/bootstrap HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n",
+        )
+        .is_err()
+    {
+        return false;
+    }
+
+    let mut buffer = [0u8; 256];
+    match stream.read(&mut buffer) {
+        Ok(size) if size > 0 => {
+            let response = String::from_utf8_lossy(&buffer[..size]);
+            response.starts_with("HTTP/1.1 200") || response.starts_with("HTTP/1.0 200")
+        }
+        _ => false,
+    }
 }
 
 fn wait_for_backend() -> bool {
@@ -296,4 +390,34 @@ fn stop_backend(state: &BackendProcess) {
             let _ = child.wait();
         }
     }
+}
+
+fn find_listener_pid(port: u16) -> Option<u32> {
+    let output = Command::new("netstat")
+        .args(["-ano", "-p", "tcp"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .output()
+        .ok()?;
+
+    let needle = format!("127.0.0.1:{port}");
+    let text = String::from_utf8_lossy(&output.stdout);
+    for line in text.lines() {
+        if !(line.contains("LISTENING") && line.contains(&needle)) {
+            continue;
+        }
+        let pid = line.split_whitespace().last()?.parse::<u32>().ok()?;
+        return Some(pid);
+    }
+    None
+}
+
+fn kill_process(pid: u32) -> bool {
+    Command::new("taskkill")
+        .args(["/PID", &pid.to_string(), "/F"])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
 }
