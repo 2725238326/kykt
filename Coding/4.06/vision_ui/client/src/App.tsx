@@ -50,16 +50,118 @@ const defaultDust3rParams = {
 };
 
 const defaultMonst3rParams = {
-  image_size: "224",
+  image_size: "512",
   batch_size: "1",
   fps: "0",
-  num_frames: "24",
+  num_frames: "48",
   not_batchify: "true",
   real_time: "false",
   window_wise: "false",
-  window_size: "100",
+  window_size: "24",
   window_overlap_ratio: "0.5"
 };
+
+type ParamChoice = {
+  value: string;
+  label: string;
+  note: string;
+};
+
+type PresetKey = "quick" | "standard" | "enhanced";
+
+type PresetDescriptor = {
+  key: PresetKey;
+  label: string;
+  note: string;
+};
+
+const dust3rParamChoices: Record<keyof typeof defaultDust3rParams, ParamChoice[]> = {
+  image_size: [
+    { value: "512", label: "512（标准推荐）", note: "正式样例优先用这一档，细节和稳定性更平衡。" },
+    { value: "384", label: "384（中速）", note: "想稍微提速又不想直接降到最低时可用。" },
+    { value: "224", label: "224（快速摸底）", note: "只适合先验流程，不建议拿来做最终展示。" }
+  ],
+  scene_graph: [
+    { value: "complete", label: "complete（2 到 6 张推荐）", note: "少量图片时最稳，配对最完整。" },
+    { value: "swin-5", label: "swin-5（6 张以上推荐）", note: "图片较多时更省配对成本，避免 complete 过重。" }
+  ],
+  niter: [
+    { value: "150", label: "150（快速）", note: "适合先看大概效果，细节优化较少。" },
+    { value: "300", label: "300（基线推荐）", note: "最适合作为第一版正式实验参数。" },
+    { value: "500", label: "500（精细）", note: "更适合重点样例，耗时会明显增加。" }
+  ],
+  lr: [
+    { value: "0.005", label: "0.005（更稳）", note: "想保守一点时用这一档。" },
+    { value: "0.01", label: "0.01（标准推荐）", note: "当前默认最合适，先从这里起步。" },
+    { value: "0.02", label: "0.02（更激进）", note: "只在你想试更快收敛时再用。" }
+  ],
+  batch_size: [
+    { value: "1", label: "1（稳妥推荐）", note: "最稳，不容易因为显存或负载出额外问题。" },
+    { value: "2", label: "2（显存充足）", note: "想提速且机器有余量时可以尝试。" }
+  ],
+  max_points: [
+    { value: "100000", label: "100000（快速）", note: "点更少，导出更轻，适合快速筛样例。" },
+    { value: "250000", label: "250000（基线推荐）", note: "当前最均衡，先用这一档就好。" },
+    { value: "500000", label: "500000（细节优先）", note: "更适合重点样例，文件和开销都会变大。" }
+  ],
+  match_viz_count: [
+    { value: "0", label: "0（不画匹配线）", note: "只关心点云结果时可以关掉。" },
+    { value: "20", label: "20（简洁）", note: "适合快速看有没有基本匹配。" },
+    { value: "50", label: "50（基线推荐）", note: "展示和排查都比较合适。" },
+    { value: "100", label: "100（更密）", note: "想看更丰富的匹配关系时再开高。" }
+  ]
+};
+
+const monst3rParamChoices: Record<keyof typeof defaultMonst3rParams, ParamChoice[]> = {
+  image_size: [
+    { value: "512", label: "512（正式样例推荐）", note: "明天做正式视频样例时优先用这一档。" },
+    { value: "224", label: "224（快速验链路）", note: "只适合先验证能不能跑通，不适合最终展示。" }
+  ],
+  batch_size: [
+    { value: "1", label: "1（稳妥推荐）", note: "当前最稳，先别急着往上加。" },
+    { value: "2", label: "2（显存足够再试）", note: "想提速且显存够时再考虑。" }
+  ],
+  fps: [
+    { value: "0", label: "0（自动/原节奏推荐）", note: "最省心，主要由最大帧数控制总量。" },
+    { value: "2", label: "2（更省）", note: "视频偏长时，先压到这一档更容易控住规模。" },
+    { value: "4", label: "4（常规抽帧）", note: "想更均匀地抽样视频内容时可用。" },
+    { value: "8", label: "8（高动作场景）", note: "只有运动较快时才建议提到这么高。" }
+  ],
+  num_frames: [
+    { value: "24", label: "24（快速验链路）", note: "只看能不能跑通时可选。" },
+    { value: "48", label: "48（基线推荐）", note: "正式第一版样例优先用这一档。" },
+    { value: "72", label: "72（增强）", note: "效果不错后再往上加，适合更完整的弧线运动。" },
+    { value: "96", label: "96（长序列）", note: "更重，只建议对重点视频使用。" }
+  ],
+  not_batchify: [
+    { value: "true", label: "开启（稳妥推荐）", note: "更适合我们当前这套环境，先保持开启。" },
+    { value: "false", label: "关闭（速度优先）", note: "只有你确认资源富余时再尝试关闭。" }
+  ],
+  real_time: [
+    { value: "false", label: "关闭（离线质量推荐）", note: "做实验和交差样例时应保持关闭。" },
+    { value: "true", label: "开启（演示模式）", note: "偏演示用途，不建议拿来做正式结果。" }
+  ],
+  window_wise: [
+    { value: "false", label: "关闭（短视频推荐）", note: "短视频或第一版样例先别开。" },
+    { value: "true", label: "开启（长序列推荐）", note: "视频更长或想更稳时再打开。" }
+  ],
+  window_size: [
+    { value: "16", label: "16（更轻）", note: "短窗口，开销更小。" },
+    { value: "24", label: "24（基线推荐）", note: "当前最合适，和 48 到 72 帧搭配比较稳。" },
+    { value: "32", label: "32（更长序列）", note: "适合更长视频，但耗时更高。" }
+  ],
+  window_overlap_ratio: [
+    { value: "0.25", label: "0.25（更快）", note: "重叠更少，速度更快。" },
+    { value: "0.5", label: "0.5（基线推荐）", note: "目前最平衡，先用这一档。" },
+    { value: "0.75", label: "0.75（更稳）", note: "更适合重点样例，代价是更慢。" }
+  ]
+};
+
+const presetDescriptors: PresetDescriptor[] = [
+  { key: "quick", label: "快速", note: "先验链路、快速出结果" },
+  { key: "standard", label: "标准", note: "正式样例首选基线" },
+  { key: "enhanced", label: "增强", note: "重点样例，质量优先" }
+];
 
 type FormState = {
   model: string;
@@ -103,6 +205,10 @@ function App() {
   const [files, setFiles] = useState<File[]>([]);
   const [recoveringService, setRecoveringService] = useState(false);
   const [previewAsset, setPreviewAsset] = useState<PreviewAsset | null>(null);
+  const [activePresets, setActivePresets] = useState<Record<"dust3r" | "monst3r", PresetKey | null>>({
+    dust3r: "standard",
+    monst3r: "standard"
+  });
   const recoveryInFlightRef = useRef(false);
   const [formState, setFormState] = useState<FormState>({
     model: "dust3r",
@@ -389,6 +495,9 @@ function App() {
 
   function updateFormField(key: keyof FormState, value: string) {
     setFormState((current) => ({ ...current, [key]: value }));
+    if (isParamFieldKey(key)) {
+      setActivePresets((current) => ({ ...current, [formState.model as "dust3r" | "monst3r"]: null }));
+    }
   }
 
   function updateModel(value: string) {
@@ -408,6 +517,29 @@ function App() {
         source_type: current.source_type === "video" ? "images" : current.source_type
       };
     });
+    setActivePresets((current) => ({
+      ...current,
+      [value as "dust3r" | "monst3r"]: "standard"
+    }));
+  }
+
+  function applyPreset(preset: PresetKey) {
+    setFormState((current) => {
+      if (current.model === "monst3r") {
+        return {
+          ...current,
+          ...buildMonst3rPreset(preset)
+        };
+      }
+      return {
+        ...current,
+        ...buildDust3rPreset(preset, files.length)
+      };
+    });
+    setActivePresets((current) => ({
+      ...current,
+      [formState.model as "dust3r" | "monst3r"]: preset
+    }));
   }
 
   function removePendingFile(targetName: string, targetSize: number) {
@@ -715,6 +847,34 @@ function App() {
 
               <details className="advanced-panel">
                 <summary>高级参数</summary>
+                <div className="advanced-panel-intro">
+                  这些参数已经整理成推荐档位了。直接优先选择带“推荐”字样的选项，只有做对比实验时再切到其它档。
+                </div>
+                <div className="preset-strip">
+                  <div className="preset-strip-head">
+                    <strong>一键预设</strong>
+                    <span>
+                      {activePresets[formState.model as "dust3r" | "monst3r"]
+                        ? `当前：${presetLabel(activePresets[formState.model as "dust3r" | "monst3r"])}`
+                        : "当前：已手动调整"}
+                    </span>
+                  </div>
+                  <div className="preset-pills">
+                    {presetDescriptors.map((preset) => (
+                      <button
+                        key={preset.key}
+                        className={`preset-pill ${
+                          activePresets[formState.model as "dust3r" | "monst3r"] === preset.key ? "active" : ""
+                        }`}
+                        type="button"
+                        onClick={() => applyPreset(preset.key)}
+                      >
+                        <strong>{preset.label}</strong>
+                        <span>{preset.note}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {isDust3r ? (
                   <div className="param-grid">
                     {Object.keys(defaultDust3rParams).map((key) => (
@@ -722,6 +882,7 @@ function App() {
                         key={key}
                         name={key}
                         value={formState[key as keyof FormState]}
+                        choices={dust3rParamChoices[key as keyof typeof defaultDust3rParams]}
                         onChange={(value) => updateFormField(key as keyof FormState, value)}
                       />
                     ))}
@@ -1254,23 +1415,13 @@ function Monst3rParams(props: {
 }) {
   return (
     <div className="param-grid">
-      <label className="field compact">
-        <span>{formatParamLabel("image_size")}</span>
-        <select
-          value={props.formState.image_size}
-          onChange={(event) => props.updateFormField("image_size", event.target.value)}
-        >
-          <option value="512">512（质量优先）</option>
-          <option value="224">224（更快）</option>
-        </select>
-      </label>
       {Object.keys(defaultMonst3rParams)
-        .filter((key) => key !== "image_size")
         .map((key) => (
           <ParamField
             key={key}
             name={key}
             value={props.formState[key as keyof FormState]}
+            choices={monst3rParamChoices[key as keyof typeof defaultMonst3rParams]}
             onChange={(value) => props.updateFormField(key as keyof FormState, value)}
           />
         ))}
@@ -1278,15 +1429,26 @@ function Monst3rParams(props: {
   );
 }
 
-function ParamField(props: { name: string; value: string; onChange: (value: string) => void }) {
-  if (["not_batchify", "real_time", "window_wise"].includes(props.name)) {
+function ParamField(props: {
+  name: string;
+  value: string;
+  choices?: ParamChoice[];
+  onChange: (value: string) => void;
+}) {
+  const activeChoice = props.choices?.find((item) => item.value === props.value);
+
+  if (props.choices && props.choices.length > 0) {
     return (
       <label className="field compact">
         <span>{formatParamLabel(props.name)}</span>
         <select value={props.value} onChange={(event) => props.onChange(event.target.value)}>
-          <option value="true">开启</option>
-          <option value="false">关闭</option>
+          {props.choices.map((choice) => (
+            <option key={choice.value} value={choice.value}>
+              {choice.label}
+            </option>
+          ))}
         </select>
+        {activeChoice ? <small className="field-note">{activeChoice.note}</small> : null}
       </label>
     );
   }
@@ -1442,6 +1604,102 @@ function backendStatusText(status: BackendStatusPayload | null) {
   return status.message || "后端暂未启动。";
 }
 
+function isParamFieldKey(key: keyof FormState) {
+  return key in defaultDust3rParams || key in defaultMonst3rParams;
+}
+
+function buildDust3rPreset(preset: PresetKey, fileCount: number): typeof defaultDust3rParams {
+  const sceneGraph = fileCount > 6 ? "swin-5" : "complete";
+  switch (preset) {
+    case "quick":
+      return {
+        image_size: "224",
+        scene_graph: "complete",
+        niter: "150",
+        lr: "0.01",
+        batch_size: "1",
+        max_points: "100000",
+        match_viz_count: "20"
+      };
+    case "enhanced":
+      return {
+        image_size: "512",
+        scene_graph: sceneGraph,
+        niter: "500",
+        lr: "0.005",
+        batch_size: "1",
+        max_points: "500000",
+        match_viz_count: "100"
+      };
+    case "standard":
+    default:
+      return {
+        image_size: "512",
+        scene_graph: sceneGraph,
+        niter: "300",
+        lr: "0.01",
+        batch_size: "1",
+        max_points: "250000",
+        match_viz_count: "50"
+      };
+  }
+}
+
+function buildMonst3rPreset(preset: PresetKey): typeof defaultMonst3rParams {
+  switch (preset) {
+    case "quick":
+      return {
+        image_size: "224",
+        batch_size: "1",
+        fps: "0",
+        num_frames: "24",
+        not_batchify: "true",
+        real_time: "false",
+        window_wise: "false",
+        window_size: "16",
+        window_overlap_ratio: "0.25"
+      };
+    case "enhanced":
+      return {
+        image_size: "512",
+        batch_size: "1",
+        fps: "0",
+        num_frames: "72",
+        not_batchify: "true",
+        real_time: "false",
+        window_wise: "true",
+        window_size: "32",
+        window_overlap_ratio: "0.5"
+      };
+    case "standard":
+    default:
+      return {
+        image_size: "512",
+        batch_size: "1",
+        fps: "0",
+        num_frames: "48",
+        not_batchify: "true",
+        real_time: "false",
+        window_wise: "false",
+        window_size: "24",
+        window_overlap_ratio: "0.5"
+      };
+  }
+}
+
+function presetLabel(preset: PresetKey | null) {
+  switch (preset) {
+    case "quick":
+      return "快速";
+    case "enhanced":
+      return "增强";
+    case "standard":
+      return "标准";
+    default:
+      return "自定义";
+  }
+}
+
 function inputHint(model: string, sourceType: string) {
   if (model === "monst3r" && sourceType === "video") {
     return "上传 1 个视频文件";
@@ -1456,14 +1714,14 @@ function buildCreateGuidance(model: string, sourceType: string, fileCount: numbe
   if (model === "monst3r" && sourceType === "video") {
     return [
       "先用 1 段短视频做样例测试，长度尽量控制在几十帧以内。",
-      "今晚优先保持默认：图像尺寸 224、最大帧数 24、批大小 1。",
+      "推荐先用正式基线：图像尺寸 512、最大帧数 48、批大小 1；如果只想先验链路，再切到 224 / 24 帧。",
       fileCount === 1 ? "当前文件数量正确，可以直接创建任务。" : "视频模式请只放 1 个视频文件。"
     ];
   }
   if (model === "monst3r") {
     return [
       "帧序列建议选连续视角变化的小样本，先用 3 到 12 张测试。",
-      "如果只是先验证流程，不建议一开始就把帧数和窗口参数拉高。",
+      "先用推荐基线跑第一版，只有在结果不错时再把帧数和窗口参数往上加。",
       fileCount >= 2 ? "当前已满足最小输入要求。" : "帧序列模式至少需要 2 张图片。"
     ];
   }

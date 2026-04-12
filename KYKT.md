@@ -1,6 +1,6 @@
 # KYKT Project Sync
 
-Last updated: 2026-04-11
+Last updated: 2026-04-12
 
 ## Project Lines
 
@@ -165,7 +165,9 @@ Current frontend capabilities:
 - 2026-04-11: Desktop UX cleanup pass: the release executable now uses the Windows GUI subsystem to avoid a black console window, the React app waits/retries while the local FastAPI backend starts instead of exposing raw `fetch` errors, and the first screen was simplified into a clean task workbench with advanced parameters folded away by default.
 - 2026-04-11: The React/Tauri detail page now behaves more like a task console instead of a file dump. The top area uses a large hero progress block with stage cards, percent, current-phase text, and compact job metadata; outputs are grouped by purpose such as core results, camera/trajectory, masks, confidence arrays, and image visualizations; logs now highlight the latest meaningful line first.
 - 2026-04-11: The home page now also acts like a scheduler dashboard. It includes a focus-task overview card, stronger top-level status guidance, job-list filters for all/running/attention/finished, and a model-aware creation guidance box so the first-run path is clearer before testing.
-- 2026-04-11: MonST3R dispatch hardening pass: the remote runner defaults were made conservative for first tests (`image_size=224`, `num_frames=24` from the client), `conda run --no-capture-output` is used so stdout reaches the local live log, noisy PyTorch/RoPE warning lines are filtered out of the user-facing progress, and the runner emits heartbeat status while model loading/inference is quiet.
+- 2026-04-11: MonST3R dispatch hardening pass: the remote runner defaults were made conservative for first tests (`image_size=224`, `num_frames=24` from the client at that stage), `conda run --no-capture-output` is used so stdout reaches the local live log, noisy PyTorch/RoPE warning lines are filtered out of the user-facing progress, and the runner emits heartbeat status while model loading/inference is quiet.
+- 2026-04-12: The advanced-parameter UI now uses recommended dropdown choices instead of mostly freeform inputs. DUSt3R and MonST3R both expose curated presets for image size, iterations, scene graph, frame count, window settings, and related options, with the MonST3R client baseline shifted to a more practical formal-sample preset (`image_size=512`, `num_frames=48`, `window_size=24`).
+- 2026-04-12: The desktop client now also exposes one-click preset tiers above the advanced parameters: `快速`, `标准`, and `增强`. Selecting a preset fills the full DUSt3R / MonST3R parameter set at once, while manual field edits automatically move the UI into a custom state.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:
   - `E:\kykt\Coding\4.06\vision_ui\start_client_rebuild.ps1`
