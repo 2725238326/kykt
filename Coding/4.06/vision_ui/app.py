@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from advisor import advisor_status, evaluate_job_with_advisor, load_advisor_report
 from job_store import (
     ROOT,
     clear_job_runtime,
@@ -24,6 +25,7 @@ from job_store import (
     save_inputs,
     update_job,
 )
+from model_registry import MODEL_OPTIONS, SOURCE_TYPE_OPTIONS, allowed_source_types, get_model_spec
 from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 
 _RUNNER_THREADS: dict[str, threading.Thread] = {}
@@ -102,15 +104,6 @@ DELIVERY_GAPS = [
 
 ACTIVE_PHASE_CODES = [code for code, *_ in PHASE_FLOW[:6]]
 PROGRESS_PATTERN = re.compile(r"(\d+)\s*/\s*(\d+)")
-MODEL_OPTIONS = [
-    {"value": "dust3r", "label": "DUSt3R", "description": "双图或多图重建"},
-    {"value": "monst3r", "label": "MonST3R", "description": "视频或帧序列重建"},
-]
-SOURCE_TYPE_OPTIONS = [
-    {"value": "images", "label": "图片"},
-    {"value": "video", "label": "视频"},
-    {"value": "frames", "label": "帧序列"},
-]
 
 
 def status_label(status: str | None) -> str:
@@ -264,6 +257,7 @@ def _job_payload(job) -> dict:
         "previews": serialize_previews(job),
         "logs": get_log_snippets(job.job_id),
         "result_summary": load_result_summary(job.job_id),
+        "advisor_report": load_advisor_report(job.job_id),
     }
 
 
@@ -329,17 +323,20 @@ def _validate_new_job(model: str, source_type: str, files: list[UploadFile]) -> 
         raise HTTPException(status_code=400, detail=f"不支持的模型：{model}")
     if source_type not in source_values:
         raise HTTPException(status_code=400, detail=f"不支持的输入类型：{source_type}")
+    if source_type not in set(allowed_source_types(model)):
+        allowed = " / ".join(allowed_source_types(model))
+        raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 仅支持这些输入类型：{allowed}")
     if not files:
         raise HTTPException(status_code=400, detail="没有上传输入文件。")
-    if model == "dust3r" and len(files) < 2:
-        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+    if model in {"dust3r", "mast3r"} and len(files) < 2:
+        raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 至少需要两张输入图片。")
     if model == "monst3r" and source_type == "video" and len(files) != 1:
         raise HTTPException(status_code=400, detail="MonST3R 视频模式请上传 1 个视频文件；多张图片请改选“帧序列”。")
 
 
 def _validate_dispatchable(job) -> None:
-    if job.model == "dust3r" and len(job.input_files) < 2:
-        raise HTTPException(status_code=400, detail="DUSt3R 至少需要两张输入图片。")
+    if job.model in {"dust3r", "mast3r"} and len(job.input_files) < 2:
+        raise HTTPException(status_code=400, detail=f"{get_model_spec(job.model).label} 至少需要两张输入图片。")
     if job.model == "monst3r" and len(job.input_files) < 1:
         raise HTTPException(status_code=400, detail="MonST3R 至少需要 1 个视频或一组帧序列。")
 
@@ -381,10 +378,7 @@ async def index(request: Request):
             "summary": summary,
             "delivery_gaps": DELIVERY_GAPS,
             "server": ServerConfig(),
-            "models": [
-                ("dust3r", "DUSt3R（图像集）"),
-                ("monst3r", "MonST3R（视频或帧序列）"),
-            ],
+            "models": [(item["value"], f"{item['label']}（{item['description']}）") for item in MODEL_OPTIONS],
             "phase_builder": build_phase_display,
         },
     )
@@ -414,7 +408,7 @@ async def create_job_view(
     _validate_new_job(model, source_type, files)
 
     params = {}
-    if model == "dust3r":
+    if model in {"dust3r", "mast3r"}:
         params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
     elif model == "monst3r":
         params = _monst3r_params(
@@ -612,6 +606,7 @@ async def bootstrap_api():
             },
             "models": MODEL_OPTIONS,
             "source_types": SOURCE_TYPE_OPTIONS,
+            "advisor": advisor_status(),
         }
     )
 
@@ -640,7 +635,7 @@ async def create_job_api(
     _validate_new_job(model, source_type, files)
 
     params = {}
-    if model == "dust3r":
+    if model in {"dust3r", "mast3r"}:
         params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
     elif model == "monst3r":
         params = _monst3r_params(
@@ -661,6 +656,11 @@ async def create_job_api(
         uploaded.append((upload.filename or "unnamed.bin", await upload.read()))
     save_inputs(job, uploaded)
     return JSONResponse(_job_payload(load_job(job.job_id)))
+
+
+@app.get("/api/advisor/status")
+async def advisor_status_api():
+    return JSONResponse(advisor_status())
 
 
 @app.post("/api/jobs/{job_id}/dispatch")
@@ -723,4 +723,19 @@ async def cancel_job_api(job_id: str):
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     cancel_remote_job(job_id)
+    return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})
+
+
+@app.post("/api/jobs/{job_id}/advisor/evaluate")
+async def advisor_evaluate_api(job_id: str):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    try:
+        evaluate_job_with_advisor(job_id)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})

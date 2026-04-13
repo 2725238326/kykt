@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  AdvisorReport,
   BackendStatusPayload,
   BootstrapPayload,
   JobPayload,
@@ -25,6 +26,11 @@ const DEFAULT_BOOTSTRAP: BootstrapPayload = {
       value: "dust3r",
       label: "DUSt3R",
       description: "图片对 / 多图三维重建"
+    },
+    {
+      value: "mast3r",
+      label: "MASt3R",
+      description: "更强的静态多图匹配与三维重建"
     },
     {
       value: "monst3r",
@@ -68,6 +74,7 @@ type ParamChoice = {
 };
 
 type PresetKey = "quick" | "standard" | "enhanced";
+type PresetModel = "dust3r" | "mast3r" | "monst3r";
 
 type PresetDescriptor = {
   key: PresetKey;
@@ -205,8 +212,9 @@ function App() {
   const [files, setFiles] = useState<File[]>([]);
   const [recoveringService, setRecoveringService] = useState(false);
   const [previewAsset, setPreviewAsset] = useState<PreviewAsset | null>(null);
-  const [activePresets, setActivePresets] = useState<Record<"dust3r" | "monst3r", PresetKey | null>>({
+  const [activePresets, setActivePresets] = useState<Record<PresetModel, PresetKey | null>>({
     dust3r: "standard",
+    mast3r: "standard",
     monst3r: "standard"
   });
   const recoveryInFlightRef = useRef(false);
@@ -220,7 +228,7 @@ function App() {
 
   const bootstrapData = bootstrap ?? DEFAULT_BOOTSTRAP;
   const serviceReady = serviceState === "ready";
-  const isDust3r = formState.model === "dust3r";
+  const isImageCollectionModel = formState.model === "dust3r" || formState.model === "mast3r";
   const isMonst3r = formState.model === "monst3r";
   const selectedModel = useMemo(
     () => bootstrapData.models.find((item) => item.value === formState.model),
@@ -496,7 +504,7 @@ function App() {
   function updateFormField(key: keyof FormState, value: string) {
     setFormState((current) => ({ ...current, [key]: value }));
     if (isParamFieldKey(key)) {
-      setActivePresets((current) => ({ ...current, [formState.model as "dust3r" | "monst3r"]: null }));
+      setActivePresets((current) => ({ ...current, [formState.model as PresetModel]: null }));
     }
   }
 
@@ -514,12 +522,12 @@ function App() {
         ...current,
         ...defaultDust3rParams,
         model: value,
-        source_type: current.source_type === "video" ? "images" : current.source_type
+        source_type: "images"
       };
     });
     setActivePresets((current) => ({
       ...current,
-      [value as "dust3r" | "monst3r"]: "standard"
+      [value as PresetModel]: "standard"
     }));
   }
 
@@ -538,7 +546,7 @@ function App() {
     });
     setActivePresets((current) => ({
       ...current,
-      [formState.model as "dust3r" | "monst3r"]: preset
+      [formState.model as PresetModel]: preset
     }));
   }
 
@@ -570,7 +578,7 @@ function App() {
     formData.append("source_type", formState.source_type);
     formData.append("notes", formState.notes);
 
-    const paramDefaults = isDust3r ? defaultDust3rParams : defaultMonst3rParams;
+    const paramDefaults = isImageCollectionModel ? defaultDust3rParams : defaultMonst3rParams;
     Object.keys(paramDefaults).forEach((key) => {
       formData.append(key, formState[key as keyof FormState]);
     });
@@ -594,8 +602,8 @@ function App() {
     if (files.length === 0) {
       return "请先选择输入文件。";
     }
-    if (isDust3r && files.length < 2) {
-      return "DUSt3R 至少需要两张图片。";
+    if (isImageCollectionModel && files.length < 2) {
+      return `${statusModelLabel(formState.model)} 至少需要两张图片。`;
     }
     if (isMonst3r && formState.source_type === "video" && files.length !== 1) {
       return "MonST3R 视频模式请上传 1 个视频文件。";
@@ -785,11 +793,13 @@ function App() {
                     value={formState.source_type}
                     onChange={(event) => updateFormField("source_type", event.target.value)}
                   >
-                    {bootstrapData.source_types.map((item) => (
+                    {bootstrapData.source_types
+                      .filter((item) => allowedSourceTypesForModel(formState.model).includes(item.value))
+                      .map((item) => (
                       <option key={item.value} value={item.value}>
                         {item.label}
                       </option>
-                    ))}
+                      ))}
                   </select>
                 </label>
               </div>
@@ -854,8 +864,8 @@ function App() {
                   <div className="preset-strip-head">
                     <strong>一键预设</strong>
                     <span>
-                      {activePresets[formState.model as "dust3r" | "monst3r"]
-                        ? `当前：${presetLabel(activePresets[formState.model as "dust3r" | "monst3r"])}`
+                      {activePresets[formState.model as PresetModel]
+                        ? `当前：${presetLabel(activePresets[formState.model as PresetModel])}`
                         : "当前：已手动调整"}
                     </span>
                   </div>
@@ -864,7 +874,7 @@ function App() {
                       <button
                         key={preset.key}
                         className={`preset-pill ${
-                          activePresets[formState.model as "dust3r" | "monst3r"] === preset.key ? "active" : ""
+                          activePresets[formState.model as PresetModel] === preset.key ? "active" : ""
                         }`}
                         type="button"
                         onClick={() => applyPreset(preset.key)}
@@ -875,7 +885,7 @@ function App() {
                     ))}
                   </div>
                 </div>
-                {isDust3r ? (
+                {isImageCollectionModel ? (
                   <div className="param-grid">
                     {Object.keys(defaultDust3rParams).map((key) => (
                       <ParamField
@@ -1107,6 +1117,13 @@ function JobDetail(props: {
         >
           取消
         </button>
+        <button
+          disabled={props.actionKey === "advisor"}
+          onClick={() => props.onAction(`/api/jobs/${job.job_id}/advisor/evaluate`, "advisor")}
+          type="button"
+        >
+          AI评估
+        </button>
       </div>
 
       <div className="meta-grid">
@@ -1127,6 +1144,10 @@ function JobDetail(props: {
         <article className="soft-panel">
           <h4>结果摘要</h4>
           <SummaryPanel summary={props.selectedJob.result_summary} />
+        </article>
+        <article className="soft-panel">
+          <h4>AI 评估</h4>
+          <AdvisorPanel report={props.selectedJob.advisor_report ?? null} />
         </article>
         <article className="soft-panel">
           <h4>输入</h4>
@@ -1567,6 +1588,49 @@ function SummaryStat(props: { label: string; value: string }) {
   );
 }
 
+function AdvisorPanel(props: { report: AdvisorReport | null }) {
+  if (!props.report) {
+    return <span className="muted-text">点上方“AI评估”后，会基于参数、摘要、scene_meta 和日志生成建议。</span>;
+  }
+
+  return (
+    <div className="advisor-panel">
+      <div className="summary-strip">
+        <SummaryStat label="评分" value={String(props.report.overall_score || "-")} />
+        <SummaryStat label="结论" value={props.report.readiness || "-"} />
+        <SummaryStat label="模型" value={props.report.advisor_model || "-"} />
+      </div>
+      <p className="advisor-summary">{props.report.summary}</p>
+      {props.report.issues.length > 0 ? (
+        <div>
+          <strong>主要问题</strong>
+          <ul>
+            {props.report.issues.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {props.report.next_actions.length > 0 ? (
+        <div>
+          <strong>下一步</strong>
+          <ul>
+            {props.report.next_actions.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {props.report.teacher_talk ? (
+        <div className="advisor-quote">
+          <strong>可直接汇报</strong>
+          <p>{props.report.teacher_talk}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function delay(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -1700,6 +1764,13 @@ function presetLabel(preset: PresetKey | null) {
   }
 }
 
+function allowedSourceTypesForModel(model: string) {
+  if (model === "monst3r") {
+    return ["video", "frames"];
+  }
+  return ["images"];
+}
+
 function inputHint(model: string, sourceType: string) {
   if (model === "monst3r" && sourceType === "video") {
     return "上传 1 个视频文件";
@@ -1707,7 +1778,7 @@ function inputHint(model: string, sourceType: string) {
   if (model === "monst3r") {
     return "上传连续帧图片，建议 3 张以上";
   }
-  return "上传 2 张或更多图片";
+  return model === "mast3r" ? "上传 2 张或更多同场景图片" : "上传 2 张或更多图片";
 }
 
 function buildCreateGuidance(model: string, sourceType: string, fileCount: number) {
@@ -1723,6 +1794,13 @@ function buildCreateGuidance(model: string, sourceType: string, fileCount: numbe
       "帧序列建议选连续视角变化的小样本，先用 3 到 12 张测试。",
       "先用推荐基线跑第一版，只有在结果不错时再把帧数和窗口参数往上加。",
       fileCount >= 2 ? "当前已满足最小输入要求。" : "帧序列模式至少需要 2 张图片。"
+    ];
+  }
+  if (model === "mast3r") {
+    return [
+      "MASt3R 更适合做静态多图重建对比，建议先用同一物体或小场景的 3 到 8 张图片测试。",
+      "今晚先直接复用 DUSt3R 的标准参数，重点看匹配可视化和点云是否更稳。",
+      fileCount >= 2 ? "当前已满足 MASt3R 的最小输入要求。" : "MASt3R 至少需要 2 张图片。"
     ];
   }
   return [
@@ -1742,6 +1820,8 @@ function buildActionMessage(action: string, jobId: string) {
       return `已复制出新的任务 ${jobId}。`;
     case "cancel":
       return `任务 ${jobId} 已请求取消。`;
+    case "advisor":
+      return `任务 ${jobId} 的 AI 评估已更新。`;
     default:
       return `任务 ${jobId} 已更新。`;
   }
@@ -1770,6 +1850,8 @@ function statusModelLabel(model: string) {
   switch (model) {
     case "dust3r":
       return "DUSt3R";
+    case "mast3r":
+      return "MASt3R";
     case "monst3r":
       return "MonST3R";
     default:

@@ -30,6 +30,9 @@ class ServerConfig:
     remote_dust3r_repo: str = "/hdd3/kykt26/code/dust3r-main"
     remote_dust3r_model: str = "/hdd3/kykt26/models/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth"
     remote_dust3r_env: str = "dust3r"
+    remote_mast3r_repo: str = "/hdd3/kykt26/code/mast3r"
+    remote_mast3r_model: str = "/hdd3/kykt26/code/mast3r/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth"
+    remote_mast3r_env: str = "mast3r"
     remote_monst3r_repo: str = "/hdd3/kykt26/code/monst3r"
     remote_monst3r_env: str = "monst3r"
 
@@ -142,6 +145,8 @@ def run_remote_job(job_id: str) -> None:
         _raise_if_cancelled(job_id)
         if job.model == "dust3r":
             _run_dust3r_v2(config, job.job_id, remote_job_dir)
+        elif job.model == "mast3r":
+            _run_mast3r_v1(config, job.job_id, remote_job_dir)
         elif job.model == "monst3r":
             _run_monst3r_v1(config, job.job_id, remote_job_dir)
         else:
@@ -237,6 +242,7 @@ def _upload_remote_job_json(config: ServerConfig, job_id: str, remote_job_dir: s
 def _upload_runner(config: ServerConfig, model: str) -> None:
     runner_map = {
         "dust3r": "dust3r_runner.py",
+        "mast3r": "mast3r_runner.py",
         "monst3r": "monst3r_runner.py",
     }
     runner_file = runner_map.get(model)
@@ -295,6 +301,53 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     )
 
 
+def _run_mast3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+    """Run MASt3R using the DUSt3R-compatible global alignment flow."""
+    job = load_job(job_id)
+    input_items = iter_input_items(job)
+    n_images = len(input_items)
+    params = job.params or {}
+
+    if n_images < 2:
+        raise RuntimeError("MASt3R 至少需要两张已上传图片。")
+
+    runner_path = f"{config.remote_runners_dir}/mast3r_runner.py"
+    log_path = f"{remote_job_dir}/logs/runner.log"
+    local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
+
+    cmd = (
+        f"set -o pipefail && "
+        f"cd {shlex.quote(config.remote_mast3r_repo)} && "
+        f"conda run --no-capture-output -n {shlex.quote(config.remote_mast3r_env)} "
+        f"python -u {shlex.quote(runner_path)} "
+        f"--job-dir {shlex.quote(remote_job_dir)} "
+        f"--model {shlex.quote(config.remote_mast3r_model)} "
+        f"--repo {shlex.quote(config.remote_mast3r_repo)} "
+        f"--image-size {shlex.quote(str(params.get('image_size', 512)))} "
+        f"--scene-graph {shlex.quote(str(params.get('scene_graph', 'complete')))} "
+        f"--niter {shlex.quote(str(params.get('niter', 300)))} "
+        f"--lr {shlex.quote(str(params.get('lr', 0.01)))} "
+        f"--batch-size {shlex.quote(str(params.get('batch_size', 1)))} "
+        f"--max-points {shlex.quote(str(params.get('max_points', 250000)))} "
+        f"--match-viz-count {shlex.quote(str(params.get('match_viz_count', 50)))} "
+        f"2>&1 | tee {shlex.quote(log_path)}"
+    )
+
+    update_job(
+        job_id,
+        phase="running_remote_matches",
+        progress_message=f"正在使用 {n_images} 张图片启动 MASt3R...",
+    )
+    _ssh_stream(
+        config,
+        cmd,
+        job_id=job_id,
+        phase="running_remote_matches",
+        remote_job_dir=remote_job_dir,
+        local_log_path=local_log,
+    )
+
+
 def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
     runner_path = f"{config.remote_runners_dir}/monst3r_runner.py"
     log_path = f"{remote_job_dir}/logs/runner.log"
@@ -342,7 +395,7 @@ import subprocess
 import time
 
 job = {remote_job_dir!r}
-needles = ("monst3r_runner.py", "dust3r_runner.py", "demo.py")
+needles = ("monst3r_runner.py", "dust3r_runner.py", "mast3r_runner.py", "demo.py")
 current = os.getpid()
 
 def matching_pids():
@@ -495,12 +548,14 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
         if scene_meta.get("glb_count") is not None:
             highlights.append(f"其中包含 {scene_meta['glb_count']} 个 GLB 三维场景文件。")
 
-    if job.model == "dust3r":
+    if job.model in {"dust3r", "mast3r"}:
         next_actions = [
             "优先在 MeshLab 中检查 pointcloud.ply 的结构是否完整、是否存在大块噪声或断裂。",
             "结合 matches.png 判断前几张图的重叠区域和匹配是否合理。",
         ]
         next_actions.append("如果这是多图任务，建议再对比 scene graph 与点云质量，决定是否需要改成 swin-5 或调整点云上限。")
+        if job.model == "mast3r":
+            next_actions.insert(0, "MASt3R 更偏静态多图匹配增强，建议优先拿同一物体的 3 到 8 张图验证它相对 DUSt3R 的提升。")
     elif job.model == "monst3r":
         next_actions = [
             "优先打开 .glb 三维场景文件，检查相机轨迹、主体结构和动态区域是否稳定。",

@@ -1,6 +1,6 @@
 # KYKT Project Sync
 
-Last updated: 2026-04-12
+Last updated: 2026-04-13
 
 ## Project Lines
 
@@ -9,6 +9,7 @@ This workspace currently has four related but separate 3D vision lines:
 - `MVSNet` on `DTU`: supervised multi-view stereo reconstruction. Main outputs are depth maps and fused `.ply` point clouds.
 - `SfMLearner` on `KITTI`: self-supervised monocular depth. Main output is KITTI depth metrics and checkpoints.
 - `DUSt3R`: pointmap-based 3D reconstruction from image pairs or image sets. Main outputs are match visualizations, point clouds, poses, and focals.
+- `MASt3R`: DUSt3R-family static multi-image matching + reconstruction upgrade line. The app is now being wired to treat it as a DUSt3R-like image job with the same output contract.
 - `MonST3R`: next-stage dynamic/video reconstruction model. Server repo, env, Python dependencies, and required checkpoints are now in place; the local client is being wired to run official demo-equivalent inference and pull back artifacts.
 
 ## Workspace Layout
@@ -168,6 +169,9 @@ Current frontend capabilities:
 - 2026-04-11: MonST3R dispatch hardening pass: the remote runner defaults were made conservative for first tests (`image_size=224`, `num_frames=24` from the client at that stage), `conda run --no-capture-output` is used so stdout reaches the local live log, noisy PyTorch/RoPE warning lines are filtered out of the user-facing progress, and the runner emits heartbeat status while model loading/inference is quiet.
 - 2026-04-12: The advanced-parameter UI now uses recommended dropdown choices instead of mostly freeform inputs. DUSt3R and MonST3R both expose curated presets for image size, iterations, scene graph, frame count, window settings, and related options, with the MonST3R client baseline shifted to a more practical formal-sample preset (`image_size=512`, `num_frames=48`, `window_size=24`).
 - 2026-04-12: The desktop client now also exposes one-click preset tiers above the advanced parameters: `快速`, `标准`, and `增强`. Selecting a preset fills the full DUSt3R / MonST3R parameter set at once, while manual field edits automatically move the UI into a custom state.
+- 2026-04-13: A tiny model registry layer now exists in `E:\kykt\Coding\4.06\vision_ui\model_registry.py`. The immediate goal is to avoid scattering model strings everywhere; adding a future model should now follow the pattern “register model -> add runner -> add SSH dispatch branch” instead of large rewrites.
+- 2026-04-13: MASt3R was added to the local app as a DUSt3R-like image model entry. The first version reuses the DUSt3R parameter family and output contract (`matches.png`, `pointcloud.ply`, `scene_meta.json`) so the frontend does not need a second static-image visualization path.
+- 2026-04-13: A minimal OpenAI-compatible experiment advisor layer now exists in `E:\kykt\Coding\4.06\vision_ui\advisor.py`, with local config at `E:\kykt\Coding\4.06\vision_ui\settings\advisor.json`. The desktop detail page now exposes an `AI评估` action that can summarize current results, diagnose issues, suggest next steps, and generate short teacher-facing report wording once `base_url`, `api_key`, and `model` are filled in.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:
   - `E:\kykt\Coding\4.06\vision_ui\start_client_rebuild.ps1`
@@ -253,6 +257,8 @@ Still missing:
 - Stronger remote process cleanup verification after cancellation.
 - First end-to-end MonST3R client run with one short video or one small frame sequence, followed by output quality inspection.
 - A final MonST3R input/output contract after observing the real `.glb`, trajectory, depth, and confidence artifacts on a few examples.
+- First real MASt3R server smoke test using the server repo/env/weights, followed by one client-dispatched MASt3R sample.
+- Filling `settings/advisor.json` with a real OpenAI-compatible endpoint and validating one end-to-end AI evaluation response on a finished job.
 - Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
 - Automatic stale-job recovery after a local backend crash. Right now the UI can reconnect and restart the backend, but partially running jobs are still not rehydrated into an explicit “interrupted / safe to retry” state.
 - Exact server-written progress ingestion for every major phase, instead of only mixed local/remote progress approximation.

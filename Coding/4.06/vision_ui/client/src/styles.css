@@ -63,6 +63,25 @@ img {
   padding: 22px 0 36px;
 }
 
+.advisor-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.advisor-summary,
+.advisor-quote p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.advisor-quote {
+  padding: 14px 16px;
+  border: 1px solid rgba(0, 113, 227, 0.14);
+  border-radius: 18px;
+  background: rgba(0, 113, 227, 0.06);
+}
+
 .app-header {
   display: flex;
   align-items: center;

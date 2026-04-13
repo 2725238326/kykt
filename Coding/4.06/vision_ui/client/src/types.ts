@@ -56,6 +56,18 @@ export type ResultSummary = {
   next_actions?: string[] | null;
 };
 
+export type AdvisorReport = {
+  evaluated_at: string;
+  job_id: string;
+  overall_score: number;
+  readiness: string;
+  summary: string;
+  issues: string[];
+  next_actions: string[];
+  teacher_talk: string;
+  advisor_model: string;
+};
+
 export type JobPayload = {
   job: JobRecord;
   phase_display: PhaseDisplay;
@@ -82,6 +94,7 @@ export type JobPayload = {
     tail: string;
   }>;
   result_summary: ResultSummary | null;
+  advisor_report?: AdvisorReport | null;
 };
 
 export type BootstrapPayload = {
@@ -112,6 +125,13 @@ export type BootstrapPayload = {
     value: string;
     label: string;
   }>;
+  advisor?: {
+    enabled: boolean;
+    configured: boolean;
+    base_url: string;
+    model: string;
+    message: string;
+  };
 };
 
 export type JobsListPayload = {

@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable
 
+from model_registry import default_runner_for
+
 
 ROOT = Path(__file__).resolve().parent
 LOCAL_JOBS_DIR = ROOT / "local_jobs"
@@ -86,11 +88,10 @@ def create_job(model: str, source_type: str, notes: str, params: dict | None = N
 
 
 def _default_runner_for(model: str) -> str:
-    runners = {
-        "dust3r": "dust3r_runner.py",
-        "monst3r": "monst3r_runner.py",
-    }
-    return runners.get(model, "unknown_runner.py")
+    try:
+        return default_runner_for(model)
+    except KeyError:
+        return "unknown_runner.py"
 
 
 def save_job(job: JobRecord) -> None:
