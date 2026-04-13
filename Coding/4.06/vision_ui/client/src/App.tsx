@@ -179,6 +179,14 @@ type FormState = {
 
 type ServiceState = "starting" | "ready" | "degraded";
 type JobFilter = "all" | "running" | "attention" | "finished";
+type WorkspaceTab = "overview" | "create" | "jobs" | "advisor" | "system";
+type AdvisorState = {
+  enabled: boolean;
+  configured: boolean;
+  base_url: string;
+  model: string;
+  message: string;
+};
 type JobListItem = JobsListPayload["jobs"][number];
 type OutputItem = JobPayload["outputs"][number];
 type OutputSection = {
@@ -196,11 +204,20 @@ type PreviewAsset = {
   note?: string;
 };
 
+const workspaceTabs: Array<{ key: WorkspaceTab; label: string; note: string }> = [
+  { key: "overview", label: "工作台", note: "先看全局状态和焦点任务" },
+  { key: "create", label: "文件与新建", note: "整理输入并创建任务" },
+  { key: "jobs", label: "运行与结果", note: "筛选任务、跟进状态、查看产物" },
+  { key: "advisor", label: "AI 评估", note: "让 AI 诊断结果并生成建议" },
+  { key: "system", label: "帮助与系统", note: "查看服务、远端目标和使用提示" }
+];
+
 function App() {
   const [bootstrap, setBootstrap] = useState<BootstrapPayload | null>(null);
   const [jobs, setJobs] = useState<JobsListPayload["jobs"]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobPayload | null>(null);
+  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceTab>("overview");
   const [backendStatus, setBackendStatus] = useState<BackendStatusPayload | null>(null);
   const [serviceState, setServiceState] = useState<ServiceState>("starting");
   const [serviceMessage, setServiceMessage] = useState("正在准备本地服务...");
@@ -227,7 +244,15 @@ function App() {
   });
 
   const bootstrapData = bootstrap ?? DEFAULT_BOOTSTRAP;
+  const advisorState: AdvisorState = bootstrapData.advisor ?? {
+    enabled: false,
+    configured: false,
+    base_url: "",
+    model: "",
+    message: "AI 评估尚未配置。"
+  };
   const serviceReady = serviceState === "ready";
+  const advisorReady = advisorState.enabled && advisorState.configured;
   const isImageCollectionModel = formState.model === "dust3r" || formState.model === "mast3r";
   const isMonst3r = formState.model === "monst3r";
   const selectedModel = useMemo(
@@ -247,6 +272,11 @@ function App() {
   const focusJob = useMemo(
     () => selectedListJob ?? runningJobs[0] ?? attentionJobs[0] ?? jobs[0] ?? null,
     [selectedListJob, runningJobs, attentionJobs, jobs]
+  );
+  const activeJob = selectedJob ?? null;
+  const advisorCandidateCount = useMemo(
+    () => jobs.filter((item) => isAdvisorSuggested(item.job.status)).length,
+    [jobs]
   );
   const filteredJobs = useMemo(() => {
     switch (jobFilter) {
@@ -271,6 +301,21 @@ function App() {
     failed: jobs.filter((item) => item.job.status === "failed").length,
     cancelled: jobs.filter((item) => item.job.status === "cancelled").length
   };
+  const workspaceTabMeta = useMemo(
+    () =>
+      workspaceTabs.map((tab) => ({
+        ...tab,
+        count:
+          tab.key === "jobs"
+            ? summary.total
+            : tab.key === "advisor"
+              ? advisorCandidateCount
+              : tab.key === "overview"
+                ? summary.running
+                : undefined
+      })),
+    [advisorCandidateCount, summary.running, summary.total]
+  );
   const runningSelectedJob = selectedJob?.job.status === "running";
   const canDispatchSelectedJob = selectedJob
     ? selectedJob.job.status === "draft" ||
@@ -531,6 +576,23 @@ function App() {
     }));
   }
 
+  function openWorkspace(tab: WorkspaceTab, jobId?: string) {
+    if (jobId) {
+      setSelectedJobId(jobId);
+    }
+    setActiveWorkspace(tab);
+  }
+
+  async function copyText(value: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setInfoMessage(`${label} 已复制。`);
+      setErrorMessage(null);
+    } catch {
+      setErrorMessage(`复制${label}失败，请稍后重试。`);
+    }
+  }
+
   function applyPreset(preset: PresetKey) {
     setFormState((current) => {
       if (current.model === "monst3r") {
@@ -589,6 +651,7 @@ function App() {
       setFiles([]);
       setSelectedJobId(payload.job.job_id);
       setSelectedJob(payload);
+      setActiveWorkspace("jobs");
       setInfoMessage(`任务 ${payload.job.job_id} 已创建。`);
       await loadJobs(false);
     } catch (error) {
@@ -622,6 +685,9 @@ function App() {
       const payload = await fetchJson<JobPayload>(path, { method: "POST" });
       setSelectedJob(payload);
       setSelectedJobId(payload.job.job_id);
+      if (key === "advisor") {
+        setActiveWorkspace("advisor");
+      }
       setInfoMessage(buildActionMessage(key, payload.job.job_id));
       await loadJobs(false);
     } catch (error) {
@@ -686,40 +752,90 @@ function App() {
       </header>
 
       <main className="workspace">
-        <section className={`service-card ${serviceState}`}>
-          <div>
-            <span className="mini-label">本地服务</span>
-            <strong>{serviceMessage}</strong>
-          </div>
-          <div className="service-card-copy">
-            <p>{backendStatusText(backendStatus)}</p>
-            <div className="service-card-actions">
-              <button
-                className="ghost-button small"
-                onClick={() => void recoverBackend("ensure", true)}
-                disabled={recoveringService}
-                type="button"
-              >
-                立即探测
-              </button>
-              <button
-                className="ghost-button small"
-                onClick={() => void recoverBackend("restart", true)}
-                disabled={recoveringService}
-                type="button"
-              >
-                强制重启
-              </button>
+        <nav className="workspace-menu" aria-label="主菜单">
+          {workspaceTabMeta.map((tab) => (
+            <button
+              key={tab.key}
+              className={`workspace-menu-item ${activeWorkspace === tab.key ? "active" : ""}`}
+              onClick={() => openWorkspace(tab.key)}
+              type="button"
+            >
+              <span className="workspace-menu-label">{tab.label}</span>
+              <small>{tab.note}</small>
+              {typeof tab.count === "number" ? <span className="workspace-menu-count">{tab.count}</span> : null}
+            </button>
+          ))}
+        </nav>
+
+        <div className="status-strip">
+          <section className={`service-card ${serviceState}`}>
+            <div>
+              <span className="mini-label">本地服务</span>
+              <strong>{serviceMessage}</strong>
             </div>
-          </div>
-        </section>
+            <div className="service-card-copy">
+              <p>{backendStatusText(backendStatus)}</p>
+              <div className="service-card-actions">
+                <button
+                  className="ghost-button small"
+                  onClick={() => void recoverBackend("ensure", true)}
+                  disabled={recoveringService}
+                  type="button"
+                >
+                  立即探测
+                </button>
+                <button
+                  className="ghost-button small"
+                  onClick={() => void recoverBackend("restart", true)}
+                  disabled={recoveringService}
+                  type="button"
+                >
+                  强制重启
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section className={`service-card advisor-card ${advisorReady ? "ready" : advisorState.enabled ? "starting" : "degraded"}`}>
+            <div>
+              <span className="mini-label">AI 评估</span>
+              <strong>
+                {advisorReady
+                  ? `已就绪 · ${advisorState.model || "已配置模型"}`
+                  : advisorState.enabled
+                    ? "已启用但尚未完整配置"
+                    : "尚未启用"}
+              </strong>
+            </div>
+            <div className="service-card-copy">
+              <p>{advisorReady ? "适合在任务完成、失败或准备汇报时调用。" : advisorState.message}</p>
+              <div className="service-card-actions">
+                <button className="ghost-button small" onClick={() => openWorkspace("advisor")} type="button">
+                  打开 AI 工作台
+                </button>
+                {advisorReady && activeJob && isAdvisorSuggested(activeJob.job.status) ? (
+                  <button
+                    className="ghost-button small"
+                    onClick={() => void postJobAction(`/api/jobs/${activeJob.job.job_id}/advisor/evaluate`, "advisor")}
+                    disabled={actionKey === "advisor"}
+                    type="button"
+                  >
+                    评估当前任务
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        </div>
 
         {infoMessage ? <MessageBanner kind="info" message={infoMessage} /> : null}
         {errorMessage ? <MessageBanner kind="error" message={errorMessage} /> : null}
 
+        {activeWorkspace === "overview" ? (
+          <>
         <section className="overview-grid">
           <article className="panel overview-hero-panel">
-            <PanelTitle eyebrow="任务总览" title={focusJob ? `焦点任务 ${focusJob.job.job_id}` : "准备开始今晚测试"} />
+            <PanelTitle eyebrow="焦点任务" title={focusJob ? focusJob.job.job_id : "准备开始今晚测试"} />
             {focusJob ? (
               <div className={`focus-card ${focusJob.job.status}`}>
                 <div className="focus-main">
@@ -742,16 +858,19 @@ function App() {
                   <span>{formatDateTime(focusJob.job.created_at)}</span>
                   <button
                     className="ghost-button small"
-                    onClick={() => setSelectedJobId(focusJob.job.job_id)}
+                    onClick={() => {
+                      setSelectedJobId(focusJob.job.job_id);
+                      openWorkspace("jobs");
+                    }}
                     type="button"
                   >
-                    查看详情
+                    进入任务中心
                   </button>
                 </div>
               </div>
             ) : (
               <div className="empty-state large">
-                还没有任务。建议先从 2 张图片的 DUSt3R 或 1 段短视频的 MonST3R 开始，今晚先把一条样例完整跑通。
+                还没有任务。建议先从 2 张图片的 DUSt3R / MASt3R 或 1 段短视频的 MonST3R 开始，今晚先把一条样例完整跑通。
               </div>
             )}
           </article>
@@ -771,8 +890,46 @@ function App() {
             </div>
           </aside>
         </section>
+        <section className="overview-support-grid">
+          <article className="panel quick-actions-panel">
+            <PanelTitle eyebrow="快捷入口" title="按流程拆开来做" />
+            <div className="quick-action-grid">
+              <button className="quick-action-card" onClick={() => openWorkspace("create")} type="button">
+                <strong>文件与新建</strong>
+                <p>上传输入、选模型、套推荐参数后直接发任务。</p>
+              </button>
+              <button className="quick-action-card" onClick={() => openWorkspace("jobs")} type="button">
+                <strong>运行与结果</strong>
+                <p>统一盯进度、看日志和开产物，不再和新建区挤在一起。</p>
+              </button>
+              <button className="quick-action-card" onClick={() => openWorkspace("advisor")} type="button">
+                <strong>AI 评估</strong>
+                <p>结果出来后让 AI 给诊断、建议和汇报话术。</p>
+              </button>
+              <button className="quick-action-card" onClick={() => openWorkspace("system")} type="button">
+                <strong>帮助与系统</strong>
+                <p>查看本地服务、远端目标、配置状态和使用说明。</p>
+              </button>
+            </div>
+          </article>
 
-        <section className="layout-grid">
+          <article className="panel advisor-overview-panel">
+            <PanelTitle eyebrow="AI 工作台" title="把 AI 放到该出现的地方" />
+            <AdvisorWorkbench
+              job={activeJob}
+              advisorState={advisorState}
+              actionKey={actionKey}
+              onEvaluate={(jobId) => void postJobAction(`/api/jobs/${jobId}/advisor/evaluate`, "advisor")}
+              onCopy={copyText}
+              compact
+            />
+          </article>
+        </section>
+          </>
+        ) : null}
+
+        {activeWorkspace === "create" ? (
+        <section className="layout-grid create-layout">
           <article className="panel create-panel">
             <PanelTitle eyebrow="新建任务" title="选择模型和输入" />
             <form className="form-stack" onSubmit={handleCreateJob}>
@@ -908,100 +1065,206 @@ function App() {
             </form>
           </article>
 
-          <aside className="panel side-panel">
-            <PanelTitle eyebrow="最近任务" title={`${summary.total} 个任务`} />
-            <div className="mini-stats">
-              <MiniStat label="总任务" value={summary.total} />
-              <MiniStat label="运行" value={summary.running} />
-              <MiniStat label="待处理" value={attentionJobs.length} />
-              <MiniStat label="完成" value={summary.finished} />
-            </div>
-            <div className="job-toolbar">
-              <div className="filter-pills">
-                <FilterPill
-                  active={jobFilter === "all"}
-                  count={summary.total}
-                  label="全部"
-                  onClick={() => setJobFilter("all")}
-                />
-                <FilterPill
-                  active={jobFilter === "running"}
-                  count={runningJobs.length}
-                  label="运行中"
-                  onClick={() => setJobFilter("running")}
-                />
-                <FilterPill
-                  active={jobFilter === "attention"}
-                  count={attentionJobs.length}
-                  label="待处理"
-                  onClick={() => setJobFilter("attention")}
-                />
-                <FilterPill
-                  active={jobFilter === "finished"}
-                  count={finishedJobs.length}
-                  label="已完成"
-                  onClick={() => setJobFilter("finished")}
-                />
-              </div>
-            </div>
-            <div className="job-list">
-              {filteredJobs.length > 0 ? (
-                filteredJobs.map((item) => (
-                  <button
-                    key={item.job.job_id}
-                    className={`job-card ${selectedJobId === item.job.job_id ? "active" : ""} ${item.job.status}`}
-                    onClick={() => setSelectedJobId(item.job.job_id)}
-                    type="button"
-                  >
-                    <div className="job-card-head">
-                      <strong>{item.job.job_id}</strong>
-                      <span className="job-card-percent">{item.phase_display.percent}%</span>
-                    </div>
-                    <div>
-                      <p>{item.phase_display.label}</p>
-                      <span className="job-card-meta">
-                        {statusModelLabel(item.job.model)} · {statusLabel(item.job.status)}
-                      </span>
-                      <span className="job-card-stage">{currentStepLabel(item.phase_display.steps)}</span>
-                      <p className="job-card-message">
-                        {item.job.progress_message || item.phase_display.description}
-                      </p>
-                    </div>
-                    <div className="progress-track">
-                      <div className="progress-fill" style={{ width: `${item.phase_display.percent}%` }} />
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="empty-state">
-                  {jobFilter === "all"
-                    ? "暂无任务。先在左侧选择输入文件，创建第一条任务。"
-                    : `当前筛选下没有${jobFilterLabel(jobFilter)}任务。`}
-                </div>
-              )}
+          <aside className="panel create-support-panel">
+            <PanelTitle eyebrow="输入规范" title="先把原料准备对" />
+            <div className="support-checklist">
+              {buildCaptureChecklist(formState.model, formState.source_type, files.length).map((item) => (
+                <article className="support-check-item" key={item.title}>
+                  <strong>{item.title}</strong>
+                  <p>{item.body}</p>
+                </article>
+              ))}
             </div>
           </aside>
         </section>
+        ) : null}
 
-        <section className="panel detail-panel">
-          <PanelTitle eyebrow="任务详情" title={selectedJob?.job.job_id ?? "尚未选择任务"} />
-          {selectedJob ? (
-            <JobDetail
-              selectedJob={selectedJob}
-              actionKey={actionKey}
-              canDispatch={canDispatchSelectedJob}
-              running={Boolean(runningSelectedJob)}
-              assetUrl={assetUrl}
-              onAction={postJobAction}
-              onOpenOutput={openOutput}
-              onPreviewAsset={openPreviewAsset}
-            />
-          ) : (
-            <div className="empty-state large">
-              这里会显示任务进度、输入预览、输出结果和日志。页面先保持干净，不再一打开就塞满信息。
-            </div>
-          )}
-        </section>
+        {activeWorkspace === "jobs" ? (
+          <section className="layout-grid jobs-layout">
+            <aside className="panel side-panel">
+              <PanelTitle eyebrow="任务列表" title={`${summary.total} 个任务`} />
+              <div className="mini-stats">
+                <MiniStat label="总任务" value={summary.total} />
+                <MiniStat label="运行" value={summary.running} />
+                <MiniStat label="待处理" value={attentionJobs.length} />
+                <MiniStat label="完成" value={summary.finished} />
+              </div>
+              <div className="job-toolbar">
+                <div className="filter-pills">
+                  <FilterPill
+                    active={jobFilter === "all"}
+                    count={summary.total}
+                    label="全部"
+                    onClick={() => setJobFilter("all")}
+                  />
+                  <FilterPill
+                    active={jobFilter === "running"}
+                    count={runningJobs.length}
+                    label="运行中"
+                    onClick={() => setJobFilter("running")}
+                  />
+                  <FilterPill
+                    active={jobFilter === "attention"}
+                    count={attentionJobs.length}
+                    label="待处理"
+                    onClick={() => setJobFilter("attention")}
+                  />
+                  <FilterPill
+                    active={jobFilter === "finished"}
+                    count={finishedJobs.length}
+                    label="已完成"
+                    onClick={() => setJobFilter("finished")}
+                  />
+                </div>
+              </div>
+              <div className="job-list">
+                {filteredJobs.length > 0 ? (
+                  filteredJobs.map((item) => (
+                    <button
+                      key={item.job.job_id}
+                      className={`job-card ${selectedJobId === item.job.job_id ? "active" : ""} ${item.job.status}`}
+                      onClick={() => setSelectedJobId(item.job.job_id)}
+                      type="button"
+                    >
+                      <div className="job-card-head">
+                        <strong>{item.job.job_id}</strong>
+                        <span className="job-card-percent">{item.phase_display.percent}%</span>
+                      </div>
+                      <div>
+                        <p>{item.phase_display.label}</p>
+                        <span className="job-card-meta">
+                          {statusModelLabel(item.job.model)} · {statusLabel(item.job.status)}
+                        </span>
+                        <span className="job-card-stage">{currentStepLabel(item.phase_display.steps)}</span>
+                        <p className="job-card-message">
+                          {item.job.progress_message || item.phase_display.description}
+                        </p>
+                      </div>
+                      <div className="progress-track">
+                        <div className="progress-fill" style={{ width: `${item.phase_display.percent}%` }} />
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="empty-state">
+                    {jobFilter === "all"
+                      ? "暂无任务。先在“文件与新建”里选择输入文件，创建第一条任务。"
+                      : `当前筛选下没有${jobFilterLabel(jobFilter)}任务。`}
+                  </div>
+                )}
+              </div>
+            </aside>
+
+            <section className="panel detail-panel">
+              <PanelTitle eyebrow="任务详情" title={selectedJob?.job.job_id ?? "尚未选择任务"} />
+              {selectedJob ? (
+                <JobDetail
+                  selectedJob={selectedJob}
+                  advisorState={advisorState}
+                  actionKey={actionKey}
+                  canDispatch={canDispatchSelectedJob}
+                  running={Boolean(runningSelectedJob)}
+                  assetUrl={assetUrl}
+                  onAction={postJobAction}
+                  onOpenOutput={openOutput}
+                  onPreviewAsset={openPreviewAsset}
+                  onCopy={copyText}
+                />
+              ) : (
+                <div className="empty-state large">
+                  这里会显示任务进度、输入预览、输出结果和日志。现在这些内容只会在“运行与结果”里集中展示，不再塞满首页。
+                </div>
+              )}
+            </section>
+          </section>
+        ) : null}
+
+        {activeWorkspace === "advisor" ? (
+          <section className="advisor-layout">
+            <article className="panel advisor-main-panel">
+              <PanelTitle eyebrow="AI 工作台" title={selectedJob?.job.job_id ?? "先从任务中心选中一条任务"} />
+              <AdvisorWorkbench
+                job={selectedJob}
+                advisorState={advisorState}
+                actionKey={actionKey}
+                onEvaluate={(jobId) => void postJobAction(`/api/jobs/${jobId}/advisor/evaluate`, "advisor")}
+                onCopy={copyText}
+              />
+            </article>
+
+            <aside className="panel advisor-side-panel">
+              <PanelTitle eyebrow="什么时候用 AI" title="别让它孤零零地藏在按钮里" />
+              <div className="support-checklist">
+                {buildAdvisorChecklist(advisorReady).map((item) => (
+                  <article className="support-check-item" key={item.title}>
+                    <strong>{item.title}</strong>
+                    <p>{item.body}</p>
+                  </article>
+                ))}
+              </div>
+            </aside>
+          </section>
+        ) : null}
+
+        {activeWorkspace === "system" ? (
+          <section className="system-grid">
+            <article className="panel">
+              <PanelTitle eyebrow="本地服务" title="当前托管状态" />
+              <div className="support-checklist">
+                <article className="support-check-item">
+                  <strong>服务状态</strong>
+                  <p>{serviceMessage}</p>
+                </article>
+                <article className="support-check-item">
+                  <strong>后端说明</strong>
+                  <p>{backendStatusText(backendStatus)}</p>
+                </article>
+              </div>
+            </article>
+
+            <article className="panel">
+              <PanelTitle eyebrow="远端目标" title="当前服务器配置" />
+              <div className="support-checklist">
+                <article className="support-check-item">
+                  <strong>SSH 目标</strong>
+                  <p>
+                    {bootstrapData.server.user}@{bootstrapData.server.host}:{bootstrapData.server.port}
+                  </p>
+                </article>
+                <article className="support-check-item">
+                  <strong>远端根目录</strong>
+                  <p>{bootstrapData.server.remote_root}</p>
+                </article>
+              </div>
+            </article>
+
+            <article className="panel">
+              <PanelTitle eyebrow="AI 配置" title="当前评估能力" />
+              <div className="support-checklist">
+                <article className="support-check-item">
+                  <strong>状态</strong>
+                  <p>{advisorReady ? `已配置：${advisorState.model}` : advisorState.message}</p>
+                </article>
+                <article className="support-check-item">
+                  <strong>建议位置</strong>
+                  <p>先在任务跑完或失败后用 AI 评估，再把结论放进汇报和后续实验计划里。</p>
+                </article>
+              </div>
+            </article>
+
+            <article className="panel">
+              <PanelTitle eyebrow="使用提示" title="今晚就按这条线推进" />
+              <div className="support-checklist">
+                {buildSystemChecklist().map((item) => (
+                  <article className="support-check-item" key={item.title}>
+                    <strong>{item.title}</strong>
+                    <p>{item.body}</p>
+                  </article>
+                ))}
+              </div>
+            </article>
+          </section>
+        ) : null}
       </main>
 
       {previewAsset ? (
@@ -1033,6 +1296,7 @@ function App() {
 
 function JobDetail(props: {
   selectedJob: JobPayload;
+  advisorState: AdvisorState;
   actionKey: string | null;
   canDispatch: boolean;
   running: boolean;
@@ -1040,12 +1304,15 @@ function JobDetail(props: {
   onAction: (path: string, key: string) => Promise<void>;
   onOpenOutput: (relativePath: string) => Promise<void>;
   onPreviewAsset: (asset: PreviewAsset) => void;
+  onCopy: (value: string, label: string) => Promise<void>;
 }) {
   const job = props.selectedJob.job;
   const summary = props.selectedJob.result_summary;
   const latestLogLine = getLatestLogLine(props.selectedJob.logs);
   const outputSections = buildOutputSections(props.selectedJob.outputs, job.model);
   const progress = props.selectedJob.phase_display;
+  const advisorSuggested = isAdvisorSuggested(job.status);
+  const advisorReport = props.selectedJob.advisor_report ?? null;
 
   return (
     <div className="detail-stack">
@@ -1087,6 +1354,46 @@ function JobDetail(props: {
         </div>
       </div>
 
+      <article className={`advisor-recommendation ${advisorSuggested ? "active" : ""}`}>
+        <div>
+          <span className="mini-label">AI 评估建议</span>
+          <strong>
+            {!props.advisorState.enabled
+              ? "AI 评估未启用"
+              : !props.advisorState.configured
+                ? "AI 评估配置还没补齐"
+                : advisorReport
+                  ? "当前任务已经有 AI 评估结果"
+                  : advisorSuggested
+                    ? "现在就适合做 AI 评估"
+                    : "建议先等任务跑完或出现错误"}
+          </strong>
+          <p>
+            {!props.advisorState.enabled || !props.advisorState.configured
+              ? props.advisorState.message
+              : advisorReport
+                ? "可以直接查看问题、下一步建议和汇报话术；如果你又重跑了一版，再点一次会刷新。"
+                : advisorSuggested
+                  ? "当前状态已经足够让 AI 基于参数、scene_meta、摘要和日志给出判断。"
+                  : "运行中的任务更适合先看阶段卡片和最新日志，结果稳定后再让 AI 做总结。"}
+          </p>
+        </div>
+        <div className="advisor-workbench-actions">
+          {advisorReport?.teacher_talk ? (
+            <button onClick={() => void props.onCopy(advisorReport.teacher_talk, "汇报话术")} type="button">
+              复制汇报话术
+            </button>
+          ) : null}
+          <button
+            disabled={!props.advisorState.enabled || !props.advisorState.configured || !advisorSuggested || props.actionKey === "advisor"}
+            onClick={() => props.onAction(`/api/jobs/${job.job_id}/advisor/evaluate`, "advisor")}
+            type="button"
+          >
+            {props.actionKey === "advisor" ? "评估中..." : "AI评估"}
+          </button>
+        </div>
+      </article>
+
       <div className="action-row">
         <button
           disabled={!props.canDispatch || props.actionKey === "dispatch"}
@@ -1117,13 +1424,6 @@ function JobDetail(props: {
         >
           取消
         </button>
-        <button
-          disabled={props.actionKey === "advisor"}
-          onClick={() => props.onAction(`/api/jobs/${job.job_id}/advisor/evaluate`, "advisor")}
-          type="button"
-        >
-          AI评估
-        </button>
       </div>
 
       <div className="meta-grid">
@@ -1147,7 +1447,7 @@ function JobDetail(props: {
         </article>
         <article className="soft-panel">
           <h4>AI 评估</h4>
-          <AdvisorPanel report={props.selectedJob.advisor_report ?? null} />
+          <AdvisorPanel report={advisorReport} />
         </article>
         <article className="soft-panel">
           <h4>输入</h4>
@@ -1631,6 +1931,94 @@ function AdvisorPanel(props: { report: AdvisorReport | null }) {
   );
 }
 
+function AdvisorWorkbench(props: {
+  job: JobPayload | null;
+  advisorState: AdvisorState;
+  actionKey: string | null;
+  onEvaluate: (jobId: string) => void;
+  onCopy: (value: string, label: string) => Promise<void>;
+  compact?: boolean;
+}) {
+  if (!props.advisorState.enabled || !props.advisorState.configured) {
+    return (
+      <div className={`advisor-workbench ${props.compact ? "compact" : ""}`}>
+        <div className="advisor-config-note">
+          <strong>AI 评估暂不可用</strong>
+          <p>{props.advisorState.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!props.job) {
+    return (
+      <div className={`advisor-workbench ${props.compact ? "compact" : ""}`}>
+        <div className="empty-state">
+          先在“运行与结果”里选中一条任务，再来这里让 AI 做判断。通常优先评估已完成、失败或已取消的任务。
+        </div>
+      </div>
+    );
+  }
+
+  const job = props.job;
+  const report = job.advisor_report ?? null;
+  const suggested = isAdvisorSuggested(job.job.status);
+
+  return (
+    <div className={`advisor-workbench ${props.compact ? "compact" : ""}`}>
+      <div className="advisor-workbench-head">
+        <div>
+          <strong>{job.job.job_id}</strong>
+          <p>
+            {statusModelLabel(job.job.model)} · {statusLabel(job.job.status)} · {sourceTypeLabel(job.job.source_type)}
+          </p>
+        </div>
+        <div className="advisor-workbench-actions">
+          {report?.teacher_talk ? (
+            <button onClick={() => void props.onCopy(report.teacher_talk, "汇报话术")} type="button">
+              复制汇报话术
+            </button>
+          ) : null}
+          <button
+            disabled={!suggested || props.actionKey === "advisor"}
+            onClick={() => props.onEvaluate(job.job.job_id)}
+            type="button"
+          >
+            {props.actionKey === "advisor" ? "评估中..." : report ? "重新评估" : "开始评估"}
+          </button>
+        </div>
+      </div>
+
+      {!report ? (
+        <div className="advisor-config-note">
+          <strong>{suggested ? "现在适合调用 AI" : "暂时先别急着评估"}</strong>
+          <p>
+            {suggested
+              ? "当前任务已经有足够信息可供总结，点右侧按钮就能得到问题诊断、下一步建议和汇报话术。"
+              : "任务还在运行时，优先先看日志和阶段进度；等任务完成、失败或取消后再让 AI 做判断更有效。"}
+          </p>
+        </div>
+      ) : (
+        <>
+          <AdvisorPanel report={report} />
+          {props.compact ? null : (
+            <div className="advisor-copy-row">
+              <button onClick={() => void props.onCopy(report.summary, "AI 摘要")} type="button">
+                复制摘要
+              </button>
+              {report.teacher_talk ? (
+                <button onClick={() => void props.onCopy(report.teacher_talk, "汇报话术")} type="button">
+                  复制汇报话术
+                </button>
+              ) : null}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function delay(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -1810,6 +2198,91 @@ function buildCreateGuidance(model: string, sourceType: string, fileCount: numbe
   ];
 }
 
+function buildCaptureChecklist(model: string, sourceType: string, fileCount: number) {
+  if (model === "monst3r" && sourceType === "video") {
+    return [
+      {
+        title: "视频先拍短一点",
+        body: "先用 6 到 12 秒、主体稳定在画面中央的短视频起步，别一开始就上特别长的素材。"
+      },
+      {
+        title: "保证明显视差",
+        body: "尽量让相机绕主体缓慢移动，不要只做前后推拉，不然很容易塌成平面。"
+      },
+      {
+        title: "当前上传检查",
+        body: fileCount === 1 ? "视频数量正确，可以直接继续。" : "视频模式请只放 1 个视频文件。"
+      }
+    ];
+  }
+
+  if (model === "monst3r") {
+    return [
+      {
+        title: "帧序列要连贯",
+        body: "尽量用连续视角变化的帧，别混入跨度太大的图片。"
+      },
+      {
+        title: "少量先验链路",
+        body: "第一次先用 3 到 12 张连续帧验证流程，结果稳定后再补更长序列。"
+      },
+      {
+        title: "当前上传检查",
+        body: fileCount >= 2 ? "帧数已满足最小要求。" : "帧序列模式至少上传 2 张图片。"
+      }
+    ];
+  }
+
+  return [
+    {
+      title: "优先拍有纹理、有棱角的静态物体",
+      body: "纸箱、工具箱、桌面物体都适合；玻璃、镜子、大白墙先尽量避开。"
+    },
+    {
+      title: "多图要来自同一场景",
+      body: "图片间要有重叠视角，主体尽量占画面的 40% 到 70%，别让背景比主体更抢眼。"
+    },
+    {
+      title: "当前上传检查",
+      body: fileCount >= 2 ? `当前已选 ${fileCount} 个文件，可以直接创建任务。` : "静态多图模式至少上传 2 张图片。"
+    }
+  ];
+}
+
+function buildAdvisorChecklist(advisorReady: boolean) {
+  return [
+    {
+      title: "结果出来后第一时间评估",
+      body: "任务完成、失败或取消时最值得点 AI 评估，它会结合参数、摘要、scene_meta 和日志给判断。"
+    },
+    {
+      title: "别在纯运行中频繁点",
+      body: "运行中的任务信息还不完整，更适合先看阶段卡片和最新日志，避免无效调用。"
+    },
+    {
+      title: "直接拿来写汇报",
+      body: advisorReady ? "AI 会给可直接复制的汇报话术，适合组会前快速整理表达。" : "先把 AI 接口配置好，才能启用自动诊断和汇报话术。"
+    }
+  ];
+}
+
+function buildSystemChecklist() {
+  return [
+    {
+      title: "先建任务，再盯结果",
+      body: "把上传和参数选择放在“文件与新建”，把状态、日志和产物放在“运行与结果”，别在首页来回翻。"
+    },
+    {
+      title: "完成后再做 AI 总结",
+      body: "一条任务结束后，先看核心产物，再去 AI 工作台生成诊断、下一步建议和汇报话术。"
+    },
+    {
+      title: "本地服务异常先重启",
+      body: "如果顶栏提示未连接，先在这里或顶栏重启本地服务，不要继续点任务按钮硬试。"
+    }
+  ];
+}
+
 function buildActionMessage(action: string, jobId: string) {
   switch (action) {
     case "dispatch":
@@ -1825,6 +2298,10 @@ function buildActionMessage(action: string, jobId: string) {
     default:
       return `任务 ${jobId} 已更新。`;
   }
+}
+
+function isAdvisorSuggested(status: string) {
+  return status === "finished" || status === "failed" || status === "cancelled";
 }
 
 function statusLabel(status: string) {
