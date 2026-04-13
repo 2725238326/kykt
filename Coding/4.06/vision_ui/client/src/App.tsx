@@ -1,7 +1,9 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  AdvisorConfig,
   AdvisorReport,
+  AdvisorStatus,
   BackendStatusPayload,
   BootstrapPayload,
   JobPayload,
@@ -180,13 +182,6 @@ type FormState = {
 type ServiceState = "starting" | "ready" | "degraded";
 type JobFilter = "all" | "running" | "attention" | "finished";
 type WorkspaceTab = "overview" | "create" | "jobs" | "advisor" | "system";
-type AdvisorState = {
-  enabled: boolean;
-  configured: boolean;
-  base_url: string;
-  model: string;
-  message: string;
-};
 type JobListItem = JobsListPayload["jobs"][number];
 type OutputItem = JobPayload["outputs"][number];
 type OutputSection = {
@@ -229,6 +224,16 @@ function App() {
   const [files, setFiles] = useState<File[]>([]);
   const [recoveringService, setRecoveringService] = useState(false);
   const [previewAsset, setPreviewAsset] = useState<PreviewAsset | null>(null);
+  const [advisorModalOpen, setAdvisorModalOpen] = useState(false);
+  const [advisorConfigLoading, setAdvisorConfigLoading] = useState(false);
+  const [advisorConfigSaving, setAdvisorConfigSaving] = useState(false);
+  const [advisorForm, setAdvisorForm] = useState({
+    enabled: false,
+    base_url: "",
+    api_key: "",
+    model: "gpt-4o-mini",
+    has_api_key: false,
+  });
   const [activePresets, setActivePresets] = useState<Record<PresetModel, PresetKey | null>>({
     dust3r: "standard",
     mast3r: "standard",
@@ -244,11 +249,12 @@ function App() {
   });
 
   const bootstrapData = bootstrap ?? DEFAULT_BOOTSTRAP;
-  const advisorState: AdvisorState = bootstrapData.advisor ?? {
+  const advisorState: AdvisorStatus = bootstrapData.advisor ?? {
     enabled: false,
     configured: false,
     base_url: "",
     model: "",
+    has_api_key: false,
     message: "AI 评估尚未配置。"
   };
   const serviceReady = serviceState === "ready";
@@ -336,8 +342,7 @@ function App() {
         }
 
         try {
-          const payload = await fetchJson<BootstrapPayload>("/api/bootstrap");
-          setBootstrap(payload);
+          await refreshBootstrap();
           setServiceState("ready");
           setServiceMessage("本地服务已就绪");
           await loadJobs(false);
@@ -438,6 +443,12 @@ function App() {
     return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
   }
 
+  async function refreshBootstrap() {
+    const payload = await fetchJson<BootstrapPayload>("/api/bootstrap");
+    setBootstrap(payload);
+    return payload;
+  }
+
   async function loadDesktopBackendStatus() {
     try {
       const status = await invoke<BackendStatusPayload>("backend_status");
@@ -474,8 +485,7 @@ function App() {
         return;
       }
 
-      const payload = await fetchJson<BootstrapPayload>("/api/bootstrap");
-      setBootstrap(payload);
+      await refreshBootstrap();
       setServiceState("ready");
       setServiceMessage("本地服务已恢复并重新连通。");
       setErrorMessage(null);
@@ -531,6 +541,53 @@ function App() {
       }
     } catch (error) {
       handleServiceFailure(error, "加载任务列表失败。", showError);
+    }
+  }
+
+  async function openAdvisorSettings() {
+    setAdvisorConfigLoading(true);
+    setErrorMessage(null);
+    try {
+      const payload = await fetchJson<AdvisorConfig>("/api/advisor/config");
+      setAdvisorForm({
+        enabled: payload.enabled,
+        base_url: payload.base_url,
+        api_key: "",
+        model: payload.model || "gpt-4o-mini",
+        has_api_key: Boolean(payload.has_api_key),
+      });
+      setAdvisorModalOpen(true);
+    } catch (error) {
+      setErrorMessage(friendlyError(error, "读取 AI 配置失败。"));
+    } finally {
+      setAdvisorConfigLoading(false);
+    }
+  }
+
+  async function saveAdvisorSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAdvisorConfigSaving(true);
+    setErrorMessage(null);
+    setInfoMessage(null);
+    try {
+      const payload = await fetchJson<AdvisorConfig>("/api/advisor/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enabled: advisorForm.enabled,
+          base_url: advisorForm.base_url,
+          api_key: advisorForm.api_key,
+          model: advisorForm.model,
+        }),
+      });
+      setBootstrap((current) => (current ? { ...current, advisor: payload } : current));
+      setAdvisorModalOpen(false);
+      setAdvisorForm((current) => ({ ...current, api_key: "", has_api_key: Boolean(payload.has_api_key) }));
+      setInfoMessage(payload.configured ? "AI 评估配置已保存并可用。" : "AI 配置已保存，但还未达到可用状态。");
+    } catch (error) {
+      setErrorMessage(friendlyError(error, "保存 AI 配置失败。"));
+    } finally {
+      setAdvisorConfigSaving(false);
     }
   }
 
@@ -813,6 +870,9 @@ function App() {
                 <button className="ghost-button small" onClick={() => openWorkspace("advisor")} type="button">
                   打开 AI 工作台
                 </button>
+                <button className="ghost-button small" onClick={() => void openAdvisorSettings()} disabled={advisorConfigLoading} type="button">
+                  {advisorConfigLoading ? "读取中..." : "配置 AI"}
+                </button>
                 {advisorReady && activeJob && isAdvisorSuggested(activeJob.job.status) ? (
                   <button
                     className="ghost-button small"
@@ -920,6 +980,7 @@ function App() {
               advisorState={advisorState}
               actionKey={actionKey}
               onEvaluate={(jobId) => void postJobAction(`/api/jobs/${jobId}/advisor/evaluate`, "advisor")}
+              onConfigure={() => void openAdvisorSettings()}
               onCopy={copyText}
               compact
             />
@@ -1166,6 +1227,7 @@ function App() {
                   running={Boolean(runningSelectedJob)}
                   assetUrl={assetUrl}
                   onAction={postJobAction}
+                  onConfigureAdvisor={() => void openAdvisorSettings()}
                   onOpenOutput={openOutput}
                   onPreviewAsset={openPreviewAsset}
                   onCopy={copyText}
@@ -1188,6 +1250,7 @@ function App() {
                 advisorState={advisorState}
                 actionKey={actionKey}
                 onEvaluate={(jobId) => void postJobAction(`/api/jobs/${jobId}/advisor/evaluate`, "advisor")}
+                onConfigure={() => void openAdvisorSettings()}
                 onCopy={copyText}
               />
             </article>
@@ -1249,6 +1312,9 @@ function App() {
                   <strong>建议位置</strong>
                   <p>先在任务跑完或失败后用 AI 评估，再把结论放进汇报和后续实验计划里。</p>
                 </article>
+                <button className="ghost-button" onClick={() => void openAdvisorSettings()} disabled={advisorConfigLoading} type="button">
+                  {advisorConfigLoading ? "读取中..." : "打开 AI 配置"}
+                </button>
               </div>
             </article>
 
@@ -1266,6 +1332,75 @@ function App() {
           </section>
         ) : null}
       </main>
+
+      {advisorModalOpen ? (
+        <div className="settings-modal-backdrop" onClick={() => setAdvisorModalOpen(false)} role="presentation">
+          <div className="settings-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="preview-modal-head">
+              <div>
+                <span className="mini-label">AI 配置</span>
+                <strong>填写 OpenAI 兼容接口</strong>
+                <p>保存后会立即刷新 AI 状态。已保存的密钥不会明文回显，留空会保持当前密钥不变。</p>
+              </div>
+              <button className="ghost-button small" onClick={() => setAdvisorModalOpen(false)} type="button">
+                关闭
+              </button>
+            </div>
+
+            <form className="form-stack settings-form" onSubmit={saveAdvisorSettings}>
+              <label className="field">
+                <span>启用 AI 评估</span>
+                <select
+                  value={advisorForm.enabled ? "true" : "false"}
+                  onChange={(event) =>
+                    setAdvisorForm((current) => ({ ...current, enabled: event.target.value === "true" }))
+                  }
+                >
+                  <option value="true">开启</option>
+                  <option value="false">关闭</option>
+                </select>
+              </label>
+
+              <label className="field">
+                <span>Base URL</span>
+                <input
+                  value={advisorForm.base_url}
+                  onChange={(event) => setAdvisorForm((current) => ({ ...current, base_url: event.target.value }))}
+                  placeholder="例如：http://127.0.0.1:3000/v1"
+                />
+              </label>
+
+              <label className="field">
+                <span>API Key</span>
+                <input
+                  type="password"
+                  value={advisorForm.api_key}
+                  onChange={(event) => setAdvisorForm((current) => ({ ...current, api_key: event.target.value }))}
+                  placeholder={advisorForm.has_api_key ? "已保存，留空则保持不变" : "输入新的 API Key"}
+                />
+              </label>
+
+              <label className="field">
+                <span>Model</span>
+                <input
+                  value={advisorForm.model}
+                  onChange={(event) => setAdvisorForm((current) => ({ ...current, model: event.target.value }))}
+                  placeholder="例如：gpt-4o-mini"
+                />
+              </label>
+
+              <div className="settings-modal-actions">
+                <button className="ghost-button" onClick={() => setAdvisorModalOpen(false)} type="button">
+                  取消
+                </button>
+                <button className="primary-button" disabled={advisorConfigSaving} type="submit">
+                  {advisorConfigSaving ? "保存中..." : "保存配置"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
 
       {previewAsset ? (
         <div className="preview-modal-backdrop" onClick={() => setPreviewAsset(null)} role="presentation">
@@ -1296,12 +1431,13 @@ function App() {
 
 function JobDetail(props: {
   selectedJob: JobPayload;
-  advisorState: AdvisorState;
+  advisorState: AdvisorStatus;
   actionKey: string | null;
   canDispatch: boolean;
   running: boolean;
   assetUrl: (path: string) => string;
   onAction: (path: string, key: string) => Promise<void>;
+  onConfigureAdvisor: () => void;
   onOpenOutput: (relativePath: string) => Promise<void>;
   onPreviewAsset: (asset: PreviewAsset) => void;
   onCopy: (value: string, label: string) => Promise<void>;
@@ -1379,6 +1515,11 @@ function JobDetail(props: {
           </p>
         </div>
         <div className="advisor-workbench-actions">
+          {!props.advisorState.enabled || !props.advisorState.configured ? (
+            <button onClick={props.onConfigureAdvisor} type="button">
+              配置 AI
+            </button>
+          ) : null}
           {advisorReport?.teacher_talk ? (
             <button onClick={() => void props.onCopy(advisorReport.teacher_talk, "汇报话术")} type="button">
               复制汇报话术
@@ -1933,9 +2074,10 @@ function AdvisorPanel(props: { report: AdvisorReport | null }) {
 
 function AdvisorWorkbench(props: {
   job: JobPayload | null;
-  advisorState: AdvisorState;
+  advisorState: AdvisorStatus;
   actionKey: string | null;
   onEvaluate: (jobId: string) => void;
+  onConfigure: () => void;
   onCopy: (value: string, label: string) => Promise<void>;
   compact?: boolean;
 }) {
@@ -1945,6 +2087,11 @@ function AdvisorWorkbench(props: {
         <div className="advisor-config-note">
           <strong>AI 评估暂不可用</strong>
           <p>{props.advisorState.message}</p>
+          <div className="advisor-workbench-actions">
+            <button onClick={props.onConfigure} type="button">
+              立即配置
+            </button>
+          </div>
         </div>
       </div>
     );

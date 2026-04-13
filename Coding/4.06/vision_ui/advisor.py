@@ -54,6 +54,48 @@ def load_advisor_config() -> dict[str, Any]:
     return merged
 
 
+def advisor_config_public() -> dict[str, Any]:
+    config = load_advisor_config()
+    status = advisor_status()
+    return {
+        **status,
+        "has_api_key": bool(str(config.get("api_key") or "").strip()),
+        "temperature": float(config.get("temperature") or 0.2),
+        "max_tokens": int(config.get("max_tokens") or 1200),
+        "system_prompt": str(config.get("system_prompt") or DEFAULT_SYSTEM_PROMPT),
+    }
+
+
+def save_advisor_config(payload: dict[str, Any]) -> dict[str, Any]:
+    current = load_advisor_config()
+    merged = dict(DEFAULT_CONFIG)
+    merged.update(current)
+
+    if "enabled" in payload:
+        merged["enabled"] = bool(payload.get("enabled"))
+    if "base_url" in payload:
+        merged["base_url"] = str(payload.get("base_url") or "").strip()
+    if "model" in payload:
+        merged["model"] = str(payload.get("model") or DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    if "temperature" in payload:
+        merged["temperature"] = float(payload.get("temperature") or 0.2)
+    if "max_tokens" in payload:
+        merged["max_tokens"] = int(payload.get("max_tokens") or 1200)
+    if "system_prompt" in payload:
+        merged["system_prompt"] = str(payload.get("system_prompt") or DEFAULT_SYSTEM_PROMPT).strip() or DEFAULT_SYSTEM_PROMPT
+
+    if "api_key" in payload:
+        api_key = str(payload.get("api_key") or "").strip()
+        if api_key:
+            merged["api_key"] = api_key
+        elif payload.get("clear_api_key"):
+            merged["api_key"] = ""
+
+    SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
+    SETTINGS_PATH.write_text(json.dumps(merged, indent=2, ensure_ascii=False), encoding="utf-8")
+    return advisor_config_public()
+
+
 def advisor_status() -> dict[str, Any]:
     config = load_advisor_config()
     base_url = str(config.get("base_url") or "").strip()
@@ -66,6 +108,7 @@ def advisor_status() -> dict[str, Any]:
         "configured": configured,
         "base_url": base_url,
         "model": model or DEFAULT_MODEL,
+        "has_api_key": bool(api_key),
         "message": _advisor_status_message(enabled, configured),
     }
 

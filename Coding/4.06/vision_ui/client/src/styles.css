@@ -1356,6 +1356,42 @@ img {
   backdrop-filter: blur(10px);
 }
 
+.settings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 32;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(8, 10, 18, 0.55);
+  backdrop-filter: blur(8px);
+}
+
+.settings-modal {
+  width: min(620px, 100%);
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.2);
+}
+
+.settings-form {
+  gap: 12px;
+}
+
+.settings-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.settings-modal-actions .primary-button {
+  width: auto;
+}
+
 .preview-modal {
   width: min(1100px, 100%);
   max-height: calc(100vh - 56px);

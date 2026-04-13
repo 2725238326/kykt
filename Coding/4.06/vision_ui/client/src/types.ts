@@ -68,6 +68,21 @@ export type AdvisorReport = {
   advisor_model: string;
 };
 
+export type AdvisorStatus = {
+  enabled: boolean;
+  configured: boolean;
+  base_url: string;
+  model: string;
+  has_api_key?: boolean;
+  message: string;
+};
+
+export type AdvisorConfig = AdvisorStatus & {
+  temperature: number;
+  max_tokens: number;
+  system_prompt: string;
+};
+
 export type JobPayload = {
   job: JobRecord;
   phase_display: PhaseDisplay;
@@ -125,13 +140,7 @@ export type BootstrapPayload = {
     value: string;
     label: string;
   }>;
-  advisor?: {
-    enabled: boolean;
-    configured: boolean;
-    base_url: string;
-    model: string;
-    message: string;
-  };
+  advisor?: AdvisorStatus;
 };
 
 export type JobsListPayload = {

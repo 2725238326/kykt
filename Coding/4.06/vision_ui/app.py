@@ -11,7 +11,13 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from advisor import advisor_status, evaluate_job_with_advisor, load_advisor_report
+from advisor import (
+    advisor_config_public,
+    advisor_status,
+    evaluate_job_with_advisor,
+    load_advisor_report,
+    save_advisor_config,
+)
 from job_store import (
     ROOT,
     clear_job_runtime,
@@ -661,6 +667,21 @@ async def create_job_api(
 @app.get("/api/advisor/status")
 async def advisor_status_api():
     return JSONResponse(advisor_status())
+
+
+@app.get("/api/advisor/config")
+async def advisor_config_api():
+    return JSONResponse(advisor_config_public())
+
+
+@app.post("/api/advisor/config")
+async def advisor_config_save_api(request: Request):
+    payload = await request.json()
+    try:
+        config = save_advisor_config(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=f"AI 配置保存失败：{exc}") from exc
+    return JSONResponse(config)
 
 
 @app.post("/api/jobs/{job_id}/dispatch")
