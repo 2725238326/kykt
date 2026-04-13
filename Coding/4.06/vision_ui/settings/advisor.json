@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "base_url": "http://117.72.125.59:3000/v1",
   "api_key": "sk-nHdhkAAcfTlrTVdlyXKnxNSxyZVi6TUGoKEXiegz5mgi14dD",
   "model": "gemini-3-flash-preview",
