@@ -6,6 +6,8 @@ import type {
   AdvisorStatus,
   BackendStatusPayload,
   BootstrapPayload,
+  DeploymentStatusPayload,
+  EvaluationPayload,
   JobPayload,
   JobsListPayload,
   ResultSummary,
@@ -216,6 +218,9 @@ function App() {
   const [selectedJob, setSelectedJob] = useState<JobPayload | null>(null);
   const [samplesPayload, setSamplesPayload] = useState<SamplesPayload | null>(null);
   const [samplesError, setSamplesError] = useState<string | null>(null);
+  const [deploymentStatus, setDeploymentStatus] = useState<DeploymentStatusPayload | null>(null);
+  const [deploymentError, setDeploymentError] = useState<string | null>(null);
+  const [deploymentLoading, setDeploymentLoading] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceTab>("overview");
   const [backendStatus, setBackendStatus] = useState<BackendStatusPayload | null>(null);
   const [serviceState, setServiceState] = useState<ServiceState>("starting");
@@ -227,6 +232,7 @@ function App() {
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [recoveringService, setRecoveringService] = useState(false);
+  const [savingEvaluation, setSavingEvaluation] = useState(false);
   const [previewAsset, setPreviewAsset] = useState<PreviewAsset | null>(null);
   const [advisorModalOpen, setAdvisorModalOpen] = useState(false);
   const [advisorConfigLoading, setAdvisorConfigLoading] = useState(false);
@@ -299,6 +305,7 @@ function App() {
     [jobs, selectedJobId]
   );
   const runningJobs = useMemo(() => jobs.filter((item) => item.job.status === "running"), [jobs]);
+  const hasRunningJobs = runningJobs.length > 0;
   const attentionJobs = useMemo(
     () => jobs.filter((item) => item.job.status === "failed" || item.job.status === "cancelled"),
     [jobs]
@@ -352,6 +359,7 @@ function App() {
     [advisorCandidateCount, summary.running, summary.total]
   );
   const runningSelectedJob = selectedJob?.job.status === "running";
+  const selectedJobPollMs = runningSelectedJob ? 4000 : 15000;
   const canDispatchSelectedJob = selectedJob
     ? selectedJob.job.status === "draft" ||
       selectedJob.job.status === "ready" ||
@@ -420,16 +428,17 @@ function App() {
     if (!serviceReady) {
       return;
     }
-    const timer = window.setInterval(() => void loadJobs(false), 4000);
+    const intervalMs = hasRunningJobs ? 4000 : 12000;
+    const timer = window.setInterval(() => void loadJobs(false), intervalMs);
     return () => window.clearInterval(timer);
-  }, [serviceReady]);
+  }, [hasRunningJobs, serviceReady]);
 
   useEffect(() => {
     if (!serviceReady) {
       return;
     }
     void loadSamples(false);
-    const timer = window.setInterval(() => void loadSamples(false), 15000);
+    const timer = window.setInterval(() => void loadSamples(false), 60000);
     return () => window.clearInterval(timer);
   }, [serviceReady]);
 
@@ -445,9 +454,16 @@ function App() {
       return;
     }
     void loadJobDetail(selectedJobId, false);
-    const timer = window.setInterval(() => void loadJobDetail(selectedJobId, false), 4000);
+    const timer = window.setInterval(() => void loadJobDetail(selectedJobId, false), selectedJobPollMs);
     return () => window.clearInterval(timer);
-  }, [selectedJobId, serviceReady]);
+  }, [selectedJobId, selectedJobPollMs, serviceReady]);
+
+  useEffect(() => {
+    if (!serviceReady || activeWorkspace !== "system" || deploymentStatus) {
+      return;
+    }
+    void loadDeploymentStatus(false, false);
+  }, [activeWorkspace, deploymentStatus, serviceReady]);
 
   async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     let response: Response;
@@ -602,6 +618,23 @@ function App() {
     }
   }
 
+  async function loadDeploymentStatus(showError = true, refresh = false) {
+    setDeploymentLoading(true);
+    try {
+      const payload = await fetchJson<DeploymentStatusPayload>(`/api/deployment/status${refresh ? "?refresh=true" : ""}`);
+      setDeploymentStatus(payload);
+      setDeploymentError(null);
+    } catch (error) {
+      const message = friendlyError(error, "远端部署状态读取失败。");
+      setDeploymentError(message);
+      if (showError) {
+        setErrorMessage(message);
+      }
+    } finally {
+      setDeploymentLoading(false);
+    }
+  }
+
   async function openAdvisorSettings() {
     setAdvisorConfigLoading(true);
     setErrorMessage(null);
@@ -658,6 +691,26 @@ function App() {
       }
     } catch (error) {
       handleServiceFailure(error, "加载任务详情失败。", showError);
+    }
+  }
+
+  async function saveJobEvaluation(jobId: string, payload: EvaluationPayload) {
+    setSavingEvaluation(true);
+    setErrorMessage(null);
+    setInfoMessage(null);
+    try {
+      const updated = await fetchJson<JobPayload & { ok: boolean; evaluation: EvaluationPayload }>(`/api/jobs/${jobId}/evaluation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      setSelectedJob(updated);
+      setInfoMessage(`任务 ${jobId} 的人工评分已保存。`);
+      await loadJobs(false);
+    } catch (error) {
+      setErrorMessage(friendlyError(error, "保存人工评分失败。"));
+    } finally {
+      setSavingEvaluation(false);
     }
   }
 
@@ -1052,6 +1105,7 @@ function App() {
             samplesPayload={samplesPayload}
             errorMessage={samplesError}
             modelCatalog={modelCatalog}
+            onLocateJob={(jobId) => openWorkspace("jobs", jobId)}
             compact
           />
         </section>
@@ -1292,10 +1346,12 @@ function App() {
                   selectedJob={selectedJob}
                   advisorState={advisorState}
                   actionKey={actionKey}
+                  savingEvaluation={savingEvaluation}
                   canDispatch={canDispatchSelectedJob}
                   running={Boolean(runningSelectedJob)}
                   assetUrl={assetUrl}
                   onAction={postJobAction}
+                  onSaveEvaluation={saveJobEvaluation}
                   onConfigureAdvisor={() => void openAdvisorSettings()}
                   onOpenOutput={openOutput}
                   onPreviewAsset={openPreviewAsset}
@@ -1371,6 +1427,34 @@ function App() {
             </article>
 
             <article className="panel">
+              <PanelTitle eyebrow="远端部署" title="Active 3R 就绪状态" />
+              <div className="support-checklist">
+                <article className="support-check-item">
+                  <strong>部署摘要</strong>
+                  <p>
+                    {deploymentStatus
+                      ? `目录缺失 ${deploymentStatus.summary.missing_directories} / 环境缺失 ${deploymentStatus.summary.missing_conda_envs} / 必需文件缺失 ${deploymentStatus.summary.missing_required_files}`
+                      : deploymentError || "尚未读取远端部署状态。"}
+                  </p>
+                </article>
+                <article className="support-check-item">
+                  <strong>主线环境</strong>
+                  <p>{deploymentStatus ? formatDeploymentEnvSummary(deploymentStatus) : "读取后会显示 mast3r / monst3r / spann3r / align3r / fast3r / cut3r。"}</p>
+                </article>
+                <div className="service-card-actions">
+                  <button
+                    className="ghost-button small"
+                    onClick={() => void loadDeploymentStatus(true, true)}
+                    disabled={deploymentLoading}
+                    type="button"
+                  >
+                    {deploymentLoading ? "检查中..." : "刷新远端部署状态"}
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article className="panel">
               <PanelTitle eyebrow="AI 配置" title="当前评估能力" />
               <div className="support-checklist">
                 <article className="support-check-item">
@@ -1396,6 +1480,7 @@ function App() {
               samplesPayload={samplesPayload}
               errorMessage={samplesError}
               modelCatalog={modelCatalog}
+              onLocateJob={(jobId) => openWorkspace("jobs", jobId)}
             />
 
             <article className="panel">
@@ -1560,6 +1645,7 @@ function SampleMatrixPanel(props: {
   samplesPayload: SamplesPayload | null;
   errorMessage: string | null;
   modelCatalog: ModelCatalogItem[];
+  onLocateJob?: (jobId: string) => void;
   compact?: boolean;
 }) {
   const manifest = props.samplesPayload?.manifest ?? null;
@@ -1570,6 +1656,10 @@ function SampleMatrixPanel(props: {
   const activeModels = manifest?.active_models ?? [];
   const deferredModels = manifest?.deferred_models ?? [];
   const compactScoringEntries = props.compact ? scoringEntries.slice(0, 3) : [];
+  const statusCountEntries = Object.entries(summary?.status_counts ?? {}).sort(
+    ([leftStatus, leftCount], [rightStatus, rightCount]) =>
+      rightCount - leftCount || leftStatus.localeCompare(rightStatus)
+  );
 
   return (
     <article className="panel sample-matrix-panel">
@@ -1632,32 +1722,94 @@ function SampleMatrixPanel(props: {
           ) : null}
 
           {visibleSamples.length > 0 ? (
-            <div className="sample-card-grid">
-              {visibleSamples.map((sample) => (
-                <article className="sample-card" key={sample.id}>
-                  <div className="sample-card-head">
-                    <strong>{sample.id}</strong>
-                    <span className="status-badge">{sampleStatusLabel(sample.status)}</span>
-                  </div>
-                  <p>{sample.purpose}</p>
-                  <div className="sample-card-meta">
-                    <span>{sourceTypeLabel(sample.source_type)}</span>
-                    <span>{sample.target_file_count ? `${sample.target_file_count} 个文件` : `${sample.target_duration_seconds ?? "-"} 秒`}</span>
-                  </div>
-                  <div className="sample-card-models">
-                    {(sample.required_models ?? []).map((model) => (
-                      <span key={model}>{modelDisplayName(model, props.modelCatalog)}</span>
-                    ))}
-                  </div>
-                  {sample.seed_job_id ? (
-                    <div className="sample-seed-hint" title="可用于在任务页搜索或核对种子任务">
-                      <span className="mini-label">seed_job_id</span>
-                      <code>{sample.seed_job_id}</code>
+            <section className="sample-compare-section" aria-label="样例对比视图">
+              <div className="sample-compare-head">
+                <div>
+                  <span className="mini-label">样例对比</span>
+                  <strong>直接对照样例编号、必跑模型和任务入口</strong>
+                  <p>先看当前状态计数，再顺着 seed 任务跳到任务中心核对执行情况。</p>
+                </div>
+                <div className="sample-status-strip" aria-label="当前状态计数">
+                  {statusCountEntries.length > 0 ? (
+                    statusCountEntries.map(([status, count]) => (
+                      <div className="sample-status-pill" key={status}>
+                        <span>{sampleStatusLabel(status)}</span>
+                        <strong>{count}</strong>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="sample-status-pill empty">
+                      <span>当前状态计数</span>
+                      <strong>暂无</strong>
                     </div>
-                  ) : null}
+                  )}
+                </div>
+              </div>
+
+              <div className="sample-compare-grid">
+              {visibleSamples.map((sample) => (
+                <article className="sample-compare-row" key={sample.id}>
+                  <div className="sample-compare-main">
+                    <div className="sample-card-head">
+                      <strong>{sample.id}</strong>
+                      <span className="status-badge">{sampleStatusLabel(sample.status)}</span>
+                    </div>
+                    <p>{sample.purpose}</p>
+                    <div className="sample-card-meta">
+                      <span>{sourceTypeLabel(sample.source_type)}</span>
+                      <span>
+                        {sample.target_file_count
+                          ? `${sample.target_file_count} 个文件`
+                          : `${sample.target_duration_seconds ?? "-"} 秒`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="sample-compare-column">
+                    <span className="mini-label">Required Models</span>
+                    <div className="sample-card-models">
+                      {(sample.required_models ?? []).length > 0 ? (
+                        (sample.required_models ?? []).map((model) => (
+                          <span key={model}>{modelDisplayName(model, props.modelCatalog)}</span>
+                        ))
+                      ) : (
+                        <span>未标记</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="sample-compare-column">
+                    <span className="mini-label">当前状态</span>
+                    <p className="sample-compare-status-copy">
+                      {sampleStatusLabel(sample.status)}
+                      {sample.seed_job_id ? " · 已关联 seed 任务" : " · 尚未关联 seed 任务"}
+                    </p>
+                  </div>
+
+                  <div className={`sample-seed-callout ${sample.seed_job_id ? "available" : "missing"}`}>
+                    <span className="mini-label">任务定位</span>
+                    {sample.seed_job_id ? (
+                      <>
+                        <strong>{sample.seed_job_id}</strong>
+                        <p>任务中心可直接按这个 seed 任务继续核对日志、状态和结果。</p>
+                        {props.onLocateJob ? (
+                          <button
+                            className="ghost-button small sample-locate-button"
+                            onClick={() => props.onLocateJob?.(sample.seed_job_id!)}
+                            type="button"
+                          >
+                            定位到任务中心
+                          </button>
+                        ) : null}
+                      </>
+                    ) : (
+                      <p>当前还没有 seed 任务，先选样例或创建首条基准任务。</p>
+                    )}
+                  </div>
                 </article>
               ))}
-            </div>
+              </div>
+            </section>
           ) : (
             <div className="empty-state">样例清单还没有条目。</div>
           )}
@@ -1678,14 +1830,98 @@ function SampleMatrixPanel(props: {
   );
 }
 
+function EvaluationPanel(props: {
+  evaluation: EvaluationPayload | null;
+  jobId: string;
+  saving: boolean;
+  onSave: (jobId: string, payload: EvaluationPayload) => Promise<void>;
+}) {
+  const [draft, setDraft] = useState<EvaluationPayload>({ job_id: props.jobId, notes: "" });
+
+  useEffect(() => {
+    setDraft({
+      job_id: props.jobId,
+      structure_completeness: props.evaluation?.structure_completeness ?? null,
+      trajectory_stability: props.evaluation?.trajectory_stability ?? null,
+      noise: props.evaluation?.noise ?? props.evaluation?.noise_control ?? null,
+      dynamic_handling: props.evaluation?.dynamic_handling ?? null,
+      depth_continuity: props.evaluation?.depth_continuity ?? props.evaluation?.depth_consistency ?? null,
+      presentation_usability: props.evaluation?.presentation_usability ?? null,
+      notes: props.evaluation?.notes ?? ""
+    });
+  }, [props.evaluation, props.jobId]);
+
+  const fields: Array<{ key: keyof EvaluationPayload; label: string }> = [
+    { key: "structure_completeness", label: "结构完整性" },
+    { key: "trajectory_stability", label: "轨迹稳定性" },
+    { key: "noise", label: "噪声控制" },
+    { key: "dynamic_handling", label: "动态处理" },
+    { key: "depth_continuity", label: "深度连续性" },
+    { key: "presentation_usability", label: "展示可用性" }
+  ];
+
+  return (
+    <form
+      className="evaluation-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void props.onSave(props.jobId, draft);
+      }}
+    >
+      <div className="evaluation-grid">
+        {fields.map((field) => (
+          <label className="field" key={String(field.key)}>
+            <span>{field.label}</span>
+            <select
+              value={draft[field.key] == null ? "" : String(draft[field.key])}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  [field.key]: event.target.value ? Number(event.target.value) : null
+                }))
+              }
+            >
+              <option value="">未评分</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+        ))}
+      </div>
+      <label className="field">
+        <span>备注</span>
+        <textarea
+          rows={4}
+          value={draft.notes ?? ""}
+          onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
+          placeholder="记录结构问题、轨迹漂移、动态区域表现、适不适合展示。"
+        />
+      </label>
+      <div className="evaluation-actions">
+        <span className="muted-text">
+          {props.evaluation?.updated_at ? `上次保存：${formatDateTime(props.evaluation.updated_at)}` : "尚未保存人工评分。"}
+        </span>
+        <button className="ghost-button small" disabled={props.saving} type="submit">
+          {props.saving ? "保存中..." : "保存评分"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function JobDetail(props: {
   selectedJob: JobPayload;
   advisorState: AdvisorStatus;
   actionKey: string | null;
+  savingEvaluation: boolean;
   canDispatch: boolean;
   running: boolean;
   assetUrl: (path: string) => string;
   onAction: (path: string, key: string) => Promise<void>;
+  onSaveEvaluation: (jobId: string, payload: EvaluationPayload) => Promise<void>;
   onConfigureAdvisor: () => void;
   onOpenOutput: (relativePath: string) => Promise<void>;
   onPreviewAsset: (asset: PreviewAsset) => void;
@@ -1834,6 +2070,15 @@ function JobDetail(props: {
         <article className="soft-panel">
           <h4>结果摘要</h4>
           <SummaryPanel summary={props.selectedJob.result_summary} />
+        </article>
+        <article className="soft-panel">
+          <h4>人工评分</h4>
+          <EvaluationPanel
+            evaluation={props.selectedJob.evaluation ?? null}
+            jobId={job.job_id}
+            saving={props.savingEvaluation}
+            onSave={props.onSaveEvaluation}
+          />
         </article>
         <article className="soft-panel">
           <h4>AI 评估</h4>
@@ -2795,6 +3040,14 @@ function runnerStatusLabel(status: string) {
     integrated: "已接入"
   };
   return labels[status] ?? status.replace(/_/g, " ");
+}
+
+function formatDeploymentEnvSummary(payload: DeploymentStatusPayload) {
+  const targets = ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"];
+  return payload.conda_envs
+    .filter((item) => targets.includes(item.component))
+    .map((item) => `${item.component}:${item.exists ? "OK" : "缺失"}`)
+    .join(" / ");
 }
 
 function modelDisplayName(value: string, catalog: ModelCatalogItem[]) {

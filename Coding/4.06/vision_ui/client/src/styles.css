@@ -723,6 +723,7 @@ img {
 
 .sample-matrix-meta,
 .sample-model-strip,
+.sample-compare-section,
 .sample-card-grid,
 .scoring-compact-strip,
 .scoring-grid {
@@ -760,6 +761,133 @@ img {
 
 .sample-card-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sample-compare-section {
+  gap: 14px;
+}
+
+.sample-compare-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.sample-compare-head strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.sample-compare-head p,
+.sample-compare-status-copy {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.sample-status-strip,
+.sample-compare-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.sample-status-strip {
+  grid-template-columns: repeat(4, minmax(88px, 1fr));
+  min-width: min(100%, 420px);
+}
+
+.sample-status-pill,
+.sample-compare-row {
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.sample-status-pill {
+  display: grid;
+  gap: 4px;
+  min-height: 72px;
+  padding: 12px 14px;
+  border-radius: 16px;
+}
+
+.sample-status-pill span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sample-status-pill strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.sample-status-pill.empty strong {
+  font-size: 18px;
+}
+
+.sample-compare-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.95fr) minmax(180px, 0.7fr) minmax(260px, 1fr);
+  gap: 14px;
+  align-items: start;
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.sample-compare-main,
+.sample-compare-column,
+.sample-seed-callout {
+  display: grid;
+  gap: 10px;
+}
+
+.sample-compare-main p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.sample-compare-column {
+  align-content: start;
+}
+
+.sample-compare-column .sample-card-models {
+  align-self: start;
+}
+
+.sample-seed-callout {
+  min-height: 100%;
+  border-radius: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  background: rgba(29, 29, 31, 0.04);
+}
+
+.sample-seed-callout.available {
+  border-color: rgba(0, 113, 227, 0.2);
+  background: linear-gradient(180deg, rgba(242, 248, 255, 0.92), rgba(255, 255, 255, 0.92));
+}
+
+.sample-seed-callout.missing {
+  border-style: dashed;
+}
+
+.sample-seed-callout strong {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 14px;
+}
+
+.sample-seed-callout p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.sample-locate-button {
+  justify-self: start;
+  font-weight: 700;
 }
 
 .sample-card {
@@ -824,6 +952,24 @@ img {
   color: var(--green);
   font-size: 12px;
   font-weight: 800;
+}
+
+.evaluation-form {
+  display: grid;
+  gap: 14px;
+}
+
+.evaluation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.evaluation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .scoring-compact-strip {
@@ -1849,6 +1995,7 @@ img {
 
   .detail-hero-head,
   .section-head,
+  .sample-compare-head,
   .advisor-workbench-head,
   .advisor-recommendation,
   .focus-main,
@@ -1877,8 +2024,13 @@ img {
   .quick-action-grid,
   .preset-pills,
   .param-grid,
-  .sample-matrix-stats {
+  .sample-matrix-stats,
+  .sample-status-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sample-compare-row {
+    grid-template-columns: 1fr;
   }
 
   .advisor-copy-row {

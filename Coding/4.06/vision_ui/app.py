@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import asyncio
+import copy
 import json
 import os
 import re
+import shutil
+import subprocess
 import threading
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
@@ -20,6 +26,9 @@ from advisor import (
     save_advisor_config,
 )
 from job_store import (
+    EVALUATION_SCORE_FIELDS,
+    EVALUATION_SCORE_MAX,
+    EVALUATION_SCORE_MIN,
     ROOT,
     clear_job_runtime,
     create_job,
@@ -27,9 +36,11 @@ from job_store import (
     get_log_snippets,
     iter_input_items,
     list_jobs,
+    load_evaluation,
     load_result_summary,
     load_job,
     save_inputs,
+    save_evaluation,
     update_job,
 )
 from model_registry import MODEL_CATALOG_OPTIONS, MODEL_OPTIONS, SOURCE_TYPE_OPTIONS, allowed_source_types, get_model_spec
@@ -37,6 +48,14 @@ from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 
 _RUNNER_THREADS: dict[str, threading.Thread] = {}
 _RUNNER_THREADS_LOCK = threading.Lock()
+_SAMPLES_CACHE_LOCK = threading.RLock()
+_SAMPLES_CACHE: tuple[int | None, dict] | None = None
+_DEPLOYMENT_STATUS_CACHE_LOCK = threading.Condition(threading.RLock())
+_DEPLOYMENT_STATUS_CACHE: dict | None = None
+_DEPLOYMENT_STATUS_REFRESHING = False
+DEPLOYMENT_STATUS_TTL_SECONDS = 20.0
+DEPLOYMENT_STATUS_STALE_SECONDS = 300.0
+DEPLOYMENT_STATUS_TIMEOUT_SECONDS = 15.0
 
 
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
@@ -58,6 +77,7 @@ app.add_middleware(
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
 templates.env.globals["asset_version"] = "20260410-2130"
 SAMPLES_MANIFEST_PATH = ROOT / "samples_manifest.json"
+DEPLOYMENT_SCRIPT_PATH = ROOT.parents[2] / "tools" / "check_3r_remote.ps1"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
@@ -89,16 +109,16 @@ STATUS_LABELS = {
 
 DELIVERY_GAPS = [
     {
-        "title": "DUSt3R 多图链路还缺一次完整验收",
-        "detail": "前端、参数和远端 runner 都已接通，但还需要用 3 到 5 张图完整验证输出质量与稳定性。",
+        "title": "主动新模型还缺环境和官方 smoke run",
+        "detail": "Spann3R、Align3R、Fast3R、CUT3R 目录已就绪，但还需要独立 conda env、官方 repo、权重和 first smoke run。",
     },
     {
         "title": "远端取消与清理仍然不够硬",
         "detail": "现在可以本地标记取消并尝试 pkill，但还缺更可靠的远端进程确认和残留目录清理。",
     },
     {
-        "title": "MonST3R 真实推理链路正在接入",
-        "detail": "服务器权重已经就位，当前目标是跑通官方 demo、拉回 GLB/轨迹/深度等产物，并形成稳定样例。",
+        "title": "模型间对比还缺评分闭环",
+        "detail": "样例库和测评矩阵已经有雏形，但还缺每个任务的人工评分、同样例结果对比和最终报告导出。",
     },
     {
         "title": "结果归档仍然不够完整",
@@ -112,6 +132,18 @@ DELIVERY_GAPS = [
 
 ACTIVE_PHASE_CODES = [code for code, *_ in PHASE_FLOW[:6]]
 PROGRESS_PATTERN = re.compile(r"(\d+)\s*/\s*(\d+)")
+EVALUATION_FIELD_LABELS = {
+    "structure_completeness": "结构完整性",
+    "trajectory_stability": "轨迹稳定性",
+    "noise": "噪声",
+    "dynamic_handling": "动态处理",
+    "depth_continuity": "深度连续性",
+    "presentation_usability": "展示可用性",
+}
+EVALUATION_FIELD_ALIASES = {
+    "noise_control": "noise",
+    "depth_consistency": "depth_continuity",
+}
 
 
 def status_label(status: str | None) -> str:
@@ -139,6 +171,8 @@ def build_dashboard_stats(jobs) -> dict:
 
 
 def load_samples_manifest() -> dict:
+    global _SAMPLES_CACHE
+
     if not SAMPLES_MANIFEST_PATH.exists():
         return {
             "last_updated": None,
@@ -150,7 +184,13 @@ def load_samples_manifest() -> dict:
         }
 
     try:
-        return json.loads(SAMPLES_MANIFEST_PATH.read_text(encoding="utf-8-sig"))
+        mtime_ns = SAMPLES_MANIFEST_PATH.stat().st_mtime_ns
+        with _SAMPLES_CACHE_LOCK:
+            if _SAMPLES_CACHE and _SAMPLES_CACHE[0] == mtime_ns:
+                return _SAMPLES_CACHE[1]
+            payload = json.loads(SAMPLES_MANIFEST_PATH.read_text(encoding="utf-8-sig"))
+            _SAMPLES_CACHE = (mtime_ns, payload)
+            return payload
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"样例清单读取失败：{exc}") from exc
 
@@ -305,8 +345,74 @@ def _job_payload(job) -> dict:
         "previews": serialize_previews(job),
         "logs": get_log_snippets(job.job_id),
         "result_summary": load_result_summary(job.job_id),
+        "evaluation": load_evaluation(job.job_id),
         "advisor_report": load_advisor_report(job.job_id),
     }
+
+
+def _parse_evaluation_score(field_name: str, raw_value) -> int | None:
+    if raw_value is None:
+        return None
+    if isinstance(raw_value, str):
+        raw_value = raw_value.strip()
+        if not raw_value:
+            return None
+    if isinstance(raw_value, bool):
+        raise HTTPException(status_code=400, detail=f"{EVALUATION_FIELD_LABELS[field_name]} 必须是整数分数。")
+    if isinstance(raw_value, float):
+        if not raw_value.is_integer():
+            raise HTTPException(status_code=400, detail=f"{EVALUATION_FIELD_LABELS[field_name]} 必须是整数分数。")
+        raw_value = int(raw_value)
+    elif isinstance(raw_value, str):
+        try:
+            raw_value = int(raw_value)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=f"{EVALUATION_FIELD_LABELS[field_name]} 必须是整数分数。") from exc
+    elif not isinstance(raw_value, int):
+        raise HTTPException(status_code=400, detail=f"{EVALUATION_FIELD_LABELS[field_name]} 必须是整数分数。")
+
+    if raw_value < EVALUATION_SCORE_MIN or raw_value > EVALUATION_SCORE_MAX:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{EVALUATION_FIELD_LABELS[field_name]} 必须在 {EVALUATION_SCORE_MIN} 到 {EVALUATION_SCORE_MAX} 分之间。",
+        )
+    return raw_value
+
+
+def _normalize_evaluation_payload(job_id: str, payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="评分请求体必须是 JSON 对象。")
+
+    normalized = load_evaluation(job_id)
+    score_source = payload.get("scores")
+    if score_source is not None and not isinstance(score_source, dict):
+        raise HTTPException(status_code=400, detail="scores 字段必须是对象。")
+    score_source = score_source if isinstance(score_source, dict) else {}
+
+    for field_name in EVALUATION_SCORE_FIELDS:
+        alias_name = next((alias for alias, canonical in EVALUATION_FIELD_ALIASES.items() if canonical == field_name), None)
+        if field_name in payload:
+            raw_value = payload[field_name]
+        elif alias_name and alias_name in payload:
+            raw_value = payload[alias_name]
+        elif field_name in score_source:
+            raw_value = score_source[field_name]
+        elif alias_name and alias_name in score_source:
+            raw_value = score_source[alias_name]
+        else:
+            continue
+        normalized[field_name] = _parse_evaluation_score(field_name, raw_value)
+
+    if "notes" in payload:
+        notes = payload["notes"]
+        if notes is None:
+            normalized["notes"] = ""
+        elif isinstance(notes, str):
+            normalized["notes"] = notes.strip()
+        else:
+            normalized["notes"] = str(notes).strip()
+
+    return normalized
 
 
 def _dust3r_params(
@@ -638,6 +744,130 @@ async def job_detail_api(job_id: str):
     return JSONResponse(_job_payload(job))
 
 
+@app.get("/api/health")
+async def health_api():
+    return JSONResponse({"ok": True, "service": "kykt-vision-ui", "version": app.version})
+
+
+def load_deployment_status(*, force_refresh: bool = False) -> dict:
+    global _DEPLOYMENT_STATUS_CACHE, _DEPLOYMENT_STATUS_REFRESHING
+
+    def _utc_iso(ts: float) -> str:
+        return datetime.fromtimestamp(ts, timezone.utc).isoformat()
+
+    def _cache_age_seconds(entry: dict, now_mono: float) -> float:
+        return max(0.0, now_mono - float(entry["fetched_monotonic"]))
+
+    def _build_response(entry: dict, *, state: str, error: str | None = None) -> dict:
+        age_seconds = _cache_age_seconds(entry, time.monotonic())
+        payload = copy.deepcopy(entry["payload"])
+        payload["ok"] = bool((payload.get("summary") or {}).get("ok"))
+        payload["source"] = state
+        payload["stale"] = state.startswith("stale")
+        payload["fetched_at"] = entry["fetched_at"]
+        payload["cache"] = {
+            "state": state,
+            "hit": state != "live",
+            "age_seconds": round(age_seconds, 3),
+            "ttl_seconds": DEPLOYMENT_STATUS_TTL_SECONDS,
+            "stale_ttl_seconds": DEPLOYMENT_STATUS_STALE_SECONDS,
+            "timeout_seconds": DEPLOYMENT_STATUS_TIMEOUT_SECONDS,
+            "expires_at": _utc_iso(entry["fetched_wall_time"] + DEPLOYMENT_STATUS_TTL_SECONDS),
+            "script_path": str(DEPLOYMENT_SCRIPT_PATH),
+            "ssh_alias": ServerConfig.alias,
+        }
+        if error:
+            payload["cache"]["last_error"] = error
+        return payload
+
+    def _parse_deployment_payload(stdout: str) -> dict:
+        stripped = stdout.strip()
+        try:
+            return json.loads(stripped)
+        except json.JSONDecodeError:
+            start = stripped.find("{")
+            end = stripped.rfind("}")
+            if start == -1 or end <= start:
+                raise
+            return json.loads(stripped[start : end + 1])
+
+    def _run_status_command() -> dict:
+        if not DEPLOYMENT_SCRIPT_PATH.exists():
+            raise HTTPException(status_code=500, detail=f"远端部署检查脚本不存在：{DEPLOYMENT_SCRIPT_PATH}")
+
+        powershell_executable = shutil.which("pwsh") or shutil.which("powershell") or "powershell"
+        command = [
+            powershell_executable,
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(DEPLOYMENT_SCRIPT_PATH),
+            "-SshAlias",
+            ServerConfig.alias,
+            "-Json",
+        ]
+        try:
+            completed = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=DEPLOYMENT_STATUS_TIMEOUT_SECONDS,
+                check=True,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise HTTPException(status_code=504, detail="远端部署状态检查超时。") from exc
+        except subprocess.CalledProcessError as exc:
+            detail = exc.stderr.strip() or exc.stdout.strip() or "远端部署状态检查失败。"
+            raise HTTPException(status_code=502, detail=detail) from exc
+
+        try:
+            return _parse_deployment_payload(completed.stdout)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=502, detail="远端部署状态返回了无法解析的 JSON。") from exc
+
+    now_mono = time.monotonic()
+    with _DEPLOYMENT_STATUS_CACHE_LOCK:
+        while _DEPLOYMENT_STATUS_REFRESHING:
+            entry = _DEPLOYMENT_STATUS_CACHE
+            if entry and _cache_age_seconds(entry, now_mono) < DEPLOYMENT_STATUS_STALE_SECONDS:
+                return _build_response(entry, state="stale-refreshing")
+            _DEPLOYMENT_STATUS_CACHE_LOCK.wait(timeout=0.25)
+            now_mono = time.monotonic()
+
+        entry = _DEPLOYMENT_STATUS_CACHE
+        if entry and not force_refresh and _cache_age_seconds(entry, now_mono) < DEPLOYMENT_STATUS_TTL_SECONDS:
+            return _build_response(entry, state="cache")
+
+        _DEPLOYMENT_STATUS_REFRESHING = True
+
+    try:
+        payload = _run_status_command()
+    except HTTPException as exc:
+        with _DEPLOYMENT_STATUS_CACHE_LOCK:
+            _DEPLOYMENT_STATUS_REFRESHING = False
+            _DEPLOYMENT_STATUS_CACHE_LOCK.notify_all()
+            entry = _DEPLOYMENT_STATUS_CACHE
+            if entry and _cache_age_seconds(entry, time.monotonic()) < DEPLOYMENT_STATUS_STALE_SECONDS:
+                return _build_response(entry, state="stale-error", error=str(exc.detail))
+        raise
+
+    fetched_wall_time = time.time()
+    entry = {
+        "payload": payload,
+        "fetched_at": _utc_iso(fetched_wall_time),
+        "fetched_wall_time": fetched_wall_time,
+        "fetched_monotonic": time.monotonic(),
+    }
+    with _DEPLOYMENT_STATUS_CACHE_LOCK:
+        _DEPLOYMENT_STATUS_CACHE = entry
+        _DEPLOYMENT_STATUS_REFRESHING = False
+        _DEPLOYMENT_STATUS_CACHE_LOCK.notify_all()
+    return _build_response(entry, state="live")
+
+
 @app.get("/api/bootstrap")
 async def bootstrap_api():
     jobs = list_jobs(limit=50)
@@ -660,6 +890,11 @@ async def bootstrap_api():
     )
 
 
+@app.get("/api/deployment/status")
+async def deployment_status_api(refresh: bool = False):
+    return JSONResponse(await asyncio.to_thread(load_deployment_status, force_refresh=refresh))
+
+
 @app.get("/api/samples")
 async def samples_api():
     manifest = load_samples_manifest()
@@ -669,7 +904,32 @@ async def samples_api():
             "summary": build_sample_status_summary(manifest),
             "model_catalog": MODEL_CATALOG_OPTIONS,
         }
-    )
+        )
+
+
+@app.get("/api/jobs/{job_id}/evaluation")
+async def job_evaluation_api(job_id: str):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    return JSONResponse(load_evaluation(job_id))
+
+
+@app.post("/api/jobs/{job_id}/evaluation")
+async def save_job_evaluation_api(job_id: str, request: Request):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    try:
+        payload = await request.json()
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f"评分 JSON 解析失败：{exc.msg}") from exc
+
+    saved = save_evaluation(job_id, _normalize_evaluation_payload(job_id, payload))
+    return JSONResponse({"ok": True, "evaluation": saved, **_job_payload(load_job(job_id))})
 
 
 @app.post("/api/jobs")

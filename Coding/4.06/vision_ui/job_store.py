@@ -14,6 +14,22 @@ from model_registry import default_runner_for
 ROOT = Path(__file__).resolve().parent
 LOCAL_JOBS_DIR = ROOT / "local_jobs"
 _JOB_STORE_LOCK = threading.RLock()
+LOG_TAIL_READ_BYTES = 256 * 1024
+EVALUATION_RUBRIC_VERSION = 1
+EVALUATION_SCORE_MIN = 1
+EVALUATION_SCORE_MAX = 5
+EVALUATION_SCORE_FIELDS = (
+    "structure_completeness",
+    "trajectory_stability",
+    "noise",
+    "dynamic_handling",
+    "depth_continuity",
+    "presentation_usability",
+)
+EVALUATION_FIELD_ALIASES = {
+    "noise_control": "noise",
+    "depth_consistency": "depth_continuity",
+}
 
 
 @dataclass
@@ -63,6 +79,55 @@ def _read_json(path: Path) -> dict:
 
 def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _base_job_evaluation(job_id: str) -> dict:
+    payload = {
+        "job_id": job_id,
+        "rubric_version": EVALUATION_RUBRIC_VERSION,
+        "score_min": EVALUATION_SCORE_MIN,
+        "score_max": EVALUATION_SCORE_MAX,
+        "updated_at": None,
+        "notes": "",
+    }
+    for field_name in EVALUATION_SCORE_FIELDS:
+        payload[field_name] = None
+    return payload
+
+
+def _normalize_job_evaluation(job_id: str, payload: dict | None = None) -> dict:
+    normalized = _base_job_evaluation(job_id)
+    if not payload:
+        return normalized
+
+    if payload.get("updated_at"):
+        normalized["updated_at"] = str(payload["updated_at"])
+
+    notes = payload.get("notes")
+    if notes is not None:
+        normalized["notes"] = str(notes)
+
+    raw_scores = payload.get("scores")
+    score_map = raw_scores if isinstance(raw_scores, dict) else {}
+    for field_name in EVALUATION_SCORE_FIELDS:
+        if field_name in payload:
+            normalized[field_name] = payload[field_name]
+        elif field_name in score_map:
+            normalized[field_name] = score_map[field_name]
+    for alias_name, canonical_name in EVALUATION_FIELD_ALIASES.items():
+        if alias_name in payload:
+            normalized[canonical_name] = payload[alias_name]
+        elif alias_name in score_map:
+            normalized[canonical_name] = score_map[alias_name]
+
+    return normalized
+
+
+def _public_job_evaluation(payload: dict) -> dict:
+    public_payload = dict(payload)
+    for alias_name, canonical_name in EVALUATION_FIELD_ALIASES.items():
+        public_payload[alias_name] = public_payload.get(canonical_name)
+    return public_payload
 
 
 def create_job(model: str, source_type: str, notes: str, params: dict | None = None) -> JobRecord:
@@ -242,7 +307,7 @@ def get_log_snippets(job_id: str, limit: int = 60) -> list[dict]:
 
     for log_path in sorted(logs_dir.glob("*.log")):
         try:
-            tail = log_path.read_text(encoding="utf-8", errors="replace").splitlines()[-limit:]
+            tail = _read_tail_lines(log_path, limit)
         except OSError:
             tail = []
         snippets.append(
@@ -253,6 +318,20 @@ def get_log_snippets(job_id: str, limit: int = 60) -> list[dict]:
             }
         )
     return snippets
+
+
+def _read_tail_lines(path: Path, limit: int) -> list[str]:
+    if limit <= 0:
+        return []
+
+    size = path.stat().st_size
+    with path.open("rb") as handle:
+        if size > LOG_TAIL_READ_BYTES:
+            handle.seek(max(0, size - LOG_TAIL_READ_BYTES))
+            handle.readline()
+        data = handle.read()
+
+    return data.decode("utf-8", errors="replace").splitlines()[-limit:]
 
 
 def _render_summary_markdown(payload: dict) -> str:
@@ -305,6 +384,31 @@ def load_result_summary(job_id: str) -> dict | None:
     if not path.exists():
         return None
     return _read_json(path)
+
+
+def load_job_evaluation(job_id: str) -> dict:
+    path = get_job_dir(job_id) / "evaluation.json"
+    if not path.exists():
+        return _public_job_evaluation(_base_job_evaluation(job_id))
+    return _public_job_evaluation(_normalize_job_evaluation(job_id, _read_json(path)))
+
+
+def save_job_evaluation(job_id: str, payload: dict) -> dict:
+    with _JOB_STORE_LOCK:
+        normalized = _normalize_job_evaluation(job_id, payload)
+        normalized["updated_at"] = datetime.now().isoformat(timespec="seconds")
+        job_dir = get_job_dir(job_id)
+        job_dir.mkdir(parents=True, exist_ok=True)
+        _write_json(job_dir / "evaluation.json", normalized)
+        return _public_job_evaluation(normalized)
+
+
+def load_evaluation(job_id: str) -> dict:
+    return load_job_evaluation(job_id)
+
+
+def save_evaluation(job_id: str, payload: dict) -> dict:
+    return save_job_evaluation(job_id, payload)
 
 
 def update_job(

@@ -122,7 +122,25 @@ export type JobPayload = {
     tail: string;
   }>;
   result_summary: ResultSummary | null;
+  evaluation?: EvaluationPayload | null;
   advisor_report?: AdvisorReport | null;
+};
+
+export type EvaluationPayload = {
+  job_id: string;
+  rubric_version?: number;
+  score_min?: number;
+  score_max?: number;
+  updated_at?: string | null;
+  structure_completeness?: number | null;
+  trajectory_stability?: number | null;
+  noise?: number | null;
+  dynamic_handling?: number | null;
+  depth_continuity?: number | null;
+  presentation_usability?: number | null;
+  noise_control?: number | null;
+  depth_consistency?: number | null;
+  notes?: string;
 };
 
 export type BootstrapPayload = {
@@ -200,6 +218,42 @@ export type SamplesPayload = {
     required_model_counts: Record<string, number>;
   };
   model_catalog: NonNullable<BootstrapPayload["model_catalog"]>;
+};
+
+export type DeploymentStatusPayload = {
+  host?: string | null;
+  root: string;
+  fetched_at?: string;
+  directories: Array<{
+    name: string;
+    path: string;
+    state: string;
+    exists: boolean;
+    readme_setup: boolean;
+    size_bytes?: number | null;
+  }>;
+  conda_envs: Array<{
+    component: string;
+    env: string;
+    exists: boolean;
+    path?: string | null;
+  }>;
+  known_files: Array<{
+    component: string;
+    kind: string;
+    need: string;
+    relative_path: string;
+    path: string;
+    exists: boolean;
+    size_bytes?: number | null;
+  }>;
+  summary: {
+    missing_directories: number;
+    missing_conda_envs: number;
+    missing_required_files: number;
+    warnings: number;
+    ok: boolean;
+  };
 };
 
 export type JobsListPayload = {

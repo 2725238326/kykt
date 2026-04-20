@@ -192,8 +192,12 @@ Current frontend capabilities:
 - 2026-04-21: Backend endpoint `GET /api/samples` was added to expose `samples_manifest.json`, sample status counts, required-model counts, and the model catalog for the upcoming model comparison UI.
 - 2026-04-21: Active deployment status was captured in `E:\kykt\Coding\4.06\vision_ui\MODEL_DEPLOYMENT_STATUS.md`.
 - 2026-04-21: The React/Tauri desktop app was rebuilt and synced to `E:\kykt\release\kykt_vision_client`, including `kykt_vision_client.exe`, `kykt_vision_client_3r_samples.exe`, and refreshed NSIS/MSI installers.
+- 2026-04-21: The desktop app was rebuilt again after the evaluation/deployment pass and synced with updated release copies including `kykt_vision_client_eval_deploy.exe`.
 - 2026-04-21: Model download/upload planning was documented at `E:\kykt\Coding\4.06\vision_ui\MODEL_DOWNLOAD_UPLOAD_PLAN.md`; no model download or upload was executed.
 - 2026-04-21: `E:\kykt\tools\check_3r_remote.ps1` now supports `-Json` for structured remote deployment status.
+- 2026-04-21: App architecture/performance pass completed: added `/api/health`, moved Tauri health checks off `/api/bootstrap`, cached `samples_manifest.json`, changed log tail reads to tail-window reads, and reduced idle frontend polling. Notes are in `E:\kykt\Coding\4.06\vision_ui\APP_ARCHITECTURE_OPTIMIZATION.md`.
+- 2026-04-21: Task detail now supports persisted manual evaluation under `local_jobs/<job_id>/evaluation.json`, with backend APIs for read/write and a visible scoring panel in the app.
+- 2026-04-21: The app system page now includes a remote active-3R deployment summary backed by `/api/deployment/status`, and the deployment checker script can return JSON for future automation.
 - 2026-04-20: MonST3R result semantics were strengthened: future `scene_meta.json` and generated summaries can identify core review targets, artifact groups, frame previews, dynamic masks, confidence arrays, trajectory files, and intrinsics files instead of presenting the output as an undifferentiated file list.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:

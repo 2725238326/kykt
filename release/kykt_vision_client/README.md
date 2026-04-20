@@ -24,6 +24,18 @@ kykt_vision_client_3r_roadmap.exe
 kykt_vision_client_3r_samples.exe
 ```
 
+包含后端性能和 Tauri 健康检查优化的最新副本：
+
+```text
+kykt_vision_client_perf_backend.exe
+```
+
+包含任务人工评分与远端部署摘要的最新副本：
+
+```text
+kykt_vision_client_eval_deploy.exe
+```
+
 如果要安装到开始菜单或发给别人测试，用：
 
 ```text
@@ -51,6 +63,8 @@ KYKT Vision Client_0.1.0_x64_en-US.msi
 - 2026-04-20：`帮助与系统` 和 `工作台` 可以直接看到当前可运行模型、待接入模型、暂缓前沿模型。
 - 2026-04-20：后端 `/api/bootstrap` 会提供完整 `model_catalog`，为后续模型对比页做准备。
 - 2026-04-21：桌面 app 已再次重新构建，包含 `/api/samples` 样例库接口、样例/测评矩阵面板、远端 3R 部署检查脚本和最新 active deployment 记录。
+- 2026-04-21：桌面 app 已加入后端性能优化：Tauri 健康检查改用轻量 `/api/health`，样例清单按 mtime 缓存，任务日志改为尾部读取，空闲轮询频率降低。
+- 2026-04-21：任务详情页现在支持人工评分持久化；系统页支持读取远端 active 3R 部署状态摘要。
 - release 版不再弹出黑色命令行窗口。
 - 打开时如果后端还没完全启动，会显示“正在准备本地服务”，不会直接显示裸 `fetch` 报错。
 - 首页已经收敛为简洁工作台，高级参数默认折叠。
