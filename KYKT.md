@@ -20,7 +20,8 @@ This workspace currently has five related but separate 3D vision lines:
 - `E:\kykt\Coding\3.30`: DUSt3R work.
 - `E:\kykt\Coding\4.06\vision_ui`: current local frontend project.
 - `E:\kykt\Coding\external_sources`: local copies of external upstream repos kept for reference or upload preparation.
-- `E:\kykt\Coding\4.06\vision_ui\MONST3R_MAINLINE_PLAN.md`: current MonST3R-first development plan.
+- `E:\kykt\Coding\4.06\vision_ui\MONST3R_MAINLINE_PLAN.md`: MonST3R video/dynamic reconstruction track plan.
+- `E:\kykt\Coding\4.06\vision_ui\THREER_MODEL_ROADMAP.md`: broader 3R model integration and research roadmap.
 
 ## Proven Results
 
@@ -177,8 +178,9 @@ Current frontend capabilities:
 - 2026-04-13: AI evaluation was promoted from a single detail-page button into a first-class workflow element. The app now shows AI readiness in the status strip, provides an `AI 工作台` with usage guidance, surfaces an “AI 评估建议” block inside task detail, and adds direct copy actions for teacher-facing report wording.
 - 2026-04-13: AI configuration no longer requires hand-editing `settings/advisor.json`. The backend now exposes `/api/advisor/config` for safe read/write, and the desktop UI includes a small modal for `enabled / base_url / api_key / model`. Existing saved API keys are not echoed back into the form; leaving the key field blank keeps the current secret unchanged.
 - 2026-04-13: Fresh desktop builds for this workspace/AI refactor were synced to `E:\kykt\release\kykt_vision_client`, including `kykt_vision_client.exe`, `kykt_vision_client_workspace_ai.exe`, and the updated NSIS installer.
-- 2026-04-20: MonST3R was clarified as the primary product/research line for the platform. New near-term work should improve MonST3R input preparation, remote execution quality, result semantics, GLB/trajectory/frame/mask/confidence presentation, and sample validation before adding more frontier models.
-- 2026-04-20: A dedicated MonST3R mainline plan was added at `E:\kykt\Coding\4.06\vision_ui\MONST3R_MAINLINE_PLAN.md`.
+- 2026-04-20: The platform direction was corrected from a MonST3R-only emphasis to a broader 3R / visual geometry model workbench. MonST3R remains one video/dynamic reconstruction track, while DUSt3R, MASt3R, Spann3R, Align3R, Fast3R, Pi3/Pi3X, CUT3R, ZipMap, LingBot-Map, and related models should be treated as planned comparison / integration candidates.
+- 2026-04-20: A dedicated MonST3R video/dynamic track plan was added at `E:\kykt\Coding\4.06\vision_ui\MONST3R_MAINLINE_PLAN.md`.
+- 2026-04-20: A broader 3R model integration roadmap was added at `E:\kykt\Coding\4.06\vision_ui\THREER_MODEL_ROADMAP.md`, with Spann3R, Align3R, Fast3R, and Pi3X listed as expansion candidates.
 - 2026-04-20: MonST3R result semantics were strengthened: future `scene_meta.json` and generated summaries can identify core review targets, artifact groups, frame previews, dynamic masks, confidence arrays, trajectory files, and intrinsics files instead of presenting the output as an undifferentiated file list.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:
@@ -320,15 +322,16 @@ Current DUSt3R flow:
 
 Priority order:
 
-1. Treat MonST3R as the core platform line: improve input preparation, runner stability, result semantics, and result presentation before broad new-model expansion.
-2. Use the rebuilt client or pure-SSH helper scripts to finish one short MonST3R validation run and inspect returned GLB/depth/trajectory artifacts.
-3. Add better MonST3R result viewing for GLB / trajectory / frame preview / dynamic mask / confidence artifacts.
+1. Treat `vision_ui` as a 3R / visual geometry model workbench: keep one job format, one runner contract, one result summary contract, and one output presentation system.
+2. Finish baseline validation for current models: DUSt3R multi-image, MASt3R smoke test, and MonST3R short-video sample.
+3. Add better result viewing for GLB / PLY / trajectory / frame preview / dynamic mask / confidence artifacts across models.
 4. Improve remote observability with richer server-written status.
-5. Build a small MonST3R sample set and parameter comparison table for `224/512`, `24/48/72/96` frames, and window-wise mode.
-6. Stabilize the frontend task system around repeatable MonST3R reruns and result review.
-7. Make DUSt3R/MASt3R multi-image jobs reliable as secondary static-reconstruction baselines.
-8. Add stronger task controls such as cancel and parameterized reruns.
-9. Convert backend crash / port-conflict cases into first-class UI states so operators can see whether they are looking at live progress or stale cached progress.
+5. Build a small shared sample set for static images, small multi-view, long image collections, short video, dynamic video, and difficult cases.
+6. Add Spann3R as the next DUSt3R-improvement research/integration candidate.
+7. Add either Fast3R or Pi3X as the next long-image / general visual-geometry candidate after Spann3R.
+8. Keep MonST3R as the video/dynamic track and build a parameter comparison table for `224/512`, `24/48/72/96` frames, and window-wise mode.
+9. Pre-research CUT3R, ZipMap, and LingBot-Map as stateful / streaming directions before UI integration.
+10. Convert backend crash / port-conflict cases into first-class UI states so operators can see whether they are looking at live progress or stale cached progress.
 
 ## Current Delivery Gaps
 

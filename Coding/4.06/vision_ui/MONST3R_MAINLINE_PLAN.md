@@ -1,10 +1,10 @@
-# MonST3R 主线推进方案
+# MonST3R 视频/动态方向推进方案
 
 Last updated: 2026-04-20
 
 ## 1. 当前判断
 
-MonST3R 是当前平台主线，不是备用模型。`vision_ui` 后续应优先服务 MonST3R 的输入准备、远端推理、结果整理、结果展示和汇报产出；DUSt3R、MASt3R、ZipMap、LingBot-Map、Pi3/Pi3X 等模型只作为对照或补充能力接入。
+MonST3R 是当前平台中视频/动态场景方向的重要主线之一，但不是整个项目的绝对核心。`vision_ui` 的长期目标应是 3R/视觉几何模型实验平台；MonST3R 这份方案只负责其中的视频/动态重建方向。DUSt3R、MASt3R、Spann3R、Fast3R、Pi3/Pi3X、CUT3R、ZipMap、LingBot-Map 等都应作为后续接入和比较对象。
 
 当前已经具备的基础：
 
@@ -23,11 +23,11 @@ MonST3R 是当前平台主线，不是备用模型。`vision_ui` 后续应优先
 
 ## 2. 今晚推进目标
 
-今晚不扩展新模型，先把 MonST3R 主线往“可展示、可复查、可继续优化”推进。
+今晚这份文档只处理 MonST3R 方向，把它往“可展示、可复查、可继续优化”推进。更完整的模型接入和研究路线见 `THREER_MODEL_ROADMAP.md`。
 
 验收目标：
 
-1. 有一份明确的 MonST3R 主线推进文档，后续工作不再被新论文横向扩展打散。
+1. 有一份明确的 MonST3R 视频/动态方向推进文档，避免这一条线被横向扩展打散。
 2. 新一轮 MonST3R 任务的 `scene_meta.json` 能记录产物角色、类别统计和优先检查对象。
 3. 本地 `result_summary.json / result_summary.md` 能用 MonST3R 语言解释结果，不只是列出文件。
 4. React 结果页能展示“核心检查对象”和“产物类别统计”，让 GLB、轨迹、帧预览、mask、置信数组的关系更清楚。
@@ -106,7 +106,7 @@ MonST3R 是当前平台主线，不是备用模型。`vision_ui` 后续应优先
 
 ## 4. 今晚执行清单
 
-1. 新增本文件，固定 MonST3R 主线策略。
+1. 新增本文件，固定 MonST3R 视频/动态方向策略。
 2. 修改 `runners/monst3r_runner.py`，让远端 `scene_meta.json` 记录产物角色和检查目标。
 3. 修改 `ssh_runner.py`，让本地 `result_summary` 汇总 MonST3R 产物类别和检查顺序。
 4. 修改 React 类型和摘要面板，展示核心检查对象与类别统计。
@@ -119,4 +119,3 @@ MonST3R 是当前平台主线，不是备用模型。`vision_ui` 后续应优先
 3. 如果结果可用，复制任务分别跑 `24 / 72` 帧对比。
 4. 如果 GLB 结构差，优先换输入视频，而不是先动模型。
 5. 将观察结果写回 `result_summary.md` 或 AI 评估报告，沉淀为样例库。
-
