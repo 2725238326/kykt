@@ -1979,10 +1979,14 @@ function SummaryPanel(props: { summary: ResultSummary | null }) {
 
   const highlights = props.summary.highlights ?? [];
   const nextActions = props.summary.next_actions ?? [];
+  const artifactGroups = props.summary.artifact_groups ?? [];
+  const primaryArtifacts = props.summary.primary_artifacts ?? [];
   const sceneMeta = props.summary.scene_meta ?? {};
   const sceneStats = [
     typeof sceneMeta["artifact_count"] === "number" ? { label: "远端整理", value: String(sceneMeta["artifact_count"]) } : null,
     typeof sceneMeta["glb_count"] === "number" ? { label: "GLB", value: String(sceneMeta["glb_count"]) } : null,
+    typeof sceneMeta["frame_preview_count"] === "number" ? { label: "帧预览", value: String(sceneMeta["frame_preview_count"]) } : null,
+    typeof sceneMeta["dynamic_mask_count"] === "number" ? { label: "动态Mask", value: String(sceneMeta["dynamic_mask_count"]) } : null,
     typeof sceneMeta["n_points"] === "number" ? { label: "点数", value: String(sceneMeta["n_points"]) } : null,
     typeof sceneMeta["input_count"] === "number" ? { label: "输入", value: String(sceneMeta["input_count"]) } : null
   ].filter(Boolean) as Array<{ label: string; value: string }>;
@@ -2002,6 +2006,27 @@ function SummaryPanel(props: { summary: ResultSummary | null }) {
           ))}
         </div>
       ) : null}
+      {primaryArtifacts.length > 0 ? (
+        <div className="summary-primary-list">
+          <strong>核心检查对象</strong>
+          {primaryArtifacts.map((item) => (
+            <div className="summary-primary-item" key={`${item.role}-${item.relative_path}`}>
+              <span>{item.label || roleLabel(item.role)}</span>
+              <p>{item.name}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {artifactGroups.length > 0 ? (
+        <div className="summary-group-grid">
+          {artifactGroups.map((item) => (
+            <div className="summary-group-item" key={item.key}>
+              <span>{item.label}</span>
+              <strong>{item.count}</strong>
+            </div>
+          ))}
+        </div>
+      ) : null}
       {highlights.length > 0 ? (
         <ul>
           {highlights.map((item) => (
@@ -2018,6 +2043,18 @@ function SummaryPanel(props: { summary: ResultSummary | null }) {
       ) : null}
     </div>
   );
+}
+
+function roleLabel(role: string) {
+  const labels: Record<string, string> = {
+    scene: "三维场景",
+    trajectory: "相机轨迹",
+    intrinsics: "相机内参",
+    frame_preview: "彩色帧预览",
+    dynamic_mask: "动态区域",
+    confidence: "置信数组"
+  };
+  return labels[role] ?? role.replace(/_/g, " ");
 }
 
 function SummaryStat(props: { label: string; value: string }) {
@@ -2568,6 +2605,18 @@ function describeOutput(filename: string) {
   }
   if (/scene\.glb/.test(lower)) {
     return "MonST3R 三维场景，优先查看这个";
+  }
+  if (/pred_traj\.txt/.test(lower)) {
+    return "MonST3R 相机轨迹，用来检查运动是否连续";
+  }
+  if (/pred_intrinsics\.txt/.test(lower)) {
+    return "MonST3R 预测相机内参";
+  }
+  if (/^conf_\d+\.npy$/.test(lower) || /^init_conf_\d+\.npy$/.test(lower)) {
+    return "MonST3R 置信数组，用于质量诊断";
+  }
+  if (/^frame_\d+\.npy$/.test(lower)) {
+    return "MonST3R 每帧几何数组";
   }
   if (/frame_\d+\.png/.test(lower)) {
     return "彩色帧预览，可用来快速确认输入抽帧";

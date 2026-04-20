@@ -272,6 +272,107 @@ def classify_status_line(line: str) -> tuple[str, str] | None:
     return ("running_matches", line[-400:])
 
 
+def artifact_role(name: str, suffix: str) -> str:
+    lower = name.lower()
+    if lower.endswith(".glb") or lower.endswith(".gltf"):
+        return "scene"
+    if lower == "pred_traj.txt" or "traj" in lower:
+        return "trajectory"
+    if lower == "pred_intrinsics.txt" or "intrinsics" in lower:
+        return "intrinsics"
+    if lower.startswith("frame_") and suffix in IMAGE_SUFFIXES:
+        return "frame_preview"
+    if "dynamic_mask" in lower and suffix in IMAGE_SUFFIXES:
+        return "dynamic_mask"
+    if lower.startswith("conf_") and suffix == ".npy":
+        return "confidence"
+    if lower.startswith("init_conf_") and suffix == ".npy":
+        return "initial_confidence"
+    if lower.startswith("frame_") and suffix == ".npy":
+        return "geometry_array"
+    if suffix == ".npy":
+        return "array"
+    if suffix in IMAGE_SUFFIXES:
+        return "image"
+    return "other"
+
+
+def summarize_artifacts(artifacts: list[dict]) -> dict:
+    role_labels = {
+        "scene": ("三维场景", "优先打开检查主体结构、相机轨迹和动态区域。"),
+        "trajectory": ("相机轨迹", "用于判断相机运动是否连续、是否出现明显漂移。"),
+        "intrinsics": ("相机内参", "用于复查焦距和相机参数是否成功导出。"),
+        "frame_preview": ("彩色帧预览", "用于快速确认抽帧质量、曝光和运动模糊。"),
+        "dynamic_mask": ("动态区域", "用于判断运动物体或动态区域是否被识别。"),
+        "confidence": ("置信数组", "用于后续诊断深度/几何估计稳定性。"),
+        "initial_confidence": ("初始置信数组", "MonST3R 中间置信产物。"),
+        "geometry_array": ("几何数组", "每帧对应的几何/深度数组。"),
+        "array": ("其他数组", "其他 NPY 中间产物。"),
+        "image": ("其他图像", "其他可视化图像。"),
+        "other": ("其他产物", "未归入主检查路径的产物。"),
+    }
+    counts: dict[str, int] = {}
+    for item in artifacts:
+        role = item.get("role") or "other"
+        counts[role] = counts.get(role, 0) + 1
+
+    groups = [
+        {
+            "key": key,
+            "label": role_labels[key][0],
+            "count": counts[key],
+            "description": role_labels[key][1],
+        }
+        for key in role_labels
+        if counts.get(key)
+    ]
+
+    def by_role(role: str) -> list[dict]:
+        return [item for item in artifacts if item.get("role") == role]
+
+    review_targets: list[dict] = []
+    for role in ("scene", "trajectory", "intrinsics"):
+        for item in by_role(role)[:1]:
+            review_targets.append(
+                {
+                    "role": role,
+                    "label": role_labels[role][0],
+                    "name": item["name"],
+                    "relative_path": item.get("output_relative_path", item.get("relative_source", item["name"])),
+                    "note": role_labels[role][1],
+                }
+            )
+
+    frame_previews = by_role("frame_preview")
+    if len(frame_previews) > 3:
+        selected_indexes = sorted({0, len(frame_previews) // 2, len(frame_previews) - 1})
+        selected_frames = [frame_previews[index] for index in selected_indexes]
+    else:
+        selected_frames = frame_previews
+    for item in selected_frames:
+        review_targets.append(
+            {
+                "role": "frame_preview",
+                "label": role_labels["frame_preview"][0],
+                "name": item["name"],
+                "relative_path": item.get("output_relative_path", item.get("relative_source", item["name"])),
+                "note": role_labels["frame_preview"][1],
+            }
+        )
+
+    return {
+        "artifact_groups": groups,
+        "review_targets": review_targets,
+        "role_counts": counts,
+        "frame_preview_count": counts.get("frame_preview", 0),
+        "dynamic_mask_count": counts.get("dynamic_mask", 0),
+        "confidence_count": counts.get("confidence", 0) + counts.get("initial_confidence", 0),
+        "trajectory_count": counts.get("trajectory", 0),
+        "intrinsics_count": counts.get("intrinsics", 0),
+        "geometry_array_count": counts.get("geometry_array", 0),
+    }
+
+
 def copy_artifacts(demo_seq_dir: Path, output_dir: Path) -> list[dict]:
     output_dir.mkdir(parents=True, exist_ok=True)
     copied: list[dict] = []
@@ -283,14 +384,17 @@ def copy_artifacts(demo_seq_dir: Path, output_dir: Path) -> list[dict]:
             continue
         relative_source = source.relative_to(demo_seq_dir)
         target = output_dir / relative_source
+        suffix = source.suffix.lower()
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
         copied.append(
             {
                 "name": source.name,
                 "relative_source": str(relative_source),
+                "output_relative_path": str(Path("output") / relative_source),
                 "size_bytes": target.stat().st_size,
-                "suffix": source.suffix.lower(),
+                "suffix": suffix,
+                "role": artifact_role(source.name, suffix),
             }
         )
 
@@ -345,6 +449,7 @@ def main() -> None:
 
         write_status(job_dir, "saving_outputs", "MonST3R 已完成推理，正在整理输出文件...")
         artifacts = copy_artifacts(demo_seq_dir, output_dir)
+        artifact_summary = summarize_artifacts(artifacts)
         scene_meta = {
             "model": "monst3r",
             "seq_name": seq_name,
@@ -360,6 +465,7 @@ def main() -> None:
             "glb_count": sum(1 for item in artifacts if item["suffix"] == ".glb"),
             "image_count": sum(1 for item in artifacts if item["suffix"] in IMAGE_SUFFIXES),
             "npy_count": sum(1 for item in artifacts if item["suffix"] == ".npy"),
+            **artifact_summary,
         }
         (output_dir / "scene_meta.json").write_text(
             json.dumps(scene_meta, indent=2, ensure_ascii=False),

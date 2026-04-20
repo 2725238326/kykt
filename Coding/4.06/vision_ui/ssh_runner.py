@@ -509,6 +509,93 @@ def _safe_extract_tar(archive_path: Path, target_dir: Path) -> None:
         archive.extractall(target_root)
 
 
+MONST3R_ARTIFACT_ROLE_LABELS = {
+    "scene": ("三维场景", "优先打开检查主体结构、相机轨迹和动态区域。"),
+    "trajectory": ("相机轨迹", "用于判断相机运动是否连续、是否出现明显漂移。"),
+    "intrinsics": ("相机内参", "用于复查焦距和相机参数是否成功导出。"),
+    "frame_preview": ("彩色帧预览", "用于快速确认抽帧质量、曝光和运动模糊。"),
+    "dynamic_mask": ("动态区域", "用于判断运动物体或动态区域是否被识别。"),
+    "confidence": ("置信数组", "用于后续诊断深度/几何估计稳定性。"),
+    "initial_confidence": ("初始置信数组", "MonST3R 中间置信产物。"),
+    "geometry_array": ("几何数组", "每帧对应的几何/深度数组。"),
+    "array": ("其他数组", "其他 NPY 中间产物。"),
+    "image": ("其他图像", "其他可视化图像。"),
+    "other": ("其他产物", "未归入主检查路径的产物。"),
+}
+
+
+def _monst3r_artifact_role(filename: str) -> str:
+    lower = filename.lower()
+    suffix = Path(lower).suffix
+    if lower.endswith(".glb") or lower.endswith(".gltf"):
+        return "scene"
+    if lower == "pred_traj.txt" or "traj" in lower:
+        return "trajectory"
+    if lower == "pred_intrinsics.txt" or "intrinsics" in lower:
+        return "intrinsics"
+    if lower.startswith("frame_") and suffix in {".png", ".jpg", ".jpeg", ".bmp", ".webp"}:
+        return "frame_preview"
+    if "dynamic_mask" in lower and suffix in {".png", ".jpg", ".jpeg", ".bmp", ".webp"}:
+        return "dynamic_mask"
+    if lower.startswith("conf_") and suffix == ".npy":
+        return "confidence"
+    if lower.startswith("init_conf_") and suffix == ".npy":
+        return "initial_confidence"
+    if lower.startswith("frame_") and suffix == ".npy":
+        return "geometry_array"
+    if suffix == ".npy":
+        return "array"
+    if suffix in {".png", ".jpg", ".jpeg", ".bmp", ".webp"}:
+        return "image"
+    return "other"
+
+
+def _summarize_monst3r_outputs(output_files: list[str], scene_meta: dict | None) -> tuple[list[dict], list[dict]]:
+    if scene_meta and isinstance(scene_meta.get("artifact_groups"), list):
+        groups = scene_meta["artifact_groups"]
+    else:
+        counts: dict[str, int] = {}
+        for rel_path in output_files:
+            if Path(rel_path).suffix.lower() in {".json", ".log"}:
+                continue
+            role = _monst3r_artifact_role(Path(rel_path).name)
+            counts[role] = counts.get(role, 0) + 1
+        groups = [
+            {
+                "key": key,
+                "label": label,
+                "count": counts[key],
+                "description": description,
+            }
+            for key, (label, description) in MONST3R_ARTIFACT_ROLE_LABELS.items()
+            if counts.get(key)
+        ]
+
+    if scene_meta and isinstance(scene_meta.get("review_targets"), list):
+        targets = scene_meta["review_targets"]
+    else:
+        records = []
+        for rel_path in output_files:
+            if Path(rel_path).suffix.lower() in {".json", ".log"}:
+                continue
+            name = Path(rel_path).name
+            role = _monst3r_artifact_role(name)
+            label, note = MONST3R_ARTIFACT_ROLE_LABELS.get(role, MONST3R_ARTIFACT_ROLE_LABELS["other"])
+            records.append({"role": role, "label": label, "name": name, "relative_path": rel_path, "note": note})
+
+        targets = []
+        for role in ("scene", "trajectory", "intrinsics"):
+            targets.extend([item for item in records if item["role"] == role][:1])
+        frames = [item for item in records if item["role"] == "frame_preview"]
+        if len(frames) > 3:
+            indexes = sorted({0, len(frames) // 2, len(frames) - 1})
+            targets.extend(frames[index] for index in indexes)
+        else:
+            targets.extend(frames)
+
+    return groups, targets
+
+
 def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
     job = load_job(job_id)
     job_dir = get_job_dir(job_id)
@@ -533,6 +620,8 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
         f"本次任务共处理 {len(job.input_files)} 个输入文件。",
         f"共回传 {len(output_files)} 个本地产物。",
     ]
+    artifact_groups: list[dict] = []
+    primary_artifacts: list[dict] = []
     if scene_meta:
         if scene_meta.get("n_pairs") is not None:
             highlights.append(f"远端共构建了 {scene_meta['n_pairs']} 个图像配对。")
@@ -548,6 +637,17 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
         if scene_meta.get("glb_count") is not None:
             highlights.append(f"其中包含 {scene_meta['glb_count']} 个 GLB 三维场景文件。")
 
+    if job.model == "monst3r":
+        artifact_groups, primary_artifacts = _summarize_monst3r_outputs(output_files, scene_meta)
+        group_counts = {item.get("key"): item.get("count", 0) for item in artifact_groups}
+        if group_counts.get("frame_preview"):
+            highlights.append(f"已生成 {group_counts['frame_preview']} 张彩色帧预览，可用于快速检查抽帧质量。")
+        if group_counts.get("dynamic_mask"):
+            highlights.append(f"已生成 {group_counts['dynamic_mask']} 张动态区域 mask，可辅助判断运动物体影响。")
+        if group_counts.get("confidence") or group_counts.get("initial_confidence"):
+            conf_count = int(group_counts.get("confidence") or 0) + int(group_counts.get("initial_confidence") or 0)
+            highlights.append(f"已生成 {conf_count} 个置信数组，可用于后续质量诊断。")
+
     if job.model in {"dust3r", "mast3r"}:
         next_actions = [
             "优先在 MeshLab 中检查 pointcloud.ply 的结构是否完整、是否存在大块噪声或断裂。",
@@ -558,9 +658,9 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
             next_actions.insert(0, "MASt3R 更偏静态多图匹配增强，建议优先拿同一物体的 3 到 8 张图验证它相对 DUSt3R 的提升。")
     elif job.model == "monst3r":
         next_actions = [
-            "优先打开 .glb 三维场景文件，检查相机轨迹、主体结构和动态区域是否稳定。",
-            "对照 pred_traj.txt、pred_intrinsics.txt 和保存的深度/置信图，确认视频或帧序列是否适合作为展示样例。",
-            "如果显存或耗时压力较大，下一轮可把 Image Size 改为 224，或降低 Num Frames。",
+            "按核心检查对象依次看 scene.glb、pred_traj.txt、pred_intrinsics.txt 和代表帧预览。",
+            "对照动态 mask 和置信数组，判断运动区域、深度稳定性和视频输入是否适合作为展示样例。",
+            "如果 GLB 结构差，优先换更稳定的视频输入；如果只是耗时或显存压力大，再降低 Image Size 或 Num Frames。",
         ]
     else:
         next_actions = ["查看输出产物和 runner.log，确认模型任务是否符合预期。"]
@@ -587,6 +687,8 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
         ],
         "params": job.params,
         "scene_meta": scene_meta,
+        "artifact_groups": artifact_groups,
+        "primary_artifacts": primary_artifacts,
         "highlights": highlights,
         "next_actions": next_actions,
     }

@@ -50,6 +50,19 @@ export type ResultSummary = {
     name: string;
     relative_path: string;
   }> | null;
+  artifact_groups?: Array<{
+    key: string;
+    label: string;
+    count: number;
+    description?: string;
+  }> | null;
+  primary_artifacts?: Array<{
+    role: string;
+    label?: string;
+    name: string;
+    relative_path: string;
+    note?: string;
+  }> | null;
   params?: Record<string, unknown> | null;
   scene_meta?: Record<string, unknown> | null;
   highlights?: string[] | null;

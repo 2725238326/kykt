@@ -1,10 +1,10 @@
 # KYKT Project Sync
 
-Last updated: 2026-04-13
+Last updated: 2026-04-20
 
 ## Project Lines
 
-This workspace currently has four related but separate 3D vision lines:
+This workspace currently has five related but separate 3D vision lines:
 
 - `MVSNet` on `DTU`: supervised multi-view stereo reconstruction. Main outputs are depth maps and fused `.ply` point clouds.
 - `SfMLearner` on `KITTI`: self-supervised monocular depth. Main output is KITTI depth metrics and checkpoints.
@@ -20,6 +20,7 @@ This workspace currently has four related but separate 3D vision lines:
 - `E:\kykt\Coding\3.30`: DUSt3R work.
 - `E:\kykt\Coding\4.06\vision_ui`: current local frontend project.
 - `E:\kykt\Coding\external_sources`: local copies of external upstream repos kept for reference or upload preparation.
+- `E:\kykt\Coding\4.06\vision_ui\MONST3R_MAINLINE_PLAN.md`: current MonST3R-first development plan.
 
 ## Proven Results
 
@@ -176,6 +177,9 @@ Current frontend capabilities:
 - 2026-04-13: AI evaluation was promoted from a single detail-page button into a first-class workflow element. The app now shows AI readiness in the status strip, provides an `AI 工作台` with usage guidance, surfaces an “AI 评估建议” block inside task detail, and adds direct copy actions for teacher-facing report wording.
 - 2026-04-13: AI configuration no longer requires hand-editing `settings/advisor.json`. The backend now exposes `/api/advisor/config` for safe read/write, and the desktop UI includes a small modal for `enabled / base_url / api_key / model`. Existing saved API keys are not echoed back into the form; leaving the key field blank keeps the current secret unchanged.
 - 2026-04-13: Fresh desktop builds for this workspace/AI refactor were synced to `E:\kykt\release\kykt_vision_client`, including `kykt_vision_client.exe`, `kykt_vision_client_workspace_ai.exe`, and the updated NSIS installer.
+- 2026-04-20: MonST3R was clarified as the primary product/research line for the platform. New near-term work should improve MonST3R input preparation, remote execution quality, result semantics, GLB/trajectory/frame/mask/confidence presentation, and sample validation before adding more frontier models.
+- 2026-04-20: A dedicated MonST3R mainline plan was added at `E:\kykt\Coding\4.06\vision_ui\MONST3R_MAINLINE_PLAN.md`.
+- 2026-04-20: MonST3R result semantics were strengthened: future `scene_meta.json` and generated summaries can identify core review targets, artifact groups, frame previews, dynamic masks, confidence arrays, trajectory files, and intrinsics files instead of presenting the output as an undifferentiated file list.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:
   - `E:\kykt\Coding\4.06\vision_ui\start_client_rebuild.ps1`
@@ -316,14 +320,15 @@ Current DUSt3R flow:
 
 Priority order:
 
-1. Stabilize the frontend task system.
-2. Improve remote observability with richer server-written status.
-3. Use the rebuilt client or pure-SSH helper scripts to finish one short MonST3R validation run and inspect returned GLB/depth/trajectory artifacts.
-4. Make DUSt3R multi-image jobs more reliable and configurable.
-5. Add better result viewing for GLB / trajectory / depth / confidence artifacts after observing real MonST3R outputs.
-6. Validate MonST3R as a remote runner for video/frame-sequence tasks.
-7. Add stronger task controls such as cancel and parameterized reruns.
-8. Convert backend crash / port-conflict cases into first-class UI states so operators can see whether they are looking at live progress or stale cached progress.
+1. Treat MonST3R as the core platform line: improve input preparation, runner stability, result semantics, and result presentation before broad new-model expansion.
+2. Use the rebuilt client or pure-SSH helper scripts to finish one short MonST3R validation run and inspect returned GLB/depth/trajectory artifacts.
+3. Add better MonST3R result viewing for GLB / trajectory / frame preview / dynamic mask / confidence artifacts.
+4. Improve remote observability with richer server-written status.
+5. Build a small MonST3R sample set and parameter comparison table for `224/512`, `24/48/72/96` frames, and window-wise mode.
+6. Stabilize the frontend task system around repeatable MonST3R reruns and result review.
+7. Make DUSt3R/MASt3R multi-image jobs reliable as secondary static-reconstruction baselines.
+8. Add stronger task controls such as cancel and parameterized reruns.
+9. Convert backend crash / port-conflict cases into first-class UI states so operators can see whether they are looking at live progress or stale cached progress.
 
 ## Current Delivery Gaps
 
