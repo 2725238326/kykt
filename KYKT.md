@@ -33,14 +33,14 @@ Known result directory:
 
 Prior server references:
 
-- `/hdd3/kykt26/code/MVSNet/checkpoints/d192_fast16`
-- `/hdd3/kykt26/code/MVSNet/outputs/d192_fast16_eval`
+- `/hdd3/kykt26/code/Old/MVSNet/checkpoints/d192_fast16`
+- `/hdd3/kykt26/code/Old/MVSNet/outputs/d192_fast16_eval`
 
 ### SfMLearner
 
 Server repo:
 
-- `/hdd3/kykt26/code/SfmLearner-Pytorch-master`
+- `/hdd3/kykt26/code/Old/SfmLearner-Pytorch-master`
 
 KITTI data:
 
@@ -66,7 +66,7 @@ Formal KITTI Eigen split result:
 
 Key checkpoint:
 
-- `/hdd3/kykt26/code/SfmLearner-Pytorch-master/checkpoints/rectified,10epochs,epoch_size1000,seq5,b8,s2.0/03-29-10:55`
+- `/hdd3/kykt26/code/Old/SfmLearner-Pytorch-master/checkpoints/rectified,10epochs,epoch_size1000,seq5,b8,s2.0/03-29-10:55`
 
 ### DUSt3R
 
@@ -180,7 +180,9 @@ Current frontend capabilities:
 - 2026-04-13: Fresh desktop builds for this workspace/AI refactor were synced to `E:\kykt\release\kykt_vision_client`, including `kykt_vision_client.exe`, `kykt_vision_client_workspace_ai.exe`, and the updated NSIS installer.
 - 2026-04-20: The platform direction was corrected from a MonST3R-only emphasis to a broader 3R / visual geometry model workbench. MonST3R remains one video/dynamic reconstruction track, while DUSt3R, MASt3R, Spann3R, Align3R, Fast3R, Pi3/Pi3X, CUT3R, ZipMap, LingBot-Map, and related models should be treated as planned comparison / integration candidates.
 - 2026-04-20: A dedicated MonST3R video/dynamic track plan was added at `E:\kykt\Coding\4.06\vision_ui\MONST3R_MAINLINE_PLAN.md`.
-- 2026-04-20: A broader 3R model integration roadmap was added at `E:\kykt\Coding\4.06\vision_ui\THREER_MODEL_ROADMAP.md`, with Spann3R, Align3R, Fast3R, and Pi3X listed as expansion candidates.
+- 2026-04-20: A broader 3R model integration roadmap was added at `E:\kykt\Coding\4.06\vision_ui\THREER_MODEL_ROADMAP.md`, with the active focus narrowed to MASt3R, MonST3R, Spann3R, Align3R, Fast3R, and CUT3R.
+- 2026-04-20: A concrete active integration and comparison plan was added at `E:\kykt\Coding\4.06\vision_ui\ACTIVE_MODEL_INTEGRATION_PLAN.md`. DUSt3R multi-image validation is no longer a current priority; Pi3X, ZipMap, and LingBot-Map are kept as separate frontier research items.
+- 2026-04-20: Server code layout was reorganized: old MVSNet and SfMLearner repos were moved under `/hdd3/kykt26/code/Old`, and active 3R candidate directories now exist at `/hdd3/kykt26/code/mast3r`, `/hdd3/kykt26/code/monst3r`, `/hdd3/kykt26/code/spann3r`, `/hdd3/kykt26/code/align3r`, `/hdd3/kykt26/code/fast3r`, and `/hdd3/kykt26/code/cut3r`.
 - 2026-04-20: MonST3R result semantics were strengthened: future `scene_meta.json` and generated summaries can identify core review targets, artifact groups, frame previews, dynamic masks, confidence arrays, trajectory files, and intrinsics files instead of presenting the output as an undifferentiated file list.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:
@@ -263,7 +265,7 @@ Still missing:
 
 - Replacing the current Jinja entry pages with the new React client as the default visible UI.
 - A fully portable package that bundles Python/runtime dependencies. The current desktop exe supervises the existing project `.venv`; if the project root is moved, set `KYKT_BACKEND_ROOT` to `E:\kykt\Coding\4.06\vision_ui` or the new backend root.
-- End-to-end validation of the newly parameterized DUSt3R multi-image path on the server.
+- MASt3R still needs a first real server smoke test and one reviewed output sample.
 - Stronger remote process cleanup verification after cancellation.
 - First end-to-end MonST3R client run with one short video or one small frame sequence, followed by output quality inspection.
 - A final MonST3R input/output contract after observing the real `.glb`, trajectory, depth, and confidence artifacts on a few examples.
@@ -323,25 +325,27 @@ Current DUSt3R flow:
 Priority order:
 
 1. Treat `vision_ui` as a 3R / visual geometry model workbench: keep one job format, one runner contract, one result summary contract, and one output presentation system.
-2. Finish baseline validation for current models: DUSt3R multi-image, MASt3R smoke test, and MonST3R short-video sample.
-3. Add better result viewing for GLB / PLY / trajectory / frame preview / dynamic mask / confidence artifacts across models.
-4. Improve remote observability with richer server-written status.
-5. Build a small shared sample set for static images, small multi-view, long image collections, short video, dynamic video, and difficult cases.
-6. Add Spann3R as the next DUSt3R-improvement research/integration candidate.
-7. Add either Fast3R or Pi3X as the next long-image / general visual-geometry candidate after Spann3R.
-8. Keep MonST3R as the video/dynamic track and build a parameter comparison table for `224/512`, `24/48/72/96` frames, and window-wise mode.
-9. Pre-research CUT3R, ZipMap, and LingBot-Map as stateful / streaming directions before UI integration.
-10. Convert backend crash / port-conflict cases into first-class UI states so operators can see whether they are looking at live progress or stale cached progress.
+2. Run MASt3R smoke test and produce the static reconstruction baseline.
+3. Run one MonST3R standard video sample and inspect GLB / trajectory / frame / mask / confidence outputs.
+4. Build a small shared sample set and `samples_manifest.json` for static multi-view, medium image collection, short video, dynamic video, and difficult cases.
+5. Add Spann3R as the first new active 3R model runner.
+6. Add Align3R as the video/dynamic depth consistency runner and compare it with MonST3R on the same videos.
+7. Add Fast3R for long image collections.
+8. Add CUT3R for online / persistent-state reconstruction.
+9. Add better result viewing for GLB / PLY / trajectory / frame preview / dynamic mask / confidence / depth artifacts across models.
+10. Add model-to-model comparison and scoring: runtime, memory, output completeness, structure quality, trajectory stability, dynamic handling, and presentation usability.
+11. Keep Pi3X, ZipMap, and LingBot-Map as separate frontier research items for later.
 
 ## Current Delivery Gaps
 
 These are the main blockers between the current state and a more deliverable tool:
 
-1. DUSt3R multi-image flow needs one full validation run with 3 to 5 images and reviewed outputs.
-2. Remote cancellation cleanup is safer than before, but still needs post-cancel verification in a real stuck job.
-3. MonST3R runner integration now has better logging/defaults, but it still needs the first complete client-triggered server run and output quality inspection.
-4. Result packaging and task reporting are still too manual.
-5. Recovery and operator guidance still need to be clearer when something hangs or only partially finishes.
+1. MASt3R still needs a first real server smoke test and reviewed outputs.
+2. MonST3R runner integration now has better logging/defaults, but it still needs a standard client-triggered video sample and output quality inspection.
+3. Spann3R, Align3R, Fast3R, and CUT3R still need environment setup, official smoke runs, runner contracts, and UI registration.
+4. Cross-model presentation is still too file-list oriented; it needs model-aware grouping and comparison views.
+5. Result packaging, scoring, and report generation are still too manual.
+6. Recovery and operator guidance still need to be clearer when something hangs or only partially finishes.
 
 ## Guidance for Future Agents
 

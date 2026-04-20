@@ -8,11 +8,11 @@ Last updated: 2026-04-20
 
 当前模型分层：
 
-1. **已有基础线**：DUSt3R、MASt3R、MonST3R。
+1. **已有基础线**：DUSt3R、MASt3R、MonST3R。其中 DUSt3R 暂时只作为基座与背景，不再占当前主动验证优先级。
 2. **DUSt3R 直接改进线**：Spann3R、Fast3R、MUSt3R、Pow3R、Speed3R。
 3. **视频/动态深度与重建线**：MonST3R、Align3R、Easi3R、Geo4D。
 4. **状态/流式重建线**：Spann3R、CUT3R、ZipMap、LingBot-Map、LONG3R。
-5. **通用视觉几何基础模型线**：VGGT、Pi3/Pi3X、MapAnything。
+5. **通用视觉几何基础模型线**：VGGT、Pi3/Pi3X、MapAnything。当前只做预研，不进入主动接入。
 6. **后处理与展示线**：点云/GLB 清理、轨迹可视化、关键帧预览、mask/置信图解释、结果报告。
 
 ## 2. 接入优先级
@@ -32,17 +32,17 @@ Last updated: 2026-04-20
 - 新模型接入时只需要新增 `model_registry` 条目、runner、SSH dispatch 分支和输出分组规则。
 - 不再为每个模型写一套独立 UI。
 
-### P1：现有三条线补齐
+### P1：现有线与当前主动目标
 
 #### DUSt3R
 
 研究价值：基础 pairwise pointmap 范式，所有 3R 方向的起点。
 
-工程任务：
+当前决策：
 
-- 完成 3 到 5 张图的多图验证。
-- 固化 `complete` 与 `swin-5` 的使用边界。
-- 输出 `matches.png / pointcloud.ply / scene_meta.json` 的稳定合同。
+- 暂时取消 DUSt3R 多图验证作为主动任务。
+- 保留 DUSt3R 作为 MASt3R、Spann3R、Align3R、Fast3R 等方法的理论/工程基座。
+- 后续只有在需要补静态基线时再回头跑。
 
 #### MASt3R
 
@@ -112,28 +112,6 @@ Last updated: 2026-04-20
 - 新建 `fast3r` env，不复用 dust3r/mast3r env。
 - 跑 5 张图、20 张图、短视频抽帧三个 smoke case。
 - 输出 `pointcloud.ply`、camera poses、confidence summary。
-
-#### Pi3/Pi3X
-
-定位：reference-free / permutation-equivariant visual geometry。Pi3X 支持相机位姿、内参、深度等条件注入，适合做通用视觉几何基础模型对比。
-
-为什么优先：
-
-- 命令行推理清楚，支持图片目录和视频。
-- 输出含 point cloud、camera poses、confidence。
-- Pi3X 的条件注入很适合后续利用 COLMAP/DUSt3R/MonST3R 的中间结果做融合实验。
-
-接入难度：低到中。
-
-风险：
-
-- 权重是非商业研究许可，要在文档中标清。
-- 长序列显存和速度需要实测。
-
-第一步：
-
-- 跑 `example_mm.py --data_path <image_or_video> --save_path result.ply`。
-- 接入 `pi3x_runner.py`，输出点云、相机、置信摘要。
 
 #### Align3R
 
@@ -209,13 +187,28 @@ Last updated: 2026-04-20
 - 先跑 streaming demo。
 - 观察是否能导出标准 point cloud / camera / state query 结果。
 
+#### Pi3/Pi3X
+
+定位：reference-free / permutation-equivariant visual geometry。Pi3X 支持相机位姿、内参、深度等条件注入，适合做通用视觉几何基础模型对比。
+
+当前策略：
+
+- 单独列为前沿预研。
+- 不进入当前主动接入计划。
+- 等 MASt3R、MonST3R、Spann3R、Align3R、Fast3R、CUT3R 的接入和对比框架稳定后再评估。
+
+第一步：
+
+- 后续只需先跑 `example_mm.py --data_path <image_or_video> --save_path result.ply`。
+- 暂不写 `pi3x_runner.py`。
+
 ## 3. 研究问题设计
 
 后续不只是“把模型跑起来”，还要回答这些问题：
 
 1. **pairwise vs global/memory**
    - DUSt3R/MASt3R 依赖 pairwise 和全局对齐。
-   - Spann3R/Fast3R/Pi3X 更强调直接多图或全局坐标输出。
+   - Spann3R/Fast3R 更强调直接多图或全局坐标输出。
    - 研究问题：哪类输入下 global/memory 明显优于 pairwise alignment？
 
 2. **静态 vs 动态**
@@ -260,13 +253,12 @@ Last updated: 2026-04-20
 - 统一样例库。
 - 每个样例的人工评价标准。
 
-### 第 2 阶段：现有模型补齐
+### 第 2 阶段：当前主动模型补齐
 
 时间：2 到 3 天。
 
 任务：
 
-- DUSt3R 多图验证。
 - MASt3R smoke run。
 - MonST3R 标准参数样例和 24/48/72 帧对比。
 - Align3R 作为视频/动态深度候选先完成环境可行性判断。
@@ -292,14 +284,14 @@ Last updated: 2026-04-20
 - `spann3r_runner.py`
 - Spann3R 对比报告。
 
-### 第 4 阶段：新增 Fast3R 或 Pi3X
+### 第 4 阶段：新增 Fast3R
 
 时间：2 到 4 天。
 
-选择标准：
+目标：
 
-- 如果想突出“长图集速度”，先 Fast3R。
-- 如果想突出“通用视觉几何/无参考视角”，先 Pi3X。
+- 突出长图集速度和大规模图片集合重建能力。
+- Pi3X 暂缓，不参与当前阶段。
 
 产出：
 
@@ -347,8 +339,7 @@ Last updated: 2026-04-20
 
 1. 不再把 MonST3R 写成绝对核心。
 2. 平台核心改成“3R 模型实验与对比工作台”。
-3. MonST3R 是视频/动态方向的主线之一。
-4. Spann3R 是下一批最值得优先研究和接入的 DUSt3R 改进线。
-5. Fast3R 与 Pi3X 是第一批横向扩展候选。
-6. Align3R 应加入视频/动态方向候选，和 MonST3R 做同视频对比。
-7. CUT3R、ZipMap、LingBot-Map 暂时作为状态/流式模型预研线。
+3. DUSt3R 多图验证暂时取消主动优先级。
+4. 当前主动模型集中在 MASt3R、MonST3R、Spann3R、Align3R、Fast3R、CUT3R。
+5. Pi3X、ZipMap、LingBot-Map 单独列为前沿预研，不急着工程接入。
+6. 呈现优化和模型间对比测评是当前阶段的共同平台任务。
