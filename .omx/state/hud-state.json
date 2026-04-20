@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-04-20T12:37:21.362Z",
-  "turn_count": 13,
-  "last_progress_at": "2026-04-20T12:37:21.362Z",
-  "last_agent_output": "已完成远端整理。\n\n远端 `/hdd3/kykt26/code` 当前是：\n\n```text\nOld/\n  MVSNet/\n  SfmLearner-Pytorch-master/\ndust3r-ma"
+  "last_turn_at": "2026-04-20T14:49:37.372Z",
+  "turn_count": 14,
+  "last_progress_at": "2026-04-20T14:49:37.372Z",
+  "last_agent_output": "已按“四个任务”推进完一轮。\n\n**已完成**\n1. **MASt3R smoke test**\n   - 新建平台任务：`20260420-222729`\n   - 状态：已完成\n   - 输出：\n"
 }

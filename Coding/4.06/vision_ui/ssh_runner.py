@@ -164,7 +164,6 @@ def run_remote_job(job_id: str) -> None:
         if load_job(job_id).status == "cancelled":
             _write_debug_log(job_id, "Job was cancelled during result download.")
             return
-        _generate_result_summary(job_id, output_files)
         update_job(
             job_id,
             status="finished",
@@ -173,6 +172,7 @@ def run_remote_job(job_id: str) -> None:
             error_message=None,
             progress_message="任务完成。输出结果已回传到本地。",
         )
+        _generate_result_summary(job_id, output_files)
         _write_debug_log(job_id, f"Job finished successfully with {len(output_files)} files.")
     except Exception as exc:
         if str(exc) == "__job_cancelled__":

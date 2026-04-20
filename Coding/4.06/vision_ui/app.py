@@ -31,7 +31,7 @@ from job_store import (
     save_inputs,
     update_job,
 )
-from model_registry import MODEL_OPTIONS, SOURCE_TYPE_OPTIONS, allowed_source_types, get_model_spec
+from model_registry import MODEL_CATALOG_OPTIONS, MODEL_OPTIONS, SOURCE_TYPE_OPTIONS, allowed_source_types, get_model_spec
 from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 
 _RUNNER_THREADS: dict[str, threading.Thread] = {}
@@ -611,6 +611,7 @@ async def bootstrap_api():
                 "remote_root": ServerConfig.remote_root,
             },
             "models": MODEL_OPTIONS,
+            "model_catalog": MODEL_CATALOG_OPTIONS,
             "source_types": SOURCE_TYPE_OPTIONS,
             "advisor": advisor_status(),
         }

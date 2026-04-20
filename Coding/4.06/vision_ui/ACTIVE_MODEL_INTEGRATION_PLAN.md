@@ -50,6 +50,13 @@ local_jobs/<job_id>/
 
 目标：把静态多图增强线补齐，作为 DUSt3R-family 的静态基准。
 
+当前进展：
+
+- 2026-04-20：平台链路 smoke test 已完成，job `20260420-222729`。
+- 输入：已有 DUSt3R 双图样例。
+- 输出：`matches.png`、`pointcloud.ply`、`scene_meta.json`、`runner.log`。
+- 点云：从 301905 个原始点下采样到 250000 个点。
+
 输入：
 
 - 2 到 5 张静态图片
@@ -70,11 +77,18 @@ local_jobs/<job_id>/
 - `scene_meta.json` 记录图片数量、参数、点云文件、匹配图文件。
 - 前端能按“核心成果 / 图像可视化 / 其他产物”显示。
 
-优先级：最高，作为近期第一项。
+优先级：已完成第一轮 smoke，下一步是换更合适的 3 到 8 张静态图片做质量样例。
 
 ### 3.2 MonST3R 标准视频样例
 
 目标：拿到一组可展示的视频动态重建基线。
+
+当前进展：
+
+- 2026-04-20：标准档平台链路已完成，job `20260420-222928`。
+- 参数：`image_size=512`、`num_frames=48`、`window_wise=false`。
+- 输出：297 个本地产物，其中包括 1 个 `scene.glb`、48 张帧预览、96 张动态 mask、96 个置信数组、轨迹和内参文件。
+- 核心检查对象：`scene.glb`、`pred_traj.txt`、`pred_intrinsics.txt`、`frame_0000.png`、`frame_0024.png`、`frame_0047.png`。
 
 输入：
 
@@ -107,7 +121,7 @@ local_jobs/<job_id>/
 - 帧预览、mask、confidence 能被前端分组展示。
 - 摘要给出核心检查顺序。
 
-优先级：最高，和 MASt3R 并列。
+优先级：已完成标准档样例，下一步是人工检查 GLB/轨迹/帧预览质量，并准备 24/72 帧对比。
 
 ### 3.3 Spann3R 接入
 
@@ -338,6 +352,14 @@ local_jobs/<job_id>/
 8. 前端模型对比视图
 9. 自动生成横向评测报告
 
+当前完成：
+
+- [x] MASt3R smoke test：`20260420-222729`
+- [x] MonST3R 标准视频样例：`20260420-222928`
+- [x] 远端 `spann3r / align3r / fast3r / cut3r` 目录 setup checklist
+- [x] 本地 `samples_manifest.json` 初版
+- [x] 后端 `model_catalog` 元数据初版
+
 ## 7. 暂缓事项
 
 以下事项暂时不占主线：
@@ -347,4 +369,3 @@ local_jobs/<job_id>/
 - ZipMap 接入
 - LingBot-Map 接入
 - 模型训练或 fine-tuning
-
