@@ -82,6 +82,16 @@ Next app tasks:
 3. Add one-click open links for active sample seed jobs.
 4. Add JSON output mode to `tools/check_3r_remote.ps1` for future app/CI ingestion.
 
+## Download / Upload Planning
+
+The model download and upload plan is documented separately at:
+
+```text
+E:\kykt\Coding\4.06\vision_ui\MODEL_DOWNLOAD_UPLOAD_PLAN.md
+```
+
+This plan intentionally does not execute downloads or uploads. It lists staging directories, official sources, upload targets, and verification commands.
+
 ## Reminder
 
 Do not spend current active engineering time on DUSt3R multi-image, Pi3X, ZipMap, or LingBot-Map unless the user redirects. They remain reference/deferred research tracks.

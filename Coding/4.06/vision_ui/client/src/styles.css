@@ -724,6 +724,7 @@ img {
 .sample-matrix-meta,
 .sample-model-strip,
 .sample-card-grid,
+.scoring-compact-strip,
 .scoring-grid {
   display: grid;
   gap: 12px;
@@ -806,6 +807,52 @@ img {
 .sample-card-models span {
   background: rgba(29, 29, 31, 0.06);
   color: rgba(29, 29, 31, 0.74);
+}
+
+.sample-seed-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  align-self: end;
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: rgba(22, 138, 74, 0.09);
+}
+
+.sample-seed-hint code {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.scoring-compact-strip {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.scoring-compact-strip > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(0, 113, 227, 0.07);
+}
+
+.scoring-compact-strip strong,
+.scoring-compact-strip span {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.scoring-compact-strip strong {
+  color: var(--text);
+}
+
+.scoring-compact-strip span {
+  color: var(--blue);
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .scoring-grid {
@@ -1792,6 +1839,7 @@ img {
   .output-grid,
   .sample-matrix-meta,
   .sample-card-grid,
+  .scoring-compact-strip,
   .scoring-grid,
   .step-grid,
   .meta-grid,

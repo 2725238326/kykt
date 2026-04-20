@@ -1,6 +1,7 @@
 param(
     [Alias("Alias", "HostAlias")]
-    [string]$SshAlias = "KYKT-UI"
+    [string]$SshAlias = "KYKT-UI",
+    [switch]$Json
 )
 
 $ErrorActionPreference = "Stop"
@@ -230,5 +231,173 @@ else
 fi
 '@
 
-Write-Host "Checking remote 3R deployment on $SshAlias ..."
+if ($Json) {
+    $remoteScript = @'
+python3 - <<'PY'
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+from pathlib import Path
+
+ROOT = Path("/hdd3/kykt26/code")
+REPOS = ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"]
+KNOWN_FILES = [
+    ("mast3r", "readme", "required", "README.md"),
+    ("mast3r", "entry", "required", "demo.py"),
+    ("mast3r", "deps", "required", "requirements.txt"),
+    ("mast3r", "weight", "required", "checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth"),
+    ("monst3r", "readme", "required", "README.md"),
+    ("monst3r", "entry", "required", "demo.py"),
+    ("monst3r", "deps", "required", "requirements.txt"),
+    ("monst3r", "weight", "required", "checkpoints/MonST3R_PO-TA-S-W_ViTLarge_BaseDecoder_512_dpt.pth"),
+    ("monst3r", "weight", "required", "third_party/RAFT/models/Tartan-C-T-TSKH-spring540x960-M.pth"),
+    ("monst3r", "weight", "required", "third_party/sam2/checkpoints/sam2.1_hiera_large.pt"),
+    ("spann3r", "setup", "required", "README_SETUP.md"),
+    ("align3r", "setup", "required", "README_SETUP.md"),
+    ("fast3r", "setup", "required", "README_SETUP.md"),
+    ("cut3r", "setup", "required", "README_SETUP.md"),
+]
+EXPECTED_ENVS = [
+    ("mast3r", "mast3r"),
+    ("monst3r", "monst3r"),
+    ("spann3r", "spann3r"),
+    ("align3r", "align3r"),
+    ("fast3r", "fast3r"),
+    ("cut3r", "cut3r"),
+    ("shared", "dust3r"),
+    ("platform", "kykt"),
+    ("sfm", "sfm"),
+]
+
+
+def run_text(command: list[str]) -> str:
+    try:
+        return subprocess.check_output(command, text=True, stderr=subprocess.DEVNULL)
+    except Exception:
+        return ""
+
+
+def size_bytes(path: Path) -> int | None:
+    try:
+        if path.is_file():
+            return path.stat().st_size
+        if path.is_dir():
+            total = 0
+            for root, _, files in os.walk(path):
+                for name in files:
+                    try:
+                        total += (Path(root) / name).stat().st_size
+                    except OSError:
+                        pass
+            return total
+    except OSError:
+        return None
+    return None
+
+
+def repo_state(path: Path) -> str:
+    if not path.is_dir():
+        return "missing"
+    files = [p for p in path.glob("*") if p.is_file()]
+    dirs = [p for p in path.glob("*") if p.is_dir()]
+    if len(files) == 1 and files[0].name == "README_SETUP.md" and not dirs:
+        return "planned"
+    return "ready"
+
+
+def parse_envs() -> dict[str, str]:
+    envs: dict[str, str] = {}
+    for line in run_text(["conda", "env", "list"]).splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        parts = stripped.split()
+        if len(parts) >= 2:
+            envs[parts[0]] = parts[-1]
+    return envs
+
+
+envs = parse_envs()
+directories = []
+for name in REPOS:
+    path = ROOT / name
+    readme = path / "README_SETUP.md"
+    directories.append(
+        {
+            "name": name,
+            "path": str(path),
+            "state": repo_state(path),
+            "exists": path.is_dir(),
+            "readme_setup": readme.is_file(),
+            "size_bytes": size_bytes(path),
+        }
+    )
+
+env_rows = [
+    {"component": component, "env": env, "exists": env in envs, "path": envs.get(env)}
+    for component, env in EXPECTED_ENVS
+]
+
+files = []
+for component, kind, need, rel in KNOWN_FILES:
+    path = ROOT / component / rel
+    files.append(
+        {
+            "component": component,
+            "kind": kind,
+            "need": need,
+            "relative_path": rel,
+            "path": str(path),
+            "exists": path.is_file(),
+            "size_bytes": size_bytes(path),
+        }
+    )
+
+checkpoints = []
+for name in REPOS:
+    repo = ROOT / name
+    if not repo.is_dir():
+        continue
+    for path in repo.rglob("*"):
+        if path.is_file() and path.suffix.lower() in {".pth", ".pt", ".ckpt", ".safetensors"}:
+            checkpoints.append(
+                {
+                    "component": name,
+                    "relative_path": str(path.relative_to(repo)),
+                    "size_bytes": size_bytes(path),
+                }
+            )
+
+summary = {
+    "missing_directories": sum(1 for item in directories if not item["exists"]),
+    "missing_conda_envs": sum(1 for item in env_rows if not item["exists"]),
+    "missing_required_files": sum(1 for item in files if item["need"] == "required" and not item["exists"]),
+    "warnings": sum(1 for item in directories if not item["readme_setup"]),
+}
+summary["ok"] = summary["missing_directories"] == 0 and summary["missing_required_files"] == 0
+
+print(
+    json.dumps(
+        {
+            "host": run_text(["hostname"]).strip() or None,
+            "root": str(ROOT),
+            "directories": directories,
+            "conda_envs": env_rows,
+            "known_files": files,
+            "checkpoints": checkpoints,
+            "summary": summary,
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+)
+PY
+'@
+}
+
+if (-not $Json) {
+    Write-Host "Checking remote 3R deployment on $SshAlias ..."
+}
 Invoke-RemoteBash -Script $remoteScript

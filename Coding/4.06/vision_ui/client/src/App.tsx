@@ -1569,6 +1569,7 @@ function SampleMatrixPanel(props: {
   const scoringEntries = Object.entries(manifest?.scoring ?? {});
   const activeModels = manifest?.active_models ?? [];
   const deferredModels = manifest?.deferred_models ?? [];
+  const compactScoringEntries = props.compact ? scoringEntries.slice(0, 3) : [];
 
   return (
     <article className="panel sample-matrix-panel">
@@ -1619,6 +1620,17 @@ function SampleMatrixPanel(props: {
             ) : null}
           </div>
 
+          {compactScoringEntries.length > 0 ? (
+            <div className="scoring-compact-strip" aria-label="评分维度快览">
+              {compactScoringEntries.map(([key, metrics]) => (
+                <div key={key}>
+                  <strong>{scoringCategoryLabel(key)}</strong>
+                  <span>{metrics.length} 项指标</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           {visibleSamples.length > 0 ? (
             <div className="sample-card-grid">
               {visibleSamples.map((sample) => (
@@ -1637,6 +1649,12 @@ function SampleMatrixPanel(props: {
                       <span key={model}>{modelDisplayName(model, props.modelCatalog)}</span>
                     ))}
                   </div>
+                  {sample.seed_job_id ? (
+                    <div className="sample-seed-hint" title="可用于在任务页搜索或核对种子任务">
+                      <span className="mini-label">seed_job_id</span>
+                      <code>{sample.seed_job_id}</code>
+                    </div>
+                  ) : null}
                 </article>
               ))}
             </div>
