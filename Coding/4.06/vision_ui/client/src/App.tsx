@@ -8,7 +8,8 @@ import type {
   BootstrapPayload,
   JobPayload,
   JobsListPayload,
-  ResultSummary
+  ResultSummary,
+  SamplesPayload
 } from "./types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8765").replace(/\/$/, "");
@@ -192,6 +193,7 @@ type OutputSection = {
   defaultOpen: boolean;
   items: OutputItem[];
 };
+type ModelCatalogItem = NonNullable<BootstrapPayload["model_catalog"]>[number];
 type PreviewAsset = {
   url: string;
   name: string;
@@ -212,6 +214,8 @@ function App() {
   const [jobs, setJobs] = useState<JobsListPayload["jobs"]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobPayload | null>(null);
+  const [samplesPayload, setSamplesPayload] = useState<SamplesPayload | null>(null);
+  const [samplesError, setSamplesError] = useState<string | null>(null);
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceTab>("overview");
   const [backendStatus, setBackendStatus] = useState<BackendStatusPayload | null>(null);
   const [serviceState, setServiceState] = useState<ServiceState>("starting");
@@ -264,6 +268,31 @@ function App() {
   const selectedModel = useMemo(
     () => bootstrapData.models.find((item) => item.value === formState.model),
     [bootstrapData.models, formState.model]
+  );
+  const modelCatalog = useMemo<ModelCatalogItem[]>(
+    () =>
+      samplesPayload?.model_catalog ??
+      bootstrapData.model_catalog ??
+      bootstrapData.models.map((item) => ({
+        value: item.value,
+        label: item.label,
+        description: item.description,
+        family: item.family ?? "integrated",
+        source_types: [],
+        runner_status: item.runner_status ?? "integrated",
+        research_priority: item.research_priority ?? 0,
+        active_track: item.active_track ?? true,
+        runnable: true
+      })),
+    [bootstrapData.model_catalog, bootstrapData.models, samplesPayload?.model_catalog]
+  );
+  const activeModelCatalog = useMemo(
+    () => modelCatalog.filter((item) => item.active_track),
+    [modelCatalog]
+  );
+  const deferredModelCatalog = useMemo(
+    () => modelCatalog.filter((item) => !item.active_track),
+    [modelCatalog]
   );
   const selectedListJob = useMemo(
     () => (selectedJobId ? jobs.find((item) => item.job.job_id === selectedJobId) ?? null : null),
@@ -346,6 +375,7 @@ function App() {
           setServiceState("ready");
           setServiceMessage("本地服务已就绪");
           await loadJobs(false);
+          await loadSamples(false);
           return;
         } catch {
           setServiceState("starting");
@@ -391,6 +421,15 @@ function App() {
       return;
     }
     const timer = window.setInterval(() => void loadJobs(false), 4000);
+    return () => window.clearInterval(timer);
+  }, [serviceReady]);
+
+  useEffect(() => {
+    if (!serviceReady) {
+      return;
+    }
+    void loadSamples(false);
+    const timer = window.setInterval(() => void loadSamples(false), 15000);
     return () => window.clearInterval(timer);
   }, [serviceReady]);
 
@@ -493,6 +532,7 @@ function App() {
         setInfoMessage(mode === "restart" ? "本地服务已重启。" : "本地服务已恢复。");
       }
       await loadJobs(false);
+      await loadSamples(false);
       if (selectedJobId) {
         await loadJobDetail(selectedJobId, false);
       }
@@ -541,6 +581,24 @@ function App() {
       }
     } catch (error) {
       handleServiceFailure(error, "加载任务列表失败。", showError);
+    }
+  }
+
+  async function loadSamples(showError = true) {
+    try {
+      const payload = await fetchJson<SamplesPayload>("/api/samples");
+      setSamplesPayload(payload);
+      setSamplesError(null);
+    } catch (error) {
+      const message = friendlyError(error, "样例库接口暂不可用。");
+      setSamplesError(
+        /404|not found/i.test(message)
+          ? "样例库接口暂未上线；后端提供 /api/samples 后这里会自动刷新。"
+          : message
+      );
+      if (showError) {
+        setErrorMessage(message);
+      }
     }
   }
 
@@ -985,6 +1043,17 @@ function App() {
               compact
             />
           </article>
+          <ModelRoadmapPanel
+            activeModels={activeModelCatalog}
+            deferredModels={deferredModelCatalog}
+            compact
+          />
+          <SampleMatrixPanel
+            samplesPayload={samplesPayload}
+            errorMessage={samplesError}
+            modelCatalog={modelCatalog}
+            compact
+          />
         </section>
           </>
         ) : null}
@@ -1318,6 +1387,17 @@ function App() {
               </div>
             </article>
 
+            <ModelRoadmapPanel
+              activeModels={activeModelCatalog}
+              deferredModels={deferredModelCatalog}
+            />
+
+            <SampleMatrixPanel
+              samplesPayload={samplesPayload}
+              errorMessage={samplesError}
+              modelCatalog={modelCatalog}
+            />
+
             <article className="panel">
               <PanelTitle eyebrow="使用提示" title="今晚就按这条线推进" />
               <div className="support-checklist">
@@ -1426,6 +1506,157 @@ function App() {
         </div>
       ) : null}
     </div>
+  );
+}
+
+function ModelRoadmapPanel(props: {
+  activeModels: ModelCatalogItem[];
+  deferredModels: ModelCatalogItem[];
+  compact?: boolean;
+}) {
+  const runnable = props.activeModels.filter((item) => item.runnable).length;
+  const planned = props.activeModels.filter((item) => !item.runnable).length;
+
+  return (
+    <article className="panel model-roadmap-panel">
+      <div className="section-head">
+        <div>
+          <span className="mini-label">模型路线</span>
+          <h4>3R 接入与测评进度</h4>
+          <p>当前主线集中在 MASt3R、MonST3R、Spann3R、Align3R、Fast3R、CUT3R；Pi3X、ZipMap、LingBot-Map 暂缓。</p>
+        </div>
+        <div className="model-roadmap-stats">
+          <SummaryStat label="可运行" value={String(runnable)} />
+          <SummaryStat label="待接入" value={String(planned)} />
+        </div>
+      </div>
+
+      <div className="model-roadmap-list">
+        {props.activeModels.map((item) => (
+          <article className={`model-roadmap-item ${item.runnable ? "ready" : "planned"}`} key={item.value}>
+            <div>
+              <strong>{item.label}</strong>
+              <p>{item.description}</p>
+            </div>
+            <div className="model-roadmap-meta">
+              <span>{modelFamilyLabel(item.family)}</span>
+              <span>{runnerStatusLabel(item.runner_status)}</span>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {!props.compact && props.deferredModels.length > 0 ? (
+        <div className="deferred-model-strip">
+          <span className="mini-label">暂缓预研</span>
+          <p>{props.deferredModels.map((item) => item.label).join(" / ")}</p>
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function SampleMatrixPanel(props: {
+  samplesPayload: SamplesPayload | null;
+  errorMessage: string | null;
+  modelCatalog: ModelCatalogItem[];
+  compact?: boolean;
+}) {
+  const manifest = props.samplesPayload?.manifest ?? null;
+  const summary = props.samplesPayload?.summary ?? null;
+  const samples = manifest?.samples ?? [];
+  const visibleSamples = props.compact ? samples.slice(0, 3) : samples;
+  const scoringEntries = Object.entries(manifest?.scoring ?? {});
+  const activeModels = manifest?.active_models ?? [];
+  const deferredModels = manifest?.deferred_models ?? [];
+
+  return (
+    <article className="panel sample-matrix-panel">
+      <div className="section-head">
+        <div>
+          <span className="mini-label">样例库</span>
+          <h4>样例清单与测评矩阵</h4>
+          <p>{manifest?.purpose ?? "等待 /api/samples 返回共享样例计划。"}</p>
+        </div>
+        <div className="sample-matrix-stats">
+          <SummaryStat label="样例数" value={String(summary?.sample_count ?? samples.length)} />
+          <SummaryStat label="活跃模型" value={String(activeModels.length)} />
+          <SummaryStat label="评分维度" value={String(scoringEntries.length)} />
+        </div>
+      </div>
+
+      {props.errorMessage && !props.samplesPayload ? (
+        <div className="empty-state">{props.errorMessage}</div>
+      ) : null}
+
+      {manifest ? (
+        <>
+          <div className="sample-matrix-meta">
+            <div>
+              <span className="mini-label">更新时间</span>
+              <strong>{manifest.last_updated ?? "未标记"}</strong>
+            </div>
+            <div>
+              <span className="mini-label">状态分布</span>
+              <p>{formatCountMap(summary?.status_counts, sampleStatusLabel)}</p>
+            </div>
+            <div>
+              <span className="mini-label">输入类型</span>
+              <p>{formatCountMap(summary?.source_counts, sourceTypeLabel)}</p>
+            </div>
+          </div>
+
+          <div className="sample-model-strip">
+            <div>
+              <span className="mini-label">主线模型</span>
+              <p>{formatModelList(activeModels, props.modelCatalog)}</p>
+            </div>
+            {deferredModels.length > 0 ? (
+              <div>
+                <span className="mini-label">暂缓模型</span>
+                <p>{formatModelList(deferredModels, props.modelCatalog)}</p>
+              </div>
+            ) : null}
+          </div>
+
+          {visibleSamples.length > 0 ? (
+            <div className="sample-card-grid">
+              {visibleSamples.map((sample) => (
+                <article className="sample-card" key={sample.id}>
+                  <div className="sample-card-head">
+                    <strong>{sample.id}</strong>
+                    <span className="status-badge">{sampleStatusLabel(sample.status)}</span>
+                  </div>
+                  <p>{sample.purpose}</p>
+                  <div className="sample-card-meta">
+                    <span>{sourceTypeLabel(sample.source_type)}</span>
+                    <span>{sample.target_file_count ? `${sample.target_file_count} 个文件` : `${sample.target_duration_seconds ?? "-"} 秒`}</span>
+                  </div>
+                  <div className="sample-card-models">
+                    {(sample.required_models ?? []).map((model) => (
+                      <span key={model}>{modelDisplayName(model, props.modelCatalog)}</span>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">样例清单还没有条目。</div>
+          )}
+
+          {!props.compact && scoringEntries.length > 0 ? (
+            <div className="scoring-grid">
+              {scoringEntries.map(([key, metrics]) => (
+                <article className="scoring-card" key={key}>
+                  <strong>{scoringCategoryLabel(key)}</strong>
+                  <p>{metrics.map((metric) => metricLabel(metric)).join(" / ")}</p>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </article>
   );
 }
 
@@ -2518,6 +2749,95 @@ function statusModelLabel(model: string) {
     default:
       return model;
   }
+}
+
+function modelFamilyLabel(family: string) {
+  const labels: Record<string, string> = {
+    pairwise_pointmap: "Pairwise 点图",
+    static_matching_reconstruction: "静态匹配重建",
+    video_dynamic_reconstruction: "视频动态重建",
+    memory_global_pointmap: "空间记忆",
+    video_depth_consistency: "视频深度一致",
+    large_image_collection: "长图集",
+    streaming_state_reconstruction: "状态流式",
+    general_visual_geometry: "通用视觉几何",
+    stateful_linear_reconstruction: "线性状态",
+    streaming_mapping: "流式建图"
+  };
+  return labels[family] ?? family.replace(/_/g, " ");
+}
+
+function runnerStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    baseline: "基座保留",
+    validated_smoke: "Smoke 已过",
+    validated_standard_sample: "标准样例已过",
+    planned: "待接入",
+    frontier_research: "前沿预研",
+    integrated: "已接入"
+  };
+  return labels[status] ?? status.replace(/_/g, " ");
+}
+
+function modelDisplayName(value: string, catalog: ModelCatalogItem[]) {
+  return catalog.find((item) => item.value === value)?.label ?? value.replace(/_/g, " ");
+}
+
+function formatModelList(values: string[], catalog: ModelCatalogItem[]) {
+  if (values.length === 0) {
+    return "暂无";
+  }
+  return values.map((value) => modelDisplayName(value, catalog)).join(" / ");
+}
+
+function formatCountMap(values: Record<string, number> | undefined, labeler: (value: string) => string) {
+  if (!values || Object.keys(values).length === 0) {
+    return "暂无";
+  }
+  return Object.entries(values)
+    .map(([key, value]) => `${labeler(key)} ${value}`)
+    .join(" / ");
+}
+
+function sampleStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    needs_selection: "待选样例"
+  };
+  if (/^seeded_from_job_/i.test(status)) {
+    return "已有种子任务";
+  }
+  return labels[status] ?? status.replace(/_/g, " ");
+}
+
+function scoringCategoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    engineering: "工程成本",
+    result_quality: "结果质量",
+    platform: "平台交付"
+  };
+  return labels[category] ?? category.replace(/_/g, " ");
+}
+
+function metricLabel(metric: string) {
+  const labels: Record<string, string> = {
+    setup_time: "环境准备",
+    weight_download_difficulty: "权重获取",
+    runtime_seconds: "运行耗时",
+    peak_gpu_memory_mb: "峰值显存",
+    runner_integration_difficulty: "Runner 接入",
+    structure_completeness_1_to_5: "结构完整度",
+    trajectory_stability_1_to_5: "轨迹稳定性",
+    noise_level_1_to_5: "噪声水平",
+    dynamic_handling_1_to_5: "动态处理",
+    depth_temporal_consistency_1_to_5: "深度时序一致",
+    presentation_usability_1_to_5: "展示可用性",
+    noninteractive_runner: "非交互 Runner",
+    status_json: "状态 JSON",
+    scene_meta_json: "场景元数据",
+    result_summary: "结果摘要",
+    frontend_core_preview: "前端核心预览"
+  };
+  return labels[metric] ?? metric.replace(/_/g, " ");
 }
 
 function sourceTypeLabel(sourceType: string) {

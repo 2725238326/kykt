@@ -171,6 +171,37 @@ export type BootstrapPayload = {
   advisor?: AdvisorStatus;
 };
 
+export type SampleManifestItem = {
+  id: string;
+  source_type: string;
+  status: string;
+  purpose: string;
+  required_models?: string[];
+  optional_models?: string[];
+  target_file_count?: string;
+  target_duration_seconds?: string;
+  seed_job_id?: string;
+  manual_criteria?: string[];
+};
+
+export type SamplesPayload = {
+  manifest: {
+    last_updated?: string | null;
+    purpose?: string;
+    active_models?: string[];
+    deferred_models?: string[];
+    samples?: SampleManifestItem[];
+    scoring?: Record<string, string[]>;
+  };
+  summary: {
+    sample_count: number;
+    status_counts: Record<string, number>;
+    source_counts: Record<string, number>;
+    required_model_counts: Record<string, number>;
+  };
+  model_catalog: NonNullable<BootstrapPayload["model_catalog"]>;
+};
+
 export type JobsListPayload = {
   jobs: Array<{
     job: JobRecord;

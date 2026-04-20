@@ -359,6 +359,8 @@ local_jobs/<job_id>/
 - [x] 远端 `spann3r / align3r / fast3r / cut3r` 目录 setup checklist
 - [x] 本地 `samples_manifest.json` 初版
 - [x] 后端 `model_catalog` 元数据初版
+- [x] 后端 `/api/samples`：返回样例清单、样例统计、model catalog
+- [x] 本地 `MODEL_DEPLOYMENT_STATUS.md`：记录 active 模型部署状态和下一步
 
 ## 7. 暂缓事项
 

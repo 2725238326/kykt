@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 import threading
@@ -56,6 +57,7 @@ app.add_middleware(
 
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
 templates.env.globals["asset_version"] = "20260410-2130"
+SAMPLES_MANIFEST_PATH = ROOT / "samples_manifest.json"
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
@@ -134,6 +136,46 @@ def build_dashboard_stats(jobs) -> dict:
         if key:
             summary[key] += 1
     return summary
+
+
+def load_samples_manifest() -> dict:
+    if not SAMPLES_MANIFEST_PATH.exists():
+        return {
+            "last_updated": None,
+            "purpose": "Shared sample plan has not been created yet.",
+            "active_models": [],
+            "deferred_models": [],
+            "samples": [],
+            "scoring": {},
+        }
+
+    try:
+        return json.loads(SAMPLES_MANIFEST_PATH.read_text(encoding="utf-8-sig"))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"样例清单读取失败：{exc}") from exc
+
+
+def build_sample_status_summary(manifest: dict) -> dict:
+    samples = manifest.get("samples") or []
+    status_counts: dict[str, int] = {}
+    source_counts: dict[str, int] = {}
+    required_model_counts: dict[str, int] = {}
+
+    for sample in samples:
+        status = str(sample.get("status") or "unknown")
+        source_type = str(sample.get("source_type") or "unknown")
+        status_counts[status] = status_counts.get(status, 0) + 1
+        source_counts[source_type] = source_counts.get(source_type, 0) + 1
+        for model in sample.get("required_models") or []:
+            model_key = str(model)
+            required_model_counts[model_key] = required_model_counts.get(model_key, 0) + 1
+
+    return {
+        "sample_count": len(samples),
+        "status_counts": status_counts,
+        "source_counts": source_counts,
+        "required_model_counts": required_model_counts,
+    }
 
 
 def _extract_progress_ratio(progress_message: str | None) -> float | None:
@@ -614,6 +656,18 @@ async def bootstrap_api():
             "model_catalog": MODEL_CATALOG_OPTIONS,
             "source_types": SOURCE_TYPE_OPTIONS,
             "advisor": advisor_status(),
+        }
+    )
+
+
+@app.get("/api/samples")
+async def samples_api():
+    manifest = load_samples_manifest()
+    return JSONResponse(
+        {
+            "manifest": manifest,
+            "summary": build_sample_status_summary(manifest),
+            "model_catalog": MODEL_CATALOG_OPTIONS,
         }
     )
 

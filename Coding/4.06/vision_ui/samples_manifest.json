@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-20",
+  "last_updated": "2026-04-21",
   "purpose": "Shared sample plan for active 3R model smoke tests and cross-model evaluation.",
   "active_models": [
     "mast3r",
