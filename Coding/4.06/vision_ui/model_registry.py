@@ -89,7 +89,7 @@ MODEL_CATALOG.update(
             description="Spatial memory 全局点图重建",
             family="memory_global_pointmap",
             source_types=("images", "frames"),
-            runner_status="planned",
+            runner_status="smoke_ready",
             research_priority=95,
         ),
         "align3r": ModelCatalogEntry(
@@ -98,7 +98,7 @@ MODEL_CATALOG.update(
             description="动态视频深度一致性与动态点云",
             family="video_depth_consistency",
             source_types=("video", "frames"),
-            runner_status="planned",
+            runner_status="env_partial",
             research_priority=94,
         ),
         "fast3r": ModelCatalogEntry(
@@ -107,7 +107,7 @@ MODEL_CATALOG.update(
             description="长图集快速前馈三维重建",
             family="large_image_collection",
             source_types=("images", "frames"),
-            runner_status="planned",
+            runner_status="smoke_ready_attention_fallback",
             research_priority=90,
         ),
         "cut3r": ModelCatalogEntry(
@@ -116,7 +116,7 @@ MODEL_CATALOG.update(
             description="在线 / persistent-state 三维感知",
             family="streaming_state_reconstruction",
             source_types=("video", "frames", "images"),
-            runner_status="planned",
+            runner_status="env_blocked_curope",
             research_priority=88,
         ),
         "pi3x": ModelCatalogEntry(

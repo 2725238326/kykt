@@ -47,10 +47,10 @@ Old/SfmLearner-Pytorch-master/
 |---|---|---|---|---|
 | MASt3R | `/hdd3/kykt26/code/mast3r` | `mast3r` | Platform smoke passed as job `20260420-222729` | Select better 3-8 image static sample |
 | MonST3R | `/hdd3/kykt26/code/monst3r` | `monst3r` | Standard 512/48-frame video sample passed as job `20260420-222928` | Manually inspect GLB/trajectory/frame quality |
-| Spann3R | `/hdd3/kykt26/code/spann3r` | planned `spann3r` | Setup checklist created | Clone/upload repo, create env, run official example |
-| Align3R | `/hdd3/kykt26/code/align3r` | planned `align3r` | Setup checklist created | Prepare Depth Pro / Depth Anything / RAFT / Align3R weights |
-| Fast3R | `/hdd3/kykt26/code/fast3r` | planned `fast3r` | Setup checklist created | Clone/upload repo, cache HF weights, run 20-image example |
-| CUT3R | `/hdd3/kykt26/code/cut3r` | planned `cut3r` | Setup checklist created | Clone/upload repo, run official video/frame demo |
+| Spann3R | `/hdd3/kykt26/code/spann3r` | `spann3r` | Env ready, `curope` compiled for sm75, official `s00567` smoke passed | Write runner contract around `*.ply`, `*.npy`, `transforms.json` |
+| Align3R | `/hdd3/kykt26/code/align3r` | `align3r` | Env exists, core deps mostly installed; `curope` compile blocked by local CUDA 11.3 vs torch cu121 mismatch | Use slow path if possible, or rebuild env with torch/cu118-compatible compile path |
+| Fast3R | `/hdd3/kykt26/code/fast3r` | `fast3r` | Env ready, local HF weights loaded, 2-image forward smoke passed after forcing `pytorch_naive` attention on sm75 | Encode attention fallback in future runner |
+| CUT3R | `/hdd3/kykt26/code/cut3r` | `cut3r` | Env exists, checkpoints present; demo currently fails in RoPE path without compiled `curope` | Fix `curope`/torch-CUDA compile path or constrain input/model path |
 
 ## Official Setup Notes
 
@@ -74,13 +74,16 @@ Implemented:
 - Workbench/system model-roadmap panel
 - Workbench/system sample/evaluation panel wired to `/api/samples`
 - `tools/check_3r_remote.ps1` remote deployment checker
+- Spann3R first smoke completed at `/hdd3/kykt26/code/spann3r/output/demo/s00567_smoke`
+- Fast3R first smoke completed at `/hdd3/kykt26/code/fast3r/output/smoke_static_pair/smoke_summary.json`
+- Server verification after upload: `missing_directories=0`, `missing_conda_envs=0`, `missing_required_files=0`.
 
 Next app tasks:
 
-1. Add per-task manual scoring for comparison metrics.
-2. Add model-to-model comparison view grouped by sample id.
-3. Add one-click open links for active sample seed jobs.
-4. Add JSON output mode to `tools/check_3r_remote.ps1` for future app/CI ingestion.
+1. Add Spann3R runner using smoke output contract.
+2. Add Fast3R runner with `pytorch_naive` attention fallback for TITAN RTX / sm75.
+3. Fix Align3R / CUT3R `curope` build path or use confirmed slow-path settings.
+4. Add model-to-model comparison view grouped by sample id.
 
 ## Download / Upload Planning
 
@@ -95,3 +98,5 @@ This plan intentionally does not execute downloads or uploads. It lists staging 
 ## Reminder
 
 Do not spend current active engineering time on DUSt3R multi-image, Pi3X, ZipMap, or LingBot-Map unless the user redirects. They remain reference/deferred research tracks.
+
+Do not repeat local downloads by default. The active 3R repositories, weights, and shared smoke samples have already been uploaded to the server.

@@ -361,6 +361,11 @@ local_jobs/<job_id>/
 - [x] 后端 `model_catalog` 元数据初版
 - [x] 后端 `/api/samples`：返回样例清单、样例统计、model catalog
 - [x] 本地 `MODEL_DEPLOYMENT_STATUS.md`：记录 active 模型部署状态和下一步
+- [x] Spann3R 环境、权重、`curope` 编译和官方 `s00567` smoke
+- [x] Fast3R 环境、权重和 2 图 smoke；TITAN RTX 需要 `pytorch_naive` attention fallback
+- [ ] Align3R 环境仍需处理 `curope` / CUDA 版本兼容
+- [ ] CUT3R 环境仍需处理 `curope` / RoPE path 兼容
+- [x] 本地 active_3r 下载内容已上传到服务器；后续默认不要重复下载/上传。
 
 ## 7. 暂缓事项
 

@@ -22,6 +22,7 @@ This workspace currently has five related but separate 3D vision lines:
 - `E:\kykt\Coding\external_sources`: local copies of external upstream repos kept for reference or upload preparation.
 - `E:\kykt\Coding\4.06\vision_ui\MONST3R_MAINLINE_PLAN.md`: MonST3R video/dynamic reconstruction track plan.
 - `E:\kykt\Coding\4.06\vision_ui\THREER_MODEL_ROADMAP.md`: broader 3R model integration and research roadmap.
+- `E:\kykt\PROJECT_PROGRESS_2026-04-23.md`: current project progress and future-agent review guide.
 
 ## Proven Results
 
@@ -198,6 +199,9 @@ Current frontend capabilities:
 - 2026-04-21: App architecture/performance pass completed: added `/api/health`, moved Tauri health checks off `/api/bootstrap`, cached `samples_manifest.json`, changed log tail reads to tail-window reads, and reduced idle frontend polling. Notes are in `E:\kykt\Coding\4.06\vision_ui\APP_ARCHITECTURE_OPTIMIZATION.md`.
 - 2026-04-21: Task detail now supports persisted manual evaluation under `local_jobs/<job_id>/evaluation.json`, with backend APIs for read/write and a visible scoring panel in the app.
 - 2026-04-21: The app system page now includes a remote active-3R deployment summary backed by `/api/deployment/status`, and the deployment checker script can return JSON for future automation.
+- 2026-04-23: Active 3R code, weights, and shared smoke samples were uploaded to the server. Spann3R first smoke passed on official `s00567`, and Fast3R first forward smoke passed on the static pair after forcing `pytorch_naive` attention for TITAN RTX / sm75. Align3R and CUT3R envs exist but still need `curope` / CUDA compatibility fixes.
+- 2026-04-23: Root work history was renamed and refreshed as `E:\kykt\PROJECT_PROGRESS_2026-04-23.md`. The old `近期工作历程_3.2-3.23.md` was removed from the root to avoid stale guidance.
+- 2026-04-23: Local `E:\kykt\model_uploads\active_3r` was confirmed safe to remove after server upload and verification. It occupied about 21.6GB before cleanup.
 - 2026-04-20: MonST3R result semantics were strengthened: future `scene_meta.json` and generated summaries can identify core review targets, artifact groups, frame previews, dynamic masks, confidence arrays, trajectory files, and intrinsics files instead of presenting the output as an undifferentiated file list.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:
@@ -365,10 +369,13 @@ These are the main blockers between the current state and a more deliverable too
 ## Guidance for Future Agents
 
 - Read this file first.
+- Then read `E:\kykt\PROJECT_PROGRESS_2026-04-23.md`.
 - Keep the frontend centered on `job.json`, local cache, and SSH/SCP.
 - Do not split DUSt3R pair and multi-image into separate frontend products.
 - Expand backend runners instead.
 - Preserve current server assumptions unless the user changes them explicitly.
+- Actively review and challenge stale assumptions. In particular, check whether model status in `model_registry.py`, server state under `/hdd3/kykt26/code`, and app UI labels still agree.
+- Do not redownload or reupload model files unless the user explicitly asks. The active code/weights are already on the server.
 
 Current most important active repo:
 

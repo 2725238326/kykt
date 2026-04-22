@@ -3035,6 +3035,10 @@ function runnerStatusLabel(status: string) {
     baseline: "基座保留",
     validated_smoke: "Smoke 已过",
     validated_standard_sample: "标准样例已过",
+    smoke_ready: "Smoke 已过",
+    smoke_ready_attention_fallback: "Smoke 已过",
+    env_partial: "环境部分就绪",
+    env_blocked_curope: "环境待修复",
     planned: "待接入",
     frontier_research: "前沿预研",
     integrated: "已接入"

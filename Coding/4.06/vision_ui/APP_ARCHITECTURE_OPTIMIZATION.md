@@ -41,7 +41,7 @@ The app should remain a local desktop workbench. The server should run model job
 
 ## Next Architecture Tasks
 
-1. Add a deployment-status backend endpoint that consumes `tools/check_3r_remote.ps1 -Json` only on explicit user action, not during hot polling.
+1. Add `spann3r_runner.py` and `fast3r_runner.py`.
 2. Add a model-comparison view grouped by sample id.
 3. Add pagination or windowing for very large local job histories.
 4. Add optional result bundle export for selected jobs and model-comparison reports.
