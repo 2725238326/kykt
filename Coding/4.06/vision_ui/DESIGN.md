@@ -447,6 +447,42 @@ Keep it aligned with the same panel system and density.
   - all controls remain inline and compact
   - no modal-heavy workflow for basic compare/navigation tasks
 
+### Jobs / Matrix fifth-round constraints
+- Sample Matrix should support bulk operations on current compare scope:
+  - row-level selection (per sample row)
+  - select-all for current filtered rows
+  - batch copy of related job IDs (seed + model jobs)
+  - step-through locate (next job) for fast inspector handoff
+- Bulk behavior should follow scope-first logic:
+  - when rows are selected, operations apply to selected rows
+  - when no rows are selected, operations apply to current filtered rows
+- Jobs logs should support keyword-driven narrowing:
+  - inline keyword input (no modal)
+  - hit count feedback (matched / total)
+  - clear action for quick reset
+  - preserve latest/suspicious copy shortcuts regardless of filter
+
+### Page-wide sixth-round constraints
+- Overview should expose a compact operation dock:
+  - running count
+  - attention count
+  - total task entry
+  - system readiness entry
+- Create should behave like a launch console:
+  - show service/model/input/source readiness before the form is submitted
+  - keep the launch action grouped with the current launch summary
+  - avoid hiding readiness behind explanatory copy
+- Jobs list should support batch handoff:
+  - copying all task IDs in the current filter is a first-class action
+  - the action belongs near previous/next navigation, not inside job cards
+- Sample Matrix should expose unassigned work:
+  - jobs without sample binding should be visible as a small pool
+  - the pool should support copy IDs and locate job
+- System should expose deployment readiness as a matrix:
+  - row = active model target
+  - columns = directory, environment, files, checkpoints
+  - status should be visible before long text summaries
+
 ---
 
 ## Styling dos

@@ -375,6 +375,7 @@ function App() {
   const canDispatchListJob = selectedListJob ? canDispatchJobStatus(selectedListJob.job.status) : false;
   const canRetryListJob = selectedListJob ? selectedListJob.job.status !== "running" : false;
   const canCancelListJob = selectedListJob ? selectedListJob.job.status === "running" : false;
+  const filteredJobIds = useMemo(() => filteredJobs.map((item) => item.job.job_id), [filteredJobs]);
   const jobLaneCards = useMemo(
     () => [
       { key: "queue", label: "待派发", jobs: queuedJobs, filter: "all" as JobFilter, tone: "queue" as const },
@@ -401,6 +402,10 @@ function App() {
         .filter(Boolean)
         .join(" / ") || "暂无",
     [pendingImageCount, pendingUnknownCount, pendingVideoCount]
+  );
+  const createReadiness = useMemo(
+    () => buildCreateReadiness(serviceReady, formState.model, formState.source_type, files.length, pendingImageCount, pendingVideoCount),
+    [files.length, formState.model, formState.source_type, pendingImageCount, pendingVideoCount, serviceReady]
   );
   const summary = bootstrap?.summary ?? {
     total: jobs.length,
@@ -1107,6 +1112,14 @@ function App() {
         <section className="layout-grid create-layout">
           <article className="panel create-panel">
             <PanelTitle eyebrow="新建任务" title="选择模型和输入" />
+            <div className="create-run-strip" aria-label="创建任务检查">
+              {createReadiness.map((item) => (
+                <article className={`create-run-item ${item.tone}`} key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </article>
+              ))}
+            </div>
             <form className="form-stack" onSubmit={handleCreateJob}>
               <section className="create-workbench-grid">
                 <article className="create-block create-config-block">
@@ -1281,9 +1294,16 @@ function App() {
                 </article>
               </section>
 
-              <button className="primary-button" disabled={!serviceReady || submitting} type="submit">
-                {submitting ? "创建中..." : `创建 ${selectedModel?.label ?? "模型"} 任务`}
-              </button>
+              <div className="create-submit-dock">
+                <div>
+                  <span className="mini-label">Launch</span>
+                  <strong>{buildCreateLaunchHeadline(serviceReady, files.length)}</strong>
+                  <p>{buildCreateLaunchMessage(serviceReady, formState.model, formState.source_type, files.length)}</p>
+                </div>
+                <button className="primary-button" disabled={!serviceReady || submitting} type="submit">
+                  {submitting ? "创建中..." : `创建 ${selectedModel?.label ?? "模型"} 任务`}
+                </button>
+              </div>
             </form>
           </article>
 
@@ -1403,6 +1423,14 @@ function App() {
                       disabled={!selectedListJob}
                     >
                       复制ID
+                    </button>
+                    <button
+                      className="ghost-button small"
+                      type="button"
+                      onClick={() => void copyText(filteredJobIds.join("\n"), "筛选任务ID")}
+                      disabled={filteredJobIds.length === 0}
+                    >
+                      复制筛选ID
                     </button>
                   </div>
                 </div>
@@ -1547,6 +1575,7 @@ function App() {
             samplesError={samplesError}
             modelCatalog={modelCatalog}
             openWorkspace={openWorkspace}
+            copyText={copyText}
             serviceMessage={serviceMessage}
             backendStatus={backendStatus}
           />
@@ -1716,6 +1745,28 @@ function OverviewCommandCenter(props: {
             <strong>{buildOverviewHeadline(focusJob, props.runningJobs.length, props.attentionJobs.length)}</strong>
             <p>{buildOverviewMessage(focusJob, props.runningJobs.length, props.attentionJobs.length)}</p>
           </div>
+          <div className="overview-ops-dock" aria-label="工作台操作入口">
+            <button onClick={() => props.openWorkspace("jobs", focusJob?.job.job_id)} type="button">
+              <span>Jobs</span>
+              <strong>{props.runningJobs.length}</strong>
+              <small>运行中</small>
+            </button>
+            <button onClick={() => props.openWorkspace("jobs")} type="button">
+              <span>Fix</span>
+              <strong>{props.attentionJobs.length}</strong>
+              <small>待处理</small>
+            </button>
+            <button onClick={() => props.openWorkspace("create")} type="button">
+              <span>New</span>
+              <strong>{props.summary.total}</strong>
+              <small>任务总数</small>
+            </button>
+            <button onClick={() => props.openWorkspace("system")} type="button">
+              <span>Ops</span>
+              <strong>{props.activeModelCatalog.filter((item) => item.runnable).length}</strong>
+              <small>可运行模型</small>
+            </button>
+          </div>
         </aside>
       </section>
 
@@ -1761,6 +1812,7 @@ function OverviewCommandCenter(props: {
           errorMessage={props.samplesError}
           modelCatalog={props.modelCatalog}
           onLocateJob={(jobId) => props.openWorkspace("jobs", jobId)}
+          onCopy={props.copyText}
           compact
         />
       </section>
@@ -1784,9 +1836,12 @@ function SystemWorkbench(props: {
   samplesError: string | null;
   modelCatalog: ModelCatalogItem[];
   openWorkspace: (workspace: WorkspaceTab, jobId?: string) => void;
+  copyText: (value: string, label: string) => Promise<void>;
   serviceMessage: string;
   backendStatus: BackendStatusPayload | null;
 }) {
+  const deploymentRows = buildDeploymentComponentRows(props.deploymentStatus);
+
   return (
     <section className="system-grid workbench-system-grid">
       <article className="panel">
@@ -1819,6 +1874,26 @@ function SystemWorkbench(props: {
 
       <article className="panel deployment-console-panel">
         <PanelTitle eyebrow="Deployment" title="Active 3R 部署控制台" />
+        {deploymentRows.length > 0 ? (
+          <div className="deployment-readiness-table" role="table" aria-label="Active 3R 部署 readiness">
+            <div className="deployment-readiness-head" role="row">
+              <span role="columnheader">模型</span>
+              <span role="columnheader">目录</span>
+              <span role="columnheader">环境</span>
+              <span role="columnheader">文件</span>
+              <span role="columnheader">权重</span>
+            </div>
+            {deploymentRows.map((row) => (
+              <div className={`deployment-readiness-row ${row.tone}`} key={row.component} role="row">
+                <strong role="cell">{modelDisplayName(row.component, props.modelCatalog)}</strong>
+                <span role="cell">{row.directory}</span>
+                <span role="cell">{row.env}</span>
+                <span role="cell">{row.files}</span>
+                <span role="cell">{row.checkpoints}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
         <div className="support-checklist compact-stack">
           <article className="support-check-item">
             <strong>部署摘要</strong>
@@ -1877,6 +1952,7 @@ function SystemWorkbench(props: {
         errorMessage={props.samplesError}
         modelCatalog={props.modelCatalog}
         onLocateJob={(jobId) => props.openWorkspace("jobs", jobId)}
+        onCopy={props.copyText}
       />
 
       <article className="panel">
@@ -1945,10 +2021,13 @@ function SampleMatrixPanel(props: {
   errorMessage: string | null;
   modelCatalog: ModelCatalogItem[];
   onLocateJob?: (jobId: string) => void;
+  onCopy?: (value: string, label: string) => Promise<void>;
   compact?: boolean;
 }) {
   const [sortKey, setSortKey] = useState<SampleMatrixSortKey>("manifest");
   const [filterKey, setFilterKey] = useState<SampleMatrixFilterKey>("all");
+  const [selectedSampleIds, setSelectedSampleIds] = useState<string[]>([]);
+  const [batchLocateCursor, setBatchLocateCursor] = useState(0);
   const manifest = props.samplesPayload?.manifest ?? null;
   const summary = props.samplesPayload?.summary ?? null;
   const samples = manifest?.samples ?? [];
@@ -1961,6 +2040,7 @@ function SampleMatrixPanel(props: {
     ([leftStatus, leftCount], [rightStatus, rightCount]) => rightCount - leftCount || leftStatus.localeCompare(rightStatus)
   );
   const jobMatrixRows = props.samplesPayload?.job_matrix?.rows ?? [];
+  const unassignedJobs = props.samplesPayload?.job_matrix?.unassigned_jobs ?? [];
   const sampleRows = useMemo<SampleMatrixRowView[]>(() => {
     const matrix = new Map(jobMatrixRows.map((row) => [row.sample_id, row.jobs_by_model as Record<string, SampleMatrixJob>]));
     const rows = visibleSamples.map((sample, index) => {
@@ -1984,6 +2064,71 @@ function SampleMatrixPanel(props: {
     const filteredRows = rows.filter((row) => matrixRowMatchesFilter(row, filterKey));
     return filteredRows.sort((left, right) => compareSampleMatrixRows(left, right, sortKey));
   }, [filterKey, jobMatrixRows, sortKey, visibleSamples]);
+  const selectedSampleSet = useMemo(() => new Set(selectedSampleIds), [selectedSampleIds]);
+  const selectedRows = useMemo(
+    () => sampleRows.filter((row) => selectedSampleSet.has(row.sample.id)),
+    [sampleRows, selectedSampleSet]
+  );
+  const batchTargetRows = useMemo(
+    () => (selectedRows.length > 0 ? selectedRows : sampleRows),
+    [sampleRows, selectedRows]
+  );
+  const batchTargetJobIds = useMemo(() => collectSampleMatrixJobIds(batchTargetRows), [batchTargetRows]);
+  const allVisibleSelected = sampleRows.length > 0 && sampleRows.every((row) => selectedSampleSet.has(row.sample.id));
+  const nextLocateIndex = batchTargetJobIds.length > 0 ? (batchLocateCursor % batchTargetJobIds.length) + 1 : 0;
+
+  useEffect(() => {
+    setSelectedSampleIds((current) => {
+      const available = new Set(sampleRows.map((row) => row.sample.id));
+      const next = current.filter((sampleId) => available.has(sampleId));
+      return next.length === current.length ? current : next;
+    });
+  }, [sampleRows]);
+
+  useEffect(() => {
+    if (batchTargetJobIds.length === 0) {
+      if (batchLocateCursor !== 0) {
+        setBatchLocateCursor(0);
+      }
+      return;
+    }
+    if (batchLocateCursor >= batchTargetJobIds.length) {
+      setBatchLocateCursor(0);
+    }
+  }, [batchLocateCursor, batchTargetJobIds.length]);
+
+  function toggleSampleRowSelection(sampleId: string) {
+    setSelectedSampleIds((current) =>
+      current.includes(sampleId) ? current.filter((id) => id !== sampleId) : [...current, sampleId]
+    );
+    setBatchLocateCursor(0);
+  }
+
+  function toggleAllVisibleRows() {
+    if (allVisibleSelected) {
+      setSelectedSampleIds([]);
+    } else {
+      setSelectedSampleIds(sampleRows.map((row) => row.sample.id));
+    }
+    setBatchLocateCursor(0);
+  }
+
+  async function handleCopyBatchJobIds() {
+    if (!props.onCopy || batchTargetJobIds.length === 0) {
+      return;
+    }
+    const scopeLabel = selectedRows.length > 0 ? "选中样例任务ID" : "筛选样例任务ID";
+    await props.onCopy(batchTargetJobIds.join("\n"), scopeLabel);
+  }
+
+  function handleLocateNextBatchJob() {
+    if (!props.onLocateJob || batchTargetJobIds.length === 0) {
+      return;
+    }
+    const targetIndex = batchLocateCursor % batchTargetJobIds.length;
+    props.onLocateJob(batchTargetJobIds[targetIndex]);
+    setBatchLocateCursor((targetIndex + 1) % batchTargetJobIds.length);
+  }
 
   return (
     <article className="panel sample-matrix-panel">
@@ -2071,7 +2216,13 @@ function SampleMatrixPanel(props: {
                     <div className="sample-compare-tools">
                       <label className="field compact">
                         <span>排序</span>
-                        <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SampleMatrixSortKey)}>
+                        <select
+                          value={sortKey}
+                          onChange={(event) => {
+                            setSortKey(event.target.value as SampleMatrixSortKey);
+                            setBatchLocateCursor(0);
+                          }}
+                        >
                           <option value="manifest">按样例清单</option>
                           <option value="completion">按完成度</option>
                           <option value="score">按评分均值</option>
@@ -2080,7 +2231,13 @@ function SampleMatrixPanel(props: {
                       </label>
                       <label className="field compact">
                         <span>筛选</span>
-                        <select value={filterKey} onChange={(event) => setFilterKey(event.target.value as SampleMatrixFilterKey)}>
+                        <select
+                          value={filterKey}
+                          onChange={(event) => {
+                            setFilterKey(event.target.value as SampleMatrixFilterKey);
+                            setBatchLocateCursor(0);
+                          }}
+                        >
                           <option value="all">全部样例</option>
                           <option value="attention">仅看待处理</option>
                           <option value="running">仅看运行中</option>
@@ -2092,6 +2249,46 @@ function SampleMatrixPanel(props: {
                 </div>
               </div>
 
+              {!props.compact ? (
+                <div className="sample-bulk-strip" aria-label="样例矩阵批量操作">
+                  <div className="sample-bulk-summary">
+                    <span className="mini-label">批量操作</span>
+                    <strong>
+                      {selectedRows.length > 0
+                        ? `已选 ${selectedRows.length} 行样例`
+                        : `未选择行，默认作用于当前筛选 ${sampleRows.length} 行`}
+                    </strong>
+                    <p>{batchTargetJobIds.length > 0 ? `可操作任务ID：${batchTargetJobIds.length}` : "当前范围还没有任务ID。"}</p>
+                  </div>
+                  <div className="sample-bulk-actions">
+                    <button className="ghost-button small" onClick={toggleAllVisibleRows} type="button">
+                      {allVisibleSelected ? "取消全选" : "全选筛选行"}
+                    </button>
+                    <button
+                      className="ghost-button small"
+                      disabled={!props.onCopy || batchTargetJobIds.length === 0}
+                      onClick={() => void handleCopyBatchJobIds()}
+                      type="button"
+                    >
+                      复制任务ID
+                    </button>
+                    <button
+                      className="ghost-button small"
+                      disabled={!props.onLocateJob || batchTargetJobIds.length === 0}
+                      onClick={handleLocateNextBatchJob}
+                      type="button"
+                    >
+                      定位下一条
+                    </button>
+                    {batchTargetJobIds.length > 0 ? (
+                      <span className="sample-bulk-cursor">
+                        游标 {nextLocateIndex}/{batchTargetJobIds.length}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
               <div className="sample-compare-grid">
                 {sampleRows.map((row) => {
                   const { sample, jobsByModel, requiredModels, requiredModelSet, compareModels, rowStats, rowScore } = row;
@@ -2099,7 +2296,18 @@ function SampleMatrixPanel(props: {
                     <article className="sample-compare-row" key={sample.id}>
                       <div className="sample-compare-main">
                         <div className="sample-card-head">
-                          <strong>{sample.id}</strong>
+                          <div className="sample-card-head-main">
+                            {!props.compact ? (
+                              <input
+                                className="sample-row-checkbox"
+                                type="checkbox"
+                                checked={selectedSampleSet.has(sample.id)}
+                                onChange={() => toggleSampleRowSelection(sample.id)}
+                                aria-label={`选择样例 ${sample.id}`}
+                              />
+                            ) : null}
+                            <strong>{sample.id}</strong>
+                          </div>
                           <span className="status-badge">{sampleStatusLabel(sample.status)}</span>
                         </div>
                         <p>{sample.purpose}</p>
@@ -2222,6 +2430,42 @@ function SampleMatrixPanel(props: {
               ))}
             </div>
           ) : null}
+
+          {!props.compact && unassignedJobs.length > 0 ? (
+            <section className="sample-unassigned-panel" aria-label="未归档任务池">
+              <div className="sample-unassigned-head">
+                <div>
+                  <span className="mini-label">未归档任务池</span>
+                  <strong>{unassignedJobs.length} 条任务还没有绑定样例</strong>
+                </div>
+                {props.onCopy ? (
+                  <button
+                    className="ghost-button small"
+                    onClick={() => void props.onCopy?.(unassignedJobs.map((job) => job.job_id).join("\n"), "未归档任务ID")}
+                    type="button"
+                  >
+                    复制ID
+                  </button>
+                ) : null}
+              </div>
+              <div className="sample-unassigned-grid">
+                {unassignedJobs.slice(0, 8).map((job) => (
+                  <article className={`sample-unassigned-card ${job.status}`} key={job.job_id}>
+                    <div>
+                      <strong>{job.job_id}</strong>
+                      <span>{modelDisplayName(job.model, props.modelCatalog)} · {job.status_label}</span>
+                    </div>
+                    <p>{job.progress_message || `阶段：${job.phase}`}</p>
+                    {props.onLocateJob ? (
+                      <button className="ghost-button small" onClick={() => props.onLocateJob?.(job.job_id)} type="button">
+                        定位任务
+                      </button>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </>
       ) : null}
     </article>
@@ -2329,10 +2573,25 @@ function JobDetail(props: {
   const summary = props.selectedJob.result_summary;
   const latestLogLine = getLatestLogLine(props.selectedJob.logs);
   const criticalLogLine = getCriticalLogLine(props.selectedJob.logs);
+  const [logQuery, setLogQuery] = useState("");
+  const normalizedLogQuery = logQuery.trim().toLowerCase();
+  const filteredLogs = useMemo(() => {
+    if (!normalizedLogQuery) {
+      return props.selectedJob.logs;
+    }
+    return props.selectedJob.logs.filter((log) => {
+      const haystack = [log.name, log.relative_path, log.tail || ""].join("\n").toLowerCase();
+      return haystack.includes(normalizedLogQuery);
+    });
+  }, [normalizedLogQuery, props.selectedJob.logs]);
   const outputSections = buildOutputSections(props.selectedJob.outputs, job.model);
   const progress = props.selectedJob.phase_display;
   const advisorSuggested = isAdvisorSuggested(job.status);
   const advisorReport = props.selectedJob.advisor_report ?? null;
+
+  useEffect(() => {
+    setLogQuery("");
+  }, [job.job_id]);
 
   function scrollToInspectorSection(sectionId: string) {
     const target = document.getElementById(sectionId);
@@ -2629,7 +2888,9 @@ function JobDetail(props: {
                 <p>优先看最新一条有效进展，再往下翻完整日志尾部。</p>
               </div>
               <div className="logs-head-actions">
-                <span className="section-pill">{props.selectedJob.logs.length} 份</span>
+                <span className="section-pill">
+                  {normalizedLogQuery ? `命中 ${filteredLogs.length}/${props.selectedJob.logs.length}` : `${props.selectedJob.logs.length} 份`}
+                </span>
                 {latestLogLine ? (
                   <button className="ghost-button small" onClick={() => void props.onCopy(latestLogLine, "最新日志")} type="button">
                     复制最新
@@ -2644,15 +2905,33 @@ function JobDetail(props: {
             </div>
             {latestLogLine ? <div className="latest-log-banner">{latestLogLine}</div> : null}
             {criticalLogLine ? <div className="critical-log-banner">可疑日志：{criticalLogLine}</div> : null}
-            {props.selectedJob.logs.length > 0 ? (
+            <div className="log-filter-strip">
+              <label className="field compact log-filter-field">
+                <span>关键词</span>
+                <input
+                  type="search"
+                  value={logQuery}
+                  onChange={(event) => setLogQuery(event.target.value)}
+                  placeholder="例如 error / timeout / cuda / oom"
+                />
+              </label>
+              {normalizedLogQuery ? (
+                <button className="ghost-button small" onClick={() => setLogQuery("")} type="button">
+                  清除
+                </button>
+              ) : null}
+            </div>
+            {filteredLogs.length > 0 ? (
               <div className="log-list">
-                {props.selectedJob.logs.map((log) => (
+                {filteredLogs.map((log) => (
                   <div className="log-card" key={log.relative_path}>
                     <strong>{log.name}</strong>
                     <pre>{log.tail || "暂无日志。"}</pre>
                   </div>
                 ))}
               </div>
+            ) : props.selectedJob.logs.length > 0 ? (
+              <div className="empty-state">没有匹配“{logQuery.trim()}”的日志。</div>
             ) : (
               <span className="muted-text">还没有日志。</span>
             )}
@@ -3225,6 +3504,25 @@ function primaryArtifactHint(primaryArtifacts?: SampleMatrixJob["primary_artifac
   return `核心产物：${label}`;
 }
 
+function collectSampleMatrixJobIds(rows: SampleMatrixRowView[]) {
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    if (row.sample.seed_job_id && !seen.has(row.sample.seed_job_id)) {
+      seen.add(row.sample.seed_job_id);
+      ids.push(row.sample.seed_job_id);
+    }
+    for (const model of row.compareModels) {
+      const jobId = row.jobsByModel[model]?.job_id;
+      if (jobId && !seen.has(jobId)) {
+        seen.add(jobId);
+        ids.push(jobId);
+      }
+    }
+  }
+  return ids;
+}
+
 function isImageLikeFile(file: File) {
   return file.type.startsWith("image/") || /\.(png|jpe?g|bmp|webp)$/i.test(file.name);
 }
@@ -3584,6 +3882,64 @@ function buildCreateGuidance(model: string, sourceType: string, fileCount: numbe
   ];
 }
 
+function buildCreateReadiness(
+  serviceReady: boolean,
+  model: string,
+  sourceType: string,
+  fileCount: number,
+  imageCount: number,
+  videoCount: number
+) {
+  const inputReady =
+    sourceType === "video"
+      ? fileCount === 1 && videoCount === 1
+      : sourceType === "frames"
+        ? imageCount >= 2
+        : imageCount >= 2;
+  return [
+    {
+      label: "服务",
+      value: serviceReady ? "Ready" : "Waiting",
+      tone: serviceReady ? "ready" : "blocked"
+    },
+    {
+      label: "模型",
+      value: statusModelLabel(model),
+      tone: "ready"
+    },
+    {
+      label: "输入",
+      value: inputReady ? `${fileCount} 个` : "待补",
+      tone: inputReady ? "ready" : "partial"
+    },
+    {
+      label: "来源",
+      value: sourceTypeLabel(sourceType),
+      tone: allowedSourceTypesForModel(model).includes(sourceType) ? "ready" : "blocked"
+    }
+  ];
+}
+
+function buildCreateLaunchHeadline(serviceReady: boolean, fileCount: number) {
+  if (!serviceReady) {
+    return "等待本地服务";
+  }
+  if (fileCount === 0) {
+    return "先选择输入文件";
+  }
+  return "可以创建任务";
+}
+
+function buildCreateLaunchMessage(serviceReady: boolean, model: string, sourceType: string, fileCount: number) {
+  if (!serviceReady) {
+    return "本地服务就绪后才能提交，当前配置会保留在页面上。";
+  }
+  if (fileCount === 0) {
+    return "先把文件放进 staging 区，再按当前模型和输入来源发起任务。";
+  }
+  return `${statusModelLabel(model)} / ${sourceTypeLabel(sourceType)} / ${fileCount} 个输入文件。`;
+}
+
 function buildCaptureChecklist(model: string, sourceType: string, fileCount: number) {
   if (model === "monst3r" && sourceType === "video") {
     return [
@@ -3780,6 +4136,31 @@ function formatDeploymentDirectoryStatus(payload: DeploymentStatusPayload | null
     .filter((item) => ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"].includes(item.name))
     .map((item) => `${item.name}:${item.state}${item.readme_setup ? "" : "/README缺失"}`)
     .join(" / ");
+}
+
+function buildDeploymentComponentRows(payload: DeploymentStatusPayload | null) {
+  if (!payload) {
+    return [];
+  }
+  const targets = ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"];
+  return targets.map((component) => {
+    const directory = payload.directories.find((item) => item.name === component);
+    const env = payload.conda_envs.find((item) => item.component === component);
+    const files = payload.known_files.filter((item) => item.component === component);
+    const missingRequiredFiles = files.filter((item) => /required/i.test(item.need) && !item.exists).length;
+    const checkpointCount = payload.checkpoints?.filter((item) => item.component === component).length ?? 0;
+    const blocked = !directory?.exists || !env?.exists || missingRequiredFiles > 0;
+    const tone = blocked ? "blocked" : checkpointCount > 0 ? "ready" : "partial";
+
+    return {
+      component,
+      tone,
+      directory: directory?.exists ? (directory.readme_setup ? "OK" : "README 待补") : "缺失",
+      env: env?.exists ? "OK" : "缺失",
+      files: files.length > 0 ? `${files.length - missingRequiredFiles}/${files.length}` : "未登记",
+      checkpoints: checkpointCount > 0 ? `${checkpointCount} 个` : "待确认"
+    };
+  });
 }
 
 function modelDisplayName(value: string, catalog: ModelCatalogItem[]) {

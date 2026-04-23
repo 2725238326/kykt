@@ -2849,6 +2849,23 @@ body {
   gap: 8px;
 }
 
+.log-filter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.log-filter-field {
+  flex: 1;
+  min-width: min(420px, 100%);
+}
+
+.log-filter-field input {
+  width: 100%;
+}
+
 .critical-log-banner {
   border: 1px solid rgba(255, 107, 122, 0.34);
   border-radius: 10px;
@@ -2933,6 +2950,62 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+
+.sample-bulk-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 10px;
+  border: 1px solid var(--line-default);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(9, 16, 30, 0.62);
+}
+
+.sample-bulk-summary {
+  display: grid;
+  gap: 3px;
+}
+
+.sample-bulk-summary strong {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.sample-bulk-summary p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.sample-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.sample-bulk-cursor {
+  color: var(--text-faint);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.sample-card-head-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sample-row-checkbox {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #66a6ff;
+  cursor: pointer;
 }
 
 .sample-compare-matrix-head {
@@ -3130,9 +3203,25 @@ body {
     justify-content: flex-start;
   }
 
+  .log-filter-strip {
+    align-items: stretch;
+  }
+
+  .log-filter-field {
+    min-width: 0;
+  }
+
   .sample-compare-matrix-grid,
   .inspector-meta-grid {
     grid-template-columns: 1fr;
+  }
+
+  .sample-bulk-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .sample-bulk-actions {
+    justify-content: flex-start;
   }
 }
 
@@ -3259,11 +3348,220 @@ body {
   padding: 12px;
 }
 
+/* Page-wide utility refinement */
+.overview-ops-dock {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.overview-ops-dock button,
+.create-run-item,
+.create-submit-dock,
+.deployment-readiness-table,
+.sample-unassigned-panel,
+.sample-unassigned-card {
+  border: 1px solid var(--line-default);
+  background: rgba(15, 23, 40, 0.82);
+  color: var(--text-primary);
+}
+
+.overview-ops-dock button {
+  display: grid;
+  gap: 4px;
+  min-height: 82px;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: left;
+}
+
+.overview-ops-dock span,
+.overview-ops-dock small,
+.create-run-item span,
+.sample-unassigned-card span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.overview-ops-dock strong {
+  color: var(--accent-primary);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.create-run-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.create-run-item {
+  display: grid;
+  gap: 5px;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.create-run-item strong {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.create-run-item.ready {
+  border-color: rgba(83, 194, 125, 0.3);
+}
+
+.create-run-item.partial {
+  border-color: rgba(245, 158, 11, 0.34);
+}
+
+.create-run-item.blocked {
+  border-color: rgba(255, 107, 122, 0.32);
+}
+
+.create-submit-dock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.create-submit-dock > div {
+  display: grid;
+  gap: 4px;
+}
+
+.create-submit-dock strong {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.create-submit-dock p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.deployment-readiness-table {
+  display: grid;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+
+.deployment-readiness-head,
+.deployment-readiness-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 1.1fr) repeat(4, minmax(80px, 0.8fr));
+  gap: 8px;
+  align-items: center;
+  padding: 9px 10px;
+}
+
+.deployment-readiness-head {
+  border-bottom: 1px solid var(--line-default);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.deployment-readiness-head span,
+.deployment-readiness-row span {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.deployment-readiness-row {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.deployment-readiness-row:last-child {
+  border-bottom: 0;
+}
+
+.deployment-readiness-row.ready {
+  border-left: 3px solid rgba(83, 194, 125, 0.72);
+}
+
+.deployment-readiness-row.partial {
+  border-left: 3px solid rgba(245, 158, 11, 0.72);
+}
+
+.deployment-readiness-row.blocked {
+  border-left: 3px solid rgba(255, 107, 122, 0.72);
+}
+
+.sample-unassigned-panel {
+  display: grid;
+  gap: 10px;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.sample-unassigned-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sample-unassigned-head > div {
+  display: grid;
+  gap: 3px;
+}
+
+.sample-unassigned-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.sample-unassigned-card {
+  display: grid;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.sample-unassigned-card.finished {
+  border-color: rgba(83, 194, 125, 0.3);
+}
+
+.sample-unassigned-card.running,
+.sample-unassigned-card.starting {
+  border-color: rgba(102, 166, 255, 0.3);
+}
+
+.sample-unassigned-card.failed,
+.sample-unassigned-card.cancelled {
+  border-color: rgba(255, 107, 122, 0.32);
+}
+
+.sample-unassigned-card div {
+  display: grid;
+  gap: 3px;
+}
+
+.sample-unassigned-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 @media (max-width: 1120px) {
   .create-workbench-grid,
   .create-guidance-block,
   .create-params-block,
   .staging-stats,
+  .overview-ops-dock,
+  .create-run-strip,
+  .deployment-readiness-head,
+  .deployment-readiness-row,
   .staging-table-head,
   .staging-row {
     grid-template-columns: 1fr;
@@ -3294,5 +3592,11 @@ body {
 
   .staging-remove-button {
     justify-self: start;
+  }
+
+  .create-submit-dock,
+  .sample-unassigned-head {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
