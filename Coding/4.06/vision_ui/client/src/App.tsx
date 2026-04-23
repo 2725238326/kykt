@@ -300,7 +300,8 @@ function App() {
     source_type: "images",
     notes: "",
     ...defaultDust3rParams,
-    ...defaultMonst3rParams
+    ...defaultMonst3rParams,
+    ...defaultFast3rParams
   });
 
   const bootstrapData = bootstrap ?? DEFAULT_BOOTSTRAP;
@@ -339,9 +340,15 @@ function App() {
     () => modelCatalog.filter((item) => !item.active_track),
     [modelCatalog]
   );
+  const runnableModelCatalog = useMemo(() => modelCatalog.filter((item) => item.runnable), [modelCatalog]);
+  const catalogOnlyModelCatalog = useMemo(() => modelCatalog.filter((item) => !item.runnable), [modelCatalog]);
+  const selectedModelCatalog = useMemo(
+    () => modelCatalog.find((item) => item.value === formState.model) ?? null,
+    [formState.model, modelCatalog]
+  );
   const selectedModel = useMemo(
-    () => modelCatalog.find((item) => item.value === formState.model) ?? bootstrapData.models.find((item) => item.value === formState.model),
-    [bootstrapData.models, formState.model, modelCatalog]
+    () => selectedModelCatalog ?? bootstrapData.models.find((item) => item.value === formState.model) ?? null,
+    [bootstrapData.models, formState.model, selectedModelCatalog]
   );
   const createParamMode = useMemo(() => getCreateParamMode(formState.model), [formState.model]);
   const selectedModelSourceTypes = useMemo(
@@ -1202,11 +1209,22 @@ function App() {
                     <label className="field">
                       <span>模型</span>
                       <select value={formState.model} onChange={(event) => updateModel(event.target.value)}>
-                        {bootstrapData.models.map((item) => (
-                          <option key={item.value} value={item.value}>
-                            {item.label}
-                          </option>
-                        ))}
+                        <optgroup label="可创建模型">
+                          {runnableModelCatalog.map((item) => (
+                            <option key={item.value} value={item.value}>
+                              {item.label}
+                            </option>
+                          ))}
+                        </optgroup>
+                        {catalogOnlyModelCatalog.length > 0 ? (
+                          <optgroup label="目录模型（暂不可创建）">
+                            {catalogOnlyModelCatalog.map((item) => (
+                              <option key={item.value} value={item.value} disabled>
+                                {item.label} · {runnerStatusLabel(item.runner_status)}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ) : null}
                       </select>
                     </label>
                     <label className="field">
@@ -1224,6 +1242,27 @@ function App() {
                           ))}
                       </select>
                     </label>
+                  </div>
+
+                  <div className="create-model-context">
+                    <div className="create-model-context-head">
+                      <strong>{selectedModel?.description ?? "根据模型类型自动给出最稳妥的起步建议。"}</strong>
+                      {selectedModelCatalog ? (
+                        <span className={`create-model-badge ${selectedModelCatalog.runnable ? "runnable" : "catalog"}`}>
+                          {selectedModelCatalog.runnable ? "可创建" : "目录模型"}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="create-model-facts">
+                      {selectedModelCatalog?.family ? <span>{modelFamilyLabel(selectedModelCatalog.family)}</span> : null}
+                      <span>输入：{selectedModelSourceTypes.map((type) => sourceTypeLabel(type)).join(" / ")}</span>
+                      {selectedModelCatalog ? <span>状态：{runnerStatusLabel(selectedModelCatalog.runner_status)}</span> : null}
+                    </div>
+                    {catalogOnlyModelCatalog.length > 0 ? (
+                      <p className="create-model-note">
+                        目录中还有 {catalogOnlyModelCatalog.map((item) => item.label).join(" / ")}，当前先保留在研究/部署视图里，不进入创建流程。
+                      </p>
+                    ) : null}
                   </div>
 
                   <label className="field">

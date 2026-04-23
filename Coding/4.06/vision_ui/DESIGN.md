@@ -483,6 +483,17 @@ Keep it aligned with the same panel system and density.
   - columns = directory, environment, files, checkpoints
   - status should be visible before long text summaries
 
+### Create seventh-round constraints
+- The model picker should be catalog-driven, not hardcoded to the legacy create list.
+- Create must distinguish between:
+  - runnable models that can be submitted now
+  - catalog/research models that are visible but not yet creatable
+- The selected model block should show:
+  - supported input types
+  - model family
+  - runner/deployment status
+- Do not force every non-MonST3R model into a plain image-only assumption.
+
 ---
 
 ## Styling dos

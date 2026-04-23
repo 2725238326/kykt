@@ -3268,6 +3268,69 @@ body {
   line-height: 1.35;
 }
 
+.create-model-context {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line-default);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--bg-subtle);
+}
+
+.create-model-context-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.create-model-context-head strong {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.create-model-badge {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.create-model-badge.runnable {
+  background: var(--green-soft);
+  color: var(--accent-success);
+}
+
+.create-model-badge.catalog {
+  background: var(--yellow-soft);
+  color: var(--accent-warning);
+}
+
+.create-model-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.create-model-facts span {
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: rgba(63, 116, 230, 0.08);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.create-model-note {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .staging-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3595,7 +3658,8 @@ body {
   }
 
   .create-submit-dock,
-  .sample-unassigned-head {
+  .sample-unassigned-head,
+  .create-model-context-head {
     align-items: stretch;
     flex-direction: column;
   }
