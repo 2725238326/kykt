@@ -8,14 +8,15 @@ import subprocess
 import tarfile
 import threading
 import traceback
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 from job_store import ROOT, get_job_dir, iter_input_items, load_job, update_job, write_result_summary
 
 
 ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+MODEL_RESULT_BUNDLE_MODELS = {"monst3r", "spann3r", "fast3r"}
 
 
 @dataclass
@@ -35,6 +36,12 @@ class ServerConfig:
     remote_mast3r_env: str = "mast3r"
     remote_monst3r_repo: str = "/hdd3/kykt26/code/monst3r"
     remote_monst3r_env: str = "monst3r"
+    remote_spann3r_repo: str = "/hdd3/kykt26/code/spann3r"
+    remote_spann3r_env: str = "spann3r"
+    remote_spann3r_ckpt: str = "/hdd3/kykt26/code/spann3r/checkpoints/spann3r.pth"
+    remote_fast3r_repo: str = "/hdd3/kykt26/code/fast3r"
+    remote_fast3r_env: str = "fast3r"
+    remote_fast3r_checkpoint_dir: str = "/hdd3/kykt26/models/fast3r/Fast3R_ViT_Large_512"
 
 
 LOCAL_RUNNERS_DIR = ROOT / "runners"
@@ -61,6 +68,34 @@ REMOTE_PHASE_MAP = {
     "exporting_pointcloud": "running_remote_pointcloud",
     "finished": "downloading_results",
     "failed": "failed",
+}
+
+
+MONST3R_ARTIFACT_ROLE_LABELS = {
+    "scene": ("三维场景", "优先打开检查主体结构、相机轨迹和动态区域。"),
+    "trajectory": ("相机轨迹", "用于判断相机运动是否连续、是否出现明显漂移。"),
+    "intrinsics": ("相机内参", "用于复查焦距和相机参数是否成功导出。"),
+    "frame_preview": ("彩色帧预览", "用于快速确认抽帧质量、曝光和运动模糊。"),
+    "dynamic_mask": ("动态区域", "用于判断运动物体或动态区域是否被识别。"),
+    "confidence": ("置信数组", "用于后续诊断深度/几何估计稳定性。"),
+    "initial_confidence": ("初始置信数组", "MonST3R 中间置信产物。"),
+    "geometry_array": ("几何数组", "每帧对应的几何/深度数组。"),
+    "array": ("其他数组", "其他 NPY 中间产物。"),
+    "image": ("其他图像", "其他可视化图像。"),
+    "other": ("其他产物", "未归入主检查路径的产物。"),
+}
+SPANN3R_ARTIFACT_ROLE_LABELS = {
+    "pointcloud": ("点云结果", "优先在 MeshLab 中检查全局结构与噪声。"),
+    "transform": ("相机与变换", "用于复查相机轨迹与导出兼容性。"),
+    "array": ("几何数组", "用于后续诊断 pointmap 与置信过滤效果。"),
+    "other": ("其他产物", "未归入主检查路径的产物。"),
+}
+FAST3R_ARTIFACT_ROLE_LABELS = {
+    "pointcloud": ("点云结果", "优先检查结构完整性和稠密程度。"),
+    "camera": ("相机信息", "用于复查相机位姿和焦距估计。"),
+    "confidence": ("置信摘要", "用于诊断低置信区域与整体可信度。"),
+    "metadata": ("运行元数据", "用于复查 attention backend、profiling 与输入列表。"),
+    "other": ("其他产物", "未归入主检查路径的产物。"),
 }
 
 
@@ -104,7 +139,6 @@ def run_remote_job(job_id: str) -> None:
         )
         _write_debug_log(job_id, f"Preparing remote directory: {remote_job_dir}")
 
-        # Create remote directories
         _raise_if_cancelled(job_id)
         _ssh(
             config,
@@ -116,50 +150,42 @@ def run_remote_job(job_id: str) -> None:
         )
         _write_debug_log(job_id, "Remote job directories created.")
 
-        # Ensure runners dir exists
         _raise_if_cancelled(job_id)
         update_job(job_id, phase="preparing_remote", progress_message="正在确认远端运行脚本目录...")
         _ssh(config, f"mkdir -p {shlex.quote(config.remote_runners_dir)}")
         _write_debug_log(job_id, f"Remote runners dir ready: {config.remote_runners_dir}")
 
-        # Upload inputs
         _raise_if_cancelled(job_id)
         update_job(job_id, phase="uploading_inputs", progress_message="正在上传本地输入文件到服务器...")
-        _write_debug_log(job_id, "Uploading inputs...")
         _upload_inputs(config, job.job_id, remote_job_dir)
         _write_debug_log(job_id, "Inputs uploaded.")
 
-        # Upload job.json
         _raise_if_cancelled(job_id)
         update_job(job_id, phase="uploading_inputs", progress_message="正在上传任务清单...")
         _upload_remote_job_json(config, job.job_id, remote_job_dir)
         _write_debug_log(job_id, "Remote job.json uploaded.")
 
-        # Upload runner script
         _raise_if_cancelled(job_id)
         update_job(job_id, phase="uploading_inputs", progress_message="正在上传远端运行脚本...")
         _upload_runner(config, job.model)
         _write_debug_log(job_id, f"Remote runner prepared for model: {job.model}")
 
-        # Dispatch model
         _raise_if_cancelled(job_id)
-        if job.model == "dust3r":
-            _run_dust3r_v2(config, job.job_id, remote_job_dir)
-        elif job.model == "mast3r":
-            _run_mast3r_v1(config, job.job_id, remote_job_dir)
-        elif job.model == "monst3r":
-            _run_monst3r_v1(config, job.job_id, remote_job_dir)
-        else:
+        dispatchers = {
+            "dust3r": _run_dust3r_v2,
+            "mast3r": _run_mast3r_v1,
+            "monst3r": _run_monst3r_v1,
+            "spann3r": _run_spann3r_v1,
+            "fast3r": _run_fast3r_v1,
+        }
+        dispatcher = dispatchers.get(job.model)
+        if dispatcher is None:
             raise RuntimeError(f"模型 '{job.model}' 还没有接入远端执行。")
+        dispatcher(config, job.job_id, remote_job_dir)
         _write_debug_log(job_id, "Remote model execution finished, starting download.")
 
-        # Download results
         _raise_if_cancelled(job_id)
-        update_job(
-            job_id,
-            phase="downloading_results",
-            progress_message="正在把输出和日志下载回本地缓存...",
-        )
+        update_job(job_id, phase="downloading_results", progress_message="正在把输出和日志下载回本地缓存...")
         output_files = _download_results(config, job.job_id, remote_job_dir)
         if load_job(job_id).status == "cancelled":
             _write_debug_log(job_id, "Job was cancelled during result download.")
@@ -219,10 +245,7 @@ def _upload_inputs(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     for idx, item in enumerate(items, start=1):
         _raise_if_cancelled(job_id)
         local_path = ROOT / item["relative_path"]
-        update_job(
-            job_id,
-            progress_message=f"正在上传输入 {idx}/{total}: {item['stored_name']}",
-        )
+        update_job(job_id, progress_message=f"正在上传输入 {idx}/{total}: {item['stored_name']}")
         _scp_to_remote(config, local_path, f"{remote_job_dir}/input/{item['stored_name']}")
 
 
@@ -244,30 +267,26 @@ def _upload_runner(config: ServerConfig, model: str) -> None:
         "dust3r": "dust3r_runner.py",
         "mast3r": "mast3r_runner.py",
         "monst3r": "monst3r_runner.py",
+        "spann3r": "spann3r_runner.py",
+        "fast3r": "fast3r_runner.py",
     }
     runner_file = runner_map.get(model)
     if not runner_file:
         return
-
     local_runner = LOCAL_RUNNERS_DIR / runner_file
     if local_runner.exists():
         _scp_to_remote(config, local_runner, f"{config.remote_runners_dir}/{runner_file}")
 
 
 def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
-    """Run DUSt3R using the unified server-side runner (supports N images)."""
     job = load_job(job_id)
-    input_items = iter_input_items(job)
-    n_images = len(input_items)
+    n_images = len(iter_input_items(job))
     params = job.params or {}
-
     if n_images < 2:
         raise RuntimeError("DUSt3R 至少需要两张已上传图片。")
-
     runner_path = f"{config.remote_runners_dir}/dust3r_runner.py"
     log_path = f"{remote_job_dir}/logs/runner.log"
     local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
-
     cmd = (
         f"set -o pipefail && "
         f"cd {shlex.quote(config.remote_dust3r_repo)} && "
@@ -285,36 +304,19 @@ def _run_dust3r_v2(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
         f"--match-viz-count {shlex.quote(str(params.get('match_viz_count', 50)))} "
         f"2>&1 | tee {shlex.quote(log_path)}"
     )
-
-    update_job(
-        job_id,
-        phase="running_remote_matches",
-        progress_message=f"正在使用 {n_images} 张图片启动 DUSt3R...",
-    )
-    _ssh_stream(
-        config,
-        cmd,
-        job_id=job_id,
-        phase="running_remote_matches",
-        remote_job_dir=remote_job_dir,
-        local_log_path=local_log,
-    )
+    update_job(job_id, phase="running_remote_matches", progress_message=f"正在使用 {n_images} 张图片启动 DUSt3R...")
+    _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
 
 
 def _run_mast3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
-    """Run MASt3R using the DUSt3R-compatible global alignment flow."""
     job = load_job(job_id)
-    input_items = iter_input_items(job)
-    n_images = len(input_items)
+    n_images = len(iter_input_items(job))
     params = job.params or {}
-
     if n_images < 2:
         raise RuntimeError("MASt3R 至少需要两张已上传图片。")
-
     runner_path = f"{config.remote_runners_dir}/mast3r_runner.py"
     log_path = f"{remote_job_dir}/logs/runner.log"
     local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
-
     cmd = (
         f"set -o pipefail && "
         f"cd {shlex.quote(config.remote_mast3r_repo)} && "
@@ -332,20 +334,8 @@ def _run_mast3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
         f"--match-viz-count {shlex.quote(str(params.get('match_viz_count', 50)))} "
         f"2>&1 | tee {shlex.quote(log_path)}"
     )
-
-    update_job(
-        job_id,
-        phase="running_remote_matches",
-        progress_message=f"正在使用 {n_images} 张图片启动 MASt3R...",
-    )
-    _ssh_stream(
-        config,
-        cmd,
-        job_id=job_id,
-        phase="running_remote_matches",
-        remote_job_dir=remote_job_dir,
-        local_log_path=local_log,
-    )
+    update_job(job_id, phase="running_remote_matches", progress_message=f"正在使用 {n_images} 张图片启动 MASt3R...")
+    _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
 
 
 def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
@@ -353,7 +343,6 @@ def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> N
     log_path = f"{remote_job_dir}/logs/runner.log"
     local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
     weights_path = f"{config.remote_monst3r_repo}/checkpoints/MonST3R_PO-TA-S-W_ViTLarge_BaseDecoder_512_dpt.pth"
-
     cmd = (
         f"set -o pipefail && "
         f"cd {shlex.quote(config.remote_monst3r_repo)} && "
@@ -364,29 +353,56 @@ def _run_monst3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> N
         f"--weights {shlex.quote(weights_path)} "
         f"2>&1 | tee {shlex.quote(log_path)}"
     )
+    update_job(job_id, phase="running_remote_matches", progress_message="正在启动 MonST3R 官方 demo 推理...")
+    _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
 
-    update_job(
-        job_id,
-        phase="running_remote_matches",
-        progress_message="正在启动 MonST3R 官方 demo 推理...",
+
+def _run_spann3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+    params = load_job(job_id).params or {}
+    runner_path = f"{config.remote_runners_dir}/spann3r_runner.py"
+    log_path = f"{remote_job_dir}/logs/runner.log"
+    local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
+    cmd = (
+        f"set -o pipefail && "
+        f"cd {shlex.quote(config.remote_spann3r_repo)} && "
+        f"conda run --no-capture-output -n {shlex.quote(config.remote_spann3r_env)} "
+        f"python -u {shlex.quote(runner_path)} "
+        f"--job-dir {shlex.quote(remote_job_dir)} "
+        f"--repo {shlex.quote(config.remote_spann3r_repo)} "
+        f"--checkpoint {shlex.quote(config.remote_spann3r_ckpt)} "
+        f"--kf-every {shlex.quote(str(params.get('kf_every', 10)))} "
+        f"--conf-thresh {shlex.quote(str(params.get('conf_thresh', 0.001)))} "
+        f"2>&1 | tee {shlex.quote(log_path)}"
     )
-    _ssh_stream(
-        config,
-        cmd,
-        job_id=job_id,
-        phase="running_remote_matches",
-        remote_job_dir=remote_job_dir,
-        local_log_path=local_log,
+    update_job(job_id, phase="running_remote_matches", progress_message="正在启动 Spann3R 重建...")
+    _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
+
+
+def _run_fast3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+    params = load_job(job_id).params or {}
+    runner_path = f"{config.remote_runners_dir}/fast3r_runner.py"
+    log_path = f"{remote_job_dir}/logs/runner.log"
+    local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
+    cmd = (
+        f"set -o pipefail && "
+        f"cd {shlex.quote(config.remote_fast3r_repo)} && "
+        f"conda run --no-capture-output -n {shlex.quote(config.remote_fast3r_env)} "
+        f"python -u {shlex.quote(runner_path)} "
+        f"--job-dir {shlex.quote(remote_job_dir)} "
+        f"--repo {shlex.quote(config.remote_fast3r_repo)} "
+        f"--checkpoint-dir {shlex.quote(config.remote_fast3r_checkpoint_dir)} "
+        f"--image-size {shlex.quote(str(params.get('image_size', 512)))} "
+        f"--max-points {shlex.quote(str(params.get('max_points', 250000)))} "
+        f"--attention-backend {shlex.quote(str(params.get('attention_backend', 'pytorch_naive')))} "
+        f"--pose-iterations {shlex.quote(str(params.get('pose_iterations', 100)))} "
+        f"--focal-estimation-method {shlex.quote(str(params.get('focal_estimation_method', 'first_view_from_global_head')))} "
+        f"2>&1 | tee {shlex.quote(log_path)}"
     )
+    update_job(job_id, phase="running_remote_matches", progress_message="正在启动 Fast3R 前馈重建...")
+    _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
 
 
 def _kill_remote_job_processes(config: ServerConfig, remote_job_dir: str) -> None:
-    """Terminate only MonST3R/DUSt3R processes that reference this job directory.
-
-    Avoid `pkill -f <job_dir>` because that can match and kill the SSH shell
-    currently running the cancellation command, which reports as a scary local
-    SSH failure even when the user's intent was simply "cancel".
-    """
     script = f"""
 python3 - <<'PY'
 import os
@@ -395,7 +411,7 @@ import subprocess
 import time
 
 job = {remote_job_dir!r}
-needles = ("monst3r_runner.py", "dust3r_runner.py", "mast3r_runner.py", "demo.py")
+needles = ("monst3r_runner.py", "dust3r_runner.py", "mast3r_runner.py", "spann3r_runner.py", "fast3r_runner.py", "demo.py")
 current = os.getpid()
 
 def matching_pids():
@@ -439,51 +455,41 @@ PY
 def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) -> list[str]:
     job = load_job(job_id)
     job_dir = get_job_dir(job_id)
-    local_output_dir = job_dir / "output"
-    local_logs_dir = job_dir / "logs"
-    local_output_dir.mkdir(parents=True, exist_ok=True)
-    local_logs_dir.mkdir(parents=True, exist_ok=True)
-
-    if job.model == "monst3r":
+    (job_dir / "output").mkdir(parents=True, exist_ok=True)
+    (job_dir / "logs").mkdir(parents=True, exist_ok=True)
+    if job.model in MODEL_RESULT_BUNDLE_MODELS:
         return _download_remote_tree(config, remote_job_dir, job_dir)
 
     required_downloads = [
-        ("output/matches.png", local_output_dir / "matches.png"),
-        ("output/pointcloud.ply", local_output_dir / "pointcloud.ply"),
+        ("output/matches.png", job_dir / "output" / "matches.png"),
+        ("output/pointcloud.ply", job_dir / "output" / "pointcloud.ply"),
     ]
     optional_downloads = [
-        ("logs/runner.log", local_logs_dir / "runner.log"),
-        ("output/scene_meta.json", local_output_dir / "scene_meta.json"),
+        ("logs/runner.log", job_dir / "logs" / "runner.log"),
+        ("output/scene_meta.json", job_dir / "output" / "scene_meta.json"),
     ]
 
     output_files: list[str] = []
     for remote_suffix, local_path in required_downloads:
-        remote_path = f"{remote_job_dir}/{remote_suffix}"
-        _scp_from_remote(config, remote_path, local_path)
+        _scp_from_remote(config, f"{remote_job_dir}/{remote_suffix}", local_path)
         output_files.append(str(local_path.relative_to(ROOT)))
-
     for remote_suffix, local_path in optional_downloads:
-        remote_path = f"{remote_job_dir}/{remote_suffix}"
         try:
-            _scp_from_remote(config, remote_path, local_path)
+            _scp_from_remote(config, f"{remote_job_dir}/{remote_suffix}", local_path)
             output_files.append(str(local_path.relative_to(ROOT)))
         except subprocess.CalledProcessError:
             pass
-
     return output_files
 
 
 def _download_remote_tree(config: ServerConfig, remote_job_dir: str, local_job_dir: Path) -> list[str]:
     remote_archive = f"{remote_job_dir}/result_bundle.tar.gz"
     local_archive = local_job_dir / "logs" / "remote_results.tar.gz"
-    _ssh(
-        config,
-        f"cd {shlex.quote(remote_job_dir)} && tar -czf {shlex.quote(remote_archive)} output logs",
-    )
+    _ssh(config, f"cd {shlex.quote(remote_job_dir)} && tar -czf {shlex.quote(remote_archive)} output logs")
     _scp_from_remote(config, remote_archive, local_archive)
     _safe_extract_tar(local_archive, local_job_dir)
 
-    output_files = []
+    output_files: list[str] = []
     for folder_name in ("output", "logs"):
         folder = local_job_dir / folder_name
         for path in sorted(folder.rglob("*")):
@@ -492,8 +498,7 @@ def _download_remote_tree(config: ServerConfig, remote_job_dir: str, local_job_d
             output_files.append(str(path.relative_to(ROOT)))
 
     if not any(path.replace("\\", "/").endswith("output/scene_meta.json") for path in output_files):
-        raise RuntimeError("MonST3R 远端执行结束，但没有下载到 output/scene_meta.json。")
-
+        raise RuntimeError("远端执行结束，但没有下载到 output/scene_meta.json。")
     return output_files
 
 
@@ -507,21 +512,6 @@ def _safe_extract_tar(archive_path: Path, target_dir: Path) -> None:
             except ValueError as exc:
                 raise RuntimeError(f"远端结果压缩包包含非法路径：{member.name}") from exc
         archive.extractall(target_root)
-
-
-MONST3R_ARTIFACT_ROLE_LABELS = {
-    "scene": ("三维场景", "优先打开检查主体结构、相机轨迹和动态区域。"),
-    "trajectory": ("相机轨迹", "用于判断相机运动是否连续、是否出现明显漂移。"),
-    "intrinsics": ("相机内参", "用于复查焦距和相机参数是否成功导出。"),
-    "frame_preview": ("彩色帧预览", "用于快速确认抽帧质量、曝光和运动模糊。"),
-    "dynamic_mask": ("动态区域", "用于判断运动物体或动态区域是否被识别。"),
-    "confidence": ("置信数组", "用于后续诊断深度/几何估计稳定性。"),
-    "initial_confidence": ("初始置信数组", "MonST3R 中间置信产物。"),
-    "geometry_array": ("几何数组", "每帧对应的几何/深度数组。"),
-    "array": ("其他数组", "其他 NPY 中间产物。"),
-    "image": ("其他图像", "其他可视化图像。"),
-    "other": ("其他产物", "未归入主检查路径的产物。"),
-}
 
 
 def _monst3r_artifact_role(filename: str) -> str:
@@ -550,6 +540,53 @@ def _monst3r_artifact_role(filename: str) -> str:
     return "other"
 
 
+def _spann3r_artifact_role(filename: str) -> str:
+    lower = filename.lower()
+    suffix = Path(lower).suffix
+    if suffix == ".ply":
+        return "pointcloud"
+    if lower == "transforms.json":
+        return "transform"
+    if suffix == ".npy":
+        return "array"
+    return "other"
+
+
+def _fast3r_artifact_role(filename: str) -> str:
+    lower = filename.lower()
+    if lower.endswith(".ply"):
+        return "pointcloud"
+    if "camera" in lower or "pose" in lower or "intrinsics" in lower:
+        return "camera"
+    if "confidence" in lower:
+        return "confidence"
+    if lower == "metadata.json":
+        return "metadata"
+    return "other"
+
+
+def _summarize_generic_outputs(output_files: list[str], role_fn, role_labels: dict[str, tuple[str, str]], primary_roles: tuple[str, ...]) -> tuple[list[dict], list[dict]]:
+    counts: dict[str, int] = {}
+    records = []
+    for rel_path in output_files:
+        if Path(rel_path).suffix.lower() in {".json", ".log"}:
+            continue
+        name = Path(rel_path).name
+        role = role_fn(name)
+        counts[role] = counts.get(role, 0) + 1
+        label, note = role_labels.get(role, role_labels["other"])
+        records.append({"role": role, "label": label, "name": name, "relative_path": rel_path, "note": note})
+    groups = [
+        {"key": key, "label": label, "count": counts[key], "description": description}
+        for key, (label, description) in role_labels.items()
+        if counts.get(key)
+    ]
+    targets = []
+    for role in primary_roles:
+        targets.extend([item for item in records if item["role"] == role][:1])
+    return groups, targets
+
+
 def _summarize_monst3r_outputs(output_files: list[str], scene_meta: dict | None) -> tuple[list[dict], list[dict]]:
     if scene_meta and isinstance(scene_meta.get("artifact_groups"), list):
         groups = scene_meta["artifact_groups"]
@@ -561,12 +598,7 @@ def _summarize_monst3r_outputs(output_files: list[str], scene_meta: dict | None)
             role = _monst3r_artifact_role(Path(rel_path).name)
             counts[role] = counts.get(role, 0) + 1
         groups = [
-            {
-                "key": key,
-                "label": label,
-                "count": counts[key],
-                "description": description,
-            }
+            {"key": key, "label": label, "count": counts[key], "description": description}
             for key, (label, description) in MONST3R_ARTIFACT_ROLE_LABELS.items()
             if counts.get(key)
         ]
@@ -582,7 +614,6 @@ def _summarize_monst3r_outputs(output_files: list[str], scene_meta: dict | None)
             role = _monst3r_artifact_role(name)
             label, note = MONST3R_ARTIFACT_ROLE_LABELS.get(role, MONST3R_ARTIFACT_ROLE_LABELS["other"])
             records.append({"role": role, "label": label, "name": name, "relative_path": rel_path, "note": note})
-
         targets = []
         for role in ("scene", "trajectory", "intrinsics"):
             targets.extend([item for item in records if item["role"] == role][:1])
@@ -592,7 +623,6 @@ def _summarize_monst3r_outputs(output_files: list[str], scene_meta: dict | None)
             targets.extend(frames[index] for index in indexes)
         else:
             targets.extend(frames)
-
     return groups, targets
 
 
@@ -633,11 +663,16 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
             if raw_points != final_points:
                 highlights.append(f"点云从 {raw_points} 个原始点下采样到了 {final_points} 个点。")
         if scene_meta.get("artifact_count") is not None:
-            highlights.append(f"MonST3R 官方 demo 共整理了 {scene_meta['artifact_count']} 个远端产物。")
-        if scene_meta.get("glb_count") is not None:
-            highlights.append(f"其中包含 {scene_meta['glb_count']} 个 GLB 三维场景文件。")
+            highlights.append(f"共整理了 {scene_meta['artifact_count']} 个远端产物。")
+        if scene_meta.get("attention_backend"):
+            highlights.append(f"本次运行使用 attention backend：{scene_meta['attention_backend']}。")
 
-    if job.model == "monst3r":
+    if scene_meta and isinstance(scene_meta.get("artifact_groups"), list):
+        artifact_groups = scene_meta.get("artifact_groups") or []
+    if scene_meta and isinstance(scene_meta.get("primary_artifacts"), list):
+        primary_artifacts = scene_meta.get("primary_artifacts") or []
+
+    if job.model == "monst3r" and (not artifact_groups or not primary_artifacts):
         artifact_groups, primary_artifacts = _summarize_monst3r_outputs(output_files, scene_meta)
         group_counts = {item.get("key"): item.get("count", 0) for item in artifact_groups}
         if group_counts.get("frame_preview"):
@@ -647,15 +682,22 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
         if group_counts.get("confidence") or group_counts.get("initial_confidence"):
             conf_count = int(group_counts.get("confidence") or 0) + int(group_counts.get("initial_confidence") or 0)
             highlights.append(f"已生成 {conf_count} 个置信数组，可用于后续质量诊断。")
+    elif job.model == "spann3r" and (not artifact_groups or not primary_artifacts):
+        artifact_groups, primary_artifacts = _summarize_generic_outputs(output_files, _spann3r_artifact_role, SPANN3R_ARTIFACT_ROLE_LABELS, ("pointcloud", "transform", "array"))
+    elif job.model == "fast3r" and (not artifact_groups or not primary_artifacts):
+        artifact_groups, primary_artifacts = _summarize_generic_outputs(output_files, _fast3r_artifact_role, FAST3R_ARTIFACT_ROLE_LABELS, ("pointcloud", "camera", "confidence", "metadata"))
 
-    if job.model in {"dust3r", "mast3r"}:
+    if job.model in {"dust3r", "mast3r", "spann3r", "fast3r"}:
         next_actions = [
             "优先在 MeshLab 中检查 pointcloud.ply 的结构是否完整、是否存在大块噪声或断裂。",
-            "结合 matches.png 判断前几张图的重叠区域和匹配是否合理。",
+            "再结合 scene_meta.json 和日志判断参数是否需要继续调整。",
         ]
-        next_actions.append("如果这是多图任务，建议再对比 scene graph 与点云质量，决定是否需要改成 swin-5 或调整点云上限。")
         if job.model == "mast3r":
             next_actions.insert(0, "MASt3R 更偏静态多图匹配增强，建议优先拿同一物体的 3 到 8 张图验证它相对 DUSt3R 的提升。")
+        elif job.model == "spann3r":
+            next_actions.insert(0, "Spann3R 更偏 spatial memory / global pointmap，建议优先比较 transforms.json 与点云的一致性。")
+        elif job.model == "fast3r":
+            next_actions.insert(0, "Fast3R 更偏长图集快速重建，建议结合 attention backend、profiling 与点云完整性一起判断。")
     elif job.model == "monst3r":
         next_actions = [
             "按核心检查对象依次看 scene.glb、pred_traj.txt、pred_intrinsics.txt 和代表帧预览。",
@@ -674,17 +716,8 @@ def _generate_result_summary(job_id: str, output_files: list[str]) -> None:
         "created_at": job.created_at,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "duration_seconds": duration_seconds,
-        "inputs": {
-            "count": len(job.input_files),
-            "names": [item["original_name"] for item in iter_input_items(job)],
-        },
-        "artifacts": [
-            {
-                "name": Path(rel_path).name,
-                "relative_path": rel_path,
-            }
-            for rel_path in output_files
-        ],
+        "inputs": {"count": len(job.input_files), "names": [item["original_name"] for item in iter_input_items(job)]},
+        "artifacts": [{"name": Path(rel_path).name, "relative_path": rel_path} for rel_path in output_files],
         "params": job.params,
         "scene_meta": scene_meta,
         "artifact_groups": artifact_groups,
@@ -721,10 +754,8 @@ def _clean_progress_line(raw_line: str) -> str:
 
 
 def _displayable_remote_progress(cleaned: str) -> str | None:
-    """Return a user-facing progress line, filtering noisy framework warnings."""
     if not cleaned:
         return None
-
     lower = cleaned.lower()
     ignored_fragments = [
         "futurewarning",
@@ -734,23 +765,18 @@ def _displayable_remote_progress(cleaned: str) -> str | None:
     ]
     if any(fragment in lower for fragment in ignored_fragments):
         return None
-
     if cleaned.startswith("MonST3R command:"):
         return "MonST3R 命令已启动，正在等待模型加载和推理输出..."
     if cleaned.startswith("DUSt3R command:"):
         return "DUSt3R 命令已启动，正在等待模型加载和重建输出..."
+    if cleaned.startswith("Spann3R command:"):
+        return "Spann3R 命令已启动，正在等待重建输出..."
+    if cleaned.startswith("Fast3R command:"):
+        return "Fast3R 命令已启动，正在等待前馈输出..."
     return cleaned
 
 
-def _ssh_stream(
-    config: ServerConfig,
-    shell_script: str,
-    *,
-    job_id: str,
-    phase: str,
-    remote_job_dir: str,
-    local_log_path: Path,
-) -> None:
+def _ssh_stream(config: ServerConfig, shell_script: str, *, job_id: str, phase: str, remote_job_dir: str, local_log_path: Path) -> None:
     local_log_path.parent.mkdir(parents=True, exist_ok=True)
     remote_cmd = _ssh_command(config, shell_script)
     process = subprocess.Popen(
@@ -766,11 +792,7 @@ def _ssh_stream(
 
     last_message = ""
     stop_event = threading.Event()
-    poller = threading.Thread(
-        target=_poll_remote_status,
-        args=(config, job_id, remote_job_dir, stop_event),
-        daemon=True,
-    )
+    poller = threading.Thread(target=_poll_remote_status, args=(config, job_id, remote_job_dir, stop_event), daemon=True)
     poller.start()
 
     try:
@@ -783,15 +805,13 @@ def _ssh_stream(
                 display_line = _displayable_remote_progress(cleaned)
                 if display_line:
                     last_message = display_line[-400:]
-                    # Auto-detect phase transitions from runner output
                     detected_phase = phase
                     lowered = display_line.lower()
                     if "alignment" in lowered:
                         detected_phase = "running_remote_matches"
-                    elif "point cloud" in lowered or "exporting" in lowered:
+                    elif "point cloud" in lowered or "exporting" in lowered or "saving" in lowered:
                         detected_phase = "running_remote_pointcloud"
                     update_job(job_id, phase=detected_phase, progress_message=last_message)
-
         return_code = process.wait()
     finally:
         stop_event.set()
@@ -799,10 +819,7 @@ def _ssh_stream(
         _sync_remote_status_once(config, job_id, remote_job_dir)
 
     if return_code != 0:
-        raise RuntimeError(
-            f"远端命令在阶段 {phase} 失败。"
-            f"最后一条日志：{last_message or '没有捕获到远端日志。'}"
-        )
+        raise RuntimeError(f"远端命令在阶段 {phase} 失败。最后一条日志：{last_message or '没有捕获到远端日志。'}")
 
 
 def _poll_remote_status(config: ServerConfig, job_id: str, remote_job_dir: str, stop_event: threading.Event) -> None:
@@ -827,7 +844,6 @@ def _sync_remote_status_once(config: ServerConfig, job_id: str, remote_job_dir: 
 
     if load_job(job_id).status != "running":
         return
-
     status = "failed" if remote_phase == "failed" else None
     update_job(job_id, status=status, phase=local_phase, progress_message=progress_message)
 
@@ -848,13 +864,7 @@ def _scp_to_remote(config: ServerConfig, local_path: Path, remote_path: str) -> 
         raise RuntimeError(f"SCP 上传超时（{SCP_TIMEOUT_SECONDS}s）：{local_path.name}") from exc
 
 
-def _scp_from_remote(
-    config: ServerConfig,
-    remote_path: str,
-    local_path: Path,
-    *,
-    timeout: int = SCP_TIMEOUT_SECONDS,
-) -> subprocess.CompletedProcess:
+def _scp_from_remote(config: ServerConfig, remote_path: str, local_path: Path, *, timeout: int = SCP_TIMEOUT_SECONDS) -> subprocess.CompletedProcess:
     local_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         return subprocess.run(

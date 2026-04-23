@@ -1003,113 +1003,24 @@ function App() {
         {errorMessage ? <MessageBanner kind="error" message={errorMessage} /> : null}
 
         {activeWorkspace === "overview" ? (
-          <>
-        <section className="overview-grid">
-          <article className="panel overview-hero-panel">
-            <PanelTitle eyebrow="焦点任务" title={focusJob ? focusJob.job.job_id : "准备开始今晚测试"} />
-            {focusJob ? (
-              <div className={`focus-card ${focusJob.job.status}`}>
-                <div className="focus-main">
-                  <div className="focus-copy">
-                    <div className="hero-badges">
-                      <StatusBadge state={focusJob.job.status} label={statusLabel(focusJob.job.status)} />
-                      <span className="hero-tag">{statusModelLabel(focusJob.job.model)}</span>
-                      <span className="hero-tag">{sourceTypeLabel(focusJob.job.source_type)}</span>
-                    </div>
-                    <h3>{focusJob.phase_display.label}</h3>
-                    <p>{focusJob.job.progress_message || focusJob.phase_display.description}</p>
-                  </div>
-                  <div className="focus-score">{focusJob.phase_display.percent}%</div>
-                </div>
-                <div className="progress-track large">
-                  <div className="progress-fill" style={{ width: `${focusJob.phase_display.percent}%` }} />
-                </div>
-                <div className="focus-meta">
-                  <span>{currentStepLabel(focusJob.phase_display.steps)}</span>
-                  <span>{formatDateTime(focusJob.job.created_at)}</span>
-                  <button
-                    className="ghost-button small"
-                    onClick={() => {
-                      setSelectedJobId(focusJob.job.job_id);
-                      openWorkspace("jobs");
-                    }}
-                    type="button"
-                  >
-                    进入任务中心
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="empty-state large">
-                还没有任务。建议先从 2 张图片的 DUSt3R / MASt3R 或 1 段短视频的 MonST3R 开始，今晚先把一条样例完整跑通。
-              </div>
-            )}
-          </article>
-
-          <aside className="panel overview-side-panel">
-            <PanelTitle eyebrow="调度状态" title="当前面板" />
-            <div className="kpi-grid">
-              <MiniStat label="总任务" value={summary.total} />
-              <MiniStat label="运行中" value={summary.running} />
-              <MiniStat label="待处理" value={attentionJobs.length} />
-              <MiniStat label="已完成" value={summary.finished} />
-            </div>
-            <div className={`overview-callout ${focusJob?.job.status ?? "neutral"}`}>
-              <span className="mini-label">当前建议</span>
-              <strong>{buildOverviewHeadline(focusJob, runningJobs.length, attentionJobs.length)}</strong>
-              <p>{buildOverviewMessage(focusJob, runningJobs.length, attentionJobs.length)}</p>
-            </div>
-          </aside>
-        </section>
-        <section className="overview-support-grid">
-          <article className="panel quick-actions-panel">
-            <PanelTitle eyebrow="快捷入口" title="按流程拆开来做" />
-            <div className="quick-action-grid">
-              <button className="quick-action-card" onClick={() => openWorkspace("create")} type="button">
-                <strong>文件与新建</strong>
-                <p>上传输入、选模型、套推荐参数后直接发任务。</p>
-              </button>
-              <button className="quick-action-card" onClick={() => openWorkspace("jobs")} type="button">
-                <strong>运行与结果</strong>
-                <p>统一盯进度、看日志和开产物，不再和新建区挤在一起。</p>
-              </button>
-              <button className="quick-action-card" onClick={() => openWorkspace("advisor")} type="button">
-                <strong>AI 评估</strong>
-                <p>结果出来后让 AI 给诊断、建议和汇报话术。</p>
-              </button>
-              <button className="quick-action-card" onClick={() => openWorkspace("system")} type="button">
-                <strong>帮助与系统</strong>
-                <p>查看本地服务、远端目标、配置状态和使用说明。</p>
-              </button>
-            </div>
-          </article>
-
-          <article className="panel advisor-overview-panel">
-            <PanelTitle eyebrow="AI 工作台" title="把 AI 放到该出现的地方" />
-            <AdvisorWorkbench
-              job={activeJob}
-              advisorState={advisorState}
-              actionKey={actionKey}
-              onEvaluate={(jobId) => void postJobAction(`/api/jobs/${jobId}/advisor/evaluate`, "advisor")}
-              onConfigure={() => void openAdvisorSettings()}
-              onCopy={copyText}
-              compact
-            />
-          </article>
-          <ModelRoadmapPanel
-            activeModels={activeModelCatalog}
-            deferredModels={deferredModelCatalog}
-            compact
-          />
-          <SampleMatrixPanel
+          <OverviewCommandCenter
+            focusJob={focusJob}
+            summary={summary}
+            runningJobs={runningJobs}
+            attentionJobs={attentionJobs}
+            activeModelCatalog={activeModelCatalog}
+            deferredModelCatalog={deferredModelCatalog}
             samplesPayload={samplesPayload}
-            errorMessage={samplesError}
+            samplesError={samplesError}
             modelCatalog={modelCatalog}
-            onLocateJob={(jobId) => openWorkspace("jobs", jobId)}
-            compact
+            openWorkspace={openWorkspace}
+            activeJob={activeJob}
+            advisorState={advisorState}
+            actionKey={actionKey}
+            postJobAction={postJobAction}
+            openAdvisorSettings={openAdvisorSettings}
+            copyText={copyText}
           />
-        </section>
-          </>
         ) : null}
 
         {activeWorkspace === "create" ? (
@@ -1433,7 +1344,7 @@ function App() {
                   <strong>部署摘要</strong>
                   <p>
                     {deploymentStatus
-                      ? `目录缺失 ${deploymentStatus.summary.missing_directories} / 环境缺失 ${deploymentStatus.summary.missing_conda_envs} / 必需文件缺失 ${deploymentStatus.summary.missing_required_files}`
+                      ? `目录缺失 ${deploymentStatus.summary.missing_directories} / 环境缺失 ${deploymentStatus.summary.missing_conda_envs} / 必需文件缺失 ${deploymentStatus.summary.missing_required_files} / 警告 ${deploymentStatus.summary.warnings}`
                       : deploymentError || "尚未读取远端部署状态。"}
                   </p>
                 </article>
@@ -1441,6 +1352,20 @@ function App() {
                   <strong>主线环境</strong>
                   <p>{deploymentStatus ? formatDeploymentEnvSummary(deploymentStatus) : "读取后会显示 mast3r / monst3r / spann3r / align3r / fast3r / cut3r。"}</p>
                 </article>
+                <article className="support-check-item">
+                  <strong>目录与 README</strong>
+                  <p>{formatDeploymentDirectoryStatus(deploymentStatus)}</p>
+                </article>
+                <article className="support-check-item">
+                  <strong>缓存状态</strong>
+                  <p>{formatDeploymentCacheStatus(deploymentStatus)}</p>
+                </article>
+                {deploymentStatus?.cache?.last_error ? (
+                  <article className="support-check-item">
+                    <strong>最近错误</strong>
+                    <p>{deploymentStatus.cache.last_error}</p>
+                  </article>
+                ) : null}
                 <div className="service-card-actions">
                   <button
                     className="ghost-button small"
@@ -1594,11 +1519,252 @@ function App() {
   );
 }
 
-function ModelRoadmapPanel(props: {
-  activeModels: ModelCatalogItem[];
-  deferredModels: ModelCatalogItem[];
-  compact?: boolean;
+function OverviewCommandCenter(props: {
+  focusJob: JobListItem | null;
+  summary: BootstrapPayload["summary"];
+  runningJobs: JobListItem[];
+  attentionJobs: JobListItem[];
+  activeModelCatalog: ModelCatalogItem[];
+  deferredModelCatalog: ModelCatalogItem[];
+  samplesPayload: SamplesPayload | null;
+  samplesError: string | null;
+  modelCatalog: ModelCatalogItem[];
+  openWorkspace: (workspace: WorkspaceTab, jobId?: string) => void;
+  activeJob: JobPayload | null;
+  advisorState: AdvisorStatus;
+  actionKey: string | null;
+  postJobAction: (path: string, key: string) => Promise<void>;
+  openAdvisorSettings: () => Promise<void> | void;
+  copyText: (value: string, label: string) => Promise<void>;
 }) {
+  const focusJob = props.focusJob;
+  return (
+    <>
+      <section className="overview-grid workbench-overview-grid">
+        <article className="panel overview-hero-panel">
+          <PanelTitle eyebrow="Focus" title={focusJob ? focusJob.job.job_id : "准备开始今晚测试"} />
+          {focusJob ? (
+            <div className={`focus-card ${focusJob.job.status}`}>
+              <div className="focus-main">
+                <div className="focus-copy">
+                  <div className="hero-badges">
+                    <StatusBadge state={focusJob.job.status} label={statusLabel(focusJob.job.status)} />
+                    <span className="hero-tag">{statusModelLabel(focusJob.job.model)}</span>
+                    <span className="hero-tag">{sourceTypeLabel(focusJob.job.source_type)}</span>
+                  </div>
+                  <h3>{focusJob.phase_display.label}</h3>
+                  <p>{focusJob.job.progress_message || focusJob.phase_display.description}</p>
+                </div>
+                <div className="focus-score">{focusJob.phase_display.percent}%</div>
+              </div>
+              <div className="progress-track large">
+                <div className="progress-fill" style={{ width: `${focusJob.phase_display.percent}%` }} />
+              </div>
+              <div className="focus-meta">
+                <span>{currentStepLabel(focusJob.phase_display.steps)}</span>
+                <span>{formatDateTime(focusJob.job.created_at)}</span>
+                <button className="ghost-button small" onClick={() => props.openWorkspace("jobs", focusJob.job.job_id)} type="button">
+                  进入任务中心
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="empty-state large">还没有任务。建议先从 2 张图片的 DUSt3R / MASt3R 或 1 段短视频的 MonST3R 开始，先把一条样例完整跑通。</div>
+          )}
+        </article>
+
+        <aside className="panel overview-side-panel">
+          <PanelTitle eyebrow="Runtime" title="当前调度状态" />
+          <div className="kpi-grid">
+            <MiniStat label="总任务" value={props.summary.total} />
+            <MiniStat label="运行中" value={props.summary.running} />
+            <MiniStat label="待处理" value={props.attentionJobs.length} />
+            <MiniStat label="已完成" value={props.summary.finished} />
+          </div>
+          <div className={`overview-callout ${focusJob?.job.status ?? "neutral"}`}>
+            <span className="mini-label">当前建议</span>
+            <strong>{buildOverviewHeadline(focusJob, props.runningJobs.length, props.attentionJobs.length)}</strong>
+            <p>{buildOverviewMessage(focusJob, props.runningJobs.length, props.attentionJobs.length)}</p>
+          </div>
+        </aside>
+      </section>
+
+      <section className="overview-support-grid workbench-overview-support-grid">
+        <article className="panel quick-actions-panel">
+          <PanelTitle eyebrow="Workflow" title="按桌面工作流推进" />
+          <div className="quick-action-grid">
+            <button className="quick-action-card" onClick={() => props.openWorkspace("create")} type="button">
+              <strong>新建任务</strong>
+              <p>选择模型、输入类型和文件，按推荐参数快速起跑。</p>
+            </button>
+            <button className="quick-action-card" onClick={() => props.openWorkspace("jobs")} type="button">
+              <strong>运行与结果</strong>
+              <p>把任务列表、结果、日志和人工/AI 评估集中到一个主工作区。</p>
+            </button>
+            <button className="quick-action-card" onClick={() => props.openWorkspace("advisor")} type="button">
+              <strong>AI 评估</strong>
+              <p>在任务完成、失败或准备汇报时生成诊断和下一步建议。</p>
+            </button>
+            <button className="quick-action-card" onClick={() => props.openWorkspace("system")} type="button">
+              <strong>系统与部署</strong>
+              <p>检查本地服务、远端 active 3R 部署、阻塞项与缓存状态。</p>
+            </button>
+          </div>
+        </article>
+
+        <article className="panel advisor-overview-panel">
+          <PanelTitle eyebrow="Advisor" title="AI 工作台" />
+          <AdvisorWorkbench
+            job={props.activeJob}
+            advisorState={props.advisorState}
+            actionKey={props.actionKey}
+            onEvaluate={(jobId) => void props.postJobAction(`/api/jobs/${jobId}/advisor/evaluate`, "advisor")}
+            onConfigure={() => void props.openAdvisorSettings()}
+            onCopy={props.copyText}
+            compact
+          />
+        </article>
+
+        <ModelRoadmapPanel activeModels={props.activeModelCatalog} deferredModels={props.deferredModelCatalog} compact />
+        <SampleMatrixPanel
+          samplesPayload={props.samplesPayload}
+          errorMessage={props.samplesError}
+          modelCatalog={props.modelCatalog}
+          onLocateJob={(jobId) => props.openWorkspace("jobs", jobId)}
+          compact
+        />
+      </section>
+    </>
+  );
+}
+
+function SystemWorkbench(props: {
+  bootstrapData: BootstrapPayload;
+  deploymentStatus: DeploymentStatusPayload | null;
+  deploymentError: string | null;
+  deploymentLoading: boolean;
+  loadDeploymentStatus: (showError?: boolean, refresh?: boolean) => Promise<void>;
+  advisorReady: boolean;
+  advisorState: AdvisorStatus;
+  advisorConfigLoading: boolean;
+  openAdvisorSettings: () => Promise<void> | void;
+  activeModelCatalog: ModelCatalogItem[];
+  deferredModelCatalog: ModelCatalogItem[];
+  samplesPayload: SamplesPayload | null;
+  samplesError: string | null;
+  modelCatalog: ModelCatalogItem[];
+  openWorkspace: (workspace: WorkspaceTab, jobId?: string) => void;
+  serviceMessage: string;
+  backendStatus: BackendStatus;
+}) {
+  return (
+    <section className="system-grid workbench-system-grid">
+      <article className="panel">
+        <PanelTitle eyebrow="Local Runtime" title="本地服务状态" />
+        <div className="support-checklist compact-stack">
+          <article className="support-check-item">
+            <strong>服务状态</strong>
+            <p>{props.serviceMessage}</p>
+          </article>
+          <article className="support-check-item">
+            <strong>后端说明</strong>
+            <p>{backendStatusText(props.backendStatus)}</p>
+          </article>
+        </div>
+      </article>
+
+      <article className="panel">
+        <PanelTitle eyebrow="Remote Target" title="服务器连接信息" />
+        <div className="support-checklist compact-stack">
+          <article className="support-check-item">
+            <strong>SSH 目标</strong>
+            <p>{props.bootstrapData.server.user}@{props.bootstrapData.server.host}:{props.bootstrapData.server.port}</p>
+          </article>
+          <article className="support-check-item">
+            <strong>远端根目录</strong>
+            <p>{props.bootstrapData.server.remote_root}</p>
+          </article>
+        </div>
+      </article>
+
+      <article className="panel deployment-console-panel">
+        <PanelTitle eyebrow="Deployment" title="Active 3R 部署控制台" />
+        <div className="support-checklist compact-stack">
+          <article className="support-check-item">
+            <strong>部署摘要</strong>
+            <p>
+              {props.deploymentStatus
+                ? `目录缺失 ${props.deploymentStatus.summary.missing_directories} / 环境缺失 ${props.deploymentStatus.summary.missing_conda_envs} / 必需文件缺失 ${props.deploymentStatus.summary.missing_required_files} / 警告 ${props.deploymentStatus.summary.warnings}`
+                : props.deploymentError || "尚未读取远端部署状态。"}
+            </p>
+          </article>
+          <article className="support-check-item">
+            <strong>主线环境</strong>
+            <p>{props.deploymentStatus ? formatDeploymentEnvSummary(props.deploymentStatus) : "读取后会显示 mast3r / monst3r / spann3r / align3r / fast3r / cut3r。"}</p>
+          </article>
+          <article className="support-check-item">
+            <strong>目录与 README</strong>
+            <p>{formatDeploymentDirectoryStatus(props.deploymentStatus)}</p>
+          </article>
+          <article className="support-check-item">
+            <strong>缓存状态</strong>
+            <p>{formatDeploymentCacheStatus(props.deploymentStatus)}</p>
+          </article>
+          {props.deploymentStatus?.cache?.last_error ? (
+            <article className="support-check-item">
+              <strong>最近错误</strong>
+              <p>{props.deploymentStatus.cache.last_error}</p>
+            </article>
+          ) : null}
+          <div className="service-card-actions">
+            <button className="ghost-button small" onClick={() => void props.loadDeploymentStatus(true, true)} disabled={props.deploymentLoading} type="button">
+              {props.deploymentLoading ? "检查中..." : "刷新远端部署状态"}
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article className="panel">
+        <PanelTitle eyebrow="Advisor" title="AI 配置状态" />
+        <div className="support-checklist compact-stack">
+          <article className="support-check-item">
+            <strong>状态</strong>
+            <p>{props.advisorReady ? `已配置：${props.advisorState.model}` : props.advisorState.message}</p>
+          </article>
+          <article className="support-check-item">
+            <strong>建议位置</strong>
+            <p>优先在任务完成或失败后用 AI 评估，再把结论放进汇报和下一轮实验计划。</p>
+          </article>
+          <button className="ghost-button" onClick={() => void props.openAdvisorSettings()} disabled={props.advisorConfigLoading} type="button">
+            {props.advisorConfigLoading ? "读取中..." : "打开 AI 配置"}
+          </button>
+        </div>
+      </article>
+
+      <ModelRoadmapPanel activeModels={props.activeModelCatalog} deferredModels={props.deferredModelCatalog} />
+      <SampleMatrixPanel
+        samplesPayload={props.samplesPayload}
+        errorMessage={props.samplesError}
+        modelCatalog={props.modelCatalog}
+        onLocateJob={(jobId) => props.openWorkspace("jobs", jobId)}
+      />
+
+      <article className="panel">
+        <PanelTitle eyebrow="Operator Notes" title="操作建议" />
+        <div className="support-checklist compact-stack">
+          {buildSystemChecklist().map((item) => (
+            <article className="support-check-item" key={item.title}>
+              <strong>{item.title}</strong>
+              <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </article>
+    </section>
+  );
+}
+
+
   const runnable = props.activeModels.filter((item) => item.runnable).length;
   const planned = props.activeModels.filter((item) => !item.runnable).length;
 
@@ -1657,9 +1823,10 @@ function SampleMatrixPanel(props: {
   const deferredModels = manifest?.deferred_models ?? [];
   const compactScoringEntries = props.compact ? scoringEntries.slice(0, 3) : [];
   const statusCountEntries = Object.entries(summary?.status_counts ?? {}).sort(
-    ([leftStatus, leftCount], [rightStatus, rightCount]) =>
-      rightCount - leftCount || leftStatus.localeCompare(rightStatus)
+    ([leftStatus, leftCount], [rightStatus, rightCount]) => rightCount - leftCount || leftStatus.localeCompare(rightStatus)
   );
+  const jobMatrixRows = props.samplesPayload?.job_matrix?.rows ?? [];
+  const jobMatrixBySample = new Map(jobMatrixRows.map((row) => [row.sample_id, row.jobs_by_model]));
 
   return (
     <article className="panel sample-matrix-panel">
@@ -1676,9 +1843,7 @@ function SampleMatrixPanel(props: {
         </div>
       </div>
 
-      {props.errorMessage && !props.samplesPayload ? (
-        <div className="empty-state">{props.errorMessage}</div>
-      ) : null}
+      {props.errorMessage && !props.samplesPayload ? <div className="empty-state">{props.errorMessage}</div> : null}
 
       {manifest ? (
         <>
@@ -1747,67 +1912,79 @@ function SampleMatrixPanel(props: {
               </div>
 
               <div className="sample-compare-grid">
-              {visibleSamples.map((sample) => (
-                <article className="sample-compare-row" key={sample.id}>
-                  <div className="sample-compare-main">
-                    <div className="sample-card-head">
-                      <strong>{sample.id}</strong>
-                      <span className="status-badge">{sampleStatusLabel(sample.status)}</span>
-                    </div>
-                    <p>{sample.purpose}</p>
-                    <div className="sample-card-meta">
-                      <span>{sourceTypeLabel(sample.source_type)}</span>
-                      <span>
-                        {sample.target_file_count
-                          ? `${sample.target_file_count} 个文件`
-                          : `${sample.target_duration_seconds ?? "-"} 秒`}
-                      </span>
-                    </div>
-                  </div>
+                {visibleSamples.map((sample) => {
+                  const jobsByModel = jobMatrixBySample.get(sample.id) ?? {};
+                  const compareModels = [...(sample.required_models ?? []), ...(sample.optional_models ?? [])];
+                  return (
+                    <article className="sample-compare-row" key={sample.id}>
+                      <div className="sample-compare-main">
+                        <div className="sample-card-head">
+                          <strong>{sample.id}</strong>
+                          <span className="status-badge">{sampleStatusLabel(sample.status)}</span>
+                        </div>
+                        <p>{sample.purpose}</p>
+                        <div className="sample-card-meta">
+                          <span>{sourceTypeLabel(sample.source_type)}</span>
+                          <span>{sample.target_file_count ? `${sample.target_file_count} 个文件` : `${sample.target_duration_seconds ?? "-"} 秒`}</span>
+                        </div>
+                      </div>
 
-                  <div className="sample-compare-column">
-                    <span className="mini-label">Required Models</span>
-                    <div className="sample-card-models">
-                      {(sample.required_models ?? []).length > 0 ? (
-                        (sample.required_models ?? []).map((model) => (
-                          <span key={model}>{modelDisplayName(model, props.modelCatalog)}</span>
-                        ))
-                      ) : (
-                        <span>未标记</span>
-                      )}
-                    </div>
-                  </div>
+                      <div className="sample-compare-column">
+                        <span className="mini-label">Required Models</span>
+                        <div className="sample-card-models">
+                          {(sample.required_models ?? []).length > 0 ? (
+                            (sample.required_models ?? []).map((model) => <span key={model}>{modelDisplayName(model, props.modelCatalog)}</span>)
+                          ) : (
+                            <span>未标记</span>
+                          )}
+                        </div>
+                      </div>
 
-                  <div className="sample-compare-column">
-                    <span className="mini-label">当前状态</span>
-                    <p className="sample-compare-status-copy">
-                      {sampleStatusLabel(sample.status)}
-                      {sample.seed_job_id ? " · 已关联 seed 任务" : " · 尚未关联 seed 任务"}
-                    </p>
-                  </div>
+                      <div className="sample-compare-column">
+                        <span className="mini-label">当前状态</span>
+                        <p className="sample-compare-status-copy">
+                          {sampleStatusLabel(sample.status)}
+                          {sample.seed_job_id ? " · 已关联 seed 任务" : " · 尚未关联 seed 任务"}
+                        </p>
+                      </div>
 
-                  <div className={`sample-seed-callout ${sample.seed_job_id ? "available" : "missing"}`}>
-                    <span className="mini-label">任务定位</span>
-                    {sample.seed_job_id ? (
-                      <>
-                        <strong>{sample.seed_job_id}</strong>
-                        <p>任务中心可直接按这个 seed 任务继续核对日志、状态和结果。</p>
-                        {props.onLocateJob ? (
-                          <button
-                            className="ghost-button small sample-locate-button"
-                            onClick={() => props.onLocateJob?.(sample.seed_job_id!)}
-                            type="button"
-                          >
-                            定位到任务中心
-                          </button>
-                        ) : null}
-                      </>
-                    ) : (
-                      <p>当前还没有 seed 任务，先选样例或创建首条基准任务。</p>
-                    )}
-                  </div>
-                </article>
-              ))}
+                      <div className="sample-compare-column">
+                        <span className="mini-label">模型执行矩阵</span>
+                        <div className="sample-card-models">
+                          {compareModels.length > 0 ? (
+                            compareModels.map((model) => {
+                              const job = jobsByModel[model];
+                              return (
+                                <span key={`${sample.id}-${model}`}>
+                                  {modelDisplayName(model, props.modelCatalog)}：{job ? job.status_label : "未跑"}
+                                </span>
+                              );
+                            })
+                          ) : (
+                            <span>暂无模型矩阵</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className={`sample-seed-callout ${sample.seed_job_id ? "available" : "missing"}`}>
+                        <span className="mini-label">任务定位</span>
+                        {sample.seed_job_id ? (
+                          <>
+                            <strong>{sample.seed_job_id}</strong>
+                            <p>任务中心可直接按这个 seed 任务继续核对日志、状态和结果。</p>
+                            {props.onLocateJob ? (
+                              <button className="ghost-button small sample-locate-button" onClick={() => props.onLocateJob?.(sample.seed_job_id!)} type="button">
+                                定位到任务中心
+                              </button>
+                            ) : null}
+                          </>
+                        ) : (
+                          <p>当前还没有 seed 任务，先选样例或创建首条基准任务。</p>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ) : (
@@ -3036,9 +3213,9 @@ function runnerStatusLabel(status: string) {
     validated_smoke: "Smoke 已过",
     validated_standard_sample: "标准样例已过",
     smoke_ready: "Smoke 已过",
-    smoke_ready_attention_fallback: "Smoke 已过",
+    smoke_ready_attention_fallback: "Smoke 已过（需 attention fallback）",
     env_partial: "环境部分就绪",
-    env_blocked_curope: "环境待修复",
+    env_blocked_curope: "环境受 curope 阻塞",
     planned: "待接入",
     frontier_research: "前沿预研",
     integrated: "已接入"
@@ -3050,7 +3227,27 @@ function formatDeploymentEnvSummary(payload: DeploymentStatusPayload) {
   const targets = ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"];
   return payload.conda_envs
     .filter((item) => targets.includes(item.component))
-    .map((item) => `${item.component}:${item.exists ? "OK" : "缺失"}`)
+    .map((item) => `${item.component}:${item.exists ? "OK" : "缺失"}${item.path ? ` (${item.path})` : ""}`)
+    .join(" / ");
+}
+
+function formatDeploymentCacheStatus(payload: DeploymentStatusPayload | null) {
+  if (!payload?.cache) {
+    return "暂无缓存信息";
+  }
+  const state = payload.cache.state ?? payload.source ?? "unknown";
+  const age = typeof payload.cache.age_seconds === "number" ? `${payload.cache.age_seconds.toFixed(1)}s` : "-";
+  const fetched = payload.fetched_at ?? "-";
+  return `${state} / age ${age} / fetched ${fetched}`;
+}
+
+function formatDeploymentDirectoryStatus(payload: DeploymentStatusPayload | null) {
+  if (!payload?.directories?.length) {
+    return "暂无目录状态";
+  }
+  return payload.directories
+    .filter((item) => ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"].includes(item.name))
+    .map((item) => `${item.name}:${item.state}${item.readme_setup ? "" : "/README缺失"}`)
     .join(" / ");
 }
 

@@ -4,6 +4,7 @@ export type JobRecord = {
   model: string;
   source_type: string;
   notes: string;
+  sample_id?: string | null;
   params: Record<string, unknown>;
   status: string;
   phase: string;
@@ -218,12 +219,70 @@ export type SamplesPayload = {
     required_model_counts: Record<string, number>;
   };
   model_catalog: NonNullable<BootstrapPayload["model_catalog"]>;
+  job_matrix?: {
+    rows: Array<{
+      sample_id: string;
+      jobs_by_model: Record<
+        string,
+        {
+          job_id: string;
+          model: string;
+          status: string;
+          status_label: string;
+          phase: string;
+          progress_message?: string | null;
+          created_at: string;
+          sample_id?: string | null;
+          score_snapshot?: Record<string, number>;
+          primary_artifacts?: Array<{
+            role: string;
+            label?: string;
+            name: string;
+            relative_path: string;
+            note?: string;
+          }>;
+        }
+      >;
+    }>;
+    unassigned_jobs: Array<{
+      job_id: string;
+      model: string;
+      status: string;
+      status_label: string;
+      phase: string;
+      progress_message?: string | null;
+      created_at: string;
+      sample_id?: string | null;
+      score_snapshot?: Record<string, number>;
+      primary_artifacts?: Array<{
+        role: string;
+        label?: string;
+        name: string;
+        relative_path: string;
+        note?: string;
+      }>;
+    }>;
+  };
 };
 
 export type DeploymentStatusPayload = {
   host?: string | null;
   root: string;
   fetched_at?: string;
+  source?: string;
+  stale?: boolean;
+  cache?: {
+    state?: string;
+    hit?: boolean;
+    age_seconds?: number;
+    ttl_seconds?: number;
+    stale_ttl_seconds?: number;
+    timeout_seconds?: number;
+    expires_at?: string;
+    script_path?: string;
+    ssh_alias?: string;
+    last_error?: string;
+  };
   directories: Array<{
     name: string;
     path: string;
@@ -245,6 +304,11 @@ export type DeploymentStatusPayload = {
     relative_path: string;
     path: string;
     exists: boolean;
+    size_bytes?: number | null;
+  }>;
+  checkpoints?: Array<{
+    component: string;
+    relative_path: string;
     size_bytes?: number | null;
   }>;
   summary: {
