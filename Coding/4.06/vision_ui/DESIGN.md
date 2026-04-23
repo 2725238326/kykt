@@ -31,7 +31,7 @@ Do **not** style this like a landing page, portfolio site, mobile app, or playfu
 
 ## Chosen visual direction
 
-Use a **Workbench Dark** style inspired by:
+Use a **Workbench Light** style inspired by:
 - Linear
 - Raycast
 - Warp
@@ -42,7 +42,7 @@ Interpretation for this project:
 - Warp = engineering workbench / runtime console energy
 
 The result should be:
-- dark but not pure black
+- light but not flat white
 - compact but not cramped
 - modern but not flashy
 - premium but not decorative
@@ -85,7 +85,7 @@ Layouts should make side-by-side reading easy.
 ### 5. Long-session comfort
 This is a desktop app used for extended periods.
 Use low-fatigue contrast, restrained glow, minimal motion, and consistent spacing.
-Dark mode should feel calm, not neon-heavy.
+Light mode should feel calm, not washed out.
 
 ### 6. One system, not many mini-styles
 All pages must feel like one product.
@@ -96,7 +96,7 @@ Overview, Create, Jobs, Advisor, and System pages should share the same design l
 ## Visual language
 
 ### Overall tone
-- dark neutral base
+- light neutral base
 - cool, technical, precise
 - subtle premium feel
 - no heavy glassmorphism

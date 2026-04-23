@@ -41,6 +41,16 @@ const DEFAULT_BOOTSTRAP: BootstrapPayload = {
       value: "monst3r",
       label: "MonST3R",
       description: "视频 / 帧序列动态三维重建"
+    },
+    {
+      value: "spann3r",
+      label: "Spann3R",
+      description: "Spatial memory 全局点图重建"
+    },
+    {
+      value: "fast3r",
+      label: "Fast3R",
+      description: "长图集快速前馈三维重建"
     }
   ],
   source_types: [
@@ -72,6 +82,11 @@ const defaultMonst3rParams = {
   window_overlap_ratio: "0.5"
 };
 
+const defaultFast3rParams = {
+  image_size: "512",
+  max_points: "250000"
+};
+
 type ParamChoice = {
   value: string;
   label: string;
@@ -79,7 +94,7 @@ type ParamChoice = {
 };
 
 type PresetKey = "quick" | "standard" | "enhanced";
-type PresetModel = "dust3r" | "mast3r" | "monst3r";
+type CreateParamMode = "dust3r" | "monst3r" | "spann3r" | "fast3r";
 
 type PresetDescriptor = {
   key: PresetKey;
@@ -169,6 +184,18 @@ const monst3rParamChoices: Record<keyof typeof defaultMonst3rParams, ParamChoice
   ]
 };
 
+const fast3rParamChoices: Record<keyof typeof defaultFast3rParams, ParamChoice[]> = {
+  image_size: [
+    { value: "512", label: "512（标准推荐）", note: "先保留完整视角信息，适合正式样例。" },
+    { value: "224", label: "224（快速摸底）", note: "只适合先验链路或快速筛样例。" }
+  ],
+  max_points: [
+    { value: "100000", label: "100000（快速）", note: "导出更轻，适合快速对比。" },
+    { value: "250000", label: "250000（标准推荐）", note: "当前最均衡，先从这一档起步。" },
+    { value: "500000", label: "500000（细节优先）", note: "重点样例再往上加，产物会更重。" }
+  ]
+};
+
 const presetDescriptors: PresetDescriptor[] = [
   { key: "quick", label: "快速", note: "先验链路、快速出结果" },
   { key: "standard", label: "标准", note: "正式样例首选基线" },
@@ -180,7 +207,8 @@ type FormState = {
   source_type: string;
   notes: string;
 } & typeof defaultDust3rParams &
-  typeof defaultMonst3rParams;
+  typeof defaultMonst3rParams &
+  typeof defaultFast3rParams;
 
 type ServiceState = "starting" | "ready" | "degraded";
 type JobFilter = "all" | "running" | "attention" | "finished";
@@ -259,10 +287,12 @@ function App() {
     model: "gpt-4o-mini",
     has_api_key: false,
   });
-  const [activePresets, setActivePresets] = useState<Record<PresetModel, PresetKey | null>>({
+  const [activePresets, setActivePresets] = useState<Record<string, PresetKey | null>>({
     dust3r: "standard",
     mast3r: "standard",
-    monst3r: "standard"
+    monst3r: "standard",
+    spann3r: null,
+    fast3r: "standard"
   });
   const recoveryInFlightRef = useRef(false);
   const [formState, setFormState] = useState<FormState>({
@@ -284,12 +314,6 @@ function App() {
   };
   const serviceReady = serviceState === "ready";
   const advisorReady = advisorState.enabled && advisorState.configured;
-  const isImageCollectionModel = formState.model === "dust3r" || formState.model === "mast3r";
-  const isMonst3r = formState.model === "monst3r";
-  const selectedModel = useMemo(
-    () => bootstrapData.models.find((item) => item.value === formState.model),
-    [bootstrapData.models, formState.model]
-  );
   const modelCatalog = useMemo<ModelCatalogItem[]>(
     () =>
       samplesPayload?.model_catalog ??
@@ -315,6 +339,17 @@ function App() {
     () => modelCatalog.filter((item) => !item.active_track),
     [modelCatalog]
   );
+  const selectedModel = useMemo(
+    () => modelCatalog.find((item) => item.value === formState.model) ?? bootstrapData.models.find((item) => item.value === formState.model),
+    [bootstrapData.models, formState.model, modelCatalog]
+  );
+  const createParamMode = useMemo(() => getCreateParamMode(formState.model), [formState.model]);
+  const selectedModelSourceTypes = useMemo(
+    () => allowedSourceTypesForModel(formState.model, modelCatalog),
+    [formState.model, modelCatalog]
+  );
+  const activePreset = activePresets[formState.model] ?? null;
+  const supportsPresets = createParamMode !== "spann3r";
   const selectedListJob = useMemo(
     () => (selectedJobId ? jobs.find((item) => item.job.job_id === selectedJobId) ?? null : null),
     [jobs, selectedJobId]
@@ -404,8 +439,9 @@ function App() {
     [pendingImageCount, pendingUnknownCount, pendingVideoCount]
   );
   const createReadiness = useMemo(
-    () => buildCreateReadiness(serviceReady, formState.model, formState.source_type, files.length, pendingImageCount, pendingVideoCount),
-    [files.length, formState.model, formState.source_type, pendingImageCount, pendingVideoCount, serviceReady]
+    () =>
+      buildCreateReadiness(serviceReady, selectedModelSourceTypes, formState.model, formState.source_type, files.length, pendingImageCount, pendingVideoCount),
+    [files.length, formState.model, formState.source_type, pendingImageCount, pendingVideoCount, selectedModelSourceTypes, serviceReady]
   );
   const summary = bootstrap?.summary ?? {
     total: jobs.length,
@@ -785,30 +821,43 @@ function App() {
   function updateFormField(key: keyof FormState, value: string) {
     setFormState((current) => ({ ...current, [key]: value }));
     if (isParamFieldKey(key)) {
-      setActivePresets((current) => ({ ...current, [formState.model as PresetModel]: null }));
+      setActivePresets((current) => ({ ...current, [formState.model]: null }));
     }
   }
 
   function updateModel(value: string) {
     setFormState((current) => {
-      if (value === "monst3r") {
-        return {
-          ...current,
-          ...defaultMonst3rParams,
-          model: value,
-          source_type: current.source_type === "images" ? "frames" : current.source_type
-        };
-      }
-      return {
+      const nextSourceTypes = allowedSourceTypesForModel(value, modelCatalog);
+      const nextSourceType = nextSourceTypes.includes(current.source_type) ? current.source_type : nextSourceTypes[0] ?? "images";
+      const baseState = {
         ...current,
-        ...defaultDust3rParams,
         model: value,
-        source_type: "images"
+        source_type: nextSourceType
       };
+      switch (getCreateParamMode(value)) {
+        case "monst3r":
+          return {
+            ...baseState,
+            ...defaultMonst3rParams
+          };
+        case "fast3r":
+          return {
+            ...baseState,
+            ...defaultFast3rParams
+          };
+        case "spann3r":
+          return baseState;
+        case "dust3r":
+        default:
+          return {
+            ...baseState,
+            ...defaultDust3rParams
+          };
+      }
     });
     setActivePresets((current) => ({
       ...current,
-      [value as PresetModel]: "standard"
+      [value]: getCreateParamMode(value) === "spann3r" ? null : "standard"
     }));
   }
 
@@ -848,20 +897,30 @@ function App() {
 
   function applyPreset(preset: PresetKey) {
     setFormState((current) => {
-      if (current.model === "monst3r") {
-        return {
-          ...current,
-          ...buildMonst3rPreset(preset)
-        };
+      switch (getCreateParamMode(current.model)) {
+        case "monst3r":
+          return {
+            ...current,
+            ...buildMonst3rPreset(preset)
+          };
+        case "fast3r":
+          return {
+            ...current,
+            ...buildFast3rPreset(preset)
+          };
+        case "spann3r":
+          return current;
+        case "dust3r":
+        default:
+          return {
+            ...current,
+            ...buildDust3rPreset(preset, files.length)
+          };
       }
-      return {
-        ...current,
-        ...buildDust3rPreset(preset, files.length)
-      };
     });
     setActivePresets((current) => ({
       ...current,
-      [formState.model as PresetModel]: preset
+      [formState.model]: preset
     }));
   }
 
@@ -893,7 +952,7 @@ function App() {
     formData.append("source_type", formState.source_type);
     formData.append("notes", formState.notes);
 
-    const paramDefaults = isImageCollectionModel ? defaultDust3rParams : defaultMonst3rParams;
+    const paramDefaults = getParamDefaultsForMode(createParamMode);
     Object.keys(paramDefaults).forEach((key) => {
       formData.append(key, formState[key as keyof FormState]);
     });
@@ -918,14 +977,22 @@ function App() {
     if (files.length === 0) {
       return "请先选择输入文件。";
     }
-    if (isImageCollectionModel && files.length < 2) {
-      return `${statusModelLabel(formState.model)} 至少需要两张图片。`;
+    if (!selectedModelSourceTypes.includes(formState.source_type)) {
+      return `${statusModelLabel(formState.model)} 当前不支持 ${sourceTypeLabel(formState.source_type)} 输入。`;
     }
-    if (isMonst3r && formState.source_type === "video" && files.length !== 1) {
-      return "MonST3R 视频模式请上传 1 个视频文件。";
+    if (formState.source_type === "video") {
+      if (files.length !== 1 || !files.every((file) => isVideoLikeFile(file))) {
+        return `${statusModelLabel(formState.model)} 视频模式请上传 1 个视频文件。`;
+      }
+      return null;
     }
-    if (isMonst3r && formState.source_type !== "video" && files.length < 2) {
-      return "MonST3R 帧序列模式至少上传 2 张图片。";
+    if (!files.every((file) => isImageLikeFile(file))) {
+      return `${statusModelLabel(formState.model)} 当前输入类型需要图片或帧序列文件，不要混入视频。`;
+    }
+    if (files.length < 2) {
+      return formState.source_type === "frames"
+        ? `${statusModelLabel(formState.model)} 帧序列模式至少上传 2 张图片。`
+        : `${statusModelLabel(formState.model)} 至少需要两张输入图片。`;
     }
     return null;
   }
@@ -1149,7 +1216,7 @@ function App() {
                         onChange={(event) => updateFormField("source_type", event.target.value)}
                       >
                         {bootstrapData.source_types
-                          .filter((item) => allowedSourceTypesForModel(formState.model).includes(item.value))
+                          .filter((item) => selectedModelSourceTypes.includes(item.value))
                           .map((item) => (
                             <option key={item.value} value={item.value}>
                               {item.label}
@@ -1248,34 +1315,30 @@ function App() {
                   <details className="advanced-panel" open>
                     <summary>高级参数</summary>
                     <div className="advanced-panel-intro">
-                      这些参数已经整理成推荐档位了。直接优先选择带“推荐”字样的选项，只有做对比实验时再切到其它档。
+                      {buildParamPanelIntro(createParamMode)}
                     </div>
-                    <div className="preset-strip">
-                      <div className="preset-strip-head">
-                        <strong>一键预设</strong>
-                        <span>
-                          {activePresets[formState.model as PresetModel]
-                            ? `当前：${presetLabel(activePresets[formState.model as PresetModel])}`
-                            : "当前：已手动调整"}
-                        </span>
+                    {supportsPresets ? (
+                      <div className="preset-strip">
+                        <div className="preset-strip-head">
+                          <strong>一键预设</strong>
+                          <span>{activePreset ? `当前：${presetLabel(activePreset)}` : "当前：已手动调整"}</span>
+                        </div>
+                        <div className="preset-pills">
+                          {presetDescriptors.map((preset) => (
+                            <button
+                              key={preset.key}
+                              className={`preset-pill ${activePreset === preset.key ? "active" : ""}`}
+                              type="button"
+                              onClick={() => applyPreset(preset.key)}
+                            >
+                              <strong>{preset.label}</strong>
+                              <span>{preset.note}</span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="preset-pills">
-                        {presetDescriptors.map((preset) => (
-                          <button
-                            key={preset.key}
-                            className={`preset-pill ${
-                              activePresets[formState.model as PresetModel] === preset.key ? "active" : ""
-                            }`}
-                            type="button"
-                            onClick={() => applyPreset(preset.key)}
-                          >
-                            <strong>{preset.label}</strong>
-                            <span>{preset.note}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    {isImageCollectionModel ? (
+                    ) : null}
+                    {createParamMode === "dust3r" ? (
                       <div className="param-grid">
                         {Object.keys(defaultDust3rParams).map((key) => (
                           <ParamField
@@ -1287,8 +1350,12 @@ function App() {
                           />
                         ))}
                       </div>
-                    ) : (
+                    ) : createParamMode === "monst3r" ? (
                       <Monst3rParams formState={formState} updateFormField={updateFormField} />
+                    ) : createParamMode === "fast3r" ? (
+                      <Fast3rParams formState={formState} updateFormField={updateFormField} />
+                    ) : (
+                      <Spann3rParams />
                     )}
                   </details>
                 </article>
@@ -3166,6 +3233,40 @@ function Monst3rParams(props: {
   );
 }
 
+function Fast3rParams(props: {
+  formState: FormState;
+  updateFormField: (key: keyof FormState, value: string) => void;
+}) {
+  return (
+    <div className="param-grid">
+      {Object.keys(defaultFast3rParams).map((key) => (
+        <ParamField
+          key={key}
+          name={key}
+          value={props.formState[key as keyof FormState]}
+          choices={fast3rParamChoices[key as keyof typeof defaultFast3rParams]}
+          onChange={(value) => props.updateFormField(key as keyof FormState, value)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Spann3rParams() {
+  return (
+    <div className="param-static-note">
+      <strong>当前 Runner 使用固定序列参数</strong>
+      <p>Spann3R 这轮先不在前端暴露细调项，提交时会走后端默认序列配置。</p>
+      <div className="param-static-grid">
+        <span>resolution 224</span>
+        <span>kf_every 10</span>
+        <span>conf_thresh 0.001</span>
+        <span>offline false</span>
+      </div>
+    </div>
+  );
+}
+
 function ParamField(props: {
   name: string;
   value: string;
@@ -3741,7 +3842,36 @@ function backendStatusText(status: BackendStatusPayload | null) {
 }
 
 function isParamFieldKey(key: keyof FormState) {
-  return key in defaultDust3rParams || key in defaultMonst3rParams;
+  return key in defaultDust3rParams || key in defaultMonst3rParams || key in defaultFast3rParams;
+}
+
+function getCreateParamMode(model: string): CreateParamMode {
+  switch (model) {
+    case "monst3r":
+      return "monst3r";
+    case "spann3r":
+      return "spann3r";
+    case "fast3r":
+      return "fast3r";
+    case "mast3r":
+    case "dust3r":
+    default:
+      return "dust3r";
+  }
+}
+
+function getParamDefaultsForMode(mode: CreateParamMode) {
+  switch (mode) {
+    case "monst3r":
+      return defaultMonst3rParams;
+    case "fast3r":
+      return defaultFast3rParams;
+    case "spann3r":
+      return {};
+    case "dust3r":
+    default:
+      return defaultDust3rParams;
+  }
 }
 
 function buildDust3rPreset(preset: PresetKey, fileCount: number): typeof defaultDust3rParams {
@@ -3823,6 +3953,27 @@ function buildMonst3rPreset(preset: PresetKey): typeof defaultMonst3rParams {
   }
 }
 
+function buildFast3rPreset(preset: PresetKey): typeof defaultFast3rParams {
+  switch (preset) {
+    case "quick":
+      return {
+        image_size: "224",
+        max_points: "100000"
+      };
+    case "enhanced":
+      return {
+        image_size: "512",
+        max_points: "500000"
+      };
+    case "standard":
+    default:
+      return {
+        image_size: "512",
+        max_points: "250000"
+      };
+  }
+}
+
 function presetLabel(preset: PresetKey | null) {
   switch (preset) {
     case "quick":
@@ -3836,11 +3987,24 @@ function presetLabel(preset: PresetKey | null) {
   }
 }
 
-function allowedSourceTypesForModel(model: string) {
-  if (model === "monst3r") {
-    return ["video", "frames"];
+function allowedSourceTypesForModel(model: string, catalog?: ModelCatalogItem[]) {
+  const fromCatalog = catalog?.find((item) => item.value === model)?.source_types ?? [];
+  if (fromCatalog.length > 0) {
+    return fromCatalog;
   }
-  return ["images"];
+  const localRegistry: Record<string, string[]> = {
+    dust3r: ["images"],
+    mast3r: ["images"],
+    monst3r: ["video", "frames"],
+    spann3r: ["images", "frames"],
+    align3r: ["video", "frames"],
+    fast3r: ["images", "frames"],
+    cut3r: ["video", "frames", "images"],
+    pi3x: ["images", "video", "frames"],
+    zipmap: ["images", "video", "frames"],
+    lingbot_map: ["video", "frames"]
+  };
+  return localRegistry[model] ?? ["images"];
 }
 
 function inputHint(model: string, sourceType: string) {
@@ -3849,6 +4013,12 @@ function inputHint(model: string, sourceType: string) {
   }
   if (model === "monst3r") {
     return "上传连续帧图片，建议 3 张以上";
+  }
+  if (model === "spann3r") {
+    return sourceType === "frames" ? "上传连续帧图片，建议 3 到 12 张" : "上传多视角图片，建议 3 张以上";
+  }
+  if (model === "fast3r") {
+    return sourceType === "frames" ? "上传关键帧或连续帧，建议 4 张以上" : "上传多视角图片，建议 4 到 12 张";
   }
   return model === "mast3r" ? "上传 2 张或更多同场景图片" : "上传 2 张或更多图片";
 }
@@ -3875,6 +4045,20 @@ function buildCreateGuidance(model: string, sourceType: string, fileCount: numbe
       fileCount >= 2 ? "当前已满足 MASt3R 的最小输入要求。" : "MASt3R 至少需要 2 张图片。"
     ];
   }
+  if (model === "spann3r") {
+    return [
+      "Spann3R 更像序列型全局点图工作流，优先给它连续视角的图片或关键帧。",
+      "这一轮前端先走固定序列参数，重点先看全局一致性和 memory 行为是否稳定。",
+      fileCount >= 2 ? "当前已满足 Spann3R 的最小输入要求。" : "Spann3R 至少需要 2 张图片或帧。"
+    ];
+  }
+  if (model === "fast3r") {
+    return [
+      "Fast3R 适合更长一点的多视角图集或关键帧集合，先从 4 到 12 张起步。",
+      "先保留标准分辨率和点数上限，稳定后再压到快速档做大批量比较。",
+      fileCount >= 2 ? "当前已满足 Fast3R 的最小输入要求。" : "Fast3R 至少需要 2 张图片或帧。"
+    ];
+  }
   return [
     "DUSt3R 最稳妥的起步方式是先用同一场景的 2 到 5 张图片。",
     "如果图片超过 6 张，建议把场景图改成 swin-5，避免 complete 配对过多。",
@@ -3884,6 +4068,7 @@ function buildCreateGuidance(model: string, sourceType: string, fileCount: numbe
 
 function buildCreateReadiness(
   serviceReady: boolean,
+  allowedSourceTypes: string[],
   model: string,
   sourceType: string,
   fileCount: number,
@@ -3915,9 +4100,23 @@ function buildCreateReadiness(
     {
       label: "来源",
       value: sourceTypeLabel(sourceType),
-      tone: allowedSourceTypesForModel(model).includes(sourceType) ? "ready" : "blocked"
+      tone: allowedSourceTypes.includes(sourceType) ? "ready" : "blocked"
     }
   ];
+}
+
+function buildParamPanelIntro(mode: CreateParamMode) {
+  switch (mode) {
+    case "monst3r":
+      return "视频序列参数已经整理成推荐档位，先用标准档，只有做时长或窗口对比时再改。";
+    case "fast3r":
+      return "Fast3R 当前只暴露分辨率和点数上限，先把正式样例跑稳，再切快速档做大批量对比。";
+    case "spann3r":
+      return "Spann3R 当前先走后端固定序列参数，前端这里只展示这轮实际会使用的默认配置。";
+    case "dust3r":
+    default:
+      return "这些参数已经整理成推荐档位了。直接优先选择带“推荐”字样的选项，只有做对比实验时再切到其它档。";
+  }
 }
 
 function buildCreateLaunchHeadline(serviceReady: boolean, fileCount: number) {
@@ -3971,6 +4170,40 @@ function buildCaptureChecklist(model: string, sourceType: string, fileCount: num
       {
         title: "当前上传检查",
         body: fileCount >= 2 ? "帧数已满足最小要求。" : "帧序列模式至少上传 2 张图片。"
+      }
+    ];
+  }
+
+  if (model === "spann3r") {
+    return [
+      {
+        title: "连续性比单张质量更重要",
+        body: "优先给 Spann3R 连续视角或连续帧，不要混入跨度特别大的图。"
+      },
+      {
+        title: "先做小序列稳定性验证",
+        body: "第一次先用 3 到 12 张连续输入确认全局点图和 memory 行为。"
+      },
+      {
+        title: "当前上传检查",
+        body: fileCount >= 2 ? "当前数量已满足 Spann3R 的起步要求。" : "Spann3R 至少上传 2 张图片或帧。"
+      }
+    ];
+  }
+
+  if (model === "fast3r") {
+    return [
+      {
+        title: "优先整理多视角图集",
+        body: "Fast3R 更适合较完整的图集或关键帧集合，尽量保证覆盖物体一圈或主要路径。"
+      },
+      {
+        title: "先保留标准分辨率",
+        body: "第一轮不要急着压低分辨率，先确认轨迹和重建完整性，再做快速档对比。"
+      },
+      {
+        title: "当前上传检查",
+        body: fileCount >= 2 ? "当前数量已满足 Fast3R 的起步要求。" : "Fast3R 至少上传 2 张图片或帧。"
       }
     ];
   }
@@ -4073,6 +4306,20 @@ function statusModelLabel(model: string) {
       return "MASt3R";
     case "monst3r":
       return "MonST3R";
+    case "spann3r":
+      return "Spann3R";
+    case "align3r":
+      return "Align3R";
+    case "fast3r":
+      return "Fast3R";
+    case "cut3r":
+      return "CUT3R";
+    case "pi3x":
+      return "Pi3X";
+    case "zipmap":
+      return "ZipMap";
+    case "lingbot_map":
+      return "LingBot-Map";
     default:
       return model;
   }
