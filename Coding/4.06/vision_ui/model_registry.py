@@ -64,6 +64,28 @@ MODEL_REGISTRY: dict[str, ModelSpec] = {
         runner_status="validated_standard_sample",
         research_priority=100,
     ),
+    "spann3r": ModelSpec(
+        value="spann3r",
+        label="Spann3R",
+        description="Spatial memory 全局点图重建",
+        param_family="spann3r_sequence",
+        source_types=("images", "frames"),
+        default_runner="spann3r_runner.py",
+        family="memory_global_pointmap",
+        runner_status="smoke_ready",
+        research_priority=95,
+    ),
+    "fast3r": ModelSpec(
+        value="fast3r",
+        label="Fast3R",
+        description="长图集快速前馈三维重建",
+        param_family="fast3r_collection",
+        source_types=("images", "frames"),
+        default_runner="fast3r_runner.py",
+        family="large_image_collection",
+        runner_status="smoke_ready_attention_fallback",
+        research_priority=90,
+    ),
 }
 
 
@@ -98,7 +120,7 @@ MODEL_CATALOG.update(
             description="动态视频深度一致性与动态点云",
             family="video_depth_consistency",
             source_types=("video", "frames"),
-            runner_status="env_partial",
+            runner_status="env_blocked_curope",
             research_priority=94,
         ),
         "fast3r": ModelCatalogEntry(

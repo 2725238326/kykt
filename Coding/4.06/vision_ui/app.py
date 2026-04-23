@@ -43,7 +43,14 @@ from job_store import (
     save_evaluation,
     update_job,
 )
-from model_registry import MODEL_CATALOG_OPTIONS, MODEL_OPTIONS, SOURCE_TYPE_OPTIONS, allowed_source_types, get_model_spec
+from model_registry import (
+    MODEL_CATALOG_OPTIONS,
+    MODEL_OPTIONS,
+    SOURCE_TYPE_OPTIONS,
+    allowed_source_types,
+    get_model_spec,
+    param_family_for,
+)
 from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 
 _RUNNER_THREADS: dict[str, threading.Thread] = {}
@@ -435,6 +442,8 @@ def _dust3r_params(
     }
 
 
+
+
 def _parse_bool(value: str | bool | None, default: bool = False) -> bool:
     if value is None:
         return default
@@ -470,6 +479,69 @@ def _monst3r_params(
     }
 
 
+def _spann3r_params() -> dict:
+    return {
+        "resolution": 224,
+        "kf_every": 10,
+        "conf_thresh": 0.001,
+        "save_ori": True,
+        "offline": False,
+    }
+
+
+def _fast3r_params(image_size: int, max_points: int) -> dict:
+    normalized_image_size = int(image_size)
+    if normalized_image_size not in {224, 512}:
+        normalized_image_size = 512
+    return {
+        "image_size": normalized_image_size,
+        "max_points": min(max(int(max_points), 1000), 2_000_000),
+        "attention_backend": "pytorch_naive",
+        "pose_iterations": 100,
+        "focal_estimation_method": "first_view_from_global_head",
+    }
+
+
+def _build_job_params(
+    model: str,
+    *,
+    image_size: int,
+    scene_graph: str,
+    niter: int,
+    lr: float,
+    batch_size: int,
+    max_points: int,
+    match_viz_count: int,
+    fps: int,
+    num_frames: int,
+    not_batchify: str | bool,
+    real_time: str | bool,
+    window_wise: str | bool,
+    window_size: int,
+    window_overlap_ratio: float,
+) -> dict:
+    family = param_family_for(model)
+    if family == "image_collection":
+        return _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
+    if family == "video_sequence":
+        return _monst3r_params(
+            image_size,
+            batch_size,
+            fps,
+            num_frames,
+            not_batchify,
+            real_time,
+            window_wise,
+            window_size,
+            window_overlap_ratio,
+        )
+    if family == "spann3r_sequence":
+        return _spann3r_params()
+    if family == "fast3r_collection":
+        return _fast3r_params(image_size, max_points)
+    return {}
+
+
 def _validate_new_job(model: str, source_type: str, files: list[UploadFile]) -> None:
     model_values = {item["value"] for item in MODEL_OPTIONS}
     source_values = {item["value"] for item in SOURCE_TYPE_OPTIONS}
@@ -482,17 +554,121 @@ def _validate_new_job(model: str, source_type: str, files: list[UploadFile]) -> 
         raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 仅支持这些输入类型：{allowed}")
     if not files:
         raise HTTPException(status_code=400, detail="没有上传输入文件。")
-    if model in {"dust3r", "mast3r"} and len(files) < 2:
+    if model in {"dust3r", "mast3r", "spann3r", "fast3r"} and len(files) < 2:
         raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 至少需要两张输入图片。")
     if model == "monst3r" and source_type == "video" and len(files) != 1:
         raise HTTPException(status_code=400, detail="MonST3R 视频模式请上传 1 个视频文件；多张图片请改选“帧序列”。")
+    if model == "monst3r" and source_type == "frames" and len(files) < 2:
+        raise HTTPException(status_code=400, detail="MonST3R 帧序列模式至少需要 2 张图片。")
 
 
 def _validate_dispatchable(job) -> None:
-    if job.model in {"dust3r", "mast3r"} and len(job.input_files) < 2:
+    if job.model in {"dust3r", "mast3r", "spann3r", "fast3r"} and len(job.input_files) < 2:
         raise HTTPException(status_code=400, detail=f"{get_model_spec(job.model).label} 至少需要两张输入图片。")
     if job.model == "monst3r" and len(job.input_files) < 1:
         raise HTTPException(status_code=400, detail="MonST3R 至少需要 1 个视频或一组帧序列。")
+
+
+async def _create_job_from_request(
+    *,
+    model: str,
+    source_type: str,
+    notes: str,
+    sample_id: str,
+    image_size: int,
+    scene_graph: str,
+    niter: int,
+    lr: float,
+    batch_size: int,
+    max_points: int,
+    match_viz_count: int,
+    fps: int,
+    num_frames: int,
+    not_batchify: str,
+    real_time: str,
+    window_wise: str,
+    window_size: int,
+    window_overlap_ratio: float,
+    files: list[UploadFile],
+):
+    _validate_new_job(model, source_type, files)
+    params = _build_job_params(
+        model,
+        image_size=image_size,
+        scene_graph=scene_graph,
+        niter=niter,
+        lr=lr,
+        batch_size=batch_size,
+        max_points=max_points,
+        match_viz_count=match_viz_count,
+        fps=fps,
+        num_frames=num_frames,
+        not_batchify=not_batchify,
+        real_time=real_time,
+        window_wise=window_wise,
+        window_size=window_size,
+        window_overlap_ratio=window_overlap_ratio,
+    )
+    job = create_job(model=model, source_type=source_type, notes=notes, params=params, sample_id=sample_id)
+    uploaded = []
+    for upload in files:
+        uploaded.append((upload.filename or "unnamed.bin", await upload.read()))
+    save_inputs(job, uploaded)
+    return load_job(job.job_id)
+
+
+def _prepare_job_for_dispatch(job_id: str, message: str) -> None:
+    clear_job_runtime(job_id)
+    update_job(
+        job_id,
+        status="running",
+        phase="preparing_remote",
+        error_message=None,
+        progress_message=message,
+    )
+    _launch_remote_job(job_id)
+
+
+def _job_compare_record(job) -> dict:
+    evaluation = load_evaluation(job.job_id)
+    result_summary = load_result_summary(job.job_id)
+    primary_artifacts = (result_summary or {}).get("primary_artifacts") or []
+    return {
+        "job_id": job.job_id,
+        "model": job.model,
+        "status": job.status,
+        "status_label": status_label(job.status),
+        "phase": job.phase,
+        "progress_message": job.progress_message,
+        "created_at": job.created_at,
+        "sample_id": getattr(job, "sample_id", None),
+        "score_snapshot": {
+            key: evaluation.get(key)
+            for key in EVALUATION_SCORE_FIELDS
+            if evaluation.get(key) is not None
+        },
+        "primary_artifacts": primary_artifacts,
+    }
+
+
+def build_sample_job_matrix(manifest: dict, jobs) -> dict:
+    sample_ids = {str(sample.get("id")) for sample in (manifest.get("samples") or []) if sample.get("id")}
+    grouped: dict[str, dict[str, dict]] = {sample_id: {} for sample_id in sample_ids}
+    unassigned: list[dict] = []
+
+    for job in jobs:
+        sample_id = getattr(job, "sample_id", None)
+        if sample_id and sample_id in grouped:
+            grouped[sample_id][job.model] = _job_compare_record(job)
+        elif sample_id:
+            unassigned.append(_job_compare_record(job))
+
+    rows = []
+    for sample in manifest.get("samples") or []:
+        sample_id = str(sample.get("id"))
+        rows.append({"sample_id": sample_id, "jobs_by_model": grouped.get(sample_id, {})})
+
+    return {"rows": rows, "unassigned_jobs": unassigned}
 
 
 def _runner_thread_target(job_id: str) -> None:
@@ -543,6 +719,7 @@ async def create_job_view(
     model: str = Form(...),
     source_type: str = Form(...),
     notes: str = Form(""),
+    sample_id: str = Form(""),
     image_size: int = Form(512),
     scene_graph: str = Form("complete"),
     niter: int = Form(300),
@@ -559,30 +736,27 @@ async def create_job_view(
     window_overlap_ratio: float = Form(0.5),
     files: list[UploadFile] = File(...),
 ):
-    _validate_new_job(model, source_type, files)
-
-    params = {}
-    if model in {"dust3r", "mast3r"}:
-        params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
-    elif model == "monst3r":
-        params = _monst3r_params(
-            image_size,
-            batch_size,
-            fps,
-            num_frames,
-            not_batchify,
-            real_time,
-            window_wise,
-            window_size,
-            window_overlap_ratio,
-        )
-
-    job = create_job(model=model, source_type=source_type, notes=notes, params=params)
-    uploaded = []
-    for upload in files:
-        uploaded.append((upload.filename or "unnamed.bin", await upload.read()))
-    save_inputs(job, uploaded)
-
+    job = await _create_job_from_request(
+        model=model,
+        source_type=source_type,
+        notes=notes,
+        sample_id=sample_id,
+        image_size=image_size,
+        scene_graph=scene_graph,
+        niter=niter,
+        lr=lr,
+        batch_size=batch_size,
+        max_points=max_points,
+        match_viz_count=match_viz_count,
+        fps=fps,
+        num_frames=num_frames,
+        not_batchify=not_batchify,
+        real_time=real_time,
+        window_wise=window_wise,
+        window_size=window_size,
+        window_overlap_ratio=window_overlap_ratio,
+        files=files,
+    )
     return RedirectResponse(url=f"/jobs/{job.job_id}", status_code=303)
 
 
@@ -612,16 +786,7 @@ async def dispatch_job(job_id: str):
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     _validate_dispatchable(job)
-
-    clear_job_runtime(job_id)
-    update_job(
-        job_id,
-        status="running",
-        phase="preparing_remote",
-        error_message=None,
-        progress_message="正在启动远端调度线程...",
-    )
-    _launch_remote_job(job_id)
+    _prepare_job_for_dispatch(job_id, "正在启动远端调度线程...")
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
@@ -633,16 +798,7 @@ async def retry_job(job_id: str):
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     _validate_dispatchable(job)
-
-    clear_job_runtime(job_id)
-    update_job(
-        job_id,
-        status="running",
-        phase="preparing_remote",
-        error_message=None,
-        progress_message="正在重新启动远端调度线程...",
-    )
-    _launch_remote_job(job_id)
+    _prepare_job_for_dispatch(job_id, "正在重新启动远端调度线程...")
     return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
@@ -704,20 +860,7 @@ async def open_output_file(job_id: str, relative_path: str = Form(...)):
 
 @app.post("/api/jobs/{job_id}/open-output")
 async def open_output_file_api(job_id: str, relative_path: str = Form(...)):
-    try:
-        job = load_job(job_id)
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
-
-    target = resolve_local_output(job, relative_path)
-    try:
-        os.startfile(str(target))  # type: ignore[attr-defined]
-    except AttributeError as exc:
-        raise HTTPException(status_code=400, detail="当前系统不支持用默认程序打开本地文件。") from exc
-    except OSError as exc:
-        raise HTTPException(status_code=500, detail=f"打开本地文件失败：{exc}") from exc
-
-    return JSONResponse({"ok": True, "path": str(target)})
+    return await open_output_file(job_id, relative_path)
 
 
 @app.get("/api/jobs")
@@ -898,13 +1041,15 @@ async def deployment_status_api(refresh: bool = False):
 @app.get("/api/samples")
 async def samples_api():
     manifest = load_samples_manifest()
+    jobs = list_jobs(limit=200)
     return JSONResponse(
         {
             "manifest": manifest,
             "summary": build_sample_status_summary(manifest),
             "model_catalog": MODEL_CATALOG_OPTIONS,
+            "job_matrix": build_sample_job_matrix(manifest, jobs),
         }
-        )
+    )
 
 
 @app.get("/api/jobs/{job_id}/evaluation")
@@ -937,6 +1082,7 @@ async def create_job_api(
     model: str = Form(...),
     source_type: str = Form(...),
     notes: str = Form(""),
+    sample_id: str = Form(""),
     image_size: int = Form(512),
     scene_graph: str = Form("complete"),
     niter: int = Form(300),
@@ -953,30 +1099,28 @@ async def create_job_api(
     window_overlap_ratio: float = Form(0.5),
     files: list[UploadFile] = File(...),
 ):
-    _validate_new_job(model, source_type, files)
-
-    params = {}
-    if model in {"dust3r", "mast3r"}:
-        params = _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
-    elif model == "monst3r":
-        params = _monst3r_params(
-            image_size,
-            batch_size,
-            fps,
-            num_frames,
-            not_batchify,
-            real_time,
-            window_wise,
-            window_size,
-            window_overlap_ratio,
-        )
-
-    job = create_job(model=model, source_type=source_type, notes=notes, params=params)
-    uploaded = []
-    for upload in files:
-        uploaded.append((upload.filename or "unnamed.bin", await upload.read()))
-    save_inputs(job, uploaded)
-    return JSONResponse(_job_payload(load_job(job.job_id)))
+    job = await _create_job_from_request(
+        model=model,
+        source_type=source_type,
+        notes=notes,
+        sample_id=sample_id,
+        image_size=image_size,
+        scene_graph=scene_graph,
+        niter=niter,
+        lr=lr,
+        batch_size=batch_size,
+        max_points=max_points,
+        match_viz_count=match_viz_count,
+        fps=fps,
+        num_frames=num_frames,
+        not_batchify=not_batchify,
+        real_time=real_time,
+        window_wise=window_wise,
+        window_size=window_size,
+        window_overlap_ratio=window_overlap_ratio,
+        files=files,
+    )
+    return JSONResponse(_job_payload(job))
 
 
 @app.get("/api/advisor/status")
@@ -1007,16 +1151,7 @@ async def dispatch_job_api(job_id: str):
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     _validate_dispatchable(job)
-
-    clear_job_runtime(job_id)
-    update_job(
-        job_id,
-        status="running",
-        phase="preparing_remote",
-        error_message=None,
-        progress_message="正在启动远端调度线程...",
-    )
-    _launch_remote_job(job_id)
+    _prepare_job_for_dispatch(job_id, "正在启动远端调度线程...")
     return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})
 
 
@@ -1028,16 +1163,7 @@ async def retry_job_api(job_id: str):
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     _validate_dispatchable(job)
-
-    clear_job_runtime(job_id)
-    update_job(
-        job_id,
-        status="running",
-        phase="preparing_remote",
-        error_message=None,
-        progress_message="正在重新启动远端调度线程...",
-    )
-    _launch_remote_job(job_id)
+    _prepare_job_for_dispatch(job_id, "正在重新启动远端调度线程...")
     return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})
 
 

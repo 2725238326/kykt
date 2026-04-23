@@ -39,6 +39,7 @@ class JobRecord:
     model: str
     source_type: str
     notes: str
+    sample_id: str | None = None
     params: dict = field(default_factory=dict)
     status: str = "draft"
     phase: str = "local_prepared"
@@ -130,15 +131,17 @@ def _public_job_evaluation(payload: dict) -> dict:
     return public_payload
 
 
-def create_job(model: str, source_type: str, notes: str, params: dict | None = None) -> JobRecord:
+def create_job(model: str, source_type: str, notes: str, params: dict | None = None, sample_id: str | None = None) -> JobRecord:
     job_id = make_job_id()
     created_at = datetime.now().isoformat(timespec="seconds")
+    normalized_sample_id = sample_id.strip() if isinstance(sample_id, str) else None
     job = JobRecord(
         job_id=job_id,
         created_at=created_at,
         model=model,
         source_type=source_type,
         notes=notes.strip(),
+        sample_id=normalized_sample_id or None,
         params=params or {},
         remote_runner=_default_runner_for(model),
         progress_message="本地任务已就绪。文件名没有要求，系统会自动规范化内部命名。",
@@ -178,6 +181,7 @@ def save_job(job: JobRecord) -> None:
 def load_job(job_id: str) -> JobRecord:
     with _JOB_STORE_LOCK:
         payload = _read_json(get_job_dir(job_id) / "job.json")
+        payload.setdefault("sample_id", None)
         payload.setdefault("params", {})
         payload.setdefault("input_items", [])
         return JobRecord(**payload)
@@ -189,6 +193,7 @@ def list_jobs(limit: int = 20) -> list[JobRecord]:
         jobs: list[JobRecord] = []
         for job_json in sorted(LOCAL_JOBS_DIR.glob("*/job.json"), reverse=True):
             payload = _read_json(job_json)
+            payload.setdefault("sample_id", None)
             payload.setdefault("params", {})
             payload.setdefault("input_items", [])
             jobs.append(JobRecord(**payload))
@@ -258,6 +263,7 @@ def duplicate_job(job_id: str) -> JobRecord:
         source_type=source.source_type,
         notes=source.notes,
         params=dict(source.params),
+        sample_id=source.sample_id,
     )
 
     uploads = []
