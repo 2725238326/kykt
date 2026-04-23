@@ -195,6 +195,7 @@ type OutputSection = {
   defaultOpen: boolean;
   items: OutputItem[];
 };
+type SampleMatrixJob = NonNullable<SamplesPayload["job_matrix"]>["rows"][number]["jobs_by_model"][string];
 type ModelCatalogItem = NonNullable<BootstrapPayload["model_catalog"]>[number];
 type PreviewAsset = {
   url: string;
@@ -1822,7 +1823,9 @@ function SampleMatrixPanel(props: {
               <div className="sample-compare-grid">
                 {visibleSamples.map((sample) => {
                   const jobsByModel = jobMatrixBySample.get(sample.id) ?? {};
-                  const compareModels = [...(sample.required_models ?? []), ...(sample.optional_models ?? [])];
+                  const requiredModels = sample.required_models ?? [];
+                  const requiredModelSet = new Set(requiredModels);
+                  const compareModels = Array.from(new Set([...(sample.required_models ?? []), ...(sample.optional_models ?? [])]));
                   return (
                     <article className="sample-compare-row" key={sample.id}>
                       <div className="sample-compare-main">
@@ -1835,59 +1838,70 @@ function SampleMatrixPanel(props: {
                           <span>{sourceTypeLabel(sample.source_type)}</span>
                           <span>{sample.target_file_count ? `${sample.target_file_count} 个文件` : `${sample.target_duration_seconds ?? "-"} 秒`}</span>
                         </div>
-                      </div>
-
-                      <div className="sample-compare-column">
-                        <span className="mini-label">Required Models</span>
-                        <div className="sample-card-models">
-                          {(sample.required_models ?? []).length > 0 ? (
-                            (sample.required_models ?? []).map((model) => <span key={model}>{modelDisplayName(model, props.modelCatalog)}</span>)
+                        <div className="sample-card-models sample-required-models">
+                          {requiredModels.length > 0 ? (
+                            requiredModels.map((model) => <span key={model}>{modelDisplayName(model, props.modelCatalog)}</span>)
                           ) : (
-                            <span>未标记</span>
+                            <span>未标记必跑模型</span>
                           )}
                         </div>
-                      </div>
-
-                      <div className="sample-compare-column">
-                        <span className="mini-label">当前状态</span>
                         <p className="sample-compare-status-copy">
                           {sampleStatusLabel(sample.status)}
                           {sample.seed_job_id ? " · 已关联 seed 任务" : " · 尚未关联 seed 任务"}
                         </p>
-                      </div>
-
-                      <div className="sample-compare-column">
-                        <span className="mini-label">模型执行矩阵</span>
-                        <div className="sample-card-models">
-                          {compareModels.length > 0 ? (
-                            compareModels.map((model) => {
-                              const job = jobsByModel[model];
-                              return (
-                                <span key={`${sample.id}-${model}`}>
-                                  {modelDisplayName(model, props.modelCatalog)}：{job ? job.status_label : "未跑"}
-                                </span>
-                              );
-                            })
+                        <div className={`sample-seed-callout ${sample.seed_job_id ? "available" : "missing"}`}>
+                          <span className="mini-label">任务定位</span>
+                          {sample.seed_job_id ? (
+                            <>
+                              <strong>{sample.seed_job_id}</strong>
+                              <p>任务中心可直接按这个 seed 任务继续核对日志、状态和结果。</p>
+                              {props.onLocateJob ? (
+                                <button className="ghost-button small sample-locate-button" onClick={() => props.onLocateJob?.(sample.seed_job_id!)} type="button">
+                                  定位到任务中心
+                                </button>
+                              ) : null}
+                            </>
                           ) : (
-                            <span>暂无模型矩阵</span>
+                            <p>当前还没有 seed 任务，先选样例或创建首条基准任务。</p>
                           )}
                         </div>
                       </div>
 
-                      <div className={`sample-seed-callout ${sample.seed_job_id ? "available" : "missing"}`}>
-                        <span className="mini-label">任务定位</span>
-                        {sample.seed_job_id ? (
-                          <>
-                            <strong>{sample.seed_job_id}</strong>
-                            <p>任务中心可直接按这个 seed 任务继续核对日志、状态和结果。</p>
-                            {props.onLocateJob ? (
-                              <button className="ghost-button small sample-locate-button" onClick={() => props.onLocateJob?.(sample.seed_job_id!)} type="button">
-                                定位到任务中心
-                              </button>
-                            ) : null}
-                          </>
+                      <div className="sample-compare-matrix">
+                        <div className="sample-compare-matrix-head">
+                          <span className="mini-label">模型执行矩阵</span>
+                          <p>每格包含任务状态、评分快照和核心产物提示，方便横向对照。</p>
+                        </div>
+                        {compareModels.length > 0 ? (
+                          <div className="sample-compare-matrix-grid">
+                            {compareModels.map((model) => {
+                              const job = jobsByModel[model] as SampleMatrixJob | undefined;
+                              const cellState = job?.status ?? "missing";
+                              return (
+                                <article className={`sample-model-cell ${cellState}`} key={`${sample.id}-${model}`}>
+                                  <div className="sample-model-cell-head">
+                                    <strong>{modelDisplayName(model, props.modelCatalog)}</strong>
+                                    <span className={`sample-model-state ${cellState}`}>{job ? job.status_label : "未跑"}</span>
+                                  </div>
+                                  <p>{job?.progress_message || (job ? `阶段：${job.phase}` : "尚未创建对应任务。")}</p>
+                                  <div className="sample-model-cell-meta">
+                                    <span>{requiredModelSet.has(model) ? "Required" : "Optional"}</span>
+                                    <span>{formatScoreSnapshot(job?.score_snapshot)}</span>
+                                  </div>
+                                  <div className="sample-model-cell-meta">
+                                    <span>{primaryArtifactHint(job?.primary_artifacts)}</span>
+                                    {job?.job_id && props.onLocateJob ? (
+                                      <button className="ghost-button small sample-locate-button" onClick={() => props.onLocateJob?.(job.job_id)} type="button">
+                                        定位任务
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                </article>
+                              );
+                            })}
+                          </div>
                         ) : (
-                          <p>当前还没有 seed 任务，先选样例或创建首条基准任务。</p>
+                          <div className="empty-state">暂无模型矩阵</div>
                         )}
                       </div>
                     </article>
@@ -2137,13 +2151,6 @@ function JobDetail(props: {
         </button>
       </div>
 
-      <div className="meta-grid">
-        <MetaCard label="创建时间" value={formatDateTime(job.created_at)} />
-        <MetaCard label="输入数量" value={String(summary?.inputs?.count ?? job.input_items.length ?? 0)} />
-        <MetaCard label="回传产物" value={String(summary?.artifacts?.length ?? props.selectedJob.outputs.length)} />
-        <MetaCard label="最新日志" value={latestLogLine || "尚无有效日志"} compact />
-      </div>
-
       {job.error_message ? (
         <article className="soft-panel error-panel">
           <h4>错误原因</h4>
@@ -2151,178 +2158,205 @@ function JobDetail(props: {
         </article>
       ) : null}
 
-      <div className="result-grid">
-        <article className="soft-panel">
-          <h4>结果摘要</h4>
-          <SummaryPanel summary={props.selectedJob.result_summary} />
-        </article>
-        <article className="soft-panel">
-          <h4>人工评分</h4>
-          <EvaluationPanel
-            evaluation={props.selectedJob.evaluation ?? null}
-            jobId={job.job_id}
-            saving={props.savingEvaluation}
-            onSave={props.onSaveEvaluation}
-          />
-        </article>
-        <article className="soft-panel">
-          <h4>AI 评估</h4>
-          <AdvisorPanel report={advisorReport} />
-        </article>
-        <article className="soft-panel">
-          <h4>输入</h4>
-          <div className="preview-grid">
-            {props.selectedJob.previews.length > 0 ? (
-              props.selectedJob.previews.map((preview) => (
-                <button
-                  key={preview.relative_path}
-                  className="preview-card"
-                  type="button"
-                  onClick={() =>
-                    props.onPreviewAsset({
-                      url: props.assetUrl(preview.url),
-                      name: preview.display_name,
-                      kind: "image",
-                      note: "这是输入预览，不会跳转离开主界面。"
-                    })
-                  }
-                >
-                  {preview.is_image ? <img src={props.assetUrl(preview.url)} alt={preview.display_name} /> : null}
-                  <span>{preview.display_name}</span>
-                </button>
-              ))
-            ) : (
-              <span className="muted-text">暂无输入预览。</span>
-            )}
-          </div>
-        </article>
-      </div>
+      <div className="detail-inspector-grid">
+        <section className="detail-inspector-main">
+          <article className="soft-panel inspector-panel">
+            <div className="section-head">
+              <div>
+                <h4>结果摘要</h4>
+                <p>先看核心统计，再看检查对象与下一步建议。</p>
+              </div>
+            </div>
+            <SummaryPanel summary={props.selectedJob.result_summary} />
+          </article>
 
-      <article className="soft-panel">
-        <div className="section-head">
-          <div>
-            <h4>输出结果</h4>
-            <p>按用途分组展示，不再把 MonST3R / DUSt3R 产物全都摊成一排。</p>
-          </div>
-          <span className="section-pill">{props.selectedJob.outputs.length} 个文件</span>
-        </div>
-        {outputSections.length > 0 ? (
-          <div className="output-section-list">
-            {outputSections.map((section) => (
-              <details className={`output-section ${section.accent}`} key={section.key} open={section.defaultOpen}>
-                <summary>
-                  <div>
-                    <strong>{section.title}</strong>
-                    <p>{section.description}</p>
-                  </div>
-                  <span className="section-pill">{section.items.length}</span>
-                </summary>
-                <div className="output-grid">
-                  {section.items.map((output) => (
-                    <article className="output-card" key={output.relative_path}>
-                      {output.is_image ? (
-                        <button
-                          className="output-preview-button"
-                          type="button"
-                          onClick={() =>
-                            props.onPreviewAsset({
-                              url: props.assetUrl(output.url),
-                              name: output.display_name,
-                              kind: "image",
-                              note:
-                                section.key === "masks"
-                                  ? "这是黑白掩膜/中间结果，不是最终彩色重建。MonST3R 的主要成果请优先看 scene.glb、相机轨迹和 frame_*.png。"
-                                  : "这是图像产物预览。"
-                            })
-                          }
-                        >
-                          <img className="output-preview" src={props.assetUrl(output.url)} alt={output.display_name} />
-                        </button>
-                      ) : output.is_video ? (
-                        <button
-                          className="output-preview-button"
-                          type="button"
-                          onClick={() =>
-                            props.onPreviewAsset({
-                              url: props.assetUrl(output.url),
-                              name: output.display_name,
-                              kind: "video",
-                              note: "这是视频产物预览。"
-                            })
-                          }
-                        >
-                          <div className="output-preview placeholder">VIDEO</div>
-                        </button>
-                      ) : (
-                        <div className="output-preview placeholder">
-                          {output.is_pointcloud ? "PLY" : output.is_model3d ? "GLB" : fileExtensionLabel(output.display_name)}
-                        </div>
-                      )}
+          <article className="soft-panel inspector-panel">
+            <div className="section-head">
+              <div>
+                <h4>输出结果</h4>
+                <p>按用途分组展示，不再把 MonST3R / DUSt3R 产物全都摊成一排。</p>
+              </div>
+              <span className="section-pill">{props.selectedJob.outputs.length} 个文件</span>
+            </div>
+            {outputSections.length > 0 ? (
+              <div className="output-section-list">
+                {outputSections.map((section) => (
+                  <details className={`output-section ${section.accent}`} key={section.key} open={section.defaultOpen}>
+                    <summary>
                       <div>
-                        <strong>{output.display_name}</strong>
-                        <p>{describeOutput(output.display_name)}</p>
-                        <div className="output-actions">
-                          {output.is_image || output.is_video ? (
+                        <strong>{section.title}</strong>
+                        <p>{section.description}</p>
+                      </div>
+                      <span className="section-pill">{section.items.length}</span>
+                    </summary>
+                    <div className="output-grid">
+                      {section.items.map((output) => (
+                        <article className="output-card" key={output.relative_path}>
+                          {output.is_image ? (
                             <button
+                              className="output-preview-button"
+                              type="button"
                               onClick={() =>
                                 props.onPreviewAsset({
                                   url: props.assetUrl(output.url),
                                   name: output.display_name,
-                                  kind: output.is_video ? "video" : "image",
+                                  kind: "image",
                                   note:
                                     section.key === "masks"
-                                      ? "这是黑白掩膜/中间结果，不是最终彩色重建。"
-                                      : output.is_video
-                                        ? "这是视频产物预览。"
-                                        : "这是图像产物预览。"
+                                      ? "这是黑白掩膜/中间结果，不是最终彩色重建。MonST3R 的主要成果请优先看 scene.glb、相机轨迹和 frame_*.png。"
+                                      : "这是图像产物预览。"
                                 })
                               }
-                              type="button"
                             >
-                              预览
+                              <img className="output-preview" src={props.assetUrl(output.url)} alt={output.display_name} />
                             </button>
-                          ) : null}
-                          <a href={props.assetUrl(output.url)} download>
-                            下载
-                          </a>
-                          <button onClick={() => props.onOpenOutput(output.relative_path)} type="button">
-                            本地打开
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </details>
-            ))}
-          </div>
-        ) : (
-          <span className="muted-text">结果回传后会出现在这里。</span>
-        )}
-      </article>
-
-      <article className="soft-panel">
-        <div className="section-head">
-          <div>
-            <h4>日志</h4>
-            <p>优先看最新一条有效进展，再往下翻完整日志尾部。</p>
-          </div>
-          <span className="section-pill">{props.selectedJob.logs.length} 份</span>
-        </div>
-        {latestLogLine ? <div className="latest-log-banner">{latestLogLine}</div> : null}
-        {props.selectedJob.logs.length > 0 ? (
-          <div className="log-list">
-            {props.selectedJob.logs.map((log) => (
-              <div className="log-card" key={log.relative_path}>
-                <strong>{log.name}</strong>
-                <pre>{log.tail || "暂无日志。"}</pre>
+                          ) : output.is_video ? (
+                            <button
+                              className="output-preview-button"
+                              type="button"
+                              onClick={() =>
+                                props.onPreviewAsset({
+                                  url: props.assetUrl(output.url),
+                                  name: output.display_name,
+                                  kind: "video",
+                                  note: "这是视频产物预览。"
+                                })
+                              }
+                            >
+                              <div className="output-preview placeholder">VIDEO</div>
+                            </button>
+                          ) : (
+                            <div className="output-preview placeholder">
+                              {output.is_pointcloud ? "PLY" : output.is_model3d ? "GLB" : fileExtensionLabel(output.display_name)}
+                            </div>
+                          )}
+                          <div>
+                            <strong>{output.display_name}</strong>
+                            <p>{describeOutput(output.display_name)}</p>
+                            <div className="output-actions">
+                              {output.is_image || output.is_video ? (
+                                <button
+                                  onClick={() =>
+                                    props.onPreviewAsset({
+                                      url: props.assetUrl(output.url),
+                                      name: output.display_name,
+                                      kind: output.is_video ? "video" : "image",
+                                      note:
+                                        section.key === "masks"
+                                          ? "这是黑白掩膜/中间结果，不是最终彩色重建。"
+                                          : output.is_video
+                                            ? "这是视频产物预览。"
+                                            : "这是图像产物预览。"
+                                    })
+                                  }
+                                  type="button"
+                                >
+                                  预览
+                                </button>
+                              ) : null}
+                              <a href={props.assetUrl(output.url)} download>
+                                下载
+                              </a>
+                              <button onClick={() => props.onOpenOutput(output.relative_path)} type="button">
+                                本地打开
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </details>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <span className="muted-text">还没有日志。</span>
-        )}
-      </article>
+            ) : (
+              <span className="muted-text">结果回传后会出现在这里。</span>
+            )}
+          </article>
+
+          <article className="soft-panel inspector-panel">
+            <div className="section-head">
+              <div>
+                <h4>日志</h4>
+                <p>优先看最新一条有效进展，再往下翻完整日志尾部。</p>
+              </div>
+              <span className="section-pill">{props.selectedJob.logs.length} 份</span>
+            </div>
+            {latestLogLine ? <div className="latest-log-banner">{latestLogLine}</div> : null}
+            {props.selectedJob.logs.length > 0 ? (
+              <div className="log-list">
+                {props.selectedJob.logs.map((log) => (
+                  <div className="log-card" key={log.relative_path}>
+                    <strong>{log.name}</strong>
+                    <pre>{log.tail || "暂无日志。"}</pre>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="muted-text">还没有日志。</span>
+            )}
+          </article>
+        </section>
+
+        <aside className="detail-inspector-rail">
+          <article className="soft-panel inspector-panel">
+            <div className="section-head">
+              <div>
+                <h4>检查器快照</h4>
+                <p>快速核对时间、产物数量和最新进展。</p>
+              </div>
+            </div>
+            <div className="meta-grid inspector-meta-grid">
+              <MetaCard label="创建时间" value={formatDateTime(job.created_at)} />
+              <MetaCard label="输入数量" value={String(summary?.inputs?.count ?? job.input_items.length ?? 0)} />
+              <MetaCard label="回传产物" value={String(summary?.artifacts?.length ?? props.selectedJob.outputs.length)} />
+              <MetaCard label="最新日志" value={latestLogLine || "尚无有效日志"} compact />
+            </div>
+          </article>
+
+          <article className="soft-panel inspector-panel">
+            <h4>人工评分</h4>
+            <EvaluationPanel
+              evaluation={props.selectedJob.evaluation ?? null}
+              jobId={job.job_id}
+              saving={props.savingEvaluation}
+              onSave={props.onSaveEvaluation}
+            />
+          </article>
+
+          <article className="soft-panel inspector-panel">
+            <h4>AI 评估</h4>
+            <AdvisorPanel report={advisorReport} />
+          </article>
+
+          <article className="soft-panel inspector-panel">
+            <h4>输入</h4>
+            <div className="preview-grid">
+              {props.selectedJob.previews.length > 0 ? (
+                props.selectedJob.previews.map((preview) => (
+                  <button
+                    key={preview.relative_path}
+                    className="preview-card"
+                    type="button"
+                    onClick={() =>
+                      props.onPreviewAsset({
+                        url: props.assetUrl(preview.url),
+                        name: preview.display_name,
+                        kind: "image",
+                        note: "这是输入预览，不会跳转离开主界面。"
+                      })
+                    }
+                  >
+                    {preview.is_image ? <img src={props.assetUrl(preview.url)} alt={preview.display_name} /> : null}
+                    <span>{preview.display_name}</span>
+                  </button>
+                ))
+              ) : (
+                <span className="muted-text">暂无输入预览。</span>
+              )}
+            </div>
+          </article>
+        </aside>
+      </div>
     </div>
   );
 }
@@ -2634,6 +2668,27 @@ function roleLabel(role: string) {
     confidence: "置信数组"
   };
   return labels[role] ?? role.replace(/_/g, " ");
+}
+
+function formatScoreSnapshot(scoreSnapshot?: Record<string, number>) {
+  if (!scoreSnapshot) {
+    return "评分快照：暂无";
+  }
+  const values = Object.values(scoreSnapshot).filter((value) => Number.isFinite(value));
+  if (values.length === 0) {
+    return "评分快照：暂无";
+  }
+  const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return `评分快照：${avg.toFixed(2)}`;
+}
+
+function primaryArtifactHint(primaryArtifacts?: SampleMatrixJob["primary_artifacts"]) {
+  if (!primaryArtifacts || primaryArtifacts.length === 0) {
+    return "核心产物：暂无";
+  }
+  const first = primaryArtifacts[0];
+  const label = first.label || roleLabel(first.role);
+  return `核心产物：${label}`;
 }
 
 function SummaryStat(props: { label: string; value: string }) {

@@ -384,6 +384,33 @@ Keep it aligned with the same panel system and density.
 
 ---
 
+## Current refinement priorities (2026-04-23 / round 2)
+
+### Jobs detail must behave like an inspector
+- Keep a clear inspector split:
+  - main lane = result summary, output groups, logs
+  - rail lane = quick snapshot, manual evaluation, AI evaluation, input previews
+- Avoid stacking many equal-weight panels in one long vertical flow.
+- Preserve reading rhythm: status first, then evidence, then deep logs.
+
+### Sample Matrix must read as a matrix, not card feed
+- Each sample row should have:
+  - sample context (id, purpose, source type, seed linkage)
+  - model execution matrix cells
+- Each model cell should show:
+  - execution status
+  - score snapshot (if available)
+  - primary artifact hint (if available)
+  - quick jump to the related job (when present)
+- Required models should be visually distinct from optional models.
+
+### Keep operational tone over visual novelty
+- Prefer information clarity over decorative layering.
+- New styling changes must improve scan speed, not increase ornament.
+- All improvements should keep compatibility with existing APIs and workflows.
+
+---
+
 ## Styling dos
 
 - Do use compact panel systems
