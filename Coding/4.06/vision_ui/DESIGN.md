@@ -409,6 +409,44 @@ Keep it aligned with the same panel system and density.
 - New styling changes must improve scan speed, not increase ornament.
 - All improvements should keep compatibility with existing APIs and workflows.
 
+### Create page second-round constraints
+- Treat Create as a configuration workspace, not a plain web form.
+- The page should expose three visible zones:
+  - task configuration
+  - input staging matrix
+  - presets/advanced parameter control
+- Input staging should show filename, type, size, and direct remove action in a matrix/table-like shape.
+- Keep guidance copy close to configuration, but avoid turning guidance into the dominant visual block.
+
+### Jobs / Matrix third-round constraints
+- Jobs left pane should include operational tooling, not only list rendering:
+  - quick query (id/model/status/source/phase)
+  - lane-level entry points (queue/running/attention)
+  - selection navigator (prev/next/copy id)
+  - lightweight quick actions for the selected list item
+- Sample Matrix rows should expose row-level execution rhythm:
+  - completion ratio (finished / total)
+  - running / attention / pending / missing counts
+- Sample Matrix cells should expose score strength signals:
+  - score snapshot value
+  - metric count
+  - compact strength indicator (low/medium/high)
+  - keep locate-job action visible in the same cell
+- Keep all these upgrades compact; do not trade scanning speed for decorative complexity.
+
+### Jobs / Matrix fourth-round constraints
+- Jobs detail should support fast navigation inside one long inspector:
+  - section jump strip (summary / outputs / logs / manual eval / AI eval / inputs)
+  - output group anchors for quick targeting
+  - logs section should expose latest line + suspicious line (copy-ready)
+- Sample Matrix should support compare re-ordering as an operation:
+  - sort by manifest / completion / score / attention
+  - filter by all / attention / running / unfinished
+  - preserve matrix readability after sorting (no list-card fallback)
+- Keep interaction weight light:
+  - all controls remain inline and compact
+  - no modal-heavy workflow for basic compare/navigation tasks
+
 ---
 
 ## Styling dos

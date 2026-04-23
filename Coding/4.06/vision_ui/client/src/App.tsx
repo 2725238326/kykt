@@ -196,6 +196,19 @@ type OutputSection = {
   items: OutputItem[];
 };
 type SampleMatrixJob = NonNullable<SamplesPayload["job_matrix"]>["rows"][number]["jobs_by_model"][string];
+type SampleManifestEntry = NonNullable<SamplesPayload["manifest"]["samples"]>[number];
+type SampleMatrixSortKey = "manifest" | "completion" | "score" | "attention";
+type SampleMatrixFilterKey = "all" | "attention" | "running" | "unfinished";
+type SampleMatrixRowView = {
+  sample: SampleManifestEntry;
+  rowIndex: number;
+  jobsByModel: Record<string, SampleMatrixJob>;
+  requiredModels: string[];
+  requiredModelSet: Set<string>;
+  compareModels: string[];
+  rowStats: ReturnType<typeof summarizeSampleMatrixRow>;
+  rowScore: ReturnType<typeof summarizeMatrixRowScore>;
+};
 type ModelCatalogItem = NonNullable<BootstrapPayload["model_catalog"]>[number];
 type PreviewAsset = {
   url: string;
@@ -229,6 +242,7 @@ function App() {
   const [submitting, setSubmitting] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [jobFilter, setJobFilter] = useState<JobFilter>("all");
+  const [jobQuery, setJobQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
@@ -306,6 +320,10 @@ function App() {
     [jobs, selectedJobId]
   );
   const runningJobs = useMemo(() => jobs.filter((item) => item.job.status === "running"), [jobs]);
+  const queuedJobs = useMemo(
+    () => jobs.filter((item) => item.job.status === "draft" || item.job.status === "ready"),
+    [jobs]
+  );
   const hasRunningJobs = runningJobs.length > 0;
   const attentionJobs = useMemo(
     () => jobs.filter((item) => item.job.status === "failed" || item.job.status === "cancelled"),
@@ -321,21 +339,68 @@ function App() {
     () => jobs.filter((item) => isAdvisorSuggested(item.job.status)).length,
     [jobs]
   );
+  const normalizedJobQuery = jobQuery.trim().toLowerCase();
   const filteredJobs = useMemo(() => {
-    switch (jobFilter) {
-      case "running":
-        return runningJobs;
-      case "attention":
-        return attentionJobs;
-      case "finished":
-        return finishedJobs;
-      default:
-        return jobs;
+    const baseJobs: JobListItem[] = (() => {
+      switch (jobFilter) {
+        case "running":
+          return runningJobs;
+        case "attention":
+          return attentionJobs;
+        case "finished":
+          return finishedJobs;
+        default:
+          return jobs;
+      }
+    })();
+    if (!normalizedJobQuery) {
+      return baseJobs;
     }
-  }, [attentionJobs, finishedJobs, jobFilter, jobs, runningJobs]);
+    return baseJobs.filter((item) => matchesJobQuery(item, normalizedJobQuery));
+  }, [attentionJobs, finishedJobs, jobFilter, jobs, normalizedJobQuery, runningJobs]);
+  const selectedFilteredIndex = useMemo(
+    () => (selectedJobId ? filteredJobs.findIndex((item) => item.job.job_id === selectedJobId) : -1),
+    [filteredJobs, selectedJobId]
+  );
+  const selectedFilteredModelCount = useMemo(() => {
+    if (selectedFilteredIndex < 0) {
+      return 0;
+    }
+    const selectedModel = filteredJobs[selectedFilteredIndex]?.job.model;
+    if (!selectedModel) {
+      return 0;
+    }
+    return filteredJobs.filter((item) => item.job.model === selectedModel).length;
+  }, [filteredJobs, selectedFilteredIndex]);
+  const canDispatchListJob = selectedListJob ? canDispatchJobStatus(selectedListJob.job.status) : false;
+  const canRetryListJob = selectedListJob ? selectedListJob.job.status !== "running" : false;
+  const canCancelListJob = selectedListJob ? selectedListJob.job.status === "running" : false;
+  const jobLaneCards = useMemo(
+    () => [
+      { key: "queue", label: "待派发", jobs: queuedJobs, filter: "all" as JobFilter, tone: "queue" as const },
+      { key: "running", label: "运行中", jobs: runningJobs, filter: "running" as JobFilter, tone: "running" as const },
+      { key: "attention", label: "待处理", jobs: attentionJobs, filter: "attention" as JobFilter, tone: "attention" as const }
+    ],
+    [attentionJobs, queuedJobs, runningJobs]
+  );
   const createGuidance = useMemo(
     () => buildCreateGuidance(formState.model, formState.source_type, files.length),
     [files.length, formState.model, formState.source_type]
+  );
+  const pendingImageCount = useMemo(() => files.filter((file) => isImageLikeFile(file)).length, [files]);
+  const pendingVideoCount = useMemo(() => files.filter((file) => isVideoLikeFile(file)).length, [files]);
+  const pendingUnknownCount = files.length - pendingImageCount - pendingVideoCount;
+  const pendingTotalSize = useMemo(() => files.reduce((total, file) => total + file.size, 0), [files]);
+  const pendingTypeSummary = useMemo(
+    () =>
+      [
+        pendingImageCount > 0 ? `图片 ${pendingImageCount}` : null,
+        pendingVideoCount > 0 ? `视频 ${pendingVideoCount}` : null,
+        pendingUnknownCount > 0 ? `其他 ${pendingUnknownCount}` : null
+      ]
+        .filter(Boolean)
+        .join(" / ") || "暂无",
+    [pendingImageCount, pendingUnknownCount, pendingVideoCount]
   );
   const summary = bootstrap?.summary ?? {
     total: jobs.length,
@@ -362,10 +427,7 @@ function App() {
   const runningSelectedJob = selectedJob?.job.status === "running";
   const selectedJobPollMs = runningSelectedJob ? 4000 : 15000;
   const canDispatchSelectedJob = selectedJob
-    ? selectedJob.job.status === "draft" ||
-      selectedJob.job.status === "ready" ||
-      selectedJob.job.status === "failed" ||
-      selectedJob.job.status === "cancelled"
+    ? canDispatchJobStatus(selectedJob.job.status)
     : false;
 
   useEffect(() => {
@@ -752,6 +814,23 @@ function App() {
     setActiveWorkspace(tab);
   }
 
+  function focusJobLane(filter: JobFilter, laneJobs: JobListItem[]) {
+    setJobQuery("");
+    setJobFilter(filter);
+    if (laneJobs[0]) {
+      setSelectedJobId(laneJobs[0].job.job_id);
+    }
+  }
+
+  function moveSelectedJob(offset: -1 | 1) {
+    if (filteredJobs.length === 0) {
+      return;
+    }
+    const baseIndex = selectedFilteredIndex >= 0 ? selectedFilteredIndex : 0;
+    const nextIndex = Math.max(0, Math.min(filteredJobs.length - 1, baseIndex + offset));
+    setSelectedJobId(filteredJobs[nextIndex].job.job_id);
+  }
+
   async function copyText(value: string, label: string) {
     try {
       await navigator.clipboard.writeText(value);
@@ -1029,131 +1108,178 @@ function App() {
           <article className="panel create-panel">
             <PanelTitle eyebrow="新建任务" title="选择模型和输入" />
             <form className="form-stack" onSubmit={handleCreateJob}>
-              <div className="form-row">
-                <label className="field">
-                  <span>模型</span>
-                  <select value={formState.model} onChange={(event) => updateModel(event.target.value)}>
-                    {bootstrapData.models.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field">
-                  <span>输入类型</span>
-                  <select
-                    value={formState.source_type}
-                    onChange={(event) => updateFormField("source_type", event.target.value)}
-                  >
-                    {bootstrapData.source_types
-                      .filter((item) => allowedSourceTypesForModel(formState.model).includes(item.value))
-                      .map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
-                      ))}
-                  </select>
-                </label>
-              </div>
-
-              <label className="field">
-                <span>备注</span>
-                <textarea
-                  rows={3}
-                  value={formState.notes}
-                  onChange={(event) => updateFormField("notes", event.target.value)}
-                  placeholder="比如：箱子双图测试 / 室内视频 / 想比较 MonST3R 和 DUSt3R"
-                />
-              </label>
-
-              <article className="create-guidance">
-                <div className="guide-head">
-                  <div>
-                    <strong>当前建议</strong>
-                    <p>{selectedModel?.description ?? "根据模型类型自动给出最稳妥的起步建议。"}</p>
+              <section className="create-workbench-grid">
+                <article className="create-block create-config-block">
+                  <div className="create-block-head">
+                    <div>
+                      <span className="mini-label">任务配置</span>
+                      <strong>模型与输入来源</strong>
+                    </div>
+                    <span className="section-pill">{selectedModel?.label ?? "未选择模型"}</span>
                   </div>
-                  <span className="section-pill">{files.length} 个待上传</span>
-                </div>
-                <ul className="guide-list">
-                  {createGuidance.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </article>
 
-              <label className="dropzone">
-                <input
-                  type="file"
-                  multiple
-                  onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
-                />
-                <span>点击选择文件</span>
-                <small>{inputHint(formState.model, formState.source_type)}</small>
-              </label>
-
-              {files.length > 0 ? (
-                <div className="file-list">
-                  {files.map((file) => (
-                    <button
-                      key={`${file.name}-${file.size}`}
-                      className="file-chip"
-                      type="button"
-                      onClick={() => removePendingFile(file.name, file.size)}
-                    >
-                      <span>{file.name}</span>
-                      <strong>移除</strong>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-
-              <details className="advanced-panel">
-                <summary>高级参数</summary>
-                <div className="advanced-panel-intro">
-                  这些参数已经整理成推荐档位了。直接优先选择带“推荐”字样的选项，只有做对比实验时再切到其它档。
-                </div>
-                <div className="preset-strip">
-                  <div className="preset-strip-head">
-                    <strong>一键预设</strong>
-                    <span>
-                      {activePresets[formState.model as PresetModel]
-                        ? `当前：${presetLabel(activePresets[formState.model as PresetModel])}`
-                        : "当前：已手动调整"}
-                    </span>
-                  </div>
-                  <div className="preset-pills">
-                    {presetDescriptors.map((preset) => (
-                      <button
-                        key={preset.key}
-                        className={`preset-pill ${
-                          activePresets[formState.model as PresetModel] === preset.key ? "active" : ""
-                        }`}
-                        type="button"
-                        onClick={() => applyPreset(preset.key)}
+                  <div className="form-row">
+                    <label className="field">
+                      <span>模型</span>
+                      <select value={formState.model} onChange={(event) => updateModel(event.target.value)}>
+                        {bootstrapData.models.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>输入类型</span>
+                      <select
+                        value={formState.source_type}
+                        onChange={(event) => updateFormField("source_type", event.target.value)}
                       >
-                        <strong>{preset.label}</strong>
-                        <span>{preset.note}</span>
-                      </button>
-                    ))}
+                        {bootstrapData.source_types
+                          .filter((item) => allowedSourceTypesForModel(formState.model).includes(item.value))
+                          .map((item) => (
+                            <option key={item.value} value={item.value}>
+                              {item.label}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
                   </div>
-                </div>
-                {isImageCollectionModel ? (
-                  <div className="param-grid">
-                    {Object.keys(defaultDust3rParams).map((key) => (
-                      <ParamField
-                        key={key}
-                        name={key}
-                        value={formState[key as keyof FormState]}
-                        choices={dust3rParamChoices[key as keyof typeof defaultDust3rParams]}
-                        onChange={(value) => updateFormField(key as keyof FormState, value)}
-                      />
-                    ))}
+
+                  <label className="field">
+                    <span>备注</span>
+                    <textarea
+                      rows={3}
+                      value={formState.notes}
+                      onChange={(event) => updateFormField("notes", event.target.value)}
+                      placeholder="比如：箱子双图测试 / 室内视频 / 想比较 MonST3R 和 DUSt3R"
+                    />
+                  </label>
+                </article>
+
+                <article className="create-block create-staging-block">
+                  <div className="create-block-head">
+                    <div>
+                      <span className="mini-label">输入 Staging</span>
+                      <strong>本地待上传文件</strong>
+                    </div>
+                    <span className="section-pill">{files.length} 个文件</span>
                   </div>
-                ) : (
-                  <Monst3rParams formState={formState} updateFormField={updateFormField} />
-                )}
-              </details>
+
+                  <label className="dropzone">
+                    <input
+                      type="file"
+                      multiple
+                      onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
+                    />
+                    <span>点击选择文件</span>
+                    <small>{inputHint(formState.model, formState.source_type)}</small>
+                  </label>
+
+                  <div className="staging-stats">
+                    <SummaryStat label="文件数量" value={String(files.length)} />
+                    <SummaryStat label="总大小" value={formatFileSize(pendingTotalSize)} />
+                    <SummaryStat label="类型分布" value={pendingTypeSummary} />
+                  </div>
+
+                  {files.length > 0 ? (
+                    <div className="staging-table" role="table" aria-label="待上传文件矩阵">
+                      <div className="staging-table-head" role="row">
+                        <span role="columnheader">文件名</span>
+                        <span role="columnheader">类型</span>
+                        <span role="columnheader">大小</span>
+                        <span role="columnheader">操作</span>
+                      </div>
+                      <div className="staging-table-body">
+                        {files.map((file) => (
+                          <div className="staging-row" key={`${file.name}-${file.size}`} role="row">
+                            <span className="staging-name" role="cell" title={file.name}>
+                              {file.name}
+                            </span>
+                            <span role="cell">{pendingFileRoleLabel(file)}</span>
+                            <span role="cell">{formatFileSize(file.size)}</span>
+                            <button
+                              className="ghost-button small staging-remove-button"
+                              type="button"
+                              onClick={() => removePendingFile(file.name, file.size)}
+                            >
+                              移除
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="empty-state">先拖入或选择文件，staging 区会显示完整文件矩阵。</div>
+                  )}
+                </article>
+
+                <article className="create-block create-guidance-block">
+                  <div className="create-guidance">
+                    <div className="guide-head">
+                      <div>
+                        <strong>当前建议</strong>
+                        <p>{selectedModel?.description ?? "根据模型类型自动给出最稳妥的起步建议。"}</p>
+                      </div>
+                      <span className="section-pill">{files.length} 个待上传</span>
+                    </div>
+                    <ul className="guide-list">
+                      {createGuidance.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </article>
+
+                <article className="create-block create-params-block">
+                  <details className="advanced-panel" open>
+                    <summary>高级参数</summary>
+                    <div className="advanced-panel-intro">
+                      这些参数已经整理成推荐档位了。直接优先选择带“推荐”字样的选项，只有做对比实验时再切到其它档。
+                    </div>
+                    <div className="preset-strip">
+                      <div className="preset-strip-head">
+                        <strong>一键预设</strong>
+                        <span>
+                          {activePresets[formState.model as PresetModel]
+                            ? `当前：${presetLabel(activePresets[formState.model as PresetModel])}`
+                            : "当前：已手动调整"}
+                        </span>
+                      </div>
+                      <div className="preset-pills">
+                        {presetDescriptors.map((preset) => (
+                          <button
+                            key={preset.key}
+                            className={`preset-pill ${
+                              activePresets[formState.model as PresetModel] === preset.key ? "active" : ""
+                            }`}
+                            type="button"
+                            onClick={() => applyPreset(preset.key)}
+                          >
+                            <strong>{preset.label}</strong>
+                            <span>{preset.note}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {isImageCollectionModel ? (
+                      <div className="param-grid">
+                        {Object.keys(defaultDust3rParams).map((key) => (
+                          <ParamField
+                            key={key}
+                            name={key}
+                            value={formState[key as keyof FormState]}
+                            choices={dust3rParamChoices[key as keyof typeof defaultDust3rParams]}
+                            onChange={(value) => updateFormField(key as keyof FormState, value)}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <Monst3rParams formState={formState} updateFormField={updateFormField} />
+                    )}
+                  </details>
+                </article>
+              </section>
 
               <button className="primary-button" disabled={!serviceReady || submitting} type="submit">
                 {submitting ? "创建中..." : `创建 ${selectedModel?.label ?? "模型"} 任务`}
@@ -1185,6 +1311,30 @@ function App() {
                 <MiniStat label="待处理" value={attentionJobs.length} />
                 <MiniStat label="完成" value={summary.finished} />
               </div>
+              <div className="jobs-side-tools">
+                <label className="field compact job-search-field">
+                  <span>快速检索</span>
+                  <input
+                    value={jobQuery}
+                    onChange={(event) => setJobQuery(event.target.value)}
+                    placeholder="任务ID / 模型 / 状态 / 输入类型"
+                  />
+                </label>
+                <div className="job-lane-grid" aria-label="任务队列入口">
+                  {jobLaneCards.map((lane) => (
+                    <article className={`job-lane-card ${lane.tone}`} key={lane.key}>
+                      <div className="job-lane-head">
+                        <span>{lane.label}</span>
+                        <strong>{lane.jobs.length}</strong>
+                      </div>
+                      <p>{lane.jobs[0] ? `${lane.jobs[0].job.job_id} · ${lane.jobs[0].phase_display.label}` : "暂无可定位任务"}</p>
+                      <button className="ghost-button small" type="button" onClick={() => focusJobLane(lane.filter, lane.jobs)} disabled={lane.jobs.length === 0}>
+                        定位首条
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              </div>
               <div className="job-toolbar">
                 <div className="filter-pills">
                   <FilterPill
@@ -1212,6 +1362,78 @@ function App() {
                     onClick={() => setJobFilter("finished")}
                   />
                 </div>
+                <div className="jobs-selection-strip">
+                  <div className="jobs-selection-copy">
+                    <span className="mini-label">筛选上下文</span>
+                    <strong>
+                      {selectedFilteredIndex >= 0
+                        ? `第 ${selectedFilteredIndex + 1} / ${filteredJobs.length} 条`
+                        : filteredJobs.length > 0
+                          ? "当前选中项不在筛选结果中"
+                          : "当前筛选为空"}
+                    </strong>
+                    <p>
+                      {selectedListJob
+                        ? `${statusModelLabel(selectedListJob.job.model)} · ${statusLabel(selectedListJob.job.status)}`
+                        : "先在列表里选中一条任务。"}
+                      {selectedFilteredModelCount > 0 ? ` · 同模型 ${selectedFilteredModelCount} 条` : ""}
+                    </p>
+                  </div>
+                  <div className="jobs-selection-actions">
+                    <button
+                      className="ghost-button small"
+                      type="button"
+                      onClick={() => moveSelectedJob(-1)}
+                      disabled={filteredJobs.length === 0 || selectedFilteredIndex <= 0}
+                    >
+                      上一条
+                    </button>
+                    <button
+                      className="ghost-button small"
+                      type="button"
+                      onClick={() => moveSelectedJob(1)}
+                      disabled={filteredJobs.length === 0 || selectedFilteredIndex < 0 || selectedFilteredIndex >= filteredJobs.length - 1}
+                    >
+                      下一条
+                    </button>
+                    <button
+                      className="ghost-button small"
+                      type="button"
+                      onClick={() => selectedListJob && void copyText(selectedListJob.job.job_id, "任务ID")}
+                      disabled={!selectedListJob}
+                    >
+                      复制ID
+                    </button>
+                  </div>
+                </div>
+                {selectedListJob ? (
+                  <div className="jobs-inline-actions">
+                    <button
+                      className="ghost-button small"
+                      type="button"
+                      disabled={!canDispatchListJob || actionKey === "dispatch"}
+                      onClick={() => void postJobAction(`/api/jobs/${selectedListJob.job.job_id}/dispatch`, "dispatch")}
+                    >
+                      {actionKey === "dispatch" ? "运行中..." : "运行"}
+                    </button>
+                    <button
+                      className="ghost-button small"
+                      type="button"
+                      disabled={!canRetryListJob || actionKey === "retry"}
+                      onClick={() => void postJobAction(`/api/jobs/${selectedListJob.job.job_id}/retry`, "retry")}
+                    >
+                      {actionKey === "retry" ? "重试中..." : "重试"}
+                    </button>
+                    <button
+                      className="ghost-button small danger"
+                      type="button"
+                      disabled={!canCancelListJob || actionKey === "cancel"}
+                      onClick={() => void postJobAction(`/api/jobs/${selectedListJob.job.job_id}/cancel`, "cancel")}
+                    >
+                      {actionKey === "cancel" ? "取消中..." : "取消"}
+                    </button>
+                  </div>
+                ) : null}
               </div>
               <div className="job-list">
                 {filteredJobs.length > 0 ? (
@@ -1243,7 +1465,9 @@ function App() {
                   ))
                 ) : (
                   <div className="empty-state">
-                    {jobFilter === "all"
+                    {normalizedJobQuery
+                      ? `没有匹配“${jobQuery.trim()}”的任务。`
+                      : jobFilter === "all"
                       ? "暂无任务。先在“文件与新建”里选择输入文件，创建第一条任务。"
                       : `当前筛选下没有${jobFilterLabel(jobFilter)}任务。`}
                   </div>
@@ -1723,6 +1947,8 @@ function SampleMatrixPanel(props: {
   onLocateJob?: (jobId: string) => void;
   compact?: boolean;
 }) {
+  const [sortKey, setSortKey] = useState<SampleMatrixSortKey>("manifest");
+  const [filterKey, setFilterKey] = useState<SampleMatrixFilterKey>("all");
   const manifest = props.samplesPayload?.manifest ?? null;
   const summary = props.samplesPayload?.summary ?? null;
   const samples = manifest?.samples ?? [];
@@ -1735,7 +1961,29 @@ function SampleMatrixPanel(props: {
     ([leftStatus, leftCount], [rightStatus, rightCount]) => rightCount - leftCount || leftStatus.localeCompare(rightStatus)
   );
   const jobMatrixRows = props.samplesPayload?.job_matrix?.rows ?? [];
-  const jobMatrixBySample = new Map(jobMatrixRows.map((row) => [row.sample_id, row.jobs_by_model]));
+  const sampleRows = useMemo<SampleMatrixRowView[]>(() => {
+    const matrix = new Map(jobMatrixRows.map((row) => [row.sample_id, row.jobs_by_model as Record<string, SampleMatrixJob>]));
+    const rows = visibleSamples.map((sample, index) => {
+      const jobsByModel = matrix.get(sample.id) ?? {};
+      const requiredModels = sample.required_models ?? [];
+      const requiredModelSet = new Set(requiredModels);
+      const compareModels = Array.from(new Set([...(sample.required_models ?? []), ...(sample.optional_models ?? [])]));
+      const rowStats = summarizeSampleMatrixRow(compareModels, jobsByModel);
+      const rowScore = summarizeMatrixRowScore(compareModels, jobsByModel);
+      return {
+        sample,
+        rowIndex: index,
+        jobsByModel,
+        requiredModels,
+        requiredModelSet,
+        compareModels,
+        rowStats,
+        rowScore
+      };
+    });
+    const filteredRows = rows.filter((row) => matrixRowMatchesFilter(row, filterKey));
+    return filteredRows.sort((left, right) => compareSampleMatrixRows(left, right, sortKey));
+  }, [filterKey, jobMatrixRows, sortKey, visibleSamples]);
 
   return (
     <article className="panel sample-matrix-panel">
@@ -1803,29 +2051,50 @@ function SampleMatrixPanel(props: {
                   <strong>直接对照样例编号、必跑模型和任务入口</strong>
                   <p>先看当前状态计数，再顺着 seed 任务跳到任务中心核对执行情况。</p>
                 </div>
-                <div className="sample-status-strip" aria-label="当前状态计数">
-                  {statusCountEntries.length > 0 ? (
-                    statusCountEntries.map(([status, count]) => (
-                      <div className="sample-status-pill" key={status}>
-                        <span>{sampleStatusLabel(status)}</span>
-                        <strong>{count}</strong>
+                <div className="sample-compare-side">
+                  <div className="sample-status-strip" aria-label="当前状态计数">
+                    {statusCountEntries.length > 0 ? (
+                      statusCountEntries.map(([status, count]) => (
+                        <div className="sample-status-pill" key={status}>
+                          <span>{sampleStatusLabel(status)}</span>
+                          <strong>{count}</strong>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="sample-status-pill empty">
+                        <span>当前状态计数</span>
+                        <strong>暂无</strong>
                       </div>
-                    ))
-                  ) : (
-                    <div className="sample-status-pill empty">
-                      <span>当前状态计数</span>
-                      <strong>暂无</strong>
+                    )}
+                  </div>
+                  {!props.compact ? (
+                    <div className="sample-compare-tools">
+                      <label className="field compact">
+                        <span>排序</span>
+                        <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SampleMatrixSortKey)}>
+                          <option value="manifest">按样例清单</option>
+                          <option value="completion">按完成度</option>
+                          <option value="score">按评分均值</option>
+                          <option value="attention">按待处理优先</option>
+                        </select>
+                      </label>
+                      <label className="field compact">
+                        <span>筛选</span>
+                        <select value={filterKey} onChange={(event) => setFilterKey(event.target.value as SampleMatrixFilterKey)}>
+                          <option value="all">全部样例</option>
+                          <option value="attention">仅看待处理</option>
+                          <option value="running">仅看运行中</option>
+                          <option value="unfinished">仅看未完成</option>
+                        </select>
+                      </label>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
               <div className="sample-compare-grid">
-                {visibleSamples.map((sample) => {
-                  const jobsByModel = jobMatrixBySample.get(sample.id) ?? {};
-                  const requiredModels = sample.required_models ?? [];
-                  const requiredModelSet = new Set(requiredModels);
-                  const compareModels = Array.from(new Set([...(sample.required_models ?? []), ...(sample.optional_models ?? [])]));
+                {sampleRows.map((row) => {
+                  const { sample, jobsByModel, requiredModels, requiredModelSet, compareModels, rowStats, rowScore } = row;
                   return (
                     <article className="sample-compare-row" key={sample.id}>
                       <div className="sample-compare-main">
@@ -1837,6 +2106,24 @@ function SampleMatrixPanel(props: {
                         <div className="sample-card-meta">
                           <span>{sourceTypeLabel(sample.source_type)}</span>
                           <span>{sample.target_file_count ? `${sample.target_file_count} 个文件` : `${sample.target_duration_seconds ?? "-"} 秒`}</span>
+                        </div>
+                        <div className="sample-row-progress" aria-label={`${sample.id} 执行进度`}>
+                          <div className="sample-row-progress-head">
+                            <span>矩阵完成度</span>
+                            <strong>
+                              {rowStats.finished}/{rowStats.total}
+                            </strong>
+                          </div>
+                          <div className="sample-row-progress-track">
+                            <div className="sample-row-progress-fill" style={{ width: `${rowStats.completionPercent}%` }} />
+                          </div>
+                          <div className="sample-row-progress-meta">
+                            <span>运行 {rowStats.running}</span>
+                            <span>待处理 {rowStats.attention}</span>
+                            <span>待派发 {rowStats.pending}</span>
+                            <span>缺失 {rowStats.missing}</span>
+                            <span>{rowScore.metricCount > 0 ? `均分 ${rowScore.average?.toFixed(2)}` : "均分 --"}</span>
+                          </div>
                         </div>
                         <div className="sample-card-models sample-required-models">
                           {requiredModels.length > 0 ? (
@@ -1877,6 +2164,7 @@ function SampleMatrixPanel(props: {
                             {compareModels.map((model) => {
                               const job = jobsByModel[model] as SampleMatrixJob | undefined;
                               const cellState = job?.status ?? "missing";
+                              const scoreDigest = summarizeScoreSnapshot(job?.score_snapshot);
                               return (
                                 <article className={`sample-model-cell ${cellState}`} key={`${sample.id}-${model}`}>
                                   <div className="sample-model-cell-head">
@@ -1886,10 +2174,20 @@ function SampleMatrixPanel(props: {
                                   <p>{job?.progress_message || (job ? `阶段：${job.phase}` : "尚未创建对应任务。")}</p>
                                   <div className="sample-model-cell-meta">
                                     <span>{requiredModelSet.has(model) ? "Required" : "Optional"}</span>
-                                    <span>{formatScoreSnapshot(job?.score_snapshot)}</span>
+                                    <span>{primaryArtifactHint(job?.primary_artifacts)}</span>
+                                  </div>
+                                  <div className={`sample-score-signal ${scoreDigest.tone}`}>
+                                    <div>
+                                      <strong>{scoreDigest.label}</strong>
+                                      <span>{scoreDigest.metricCount > 0 ? `${scoreDigest.metricCount} 项指标` : "暂无评分数据"}</span>
+                                    </div>
+                                    <strong>{scoreDigest.percent > 0 ? `${scoreDigest.percent}%` : "--"}</strong>
+                                  </div>
+                                  <div className="sample-score-track" aria-hidden>
+                                    <div className={`sample-score-fill ${scoreDigest.tone}`} style={{ width: `${scoreDigest.percent}%` }} />
                                   </div>
                                   <div className="sample-model-cell-meta">
-                                    <span>{primaryArtifactHint(job?.primary_artifacts)}</span>
+                                    <span>{job?.job_id ? `任务：${job.job_id}` : "尚无任务记录"}</span>
                                     {job?.job_id && props.onLocateJob ? (
                                       <button className="ghost-button small sample-locate-button" onClick={() => props.onLocateJob?.(job.job_id)} type="button">
                                         定位任务
@@ -1908,6 +2206,7 @@ function SampleMatrixPanel(props: {
                   );
                 })}
               </div>
+              {sampleRows.length === 0 ? <div className="empty-state">当前排序/筛选下暂无样例。</div> : null}
             </section>
           ) : (
             <div className="empty-state">样例清单还没有条目。</div>
@@ -2029,10 +2328,19 @@ function JobDetail(props: {
   const job = props.selectedJob.job;
   const summary = props.selectedJob.result_summary;
   const latestLogLine = getLatestLogLine(props.selectedJob.logs);
+  const criticalLogLine = getCriticalLogLine(props.selectedJob.logs);
   const outputSections = buildOutputSections(props.selectedJob.outputs, job.model);
   const progress = props.selectedJob.phase_display;
   const advisorSuggested = isAdvisorSuggested(job.status);
   const advisorReport = props.selectedJob.advisor_report ?? null;
+
+  function scrollToInspectorSection(sectionId: string) {
+    const target = document.getElementById(sectionId);
+    if (!target) {
+      return;
+    }
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <div className="detail-stack">
@@ -2151,6 +2459,30 @@ function JobDetail(props: {
         </button>
       </div>
 
+      <div className="inspector-nav-strip">
+        <span className="mini-label">检查器导航</span>
+        <div className="inspector-nav-actions">
+          <button className="ghost-button small" type="button" onClick={() => scrollToInspectorSection("job-summary-panel")}>
+            摘要
+          </button>
+          <button className="ghost-button small" type="button" onClick={() => scrollToInspectorSection("job-outputs-panel")}>
+            输出
+          </button>
+          <button className="ghost-button small" type="button" onClick={() => scrollToInspectorSection("job-logs-panel")}>
+            日志
+          </button>
+          <button className="ghost-button small" type="button" onClick={() => scrollToInspectorSection("job-evaluation-panel")}>
+            人工评分
+          </button>
+          <button className="ghost-button small" type="button" onClick={() => scrollToInspectorSection("job-ai-panel")}>
+            AI评估
+          </button>
+          <button className="ghost-button small" type="button" onClick={() => scrollToInspectorSection("job-inputs-panel")}>
+            输入
+          </button>
+        </div>
+      </div>
+
       {job.error_message ? (
         <article className="soft-panel error-panel">
           <h4>错误原因</h4>
@@ -2160,7 +2492,7 @@ function JobDetail(props: {
 
       <div className="detail-inspector-grid">
         <section className="detail-inspector-main">
-          <article className="soft-panel inspector-panel">
+          <article className="soft-panel inspector-panel" id="job-summary-panel">
             <div className="section-head">
               <div>
                 <h4>结果摘要</h4>
@@ -2170,7 +2502,7 @@ function JobDetail(props: {
             <SummaryPanel summary={props.selectedJob.result_summary} />
           </article>
 
-          <article className="soft-panel inspector-panel">
+          <article className="soft-panel inspector-panel" id="job-outputs-panel">
             <div className="section-head">
               <div>
                 <h4>输出结果</h4>
@@ -2178,10 +2510,27 @@ function JobDetail(props: {
               </div>
               <span className="section-pill">{props.selectedJob.outputs.length} 个文件</span>
             </div>
+            {outputSections.length > 1 ? (
+              <div className="output-anchor-strip">
+                {outputSections.map((section) => (
+                  <button
+                    className="ghost-button small"
+                    key={section.key}
+                    onClick={() => scrollToInspectorSection(`job-output-group-${section.key}`)}
+                    type="button"
+                  >
+                    {section.title}
+                  </button>
+                ))}
+                <button className="ghost-button small" onClick={() => scrollToInspectorSection("job-logs-panel")} type="button">
+                  跳到日志
+                </button>
+              </div>
+            ) : null}
             {outputSections.length > 0 ? (
               <div className="output-section-list">
                 {outputSections.map((section) => (
-                  <details className={`output-section ${section.accent}`} key={section.key} open={section.defaultOpen}>
+                  <details className={`output-section ${section.accent}`} id={`job-output-group-${section.key}`} key={section.key} open={section.defaultOpen}>
                     <summary>
                       <div>
                         <strong>{section.title}</strong>
@@ -2273,15 +2622,28 @@ function JobDetail(props: {
             )}
           </article>
 
-          <article className="soft-panel inspector-panel">
+          <article className="soft-panel inspector-panel" id="job-logs-panel">
             <div className="section-head">
               <div>
                 <h4>日志</h4>
                 <p>优先看最新一条有效进展，再往下翻完整日志尾部。</p>
               </div>
-              <span className="section-pill">{props.selectedJob.logs.length} 份</span>
+              <div className="logs-head-actions">
+                <span className="section-pill">{props.selectedJob.logs.length} 份</span>
+                {latestLogLine ? (
+                  <button className="ghost-button small" onClick={() => void props.onCopy(latestLogLine, "最新日志")} type="button">
+                    复制最新
+                  </button>
+                ) : null}
+                {criticalLogLine ? (
+                  <button className="ghost-button small" onClick={() => void props.onCopy(criticalLogLine, "可疑日志")} type="button">
+                    复制可疑行
+                  </button>
+                ) : null}
+              </div>
             </div>
             {latestLogLine ? <div className="latest-log-banner">{latestLogLine}</div> : null}
+            {criticalLogLine ? <div className="critical-log-banner">可疑日志：{criticalLogLine}</div> : null}
             {props.selectedJob.logs.length > 0 ? (
               <div className="log-list">
                 {props.selectedJob.logs.map((log) => (
@@ -2313,7 +2675,7 @@ function JobDetail(props: {
             </div>
           </article>
 
-          <article className="soft-panel inspector-panel">
+          <article className="soft-panel inspector-panel" id="job-evaluation-panel">
             <h4>人工评分</h4>
             <EvaluationPanel
               evaluation={props.selectedJob.evaluation ?? null}
@@ -2323,12 +2685,12 @@ function JobDetail(props: {
             />
           </article>
 
-          <article className="soft-panel inspector-panel">
+          <article className="soft-panel inspector-panel" id="job-ai-panel">
             <h4>AI 评估</h4>
             <AdvisorPanel report={advisorReport} />
           </article>
 
-          <article className="soft-panel inspector-panel">
+          <article className="soft-panel inspector-panel" id="job-inputs-panel">
             <h4>输入</h4>
             <div className="preview-grid">
               {props.selectedJob.previews.length > 0 ? (
@@ -2390,6 +2752,27 @@ function getLatestLogLine(logs: JobPayload["logs"]) {
     for (let index = lines.length - 1; index >= 0; index -= 1) {
       const line = lines[index];
       if (!/futurewarning|warning, cannot find cuda-compiled version of rope2d/i.test(line)) {
+        return line;
+      }
+    }
+  }
+  return "";
+}
+
+function getCriticalLogLine(logs: JobPayload["logs"]) {
+  const criticalPattern = /traceback|exception|fatal|runtimeerror|oom|cuda out of memory|failed|error/i;
+  const ignoredPattern = /futurewarning|warning, cannot find cuda-compiled version of rope2d/i;
+  for (const log of logs) {
+    const lines = (log.tail || "")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    for (let index = lines.length - 1; index >= 0; index -= 1) {
+      const line = lines[index];
+      if (ignoredPattern.test(line)) {
+        continue;
+      }
+      if (criticalPattern.test(line)) {
         return line;
       }
     }
@@ -2670,16 +3053,167 @@ function roleLabel(role: string) {
   return labels[role] ?? role.replace(/_/g, " ");
 }
 
-function formatScoreSnapshot(scoreSnapshot?: Record<string, number>) {
+function summarizeScoreSnapshot(scoreSnapshot?: Record<string, number>) {
   if (!scoreSnapshot) {
-    return "评分快照：暂无";
+    return {
+      label: "评分快照：暂无",
+      metricCount: 0,
+      average: null as number | null,
+      percent: 0,
+      tone: "none" as "none" | "low" | "medium" | "high"
+    };
   }
   const values = Object.values(scoreSnapshot).filter((value) => Number.isFinite(value));
   if (values.length === 0) {
-    return "评分快照：暂无";
+    return {
+      label: "评分快照：暂无",
+      metricCount: 0,
+      average: null as number | null,
+      percent: 0,
+      tone: "none" as "none" | "low" | "medium" | "high"
+    };
   }
   const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
-  return `评分快照：${avg.toFixed(2)}`;
+  const bounded = Math.min(5, Math.max(0, avg));
+  const tone: "low" | "medium" | "high" = bounded >= 4.2 ? "high" : bounded >= 3.2 ? "medium" : "low";
+  return {
+    label: `评分快照：${bounded.toFixed(2)}`,
+    metricCount: values.length,
+    average: bounded,
+    percent: Math.round((bounded / 5) * 100),
+    tone
+  };
+}
+
+function summarizeSampleMatrixRow(compareModels: string[], jobsByModel: Record<string, SampleMatrixJob>) {
+  const stats = {
+    total: compareModels.length,
+    finished: 0,
+    running: 0,
+    attention: 0,
+    pending: 0,
+    missing: 0,
+    completionPercent: 0
+  };
+
+  compareModels.forEach((model) => {
+    const job = jobsByModel[model];
+    const status = job?.status ?? "missing";
+    if (status === "finished") {
+      stats.finished += 1;
+      return;
+    }
+    if (status === "running" || status === "starting") {
+      stats.running += 1;
+      return;
+    }
+    if (status === "failed" || status === "cancelled") {
+      stats.attention += 1;
+      return;
+    }
+    if (status === "missing") {
+      stats.missing += 1;
+      return;
+    }
+    stats.pending += 1;
+  });
+
+  stats.completionPercent = stats.total > 0 ? Math.round((stats.finished / stats.total) * 100) : 0;
+  return stats;
+}
+
+function summarizeMatrixRowScore(compareModels: string[], jobsByModel: Record<string, SampleMatrixJob>) {
+  const digests = compareModels
+    .map((model) => summarizeScoreSnapshot(jobsByModel[model]?.score_snapshot))
+    .filter((digest) => typeof digest.average === "number");
+  if (digests.length === 0) {
+    return {
+      average: null as number | null,
+      percent: 0,
+      metricCount: 0,
+      tone: "none" as "none" | "low" | "medium" | "high"
+    };
+  }
+  const totalAverage = digests.reduce((sum, digest) => sum + (digest.average ?? 0), 0);
+  const average = totalAverage / digests.length;
+  const metricCount = digests.reduce((sum, digest) => sum + digest.metricCount, 0);
+  const bounded = Math.min(5, Math.max(0, average));
+  return {
+    average: bounded,
+    percent: Math.round((bounded / 5) * 100),
+    metricCount,
+    tone: bounded >= 4.2 ? ("high" as const) : bounded >= 3.2 ? ("medium" as const) : ("low" as const)
+  };
+}
+
+function matrixRowMatchesFilter(row: SampleMatrixRowView, filterKey: SampleMatrixFilterKey) {
+  switch (filterKey) {
+    case "attention":
+      return row.rowStats.attention > 0;
+    case "running":
+      return row.rowStats.running > 0;
+    case "unfinished":
+      return row.rowStats.finished < row.rowStats.total;
+    default:
+      return true;
+  }
+}
+
+function compareSampleMatrixRows(left: SampleMatrixRowView, right: SampleMatrixRowView, sortKey: SampleMatrixSortKey) {
+  switch (sortKey) {
+    case "completion": {
+      const byCompletion = right.rowStats.completionPercent - left.rowStats.completionPercent;
+      if (byCompletion !== 0) {
+        return byCompletion;
+      }
+      const leftScore = left.rowScore.average ?? -1;
+      const rightScore = right.rowScore.average ?? -1;
+      const byScore = rightScore - leftScore;
+      if (byScore !== 0) {
+        return byScore;
+      }
+      break;
+    }
+    case "score": {
+      const leftScore = left.rowScore.average ?? -1;
+      const rightScore = right.rowScore.average ?? -1;
+      const byScore = rightScore - leftScore;
+      if (byScore !== 0) {
+        return byScore;
+      }
+      const byCompletion = right.rowStats.completionPercent - left.rowStats.completionPercent;
+      if (byCompletion !== 0) {
+        return byCompletion;
+      }
+      break;
+    }
+    case "attention": {
+      const byAttention = right.rowStats.attention - left.rowStats.attention;
+      if (byAttention !== 0) {
+        return byAttention;
+      }
+      const byRunning = right.rowStats.running - left.rowStats.running;
+      if (byRunning !== 0) {
+        return byRunning;
+      }
+      const leftPending = left.rowStats.pending + left.rowStats.missing;
+      const rightPending = right.rowStats.pending + right.rowStats.missing;
+      const byPending = rightPending - leftPending;
+      if (byPending !== 0) {
+        return byPending;
+      }
+      break;
+    }
+    case "manifest":
+    default: {
+      const byIndex = left.rowIndex - right.rowIndex;
+      if (byIndex !== 0) {
+        return byIndex;
+      }
+      break;
+    }
+  }
+  return left.sample.id.localeCompare(right.sample.id);
 }
 
 function primaryArtifactHint(primaryArtifacts?: SampleMatrixJob["primary_artifacts"]) {
@@ -2689,6 +3223,40 @@ function primaryArtifactHint(primaryArtifacts?: SampleMatrixJob["primary_artifac
   const first = primaryArtifacts[0];
   const label = first.label || roleLabel(first.role);
   return `核心产物：${label}`;
+}
+
+function isImageLikeFile(file: File) {
+  return file.type.startsWith("image/") || /\.(png|jpe?g|bmp|webp)$/i.test(file.name);
+}
+
+function isVideoLikeFile(file: File) {
+  return file.type.startsWith("video/") || /\.(mp4|mov|mkv|avi|webm)$/i.test(file.name);
+}
+
+function pendingFileRoleLabel(file: File) {
+  if (isImageLikeFile(file)) {
+    return "图片";
+  }
+  if (isVideoLikeFile(file)) {
+    return "视频";
+  }
+  return "其他";
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes <= 0) {
+    return "0 B";
+  }
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  if (bytes < 1024 * 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
 function SummaryStat(props: { label: string; value: string }) {
@@ -3299,6 +3867,27 @@ function jobFilterLabel(filter: JobFilter) {
     default:
       return "全部";
   }
+}
+
+function canDispatchJobStatus(status: string) {
+  return status === "draft" || status === "ready" || status === "failed" || status === "cancelled";
+}
+
+function matchesJobQuery(item: JobListItem, normalizedQuery: string) {
+  if (!normalizedQuery) {
+    return true;
+  }
+  const haystack = [
+    item.job.job_id,
+    item.job.model,
+    statusLabel(item.job.status),
+    sourceTypeLabel(item.job.source_type),
+    item.phase_display.label,
+    item.job.progress_message ?? ""
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(normalizedQuery);
 }
 
 function buildOverviewHeadline(job: JobListItem | null, runningCount: number, attentionCount: number) {
