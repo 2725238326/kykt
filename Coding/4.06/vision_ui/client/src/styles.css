@@ -2497,23 +2497,180 @@ body {
   color: var(--text-secondary);
 }
 
+
+/* Workbench Dark refinement pass */
+.layout-grid.jobs-layout {
+  grid-template-columns: minmax(360px, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+}
+
+.side-panel,
+.detail-panel {
+  min-height: calc(100vh - 196px);
+}
+
+.side-panel {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+}
+
+.detail-panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.job-toolbar {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-default);
+}
+
+.job-list {
+  display: grid;
+  gap: 8px;
+  max-height: calc(100vh - 340px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.job-card {
+  gap: 8px;
+  border: 1px solid var(--line-default);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(15, 23, 40, 0.82);
+}
+
+.job-card-head {
+  align-items: center;
+}
+
+.job-card strong {
+  font-size: 13px;
+}
+
+.job-card-percent {
+  font-size: 18px;
+}
+
+.job-card-meta,
+.job-card-stage,
+.job-card-message {
+  display: block;
+}
+
+.job-card-stage {
+  margin-top: 4px;
+}
+
+.job-card-message {
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.detail-stack {
+  gap: 12px;
+}
+
+.result-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.output-section-list {
+  gap: 10px;
+}
+
+.output-section {
+  border-radius: 14px;
+}
+
+.output-section summary {
+  padding: 12px 14px;
+}
+
+.summary-primary-item {
+  grid-template-columns: 88px minmax(0, 1fr);
+}
+
+.sample-compare-section {
+  gap: 12px;
+}
+
+.sample-compare-grid {
+  gap: 8px;
+}
+
+.sample-compare-row {
+  grid-template-columns: 1.05fr 0.72fr 0.6fr 1.1fr 0.86fr;
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--line-default);
+  background: rgba(15, 23, 40, 0.84);
+}
+
+.sample-compare-main,
+.sample-compare-column,
+.sample-seed-callout {
+  gap: 8px;
+}
+
+.sample-compare-column .mini-label,
+.sample-seed-callout .mini-label {
+  font-size: 11px;
+}
+
+.sample-card-models {
+  display: grid;
+  gap: 6px;
+}
+
+.sample-card-models span {
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--text-secondary);
+}
+
+.sample-status-strip {
+  grid-template-columns: repeat(4, minmax(88px, 1fr));
+  gap: 8px;
+}
+
+.sample-status-pill {
+  min-height: 62px;
+  padding: 10px 12px;
+}
+
+.sample-status-pill strong {
+  font-size: 20px;
+}
+
+.compact-stack {
+  gap: 10px;
+}
+
+.deployment-console-panel {
+  grid-column: 1 / -1;
+}
+
+.workbench-overview-grid {
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+}
+
+.workbench-overview-support-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+}
+
+.workbench-system-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 @media (max-width: 1120px) {
-  .workspace-menu,
-  .status-strip,
-  .overview-support-grid,
-  .create-layout,
-  .advisor-layout,
-  .system-grid,
-  .overview-grid,
-  .layout-grid,
-  .result-grid,
-  .output-grid,
-  .sample-matrix-meta,
-  .scoring-compact-strip,
-  .scoring-grid,
-  .step-grid,
-  .meta-grid,
-  .kpi-grid {
+  .workbench-overview-grid,
+  .workbench-overview-support-grid,
+  .workbench-system-grid,
+  .result-grid {
     grid-template-columns: 1fr;
   }
 

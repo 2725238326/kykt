@@ -1306,120 +1306,25 @@ function App() {
         ) : null}
 
         {activeWorkspace === "system" ? (
-          <section className="system-grid">
-            <article className="panel">
-              <PanelTitle eyebrow="本地服务" title="当前托管状态" />
-              <div className="support-checklist">
-                <article className="support-check-item">
-                  <strong>服务状态</strong>
-                  <p>{serviceMessage}</p>
-                </article>
-                <article className="support-check-item">
-                  <strong>后端说明</strong>
-                  <p>{backendStatusText(backendStatus)}</p>
-                </article>
-              </div>
-            </article>
-
-            <article className="panel">
-              <PanelTitle eyebrow="远端目标" title="当前服务器配置" />
-              <div className="support-checklist">
-                <article className="support-check-item">
-                  <strong>SSH 目标</strong>
-                  <p>
-                    {bootstrapData.server.user}@{bootstrapData.server.host}:{bootstrapData.server.port}
-                  </p>
-                </article>
-                <article className="support-check-item">
-                  <strong>远端根目录</strong>
-                  <p>{bootstrapData.server.remote_root}</p>
-                </article>
-              </div>
-            </article>
-
-            <article className="panel">
-              <PanelTitle eyebrow="远端部署" title="Active 3R 就绪状态" />
-              <div className="support-checklist">
-                <article className="support-check-item">
-                  <strong>部署摘要</strong>
-                  <p>
-                    {deploymentStatus
-                      ? `目录缺失 ${deploymentStatus.summary.missing_directories} / 环境缺失 ${deploymentStatus.summary.missing_conda_envs} / 必需文件缺失 ${deploymentStatus.summary.missing_required_files} / 警告 ${deploymentStatus.summary.warnings}`
-                      : deploymentError || "尚未读取远端部署状态。"}
-                  </p>
-                </article>
-                <article className="support-check-item">
-                  <strong>主线环境</strong>
-                  <p>{deploymentStatus ? formatDeploymentEnvSummary(deploymentStatus) : "读取后会显示 mast3r / monst3r / spann3r / align3r / fast3r / cut3r。"}</p>
-                </article>
-                <article className="support-check-item">
-                  <strong>目录与 README</strong>
-                  <p>{formatDeploymentDirectoryStatus(deploymentStatus)}</p>
-                </article>
-                <article className="support-check-item">
-                  <strong>缓存状态</strong>
-                  <p>{formatDeploymentCacheStatus(deploymentStatus)}</p>
-                </article>
-                {deploymentStatus?.cache?.last_error ? (
-                  <article className="support-check-item">
-                    <strong>最近错误</strong>
-                    <p>{deploymentStatus.cache.last_error}</p>
-                  </article>
-                ) : null}
-                <div className="service-card-actions">
-                  <button
-                    className="ghost-button small"
-                    onClick={() => void loadDeploymentStatus(true, true)}
-                    disabled={deploymentLoading}
-                    type="button"
-                  >
-                    {deploymentLoading ? "检查中..." : "刷新远端部署状态"}
-                  </button>
-                </div>
-              </div>
-            </article>
-
-            <article className="panel">
-              <PanelTitle eyebrow="AI 配置" title="当前评估能力" />
-              <div className="support-checklist">
-                <article className="support-check-item">
-                  <strong>状态</strong>
-                  <p>{advisorReady ? `已配置：${advisorState.model}` : advisorState.message}</p>
-                </article>
-                <article className="support-check-item">
-                  <strong>建议位置</strong>
-                  <p>先在任务跑完或失败后用 AI 评估，再把结论放进汇报和后续实验计划里。</p>
-                </article>
-                <button className="ghost-button" onClick={() => void openAdvisorSettings()} disabled={advisorConfigLoading} type="button">
-                  {advisorConfigLoading ? "读取中..." : "打开 AI 配置"}
-                </button>
-              </div>
-            </article>
-
-            <ModelRoadmapPanel
-              activeModels={activeModelCatalog}
-              deferredModels={deferredModelCatalog}
-            />
-
-            <SampleMatrixPanel
-              samplesPayload={samplesPayload}
-              errorMessage={samplesError}
-              modelCatalog={modelCatalog}
-              onLocateJob={(jobId) => openWorkspace("jobs", jobId)}
-            />
-
-            <article className="panel">
-              <PanelTitle eyebrow="使用提示" title="今晚就按这条线推进" />
-              <div className="support-checklist">
-                {buildSystemChecklist().map((item) => (
-                  <article className="support-check-item" key={item.title}>
-                    <strong>{item.title}</strong>
-                    <p>{item.body}</p>
-                  </article>
-                ))}
-              </div>
-            </article>
-          </section>
+          <SystemWorkbench
+            bootstrapData={bootstrapData}
+            deploymentStatus={deploymentStatus}
+            deploymentError={deploymentError}
+            deploymentLoading={deploymentLoading}
+            loadDeploymentStatus={loadDeploymentStatus}
+            advisorReady={advisorReady}
+            advisorState={advisorState}
+            advisorConfigLoading={advisorConfigLoading}
+            openAdvisorSettings={openAdvisorSettings}
+            activeModelCatalog={activeModelCatalog}
+            deferredModelCatalog={deferredModelCatalog}
+            samplesPayload={samplesPayload}
+            samplesError={samplesError}
+            modelCatalog={modelCatalog}
+            openWorkspace={openWorkspace}
+            serviceMessage={serviceMessage}
+            backendStatus={backendStatus}
+          />
         ) : null}
       </main>
 
@@ -1655,7 +1560,7 @@ function SystemWorkbench(props: {
   modelCatalog: ModelCatalogItem[];
   openWorkspace: (workspace: WorkspaceTab, jobId?: string) => void;
   serviceMessage: string;
-  backendStatus: BackendStatus;
+  backendStatus: BackendStatusPayload | null;
 }) {
   return (
     <section className="system-grid workbench-system-grid">
@@ -1763,8 +1668,11 @@ function SystemWorkbench(props: {
     </section>
   );
 }
-
-
+function ModelRoadmapPanel(props: {
+  activeModels: ModelCatalogItem[];
+  deferredModels: ModelCatalogItem[];
+  compact?: boolean;
+}) {
   const runnable = props.activeModels.filter((item) => item.runnable).length;
   const planned = props.activeModels.filter((item) => !item.runnable).length;
 
