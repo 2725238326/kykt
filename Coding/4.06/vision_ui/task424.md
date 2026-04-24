@@ -283,20 +283,20 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 - [x] Add sort/filter and bulk ID operations.
 - [x] Add unassigned-job pool visibility.
 - [ ] Add clearer row/column compare hierarchy for samples vs models.
-- [ ] Surface runner/deployment constraints inside matrix context where useful.
+- [x] Surface runner/deployment constraints inside matrix context where useful.
 - [ ] Add stronger score/evidence digest for quick compare.
 - [ ] Add exportable compare/report path for selected sample/model subsets.
 
 ### Phase 5 - System page as model-management console
 
 - [x] Add deployment readiness matrix.
-- [ ] Add a clearer separation between:
+- [x] Add a clearer separation between:
   - local service state
   - remote deployment state
   - model creatability
   - model research/catalog presence
-- [ ] Surface fallback modes such as slow path / attention fallback / missing `curope`.
-- [ ] Show next-action guidance per blocked model, not just global summaries.
+- [x] Surface fallback modes such as slow path / attention fallback / missing `curope`.
+- [x] Show next-action guidance per blocked model, not just global summaries.
 - [x] Tie `System` model state more directly to `Create` availability.
 
 ### Phase 6 - Backend model-management cleanup
@@ -323,7 +323,8 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 - [ ] Add job bundle export.
 - [ ] Add sample/model comparison report export.
 - [ ] Improve advisor/evaluation/report contract consistency.
-- [ ] Make the app better for final inspection and handoff, not only internal testing.
+- [x] Make the app better for final inspection and handoff, not only internal testing.
+- [x] Put usability improvements into the 3R roadmap as a first-class route, not only as visual polish.
 
 ---
 

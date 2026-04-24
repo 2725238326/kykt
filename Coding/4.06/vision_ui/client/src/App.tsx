@@ -2004,7 +2004,8 @@ function SystemWorkbench(props: {
   serviceMessage: string;
   backendStatus: BackendStatusPayload | null;
 }) {
-  const deploymentRows = buildDeploymentComponentRows(props.deploymentStatus);
+  const deploymentRows = buildDeploymentComponentRows(props.deploymentStatus, props.modelCatalog);
+  const modelActionRows = buildModelActionRows(props.deploymentStatus, props.modelCatalog);
 
   return (
     <section className="system-grid workbench-system-grid">
@@ -2065,6 +2066,26 @@ function SystemWorkbench(props: {
               </div>
             ))}
           </div>
+        ) : null}
+        {modelActionRows.length > 0 ? (
+          <section className="model-action-grid" aria-label="模型可用性行动队列">
+            {modelActionRows.map((row) => (
+              <article className={`model-action-card ${row.tone}`} key={row.value}>
+                <div className="model-action-card-head">
+                  <strong>{row.label}</strong>
+                  <span>{row.stateLabel}</span>
+                </div>
+                <p>{row.nextAction}</p>
+                {row.constraints.length > 0 ? (
+                  <div className="model-action-tags">
+                    {row.constraints.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </section>
         ) : null}
         <div className="support-checklist compact-stack">
           <article className="support-check-item">
@@ -2543,6 +2564,7 @@ function SampleMatrixPanel(props: {
                               const modelItem = findModelCatalogItem(model, props.modelCatalog);
                               const cellState = job?.status ?? "missing";
                               const scoreDigest = summarizeScoreSnapshot(job?.score_snapshot);
+                              const modelConstraint = modelItem ? buildMatrixModelConstraint(modelItem) : null;
                               return (
                                 <article className={`sample-model-cell ${cellState}`} key={`${sample.id}-${model}`}>
                                   <div className="sample-model-cell-head">
@@ -2555,6 +2577,12 @@ function SampleMatrixPanel(props: {
                                     item={modelItem}
                                     model={model}
                                   />
+                                  {modelConstraint ? (
+                                    <div className={`sample-model-constraint ${modelConstraint.tone}`}>
+                                      <strong>{modelConstraint.label}</strong>
+                                      <span>{modelConstraint.detail}</span>
+                                    </div>
+                                  ) : null}
                                   <p>{job?.progress_message || (job ? `阶段：${job.phase}` : "尚未创建对应任务。")}</p>
                                   <div className="sample-model-cell-meta">
                                     <span>{requiredModelSet.has(model) ? "Required" : "Optional"}</span>
@@ -4557,6 +4585,31 @@ function buildModelLaunchBlocker(item: ModelCatalogItem | null) {
   return item.launch_blocker ?? `${item.label} 还没有接入可派发 runner，先保留在部署/研究目录。`;
 }
 
+function buildMatrixModelConstraint(item: ModelCatalogItem) {
+  if (!item.runnable) {
+    return {
+      tone: "blocked",
+      label: "Catalog-only",
+      detail: item.launch_blocker ?? "目录模型暂不进入创建队列。"
+    };
+  }
+  if (item.runner_status === "smoke_ready_attention_fallback") {
+    return {
+      tone: "partial",
+      label: "Fallback",
+      detail: "当前走 attention fallback，先小样例确认速度。"
+    };
+  }
+  if (item.runner_status === "baseline") {
+    return {
+      tone: "partial",
+      label: "Baseline",
+      detail: "基座保留线，优先作为静态参考。"
+    };
+  }
+  return null;
+}
+
 function findModelCatalogItem(value: string, catalog: ModelCatalogItem[]) {
   return catalog.find((item) => item.value === value) ?? null;
 }
@@ -4605,12 +4658,13 @@ function formatDeploymentDirectoryStatus(payload: DeploymentStatusPayload | null
     .join(" / ");
 }
 
-function buildDeploymentComponentRows(payload: DeploymentStatusPayload | null) {
+function buildDeploymentComponentRows(payload: DeploymentStatusPayload | null, catalog: ModelCatalogItem[] = []) {
   if (!payload) {
     return [];
   }
   const targets = ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"];
   return targets.map((component) => {
+    const modelItem = findModelCatalogItem(component, catalog);
     const directory = payload.directories.find((item) => item.name === component);
     const env = payload.conda_envs.find((item) => item.component === component);
     const files = payload.known_files.filter((item) => item.component === component);
@@ -4622,12 +4676,114 @@ function buildDeploymentComponentRows(payload: DeploymentStatusPayload | null) {
     return {
       component,
       tone,
+      modelItem,
+      nextAction: buildDeploymentNextAction(modelItem, directory?.exists ?? false, env?.exists ?? false, missingRequiredFiles, checkpointCount),
+      constraints: buildModelConstraintTags(modelItem, directory?.exists ?? false, env?.exists ?? false, missingRequiredFiles, checkpointCount),
       directory: directory?.exists ? (directory.readme_setup ? "OK" : "README 待补") : "缺失",
       env: env?.exists ? "OK" : "缺失",
       files: files.length > 0 ? `${files.length - missingRequiredFiles}/${files.length}` : "未登记",
       checkpoints: checkpointCount > 0 ? `${checkpointCount} 个` : "待确认"
     };
   });
+}
+
+function buildModelActionRows(payload: DeploymentStatusPayload | null, catalog: ModelCatalogItem[]) {
+  if (!payload) {
+    return [];
+  }
+  return buildDeploymentComponentRows(payload, catalog)
+    .map((row) => {
+      const item = row.modelItem;
+      const stateLabel = !item?.runnable
+        ? "目录模型"
+        : row.tone === "ready"
+          ? "可创建"
+          : row.tone === "partial"
+            ? "需确认"
+            : "阻塞";
+      return {
+        value: row.component,
+        label: modelDisplayName(row.component, catalog),
+        tone: !item?.runnable ? "blocked" : row.tone,
+        stateLabel,
+        nextAction: row.nextAction,
+        constraints: row.constraints
+      };
+    })
+    .sort((left, right) => modelActionSortRank(left.tone) - modelActionSortRank(right.tone) || left.label.localeCompare(right.label));
+}
+
+function modelActionSortRank(tone: string) {
+  if (tone === "blocked") {
+    return 0;
+  }
+  if (tone === "partial") {
+    return 1;
+  }
+  return 2;
+}
+
+function buildDeploymentNextAction(
+  item: ModelCatalogItem | null,
+  hasDirectory: boolean,
+  hasEnv: boolean,
+  missingRequiredFiles: number,
+  checkpointCount: number
+) {
+  if (!item) {
+    return "先把该模型补进 model registry，再绑定部署检查结果。";
+  }
+  if (!item.runnable) {
+    return item.launch_blocker ?? "先完成 runner、输出合同和 smoke run，再开放 Create 创建入口。";
+  }
+  if (!hasDirectory) {
+    return "先确认远端代码目录是否存在，必要时按上传计划解压 repo。";
+  }
+  if (!hasEnv) {
+    return "先补齐独立 conda env，再跑官方 demo smoke。";
+  }
+  if (missingRequiredFiles > 0) {
+    return `先补齐 ${missingRequiredFiles} 个必需文件，再刷新部署状态。`;
+  }
+  if (item.runner_status === "smoke_ready_attention_fallback") {
+    return "可从 Create 创建，但先用小样例确认 attention fallback 的速度和显存。";
+  }
+  if (checkpointCount === 0) {
+    return "部署基本可见，下一步确认权重/checkpoint 是否已登记。";
+  }
+  return "可从 Create 发起任务；建议用样例矩阵做同输入横向对比。";
+}
+
+function buildModelConstraintTags(
+  item: ModelCatalogItem | null,
+  hasDirectory: boolean,
+  hasEnv: boolean,
+  missingRequiredFiles: number,
+  checkpointCount: number
+) {
+  const tags: string[] = [];
+  if (!item?.runnable) {
+    tags.push("catalog-only");
+  }
+  if (!hasDirectory) {
+    tags.push("code-dir missing");
+  }
+  if (!hasEnv) {
+    tags.push("env missing");
+  }
+  if (missingRequiredFiles > 0) {
+    tags.push(`files missing ${missingRequiredFiles}`);
+  }
+  if (checkpointCount === 0) {
+    tags.push("checkpoint pending");
+  }
+  if (item?.runner_status === "smoke_ready_attention_fallback") {
+    tags.push("attention fallback");
+  }
+  if (item?.runner_status === "env_blocked_curope") {
+    tags.push("curope blocked");
+  }
+  return tags;
 }
 
 function modelDisplayName(value: string, catalog: ModelCatalogItem[]) {

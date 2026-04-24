@@ -3130,6 +3130,36 @@ body {
   justify-content: flex-start;
 }
 
+.sample-model-constraint {
+  display: grid;
+  gap: 3px;
+  border: 1px solid var(--line-default);
+  border-radius: 10px;
+  padding: 7px 8px;
+  background: rgba(247, 249, 252, 0.9);
+}
+
+.sample-model-constraint strong {
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.sample-model-constraint span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.sample-model-constraint.partial {
+  border-color: rgba(188, 127, 24, 0.24);
+  background: #fff9ee;
+}
+
+.sample-model-constraint.blocked {
+  border-color: rgba(194, 84, 102, 0.24);
+  background: #fff5f7;
+}
+
 .sample-score-signal {
   display: flex;
   align-items: center;
@@ -3634,6 +3664,80 @@ body {
   border-bottom: 0;
 }
 
+.model-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.model-action-card {
+  display: grid;
+  gap: 7px;
+  border: 1px solid var(--line-default);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.model-action-card.ready {
+  border-color: rgba(47, 138, 89, 0.22);
+  background: linear-gradient(180deg, #f2fbf5 0%, #ffffff 100%);
+}
+
+.model-action-card.partial {
+  border-color: rgba(188, 127, 24, 0.24);
+  background: linear-gradient(180deg, #fff9ee 0%, #ffffff 100%);
+}
+
+.model-action-card.blocked {
+  border-color: rgba(194, 84, 102, 0.24);
+  background: linear-gradient(180deg, #fff5f7 0%, #ffffff 100%);
+}
+
+.model-action-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.model-action-card-head strong {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.model-action-card-head span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.model-action-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.model-action-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.model-action-tags span {
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: rgba(103, 124, 154, 0.1);
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .deployment-model-cell {
   display: grid;
   gap: 6px;
@@ -3721,6 +3825,7 @@ body {
   .staging-stats,
   .overview-ops-dock,
   .create-run-strip,
+  .model-action-grid,
   .deployment-readiness-head,
   .deployment-readiness-row,
   .staging-table-head,

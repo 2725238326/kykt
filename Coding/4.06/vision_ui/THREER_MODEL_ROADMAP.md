@@ -1,6 +1,6 @@
 # 3R 模型接入与研究路线
 
-Last updated: 2026-04-20
+Last updated: 2026-04-24
 
 ## 1. 总定位
 
@@ -14,6 +14,7 @@ Last updated: 2026-04-20
 4. **状态/流式重建线**：Spann3R、CUT3R、ZipMap、LingBot-Map、LONG3R。
 5. **通用视觉几何基础模型线**：VGGT、Pi3/Pi3X、MapAnything。当前只做预研，不进入主动接入。
 6. **后处理与展示线**：点云/GLB 清理、轨迹可视化、关键帧预览、mask/置信图解释、结果报告。
+7. **可用性与操作闭环线**：把模型是否可创建、远端是否可用、fallback 是否存在、下一步该做什么直接放进 Create / Jobs / Matrix / System，而不是依赖操作者记忆。
 
 ## 2. 接入优先级
 
@@ -335,6 +336,13 @@ Last updated: 2026-04-20
    - 每组样例自动生成横向对比表。
    - 支持教师汇报口径：方法原理、输入输出、效果观察、失败原因、下一步。
 
+5. 可用性闭环扩展：
+   - Create 只允许提交 runnable 模型，同时保留 catalog-only 模型的产品可见性和阻塞原因。
+   - Jobs、Sample Matrix、System 使用统一模型语义：`label / family / source_types / runner_status / runnable`。
+   - System 对每个模型显示下一步行动，例如补环境、补 required files、确认 checkpoint、处理 `curope`、接受 attention fallback、或进入 Create。
+   - Sample Matrix 在模型单元格里直接暴露 catalog-only / fallback / baseline 约束，避免把不可比结果误当成缺失任务。
+   - 结果和报告导出前，优先保证任务定位、批量复制、失败关注、日志关键词、证据摘要这些高频操作顺手。
+
 ## 6. 当前决策
 
 1. 不再把 MonST3R 写成绝对核心。
@@ -343,3 +351,4 @@ Last updated: 2026-04-20
 4. 当前主动模型集中在 MASt3R、MonST3R、Spann3R、Align3R、Fast3R、CUT3R。
 5. Pi3X、ZipMap、LingBot-Map 单独列为前沿预研，不急着工程接入。
 6. 呈现优化和模型间对比测评是当前阶段的共同平台任务。
+7. 可用性提升进入主路线：所有新增模型接入都必须同时说明“是否可创建、为什么 blocked、下一步动作、如何在 Matrix 中参与比较”。
