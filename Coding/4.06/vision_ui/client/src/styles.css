@@ -1253,6 +1253,10 @@ img {
   font-size: 12px;
 }
 
+.job-model-semantics {
+  margin-top: 6px;
+}
+
 .job-card-stage {
   display: block;
   margin-top: 6px;
@@ -1350,6 +1354,10 @@ img {
   justify-content: flex-start;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.detail-model-semantics {
+  margin-top: 8px;
 }
 
 .hero-tag,
@@ -1921,6 +1929,38 @@ img {
   color: var(--text);
   font-size: 13px;
   font-weight: 700;
+}
+
+.model-semantic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.model-semantic-chips span {
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: rgba(63, 116, 230, 0.1);
+  color: #4167b8;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.model-semantic-chips.compact span {
+  padding: 4px 7px;
+  font-size: 10.5px;
+}
+
+.model-semantic-chips span.runnable {
+  background: var(--green-soft);
+  color: var(--accent-success);
+}
+
+.model-semantic-chips span.catalog {
+  background: var(--yellow-soft);
+  color: var(--accent-warning);
 }
 
 .status-badge.ready,
@@ -3086,6 +3126,10 @@ body {
   line-height: 1.35;
 }
 
+.sample-model-semantics {
+  justify-content: flex-start;
+}
+
 .sample-score-signal {
   display: flex;
   align-items: center;
@@ -3565,7 +3609,7 @@ body {
 .deployment-readiness-head,
 .deployment-readiness-row {
   display: grid;
-  grid-template-columns: minmax(110px, 1.1fr) repeat(4, minmax(80px, 0.8fr));
+  grid-template-columns: minmax(190px, 1.6fr) repeat(4, minmax(72px, 0.7fr));
   gap: 8px;
   align-items: center;
   padding: 9px 10px;
@@ -3588,6 +3632,16 @@ body {
 
 .deployment-readiness-row:last-child {
   border-bottom: 0;
+}
+
+.deployment-model-cell {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.deployment-model-semantics {
+  gap: 4px;
 }
 
 .deployment-readiness-row.ready {

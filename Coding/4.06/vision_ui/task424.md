@@ -261,14 +261,14 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 
 ### Phase 2 - Unified model semantics across all pages
 
-- [ ] Ensure `Jobs`, `Sample Matrix`, and `System` all expose the same model semantics:
+- [x] Ensure `Jobs`, `Sample Matrix`, and `System` all expose the same model semantics:
   - `label`
   - `family`
   - `source_types`
   - `runner_status`
   - `runnable`
-- [ ] Remove page-local wording that contradicts registry/deployment truth.
-- [ ] Make model status chips read consistently between Create, Jobs, Matrix, and System.
+- [x] Remove page-local wording that contradicts registry/deployment truth.
+- [x] Make model status chips read consistently between Create, Jobs, Matrix, and System.
 
 ### Phase 3 - Jobs workbench improvements
 
@@ -297,7 +297,7 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
   - model research/catalog presence
 - [ ] Surface fallback modes such as slow path / attention fallback / missing `curope`.
 - [ ] Show next-action guidance per blocked model, not just global summaries.
-- [ ] Tie `System` model state more directly to `Create` availability.
+- [x] Tie `System` model state more directly to `Create` availability.
 
 ### Phase 6 - Backend model-management cleanup
 

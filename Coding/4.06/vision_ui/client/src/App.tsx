@@ -330,11 +330,11 @@ function App() {
         description: item.description,
         family: item.family ?? "integrated",
         param_family: item.param_family ?? fallbackParamFamilyForModel(item.value),
-        source_types: [],
+        source_types: item.source_types ?? fallbackSourceTypesForModel(item.value),
         runner_status: item.runner_status ?? "integrated",
         research_priority: item.research_priority ?? 0,
         active_track: item.active_track ?? true,
-        runnable: true,
+        runnable: item.runnable ?? true,
         launch_blocker: item.launch_blocker ?? null
       })),
     [bootstrapData.model_catalog, bootstrapData.models, samplesPayload?.model_catalog]
@@ -1284,12 +1284,12 @@ function App() {
                         </span>
                       ) : null}
                     </div>
-                    <div className="create-model-facts">
-                      {selectedModelCatalog?.family ? <span>{modelFamilyLabel(selectedModelCatalog.family)}</span> : null}
-                      {selectedModelCatalog?.param_family ? <span>参数族：{paramFamilyLabel(selectedModelCatalog.param_family)}</span> : null}
-                      <span>输入：{selectedModelSourceTypes.map((type) => sourceTypeLabel(type)).join(" / ")}</span>
-                      {selectedModelCatalog ? <span>状态：{runnerStatusLabel(selectedModelCatalog.runner_status)}</span> : null}
-                    </div>
+                    <ModelSemanticChips
+                      catalog={modelCatalog}
+                      className="create-model-facts"
+                      model={formState.model}
+                      showParamFamily
+                    />
                     {selectedModelLaunchBlocker ? (
                       <p className="create-model-note blocked">{selectedModelLaunchBlocker}</p>
                     ) : null}
@@ -1545,7 +1545,7 @@ function App() {
                     </strong>
                     <p>
                       {selectedListJob
-                        ? `${statusModelLabel(selectedListJob.job.model)} · ${statusLabel(selectedListJob.job.status)}`
+                        ? `${modelDisplayName(selectedListJob.job.model, modelCatalog)} · ${statusLabel(selectedListJob.job.status)}`
                         : "先在列表里选中一条任务。"}
                       {selectedFilteredModelCount > 0 ? ` · 同模型 ${selectedFilteredModelCount} 条` : ""}
                     </p>
@@ -1630,8 +1630,14 @@ function App() {
                       <div>
                         <p>{item.phase_display.label}</p>
                         <span className="job-card-meta">
-                          {statusModelLabel(item.job.model)} · {statusLabel(item.job.status)}
+                          {modelDisplayName(item.job.model, modelCatalog)} · {statusLabel(item.job.status)}
                         </span>
+                        <ModelSemanticChips
+                          catalog={modelCatalog}
+                          className="job-model-semantics"
+                          compact
+                          model={item.job.model}
+                        />
                         <span className="job-card-stage">{currentStepLabel(item.phase_display.steps)}</span>
                         <p className="job-card-message">
                           {item.job.progress_message || item.phase_display.description}
@@ -1671,6 +1677,7 @@ function App() {
                   onOpenOutput={openOutput}
                   onPreviewAsset={openPreviewAsset}
                   onCopy={copyText}
+                  modelCatalog={modelCatalog}
                 />
               ) : (
                 <div className="empty-state large">
@@ -1859,9 +1866,15 @@ function OverviewCommandCenter(props: {
                 <div className="focus-copy">
                   <div className="hero-badges">
                     <StatusBadge state={focusJob.job.status} label={statusLabel(focusJob.job.status)} />
-                    <span className="hero-tag">{statusModelLabel(focusJob.job.model)}</span>
+                    <span className="hero-tag">{modelDisplayName(focusJob.job.model, props.modelCatalog)}</span>
                     <span className="hero-tag">{sourceTypeLabel(focusJob.job.source_type)}</span>
                   </div>
+                  <ModelSemanticChips
+                    catalog={props.modelCatalog}
+                    className="detail-model-semantics"
+                    compact
+                    model={focusJob.job.model}
+                  />
                   <h3>{focusJob.phase_display.label}</h3>
                   <p>{focusJob.job.progress_message || focusJob.phase_display.description}</p>
                 </div>
@@ -2036,7 +2049,15 @@ function SystemWorkbench(props: {
             </div>
             {deploymentRows.map((row) => (
               <div className={`deployment-readiness-row ${row.tone}`} key={row.component} role="row">
-                <strong role="cell">{modelDisplayName(row.component, props.modelCatalog)}</strong>
+                <div className="deployment-model-cell" role="cell">
+                  <strong>{modelDisplayName(row.component, props.modelCatalog)}</strong>
+                  <ModelSemanticChips
+                    catalog={props.modelCatalog}
+                    className="deployment-model-semantics"
+                    compact
+                    model={row.component}
+                  />
+                </div>
                 <span role="cell">{row.directory}</span>
                 <span role="cell">{row.env}</span>
                 <span role="cell">{row.files}</span>
@@ -2149,10 +2170,7 @@ function ModelRoadmapPanel(props: {
               <strong>{item.label}</strong>
               <p>{item.description}</p>
             </div>
-            <div className="model-roadmap-meta">
-              <span>{modelFamilyLabel(item.family)}</span>
-              <span>{runnerStatusLabel(item.runner_status)}</span>
-            </div>
+            <ModelSemanticChips className="model-roadmap-meta" compact item={item} />
           </article>
         ))}
       </div>
@@ -2522,6 +2540,7 @@ function SampleMatrixPanel(props: {
                           <div className="sample-compare-matrix-grid">
                             {compareModels.map((model) => {
                               const job = jobsByModel[model] as SampleMatrixJob | undefined;
+                              const modelItem = findModelCatalogItem(model, props.modelCatalog);
                               const cellState = job?.status ?? "missing";
                               const scoreDigest = summarizeScoreSnapshot(job?.score_snapshot);
                               return (
@@ -2530,6 +2549,12 @@ function SampleMatrixPanel(props: {
                                     <strong>{modelDisplayName(model, props.modelCatalog)}</strong>
                                     <span className={`sample-model-state ${cellState}`}>{job ? job.status_label : "未跑"}</span>
                                   </div>
+                                  <ModelSemanticChips
+                                    className="sample-model-semantics"
+                                    compact
+                                    item={modelItem}
+                                    model={model}
+                                  />
                                   <p>{job?.progress_message || (job ? `阶段：${job.phase}` : "尚未创建对应任务。")}</p>
                                   <div className="sample-model-cell-meta">
                                     <span>{requiredModelSet.has(model) ? "Required" : "Optional"}</span>
@@ -2606,6 +2631,12 @@ function SampleMatrixPanel(props: {
                       <strong>{job.job_id}</strong>
                       <span>{modelDisplayName(job.model, props.modelCatalog)} · {job.status_label}</span>
                     </div>
+                    <ModelSemanticChips
+                      catalog={props.modelCatalog}
+                      className="sample-model-semantics"
+                      compact
+                      model={job.model}
+                    />
                     <p>{job.progress_message || `阶段：${job.phase}`}</p>
                     {props.onLocateJob ? (
                       <button className="ghost-button small" onClick={() => props.onLocateJob?.(job.job_id)} type="button">
@@ -2719,6 +2750,7 @@ function JobDetail(props: {
   onOpenOutput: (relativePath: string) => Promise<void>;
   onPreviewAsset: (asset: PreviewAsset) => void;
   onCopy: (value: string, label: string) => Promise<void>;
+  modelCatalog: ModelCatalogItem[];
 }) {
   const job = props.selectedJob.job;
   const summary = props.selectedJob.result_summary;
@@ -2759,9 +2791,15 @@ function JobDetail(props: {
           <div className="hero-copy">
             <div className="hero-badges">
               <StatusBadge state={job.status} label={statusLabel(job.status)} />
-              <span className="hero-tag">{statusModelLabel(job.model)}</span>
+              <span className="hero-tag">{modelDisplayName(job.model, props.modelCatalog)}</span>
               <span className="hero-tag">{sourceTypeLabel(job.source_type)}</span>
             </div>
+            <ModelSemanticChips
+              catalog={props.modelCatalog}
+              className="detail-model-semantics"
+              compact
+              model={job.model}
+            />
             <h3>{progress.label}</h3>
             <p>{job.progress_message || progress.description}</p>
           </div>
@@ -3441,6 +3479,33 @@ function StatusBadge(props: { state: string; label: string }) {
   return <span className={`status-badge ${props.state}`}>{props.label}</span>;
 }
 
+function ModelSemanticChips(props: {
+  catalog?: ModelCatalogItem[];
+  className?: string;
+  compact?: boolean;
+  item?: ModelCatalogItem | null;
+  model?: string;
+  showParamFamily?: boolean;
+}) {
+  const item = props.item ?? (props.model && props.catalog ? findModelCatalogItem(props.model, props.catalog) : null);
+  if (!item) {
+    return (
+      <div className={`model-semantic-chips ${props.compact ? "compact" : ""} ${props.className ?? ""}`}>
+        <span>目录未登记</span>
+      </div>
+    );
+  }
+  return (
+    <div className={`model-semantic-chips ${props.compact ? "compact" : ""} ${props.className ?? ""}`}>
+      <span>{modelFamilyLabel(item.family)}</span>
+      {props.showParamFamily ? <span>参数族：{paramFamilyLabel(item.param_family)}</span> : null}
+      <span>输入：{formatSourceTypeList(item.source_types)}</span>
+      <span>{runnerStatusLabel(item.runner_status)}</span>
+      <span className={item.runnable ? "runnable" : "catalog"}>{item.runnable ? "可创建" : "目录模型"}</span>
+    </div>
+  );
+}
+
 function SummaryPanel(props: { summary: ResultSummary | null }) {
   if (!props.summary) {
     return <span className="muted-text">完成后自动生成摘要。</span>;
@@ -3954,6 +4019,22 @@ function fallbackParamFamilyForModel(model: string) {
   return localRegistry[model] ?? "image_collection";
 }
 
+function fallbackSourceTypesForModel(model: string) {
+  const localRegistry: Record<string, string[]> = {
+    dust3r: ["images"],
+    mast3r: ["images"],
+    monst3r: ["video", "frames"],
+    spann3r: ["images", "frames"],
+    align3r: ["video", "frames"],
+    fast3r: ["images", "frames"],
+    cut3r: ["video", "frames", "images"],
+    pi3x: ["images", "video", "frames"],
+    zipmap: ["images", "video", "frames"],
+    lingbot_map: ["video", "frames"]
+  };
+  return localRegistry[model] ?? ["images"];
+}
+
 function createParamModeForFamily(paramFamily: string | undefined): CreateParamMode {
   switch (paramFamily) {
     case "image_collection":
@@ -4110,19 +4191,7 @@ function allowedSourceTypesForModel(model: string, catalog?: ModelCatalogItem[])
   if (fromCatalog.length > 0) {
     return fromCatalog;
   }
-  const localRegistry: Record<string, string[]> = {
-    dust3r: ["images"],
-    mast3r: ["images"],
-    monst3r: ["video", "frames"],
-    spann3r: ["images", "frames"],
-    align3r: ["video", "frames"],
-    fast3r: ["images", "frames"],
-    cut3r: ["video", "frames", "images"],
-    pi3x: ["images", "video", "frames"],
-    zipmap: ["images", "video", "frames"],
-    lingbot_map: ["video", "frames"]
-  };
-  return localRegistry[model] ?? ["images"];
+  return fallbackSourceTypesForModel(model);
 }
 
 function inputHint(model: string, sourceType: string) {
@@ -4488,6 +4557,10 @@ function buildModelLaunchBlocker(item: ModelCatalogItem | null) {
   return item.launch_blocker ?? `${item.label} 还没有接入可派发 runner，先保留在部署/研究目录。`;
 }
 
+function findModelCatalogItem(value: string, catalog: ModelCatalogItem[]) {
+  return catalog.find((item) => item.value === value) ?? null;
+}
+
 function runnerStatusLabel(status: string) {
   const labels: Record<string, string> = {
     baseline: "基座保留",
@@ -4558,7 +4631,7 @@ function buildDeploymentComponentRows(payload: DeploymentStatusPayload | null) {
 }
 
 function modelDisplayName(value: string, catalog: ModelCatalogItem[]) {
-  return catalog.find((item) => item.value === value)?.label ?? value.replace(/_/g, " ");
+  return findModelCatalogItem(value, catalog)?.label ?? value.replace(/_/g, " ");
 }
 
 function formatModelList(values: string[], catalog: ModelCatalogItem[]) {
@@ -4566,6 +4639,13 @@ function formatModelList(values: string[], catalog: ModelCatalogItem[]) {
     return "暂无";
   }
   return values.map((value) => modelDisplayName(value, catalog)).join(" / ");
+}
+
+function formatSourceTypeList(sourceTypes: string[]) {
+  if (sourceTypes.length === 0) {
+    return "未登记";
+  }
+  return sourceTypes.map((type) => sourceTypeLabel(type)).join(" / ");
 }
 
 function formatCountMap(values: Record<string, number> | undefined, labeler: (value: string) => string) {

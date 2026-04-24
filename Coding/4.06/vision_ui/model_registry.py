@@ -199,9 +199,11 @@ MODEL_OPTIONS = [
         "description": spec.description,
         "param_family": spec.param_family,
         "family": spec.family,
+        "source_types": list(spec.source_types),
         "runner_status": spec.runner_status,
         "research_priority": spec.research_priority,
         "active_track": spec.active_track,
+        "runnable": True,
         "launch_blocker": spec.launch_blocker,
     }
     for spec in MODEL_REGISTRY.values()
