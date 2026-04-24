@@ -109,95 +109,95 @@ type PresetDescriptor = {
 
 const dust3rParamChoices: Record<keyof typeof defaultDust3rParams, ParamChoice[]> = {
   image_size: [
-    { value: "512", label: "512（标准推荐）", note: "正式样例优先用这一档，细节和稳定性更平衡。" },
-    { value: "384", label: "384（中速）", note: "想稍微提速又不想直接降到最低时可用。" },
-    { value: "224", label: "224（快速摸底）", note: "只适合先验流程，不建议拿来做最终展示。" }
+    { value: "512", label: "512（标准推荐）", note: "标准档" },
+    { value: "384", label: "384（中速）", note: "中速档" },
+    { value: "224", label: "224（快速摸底）", note: "快速档" }
   ],
   scene_graph: [
-    { value: "complete", label: "complete（2 到 6 张推荐）", note: "少量图片时最稳，配对最完整。" },
-    { value: "swin-5", label: "swin-5（6 张以上推荐）", note: "图片较多时更省配对成本，避免 complete 过重。" }
+    { value: "complete", label: "complete（2 到 6 张推荐）", note: "完整配对" },
+    { value: "swin-5", label: "swin-5（6 张以上推荐）", note: "滑窗配对" }
   ],
   niter: [
-    { value: "150", label: "150（快速）", note: "适合先看大概效果，细节优化较少。" },
-    { value: "300", label: "300（基线推荐）", note: "最适合作为第一版正式实验参数。" },
-    { value: "500", label: "500（精细）", note: "更适合重点样例，耗时会明显增加。" }
+    { value: "150", label: "150（快速）", note: "快速档" },
+    { value: "300", label: "300（基线推荐）", note: "基线档" },
+    { value: "500", label: "500（精细）", note: "精细档" }
   ],
   lr: [
-    { value: "0.005", label: "0.005（更稳）", note: "想保守一点时用这一档。" },
-    { value: "0.01", label: "0.01（标准推荐）", note: "当前默认最合适，先从这里起步。" },
-    { value: "0.02", label: "0.02（更激进）", note: "只在你想试更快收敛时再用。" }
+    { value: "0.005", label: "0.005（更稳）", note: "保守档" },
+    { value: "0.01", label: "0.01（标准推荐）", note: "标准档" },
+    { value: "0.02", label: "0.02（更激进）", note: "快速收敛档" }
   ],
   batch_size: [
-    { value: "1", label: "1（稳妥推荐）", note: "最稳，不容易因为显存或负载出额外问题。" },
-    { value: "2", label: "2（显存充足）", note: "想提速且机器有余量时可以尝试。" }
+    { value: "1", label: "1（稳妥推荐）", note: "低显存档" },
+    { value: "2", label: "2（显存充足）", note: "提速档" }
   ],
   max_points: [
-    { value: "100000", label: "100000（快速）", note: "点更少，导出更轻，适合快速筛样例。" },
-    { value: "250000", label: "250000（基线推荐）", note: "当前最均衡，先用这一档就好。" },
-    { value: "500000", label: "500000（细节优先）", note: "更适合重点样例，文件和开销都会变大。" }
+    { value: "100000", label: "100000（快速）", note: "轻量档" },
+    { value: "250000", label: "250000（基线推荐）", note: "基线档" },
+    { value: "500000", label: "500000（细节优先）", note: "细节档" }
   ],
   match_viz_count: [
-    { value: "0", label: "0（不画匹配线）", note: "只关心点云结果时可以关掉。" },
-    { value: "20", label: "20（简洁）", note: "适合快速看有没有基本匹配。" },
-    { value: "50", label: "50（基线推荐）", note: "展示和排查都比较合适。" },
-    { value: "100", label: "100（更密）", note: "想看更丰富的匹配关系时再开高。" }
+    { value: "0", label: "0（不画匹配线）", note: "关闭" },
+    { value: "20", label: "20（简洁）", note: "简洁档" },
+    { value: "50", label: "50（基线推荐）", note: "基线档" },
+    { value: "100", label: "100（更密）", note: "密集档" }
   ]
 };
 
 const monst3rParamChoices: Record<keyof typeof defaultMonst3rParams, ParamChoice[]> = {
   image_size: [
-    { value: "512", label: "512（正式样例推荐）", note: "明天做正式视频样例时优先用这一档。" },
-    { value: "224", label: "224（快速验链路）", note: "只适合先验证能不能跑通，不适合最终展示。" }
+    { value: "512", label: "512（正式样例推荐）", note: "标准档" },
+    { value: "224", label: "224（快速验链路）", note: "快速档" }
   ],
   batch_size: [
-    { value: "1", label: "1（稳妥推荐）", note: "当前最稳，先别急着往上加。" },
-    { value: "2", label: "2（显存足够再试）", note: "想提速且显存够时再考虑。" }
+    { value: "1", label: "1（稳妥推荐）", note: "低显存档" },
+    { value: "2", label: "2（显存足够再试）", note: "提速档" }
   ],
   fps: [
-    { value: "0", label: "0（自动/原节奏推荐）", note: "最省心，主要由最大帧数控制总量。" },
-    { value: "2", label: "2（更省）", note: "视频偏长时，先压到这一档更容易控住规模。" },
-    { value: "4", label: "4（常规抽帧）", note: "想更均匀地抽样视频内容时可用。" },
-    { value: "8", label: "8（高动作场景）", note: "只有运动较快时才建议提到这么高。" }
+    { value: "0", label: "0（自动/原节奏推荐）", note: "自动档" },
+    { value: "2", label: "2（更省）", note: "低采样档" },
+    { value: "4", label: "4（常规抽帧）", note: "常规档" },
+    { value: "8", label: "8（高动作场景）", note: "高采样档" }
   ],
   num_frames: [
-    { value: "24", label: "24（快速验链路）", note: "只看能不能跑通时可选。" },
-    { value: "48", label: "48（基线推荐）", note: "正式第一版样例优先用这一档。" },
-    { value: "72", label: "72（增强）", note: "效果不错后再往上加，适合更完整的弧线运动。" },
-    { value: "96", label: "96（长序列）", note: "更重，只建议对重点视频使用。" }
+    { value: "24", label: "24（快速验链路）", note: "快速档" },
+    { value: "48", label: "48（基线推荐）", note: "基线档" },
+    { value: "72", label: "72（增强）", note: "增强档" },
+    { value: "96", label: "96（长序列）", note: "长序列档" }
   ],
   not_batchify: [
-    { value: "true", label: "开启（稳妥推荐）", note: "更适合我们当前这套环境，先保持开启。" },
-    { value: "false", label: "关闭（速度优先）", note: "只有你确认资源富余时再尝试关闭。" }
+    { value: "true", label: "开启（稳妥推荐）", note: "低显存档" },
+    { value: "false", label: "关闭（速度优先）", note: "速度档" }
   ],
   real_time: [
-    { value: "false", label: "关闭（离线质量推荐）", note: "做实验和交差样例时应保持关闭。" },
-    { value: "true", label: "开启（演示模式）", note: "偏演示用途，不建议拿来做正式结果。" }
+    { value: "false", label: "关闭（离线质量推荐）", note: "离线档" },
+    { value: "true", label: "开启（演示模式）", note: "演示档" }
   ],
   window_wise: [
-    { value: "false", label: "关闭（短视频推荐）", note: "短视频或第一版样例先别开。" },
-    { value: "true", label: "开启（长序列推荐）", note: "视频更长或想更稳时再打开。" }
+    { value: "false", label: "关闭（短视频推荐）", note: "短序列档" },
+    { value: "true", label: "开启（长序列推荐）", note: "长序列档" }
   ],
   window_size: [
-    { value: "16", label: "16（更轻）", note: "短窗口，开销更小。" },
-    { value: "24", label: "24（基线推荐）", note: "当前最合适，和 48 到 72 帧搭配比较稳。" },
-    { value: "32", label: "32（更长序列）", note: "适合更长视频，但耗时更高。" }
+    { value: "16", label: "16（更轻）", note: "轻量档" },
+    { value: "24", label: "24（基线推荐）", note: "基线档" },
+    { value: "32", label: "32（更长序列）", note: "长窗口档" }
   ],
   window_overlap_ratio: [
-    { value: "0.25", label: "0.25（更快）", note: "重叠更少，速度更快。" },
-    { value: "0.5", label: "0.5（基线推荐）", note: "目前最平衡，先用这一档。" },
-    { value: "0.75", label: "0.75（更稳）", note: "更适合重点样例，代价是更慢。" }
+    { value: "0.25", label: "0.25（更快）", note: "低重叠档" },
+    { value: "0.5", label: "0.5（基线推荐）", note: "基线档" },
+    { value: "0.75", label: "0.75（更稳）", note: "高重叠档" }
   ]
 };
 
 const fast3rParamChoices: Record<keyof typeof defaultFast3rParams, ParamChoice[]> = {
   image_size: [
-    { value: "512", label: "512（标准推荐）", note: "先保留完整视角信息，适合正式样例。" },
-    { value: "224", label: "224（快速摸底）", note: "只适合先验链路或快速筛样例。" }
+    { value: "512", label: "512（标准推荐）", note: "标准档" },
+    { value: "224", label: "224（快速摸底）", note: "快速档" }
   ],
   max_points: [
-    { value: "100000", label: "100000（快速）", note: "导出更轻，适合快速对比。" },
-    { value: "250000", label: "250000（标准推荐）", note: "当前最均衡，先从这一档起步。" },
-    { value: "500000", label: "500000（细节优先）", note: "重点样例再往上加，产物会更重。" }
+    { value: "100000", label: "100000（快速）", note: "轻量档" },
+    { value: "250000", label: "250000（标准推荐）", note: "标准档" },
+    { value: "500000", label: "500000（细节优先）", note: "细节档" }
   ]
 };
 
@@ -217,6 +217,7 @@ type FormState = {
 
 type ServiceState = "starting" | "ready" | "degraded";
 type JobFilter = "all" | "running" | "attention" | "finished";
+type BatchJobAction = "dispatch" | "retry" | "cancel";
 type WorkspaceTab = "overview" | "create" | "jobs" | "advisor" | "system";
 type JobListItem = JobsListPayload["jobs"][number];
 type OutputItem = JobPayload["outputs"][number];
@@ -232,6 +233,7 @@ type SampleMatrixJob = NonNullable<SamplesPayload["job_matrix"]>["rows"][number]
 type SampleManifestEntry = NonNullable<SamplesPayload["manifest"]["samples"]>[number];
 type SampleMatrixSortKey = "manifest" | "completion" | "score" | "attention";
 type SampleMatrixFilterKey = "all" | "attention" | "running" | "unfinished";
+type SampleMatrixReportModelScope = "all" | "required" | "with_jobs" | "finished";
 type SampleMatrixRowView = {
   sample: SampleManifestEntry;
   rowIndex: number;
@@ -241,6 +243,7 @@ type SampleMatrixRowView = {
   compareModels: string[];
   rowStats: ReturnType<typeof summarizeSampleMatrixRow>;
   rowScore: ReturnType<typeof summarizeMatrixRowScore>;
+  rowEvidence: ReturnType<typeof summarizeMatrixRowEvidence>;
 };
 type ModelCatalogItem = NonNullable<BootstrapPayload["model_catalog"]>[number];
 type PreviewAsset = {
@@ -251,11 +254,11 @@ type PreviewAsset = {
 };
 
 const workspaceTabs: Array<{ key: WorkspaceTab; label: string; note: string }> = [
-  { key: "overview", label: "工作台", note: "先看全局状态和焦点任务" },
+  { key: "overview", label: "工作台", note: "全局状态与焦点任务" },
   { key: "create", label: "文件与新建", note: "整理输入并创建任务" },
   { key: "jobs", label: "运行与结果", note: "筛选任务、跟进状态、查看产物" },
-  { key: "advisor", label: "AI 评估", note: "让 AI 诊断结果并生成建议" },
-  { key: "system", label: "帮助与系统", note: "查看服务、远端目标和使用提示" }
+  { key: "advisor", label: "辅助评估", note: "自动评估草稿" },
+  { key: "system", label: "帮助与系统", note: "服务与远端部署" }
 ];
 
 function App() {
@@ -316,7 +319,7 @@ function App() {
     base_url: "",
     model: "",
     has_api_key: false,
-    message: "AI 评估尚未配置。"
+    message: "辅助评估尚未配置。"
   };
   const serviceReady = serviceState === "ready";
   const advisorReady = advisorState.enabled && advisorState.configured;
@@ -432,6 +435,19 @@ function App() {
   const canRetryListJob = selectedListJob ? selectedListJob.job.status !== "running" : false;
   const canCancelListJob = selectedListJob ? selectedListJob.job.status === "running" : false;
   const filteredJobIds = useMemo(() => filteredJobs.map((item) => item.job.job_id), [filteredJobs]);
+  const batchDispatchJobs = useMemo(
+    () => filteredJobs.filter((item) => canDispatchJobStatus(item.job.status)),
+    [filteredJobs]
+  );
+  const batchRetryJobs = useMemo(
+    () => filteredJobs.filter((item) => item.job.status === "failed" || item.job.status === "cancelled"),
+    [filteredJobs]
+  );
+  const batchCancelJobs = useMemo(
+    () => filteredJobs.filter((item) => item.job.status === "running"),
+    [filteredJobs]
+  );
+  const batchActionBusy = actionKey?.startsWith("batch:") ?? false;
   const jobLaneCards = useMemo(
     () => [
       { key: "queue", label: "待派发", jobs: queuedJobs, filter: "all" as JobFilter, tone: "queue" as const },
@@ -817,7 +833,7 @@ function App() {
       setBootstrap((current) => (current ? { ...current, advisor: payload } : current));
       setAdvisorModalOpen(false);
       setAdvisorForm((current) => ({ ...current, api_key: "", has_api_key: Boolean(payload.has_api_key) }));
-      setInfoMessage(payload.configured ? "AI 评估配置已保存并可用。" : "AI 配置已保存，但还未达到可用状态。");
+      setInfoMessage(payload.configured ? "辅助评估配置已保存。" : "评估配置已保存，但尚未可用。");
     } catch (error) {
       setErrorMessage(friendlyError(error, "保存 AI 配置失败。"));
     } finally {
@@ -1064,6 +1080,52 @@ function App() {
     }
   }
 
+  async function postJobsBatchAction(targetJobs: JobListItem[], action: BatchJobAction) {
+    if (targetJobs.length === 0) {
+      return;
+    }
+
+    const batchKey = `batch:${action}`;
+    const label = batchActionLabel(action);
+    setActionKey(batchKey);
+    setErrorMessage(null);
+    setInfoMessage(null);
+
+    let completed = 0;
+    let lastPayload: JobPayload | null = null;
+    const failures: string[] = [];
+
+    try {
+      for (const item of targetJobs) {
+        try {
+          const payload = await fetchJson<JobPayload>(`/api/jobs/${item.job.job_id}/${action}`, { method: "POST" });
+          completed += 1;
+          lastPayload = payload;
+        } catch (error) {
+          failures.push(`${item.job.job_id}: ${friendlyError(error, "操作失败")}`);
+        }
+      }
+
+      const focusJobId = lastPayload?.job.job_id ?? selectedJobId;
+      if (lastPayload) {
+        setSelectedJob(lastPayload);
+        setSelectedJobId(lastPayload.job.job_id);
+      }
+      await loadJobs(false);
+      if (focusJobId) {
+        await loadJobDetail(focusJobId, false);
+      }
+
+      if (failures.length > 0) {
+        setErrorMessage(`批量${label}完成 ${completed}/${targetJobs.length} 个，失败 ${failures.length} 个。${failures.slice(0, 2).join("；")}`);
+      } else {
+        setInfoMessage(`已批量${label} ${completed} 个任务。`);
+      }
+    } finally {
+      setActionKey(null);
+    }
+  }
+
   async function openOutput(relativePath: string) {
     if (!selectedJob) {
       return;
@@ -1165,7 +1227,7 @@ function App() {
 
           <section className={`service-card advisor-card ${advisorReady ? "ready" : advisorState.enabled ? "starting" : "degraded"}`}>
             <div>
-              <span className="mini-label">AI 评估</span>
+              <span className="mini-label">辅助评估</span>
               <strong>
                 {advisorReady
                   ? `已就绪 · ${advisorState.model || "已配置模型"}`
@@ -1175,13 +1237,13 @@ function App() {
               </strong>
             </div>
             <div className="service-card-copy">
-              <p>{advisorReady ? "适合在任务完成、失败或准备汇报时调用。" : advisorState.message}</p>
+              <p>{advisorReady ? "已可生成自动评估草稿。" : advisorState.message}</p>
               <div className="service-card-actions">
                 <button className="ghost-button small" onClick={() => openWorkspace("advisor")} type="button">
-                  打开 AI 工作台
+                  打开评估
                 </button>
                 <button className="ghost-button small" onClick={() => void openAdvisorSettings()} disabled={advisorConfigLoading} type="button">
-                  {advisorConfigLoading ? "读取中..." : "配置 AI"}
+                  {advisorConfigLoading ? "读取中..." : "配置"}
                 </button>
                 {advisorReady && activeJob && isAdvisorSuggested(activeJob.job.status) ? (
                   <button
@@ -1190,7 +1252,7 @@ function App() {
                     disabled={actionKey === "advisor"}
                     type="button"
                   >
-                    评估当前任务
+                    生成草稿
                   </button>
                 ) : null}
               </div>
@@ -1286,7 +1348,7 @@ function App() {
 
                   <div className="create-model-context">
                     <div className="create-model-context-head">
-                      <strong>{selectedModel?.description ?? "根据模型类型自动给出最稳妥的起步建议。"}</strong>
+                      <strong>{selectedModel?.description ?? "模型说明"}</strong>
                       {selectedModelCatalog ? (
                         <span className={`create-model-badge ${selectedModelCatalog.runnable ? "runnable" : "catalog"}`}>
                           {selectedModelCatalog.runnable ? "可创建" : "目录模型"}
@@ -1381,7 +1443,7 @@ function App() {
                       </div>
                     </div>
                   ) : (
-                    <div className="empty-state">先拖入或选择文件，staging 区会显示完整文件矩阵。</div>
+                    <div className="empty-state">暂无待上传文件。</div>
                   )}
                 </article>
 
@@ -1389,8 +1451,8 @@ function App() {
                   <div className="create-guidance">
                     <div className="guide-head">
                       <div>
-                        <strong>当前建议</strong>
-                        <p>{selectedModel?.description ?? "根据模型类型自动给出最稳妥的起步建议。"}</p>
+                        <strong>输入状态</strong>
+                        <p>{selectedModel?.description ?? "模型说明"}</p>
                       </div>
                       <span className="section-pill">{files.length} 个待上传</span>
                     </div>
@@ -1423,7 +1485,6 @@ function App() {
                               onClick={() => applyPreset(preset.key)}
                             >
                               <strong>{preset.label}</strong>
-                              <span>{preset.note}</span>
                             </button>
                           ))}
                         </div>
@@ -1594,12 +1655,47 @@ function App() {
                     </button>
                   </div>
                 </div>
+                <div className="jobs-batch-strip" aria-label="筛选范围批量操作">
+                  <div className="jobs-batch-summary">
+                    <span className="mini-label">批量操作</span>
+                    <strong>{filteredJobs.length > 0 ? `筛选范围 ${filteredJobs.length} 条任务` : "当前筛选为空"}</strong>
+                    <p>
+                      可运行 {batchDispatchJobs.length} · 待处理可重试 {batchRetryJobs.length} · 运行中可取消 {batchCancelJobs.length}
+                    </p>
+                  </div>
+                  <div className="jobs-batch-actions">
+                    <button
+                      className="ghost-button small"
+                      type="button"
+                      disabled={batchDispatchJobs.length === 0 || Boolean(actionKey)}
+                      onClick={() => void postJobsBatchAction(batchDispatchJobs, "dispatch")}
+                    >
+                      {actionKey === "batch:dispatch" ? "批量运行中..." : `运行 ${batchDispatchJobs.length}`}
+                    </button>
+                    <button
+                      className="ghost-button small"
+                      type="button"
+                      disabled={batchRetryJobs.length === 0 || Boolean(actionKey)}
+                      onClick={() => void postJobsBatchAction(batchRetryJobs, "retry")}
+                    >
+                      {actionKey === "batch:retry" ? "批量重试中..." : `重试 ${batchRetryJobs.length}`}
+                    </button>
+                    <button
+                      className="ghost-button small danger"
+                      type="button"
+                      disabled={batchCancelJobs.length === 0 || Boolean(actionKey)}
+                      onClick={() => void postJobsBatchAction(batchCancelJobs, "cancel")}
+                    >
+                      {actionKey === "batch:cancel" ? "批量取消中..." : `取消 ${batchCancelJobs.length}`}
+                    </button>
+                  </div>
+                </div>
                 {selectedListJob ? (
                   <div className="jobs-inline-actions">
                     <button
                       className="ghost-button small"
                       type="button"
-                      disabled={!canDispatchListJob || actionKey === "dispatch"}
+                      disabled={!canDispatchListJob || actionKey === "dispatch" || batchActionBusy}
                       onClick={() => void postJobAction(`/api/jobs/${selectedListJob.job.job_id}/dispatch`, "dispatch")}
                     >
                       {actionKey === "dispatch" ? "运行中..." : "运行"}
@@ -1607,7 +1703,7 @@ function App() {
                     <button
                       className="ghost-button small"
                       type="button"
-                      disabled={!canRetryListJob || actionKey === "retry"}
+                      disabled={!canRetryListJob || actionKey === "retry" || batchActionBusy}
                       onClick={() => void postJobAction(`/api/jobs/${selectedListJob.job.job_id}/retry`, "retry")}
                     >
                       {actionKey === "retry" ? "重试中..." : "重试"}
@@ -1615,7 +1711,7 @@ function App() {
                     <button
                       className="ghost-button small danger"
                       type="button"
-                      disabled={!canCancelListJob || actionKey === "cancel"}
+                      disabled={!canCancelListJob || actionKey === "cancel" || batchActionBusy}
                       onClick={() => void postJobAction(`/api/jobs/${selectedListJob.job.job_id}/cancel`, "cancel")}
                     >
                       {actionKey === "cancel" ? "取消中..." : "取消"}
@@ -1700,7 +1796,7 @@ function App() {
         {activeWorkspace === "advisor" ? (
           <section className="advisor-layout">
             <article className="panel advisor-main-panel">
-              <PanelTitle eyebrow="AI 工作台" title={selectedJob?.job.job_id ?? "先从任务中心选中一条任务"} />
+              <PanelTitle eyebrow="Evaluation" title={selectedJob?.job.job_id ?? "先选中一条任务"} />
               <AdvisorWorkbench
                 job={selectedJob}
                 advisorState={advisorState}
@@ -1712,7 +1808,7 @@ function App() {
             </article>
 
             <aside className="panel advisor-side-panel">
-              <PanelTitle eyebrow="什么时候用 AI" title="别让它孤零零地藏在按钮里" />
+              <PanelTitle eyebrow="Evaluation" title="当前范围" />
               <div className="support-checklist">
                 {buildAdvisorChecklist(advisorReady).map((item) => (
                   <article className="support-check-item" key={item.title}>
@@ -1754,9 +1850,9 @@ function App() {
           <div className="settings-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
             <div className="preview-modal-head">
               <div>
-                <span className="mini-label">AI 配置</span>
-                <strong>填写 OpenAI 兼容接口</strong>
-                <p>保存后会立即刷新 AI 状态。已保存的密钥不会明文回显，留空会保持当前密钥不变。</p>
+                <span className="mini-label">评估配置</span>
+                <strong>OpenAI 兼容接口</strong>
+                <p>API Key 留空则保持不变。</p>
               </div>
               <button className="ghost-button small" onClick={() => setAdvisorModalOpen(false)} type="button">
                 关闭
@@ -1765,7 +1861,7 @@ function App() {
 
             <form className="form-stack settings-form" onSubmit={saveAdvisorSettings}>
               <label className="field">
-                <span>启用 AI 评估</span>
+                <span>启用辅助评估</span>
                 <select
                   value={advisorForm.enabled ? "true" : "false"}
                   onChange={(event) =>
@@ -1868,7 +1964,7 @@ function OverviewCommandCenter(props: {
     <>
       <section className="overview-grid workbench-overview-grid">
         <article className="panel overview-hero-panel">
-          <PanelTitle eyebrow="Focus" title={focusJob ? focusJob.job.job_id : "准备开始今晚测试"} />
+          <PanelTitle eyebrow="Focus" title={focusJob ? focusJob.job.job_id : "准备开始测试"} />
           {focusJob ? (
             <div className={`focus-card ${focusJob.job.status}`}>
               <div className="focus-main">
@@ -1901,7 +1997,7 @@ function OverviewCommandCenter(props: {
               </div>
             </div>
           ) : (
-            <div className="empty-state large">还没有任务。建议先从 2 张图片的 DUSt3R / MASt3R 或 1 段短视频的 MonST3R 开始，先把一条样例完整跑通。</div>
+            <div className="empty-state large">还没有任务。先创建一条样例任务。</div>
           )}
         </article>
 
@@ -1914,7 +2010,7 @@ function OverviewCommandCenter(props: {
             <MiniStat label="已完成" value={props.summary.finished} />
           </div>
           <div className={`overview-callout ${focusJob?.job.status ?? "neutral"}`}>
-            <span className="mini-label">当前建议</span>
+            <span className="mini-label">当前状态</span>
             <strong>{buildOverviewHeadline(focusJob, props.runningJobs.length, props.attentionJobs.length)}</strong>
             <p>{buildOverviewMessage(focusJob, props.runningJobs.length, props.attentionJobs.length)}</p>
           </div>
@@ -1945,29 +2041,29 @@ function OverviewCommandCenter(props: {
 
       <section className="overview-support-grid workbench-overview-support-grid">
         <article className="panel quick-actions-panel">
-          <PanelTitle eyebrow="Workflow" title="按桌面工作流推进" />
+          <PanelTitle eyebrow="Workflow" title="工作流" />
           <div className="quick-action-grid">
             <button className="quick-action-card" onClick={() => props.openWorkspace("create")} type="button">
               <strong>新建任务</strong>
-              <p>选择模型、输入类型和文件，按推荐参数快速起跑。</p>
+              <p>模型、来源、文件。</p>
             </button>
             <button className="quick-action-card" onClick={() => props.openWorkspace("jobs")} type="button">
               <strong>运行与结果</strong>
-              <p>把任务列表、结果、日志和人工/AI 评估集中到一个主工作区。</p>
+              <p>任务、产物、日志。</p>
             </button>
             <button className="quick-action-card" onClick={() => props.openWorkspace("advisor")} type="button">
-              <strong>AI 评估</strong>
-              <p>在任务完成、失败或准备汇报时生成诊断和下一步建议。</p>
+              <strong>辅助评估</strong>
+              <p>自动评估草稿。</p>
             </button>
             <button className="quick-action-card" onClick={() => props.openWorkspace("system")} type="button">
               <strong>系统与部署</strong>
-              <p>检查本地服务、远端 active 3R 部署、阻塞项与缓存状态。</p>
+              <p>服务与远端状态。</p>
             </button>
           </div>
         </article>
 
         <article className="panel advisor-overview-panel">
-          <PanelTitle eyebrow="Advisor" title="AI 工作台" />
+          <PanelTitle eyebrow="Evaluation" title="辅助评估" />
           <AdvisorWorkbench
             job={props.activeJob}
             advisorState={props.advisorState}
@@ -2132,18 +2228,18 @@ function SystemWorkbench(props: {
       </article>
 
       <article className="panel">
-        <PanelTitle eyebrow="Advisor" title="AI 配置状态" />
+        <PanelTitle eyebrow="Evaluation" title="辅助评估配置" />
         <div className="support-checklist compact-stack">
           <article className="support-check-item">
             <strong>状态</strong>
             <p>{props.advisorReady ? `已配置：${props.advisorState.model}` : props.advisorState.message}</p>
           </article>
           <article className="support-check-item">
-            <strong>建议位置</strong>
-            <p>优先在任务完成或失败后用 AI 评估，再把结论放进汇报和下一轮实验计划。</p>
+            <strong>用途</strong>
+            <p>生成任务评估草稿。</p>
           </article>
           <button className="ghost-button" onClick={() => void props.openAdvisorSettings()} disabled={props.advisorConfigLoading} type="button">
-            {props.advisorConfigLoading ? "读取中..." : "打开 AI 配置"}
+            {props.advisorConfigLoading ? "读取中..." : "打开配置"}
           </button>
         </div>
       </article>
@@ -2158,7 +2254,7 @@ function SystemWorkbench(props: {
       />
 
       <article className="panel">
-        <PanelTitle eyebrow="Operator Notes" title="操作建议" />
+        <PanelTitle eyebrow="Operator" title="操作状态" />
         <div className="support-checklist compact-stack">
           {buildSystemChecklist().map((item) => (
             <article className="support-check-item" key={item.title}>
@@ -2225,6 +2321,7 @@ function SampleMatrixPanel(props: {
 }) {
   const [sortKey, setSortKey] = useState<SampleMatrixSortKey>("manifest");
   const [filterKey, setFilterKey] = useState<SampleMatrixFilterKey>("all");
+  const [reportModelScope, setReportModelScope] = useState<SampleMatrixReportModelScope>("all");
   const [selectedSampleIds, setSelectedSampleIds] = useState<string[]>([]);
   const [batchLocateCursor, setBatchLocateCursor] = useState(0);
   const manifest = props.samplesPayload?.manifest ?? null;
@@ -2249,6 +2346,7 @@ function SampleMatrixPanel(props: {
       const compareModels = Array.from(new Set([...(sample.required_models ?? []), ...(sample.optional_models ?? [])]));
       const rowStats = summarizeSampleMatrixRow(compareModels, jobsByModel);
       const rowScore = summarizeMatrixRowScore(compareModels, jobsByModel);
+      const rowEvidence = summarizeMatrixRowEvidence(compareModels, jobsByModel);
       return {
         sample,
         rowIndex: index,
@@ -2257,7 +2355,8 @@ function SampleMatrixPanel(props: {
         requiredModelSet,
         compareModels,
         rowStats,
-        rowScore
+        rowScore,
+        rowEvidence
       };
     });
     const filteredRows = rows.filter((row) => matrixRowMatchesFilter(row, filterKey));
@@ -2318,6 +2417,40 @@ function SampleMatrixPanel(props: {
     }
     const scopeLabel = selectedRows.length > 0 ? "选中样例任务ID" : "筛选样例任务ID";
     await props.onCopy(batchTargetJobIds.join("\n"), scopeLabel);
+  }
+
+  async function handleCopyCompareReport() {
+    if (!props.onCopy || batchTargetRows.length === 0) {
+      return;
+    }
+    const report = buildSampleMatrixReport(batchTargetRows, props.modelCatalog, {
+      filterKey,
+      generatedAt: new Date().toISOString(),
+      manifestPurpose: manifest?.purpose,
+      manifestUpdated: manifest?.last_updated ?? null,
+      modelScope: reportModelScope,
+      selectedRowCount: selectedRows.length,
+      sortKey,
+      visibleRowCount: sampleRows.length
+    });
+    await props.onCopy(report.markdown, "样例对比报告");
+  }
+
+  function handleDownloadCompareReport() {
+    if (batchTargetRows.length === 0) {
+      return;
+    }
+    const report = buildSampleMatrixReport(batchTargetRows, props.modelCatalog, {
+      filterKey,
+      generatedAt: new Date().toISOString(),
+      manifestPurpose: manifest?.purpose,
+      manifestUpdated: manifest?.last_updated ?? null,
+      modelScope: reportModelScope,
+      selectedRowCount: selectedRows.length,
+      sortKey,
+      visibleRowCount: sampleRows.length
+    });
+    downloadTextFile(report.fileName, report.markdown, "text/markdown;charset=utf-8");
   }
 
   function handleLocateNextBatchJob() {
@@ -2392,8 +2525,7 @@ function SampleMatrixPanel(props: {
               <div className="sample-compare-head">
                 <div>
                   <span className="mini-label">样例对比</span>
-                  <strong>直接对照样例编号、必跑模型和任务入口</strong>
-                  <p>先看当前状态计数，再顺着 seed 任务跳到任务中心核对执行情况。</p>
+                  <strong>样例、模型、任务入口</strong>
                 </div>
                 <div className="sample-compare-side">
                   <div className="sample-status-strip" aria-label="当前状态计数">
@@ -2460,6 +2592,15 @@ function SampleMatrixPanel(props: {
                     <p>{batchTargetJobIds.length > 0 ? `可操作任务ID：${batchTargetJobIds.length}` : "当前范围还没有任务ID。"}</p>
                   </div>
                   <div className="sample-bulk-actions">
+                    <label className="field compact sample-report-scope">
+                      <span>报告模型</span>
+                      <select value={reportModelScope} onChange={(event) => setReportModelScope(event.target.value as SampleMatrixReportModelScope)}>
+                        <option value="all">全部列</option>
+                        <option value="required">必跑列</option>
+                        <option value="with_jobs">有任务列</option>
+                        <option value="finished">已完成列</option>
+                      </select>
+                    </label>
                     <button className="ghost-button small" onClick={toggleAllVisibleRows} type="button">
                       {allVisibleSelected ? "取消全选" : "全选筛选行"}
                     </button>
@@ -2470,6 +2611,17 @@ function SampleMatrixPanel(props: {
                       type="button"
                     >
                       复制任务ID
+                    </button>
+                    <button
+                      className="ghost-button small"
+                      disabled={!props.onCopy || batchTargetRows.length === 0}
+                      onClick={() => void handleCopyCompareReport()}
+                      type="button"
+                    >
+                      复制报告
+                    </button>
+                    <button className="ghost-button small" disabled={batchTargetRows.length === 0} onClick={handleDownloadCompareReport} type="button">
+                      导出报告
                     </button>
                     <button
                       className="ghost-button small"
@@ -2490,10 +2642,11 @@ function SampleMatrixPanel(props: {
 
               <div className="sample-compare-grid">
                 {sampleRows.map((row) => {
-                  const { sample, jobsByModel, requiredModels, requiredModelSet, compareModels, rowStats, rowScore } = row;
+                  const { sample, jobsByModel, requiredModels, requiredModelSet, compareModels, rowStats, rowScore, rowEvidence } = row;
                   return (
                     <article className="sample-compare-row" key={sample.id}>
                       <div className="sample-compare-main">
+                        <span className="sample-axis-label">样例行</span>
                         <div className="sample-card-head">
                           <div className="sample-card-head-main">
                             {!props.compact ? (
@@ -2513,6 +2666,27 @@ function SampleMatrixPanel(props: {
                         <div className="sample-card-meta">
                           <span>{sourceTypeLabel(sample.source_type)}</span>
                           <span>{sample.target_file_count ? `${sample.target_file_count} 个文件` : `${sample.target_duration_seconds ?? "-"} 秒`}</span>
+                        </div>
+                        <div className="sample-row-digest" aria-label={`${sample.id} 对比摘要`}>
+                          <div className={`sample-row-digest-card ${rowScore.tone}`}>
+                            <span>评分</span>
+                            <strong>{rowScore.average !== null ? rowScore.average.toFixed(2) : "--"}</strong>
+                            <small>{rowScore.metricCount > 0 ? `${rowScore.metricCount} 项指标` : "暂无评分"}</small>
+                          </div>
+                          <div className={`sample-row-digest-card ${rowEvidence.tone}`}>
+                            <span>证据</span>
+                            <strong>
+                              {rowEvidence.ready}/{rowEvidence.total}
+                            </strong>
+                            <small>{rowEvidence.label}</small>
+                          </div>
+                          <div className="sample-row-digest-card neutral">
+                            <span>模型</span>
+                            <strong>
+                              {requiredModels.length}/{compareModels.length}
+                            </strong>
+                            <small>必跑 / 总数</small>
+                          </div>
                         </div>
                         <div className="sample-row-progress" aria-label={`${sample.id} 执行进度`}>
                           <div className="sample-row-progress-head">
@@ -2548,7 +2722,6 @@ function SampleMatrixPanel(props: {
                           {sample.seed_job_id ? (
                             <>
                               <strong>{sample.seed_job_id}</strong>
-                              <p>任务中心可直接按这个 seed 任务继续核对日志、状态和结果。</p>
                               {props.onLocateJob ? (
                                 <button className="ghost-button small sample-locate-button" onClick={() => props.onLocateJob?.(sample.seed_job_id!)} type="button">
                                   定位到任务中心
@@ -2563,61 +2736,83 @@ function SampleMatrixPanel(props: {
 
                       <div className="sample-compare-matrix">
                         <div className="sample-compare-matrix-head">
-                          <span className="mini-label">模型执行矩阵</span>
-                          <p>每格包含任务状态、评分快照和核心产物提示，方便横向对照。</p>
+                          <div>
+                            <span className="mini-label">模型列</span>
+                            <p>
+                              {rowStats.finished}/{rowStats.total} 完成，证据 {rowEvidence.ready}/{rowEvidence.total}
+                            </p>
+                          </div>
                         </div>
                         {compareModels.length > 0 ? (
-                          <div className="sample-compare-matrix-grid">
-                            {compareModels.map((model) => {
-                              const job = jobsByModel[model] as SampleMatrixJob | undefined;
-                              const modelItem = findModelCatalogItem(model, props.modelCatalog);
-                              const cellState = job?.status ?? "missing";
-                              const scoreDigest = summarizeScoreSnapshot(job?.score_snapshot);
-                              const modelConstraint = modelItem ? buildMatrixModelConstraint(modelItem) : null;
-                              return (
-                                <article className={`sample-model-cell ${cellState}`} key={`${sample.id}-${model}`}>
-                                  <div className="sample-model-cell-head">
-                                    <strong>{modelDisplayName(model, props.modelCatalog)}</strong>
-                                    <span className={`sample-model-state ${cellState}`}>{job ? job.status_label : "未跑"}</span>
-                                  </div>
-                                  <ModelSemanticChips
-                                    className="sample-model-semantics"
-                                    compact
-                                    item={modelItem}
-                                    model={model}
-                                  />
-                                  {modelConstraint ? (
-                                    <div className={`sample-model-constraint ${modelConstraint.tone}`}>
-                                      <strong>{modelConstraint.label}</strong>
-                                      <span>{modelConstraint.detail}</span>
+                          <div className="sample-compare-matrix-stack">
+                            <div className="sample-model-axis" aria-label={`${sample.id} 模型列索引`}>
+                              {compareModels.map((model) => (
+                                <span className={requiredModelSet.has(model) ? "required" : "optional"} key={`${sample.id}-${model}-axis`}>
+                                  <strong>{modelDisplayName(model, props.modelCatalog)}</strong>
+                                  <small>{requiredModelSet.has(model) ? "Required" : "Optional"}</small>
+                                </span>
+                              ))}
+                            </div>
+                            <div className="sample-compare-matrix-grid">
+                              {compareModels.map((model) => {
+                                const job = jobsByModel[model] as SampleMatrixJob | undefined;
+                                const modelItem = findModelCatalogItem(model, props.modelCatalog);
+                                const cellState = job?.status ?? "missing";
+                                const scoreDigest = summarizeScoreSnapshot(job?.score_snapshot);
+                                const evidenceDigest = summarizeJobEvidence(job);
+                                const modelConstraint = modelItem ? buildMatrixModelConstraint(modelItem) : null;
+                                return (
+                                  <article className={`sample-model-cell ${cellState}`} key={`${sample.id}-${model}`}>
+                                    <div className="sample-model-cell-head">
+                                      <strong>{modelDisplayName(model, props.modelCatalog)}</strong>
+                                      <span className={`sample-model-state ${cellState}`}>{job ? job.status_label : "未跑"}</span>
                                     </div>
-                                  ) : null}
-                                  <p>{job?.progress_message || (job ? `阶段：${job.phase}` : "尚未创建对应任务。")}</p>
-                                  <div className="sample-model-cell-meta">
-                                    <span>{requiredModelSet.has(model) ? "Required" : "Optional"}</span>
-                                    <span>{primaryArtifactHint(job?.primary_artifacts)}</span>
-                                  </div>
-                                  <div className={`sample-score-signal ${scoreDigest.tone}`}>
-                                    <div>
-                                      <strong>{scoreDigest.label}</strong>
-                                      <span>{scoreDigest.metricCount > 0 ? `${scoreDigest.metricCount} 项指标` : "暂无评分数据"}</span>
-                                    </div>
-                                    <strong>{scoreDigest.percent > 0 ? `${scoreDigest.percent}%` : "--"}</strong>
-                                  </div>
-                                  <div className="sample-score-track" aria-hidden>
-                                    <div className={`sample-score-fill ${scoreDigest.tone}`} style={{ width: `${scoreDigest.percent}%` }} />
-                                  </div>
-                                  <div className="sample-model-cell-meta">
-                                    <span>{job?.job_id ? `任务：${job.job_id}` : "尚无任务记录"}</span>
-                                    {job?.job_id && props.onLocateJob ? (
-                                      <button className="ghost-button small sample-locate-button" onClick={() => props.onLocateJob?.(job.job_id)} type="button">
-                                        定位任务
-                                      </button>
+                                    <ModelSemanticChips
+                                      className="sample-model-semantics"
+                                      compact
+                                      item={modelItem}
+                                      model={model}
+                                    />
+                                    {modelConstraint ? (
+                                      <div className={`sample-model-constraint ${modelConstraint.tone}`}>
+                                        <strong>{modelConstraint.label}</strong>
+                                        <span>{modelConstraint.detail}</span>
+                                      </div>
                                     ) : null}
-                                  </div>
-                                </article>
-                              );
-                            })}
+                                    <p>{job?.progress_message || (job ? `阶段：${job.phase}` : "尚未创建对应任务。")}</p>
+                                    <div className="sample-model-cell-meta">
+                                      <span>{requiredModelSet.has(model) ? "Required" : "Optional"}</span>
+                                      <span>{primaryArtifactHint(job?.primary_artifacts)}</span>
+                                    </div>
+                                    <div className={`sample-score-signal ${scoreDigest.tone}`}>
+                                      <div>
+                                        <strong>{scoreDigest.label}</strong>
+                                        <span>{scoreDigest.metricCount > 0 ? `${scoreDigest.metricCount} 项指标` : "暂无评分数据"}</span>
+                                      </div>
+                                      <strong>{scoreDigest.percent > 0 ? `${scoreDigest.percent}%` : "--"}</strong>
+                                    </div>
+                                    <div className="sample-score-track" aria-hidden>
+                                      <div className={`sample-score-fill ${scoreDigest.tone}`} style={{ width: `${scoreDigest.percent}%` }} />
+                                    </div>
+                                    <div className={`sample-evidence-signal ${evidenceDigest.tone}`}>
+                                      <div>
+                                        <strong>{evidenceDigest.label}</strong>
+                                        <span>{evidenceDigest.detail}</span>
+                                      </div>
+                                      <strong>{evidenceDigest.countLabel}</strong>
+                                    </div>
+                                    <div className="sample-model-cell-meta">
+                                      <span>{job?.job_id ? `任务：${job.job_id}` : "尚无任务记录"}</span>
+                                      {job?.job_id && props.onLocateJob ? (
+                                        <button className="ghost-button small sample-locate-button" onClick={() => props.onLocateJob?.(job.job_id)} type="button">
+                                          定位任务
+                                        </button>
+                                      ) : null}
+                                    </div>
+                                  </article>
+                                );
+                              })}
+                            </div>
                           </div>
                         ) : (
                           <div className="empty-state">暂无模型矩阵</div>
@@ -2814,6 +3009,8 @@ function JobDetail(props: {
   const advisorSuggested = isAdvisorSuggested(job.status);
   const advisorReport = props.selectedJob.advisor_report ?? null;
   const attentionJob = job.status === "failed" || job.status === "cancelled";
+  const batchActionBusy = props.actionKey?.startsWith("batch:") ?? false;
+  const inspectorRhythm = buildInspectorRhythm(props.selectedJob, latestLogLine, criticalLogLine, advisorReport);
 
   useEffect(() => {
     setLogQuery("");
@@ -2873,34 +3070,15 @@ function JobDetail(props: {
         </div>
       </div>
 
-      <article className={`advisor-recommendation ${advisorSuggested ? "active" : ""}`}>
+      <article className={`advisor-recommendation compact ${advisorSuggested ? "active" : ""}`}>
         <div>
-          <span className="mini-label">AI 评估建议</span>
-          <strong>
-            {!props.advisorState.enabled
-              ? "AI 评估未启用"
-              : !props.advisorState.configured
-                ? "AI 评估配置还没补齐"
-                : advisorReport
-                  ? "当前任务已经有 AI 评估结果"
-                  : advisorSuggested
-                    ? "现在就适合做 AI 评估"
-                    : "建议先等任务跑完或出现错误"}
-          </strong>
-          <p>
-            {!props.advisorState.enabled || !props.advisorState.configured
-              ? props.advisorState.message
-              : advisorReport
-                ? "可以直接查看问题、下一步建议和汇报话术；如果你又重跑了一版，再点一次会刷新。"
-                : advisorSuggested
-                  ? "当前状态已经足够让 AI 基于参数、scene_meta、摘要和日志给出判断。"
-                  : "运行中的任务更适合先看阶段卡片和最新日志，结果稳定后再让 AI 做总结。"}
-          </p>
+          <span className="mini-label">辅助评估</span>
+          <strong>{buildAdvisorCompactStatus(props.advisorState, advisorReport, advisorSuggested)}</strong>
         </div>
         <div className="advisor-workbench-actions">
           {!props.advisorState.enabled || !props.advisorState.configured ? (
             <button onClick={props.onConfigureAdvisor} type="button">
-              配置 AI
+              配置
             </button>
           ) : null}
           {advisorReport?.teacher_talk ? (
@@ -2913,28 +3091,28 @@ function JobDetail(props: {
             onClick={() => props.onAction(`/api/jobs/${job.job_id}/advisor/evaluate`, "advisor")}
             type="button"
           >
-            {props.actionKey === "advisor" ? "评估中..." : "AI评估"}
+            {props.actionKey === "advisor" ? "生成中..." : "生成草稿"}
           </button>
         </div>
       </article>
 
       <div className="action-row">
         <button
-          disabled={!props.canDispatch || props.actionKey === "dispatch"}
+          disabled={!props.canDispatch || props.actionKey === "dispatch" || batchActionBusy}
           onClick={() => props.onAction(`/api/jobs/${job.job_id}/dispatch`, "dispatch")}
           type="button"
         >
           运行
         </button>
         <button
-          disabled={props.running || props.actionKey === "retry"}
+          disabled={props.running || props.actionKey === "retry" || batchActionBusy}
           onClick={() => props.onAction(`/api/jobs/${job.job_id}/retry`, "retry")}
           type="button"
         >
           重试
         </button>
         <button
-          disabled={props.actionKey === "duplicate"}
+          disabled={props.actionKey === "duplicate" || batchActionBusy}
           onClick={() => props.onAction(`/api/jobs/${job.job_id}/duplicate`, "duplicate")}
           type="button"
         >
@@ -2942,7 +3120,7 @@ function JobDetail(props: {
         </button>
         <button
           className="danger"
-          disabled={!props.running || props.actionKey === "cancel"}
+          disabled={!props.running || props.actionKey === "cancel" || batchActionBusy}
           onClick={() => props.onAction(`/api/jobs/${job.job_id}/cancel`, "cancel")}
           type="button"
         >
@@ -2975,7 +3153,7 @@ function JobDetail(props: {
             ) : null}
             <button
               className="ghost-button small"
-              disabled={props.running || props.actionKey === "retry"}
+              disabled={props.running || props.actionKey === "retry" || batchActionBusy}
               onClick={() => props.onAction(`/api/jobs/${job.job_id}/retry`, "retry")}
               type="button"
             >
@@ -3001,7 +3179,7 @@ function JobDetail(props: {
             人工评分
           </button>
           <button className="ghost-button small" type="button" onClick={() => scrollToInspectorSection("job-ai-panel")}>
-            AI评估
+            辅助评估
           </button>
           <button className="ghost-button small" type="button" onClick={() => scrollToInspectorSection("job-inputs-panel")}>
             输入
@@ -3022,7 +3200,6 @@ function JobDetail(props: {
             <div className="section-head">
               <div>
                 <h4>结果摘要</h4>
-                <p>先看核心统计，再看检查对象与下一步建议。</p>
               </div>
             </div>
             <SummaryPanel summary={props.selectedJob.result_summary} />
@@ -3032,7 +3209,6 @@ function JobDetail(props: {
             <div className="section-head">
               <div>
                 <h4>输出结果</h4>
-                <p>按用途分组展示，不再把 MonST3R / DUSt3R 产物全都摊成一排。</p>
               </div>
               <span className="section-pill">{props.selectedJob.outputs.length} 个文件</span>
             </div>
@@ -3076,10 +3252,7 @@ function JobDetail(props: {
                                   url: props.assetUrl(output.url),
                                   name: output.display_name,
                                   kind: "image",
-                                  note:
-                                    section.key === "masks"
-                                      ? "这是黑白掩膜/中间结果，不是最终彩色重建。MonST3R 的主要成果请优先看 scene.glb、相机轨迹和 frame_*.png。"
-                                      : "这是图像产物预览。"
+                                  note: section.key === "masks" ? "动态掩膜" : undefined
                                 })
                               }
                             >
@@ -3093,8 +3266,7 @@ function JobDetail(props: {
                                 props.onPreviewAsset({
                                   url: props.assetUrl(output.url),
                                   name: output.display_name,
-                                  kind: "video",
-                                  note: "这是视频产物预览。"
+                                  kind: "video"
                                 })
                               }
                             >
@@ -3116,12 +3288,7 @@ function JobDetail(props: {
                                       url: props.assetUrl(output.url),
                                       name: output.display_name,
                                       kind: output.is_video ? "video" : "image",
-                                      note:
-                                        section.key === "masks"
-                                          ? "这是黑白掩膜/中间结果，不是最终彩色重建。"
-                                          : output.is_video
-                                            ? "这是视频产物预览。"
-                                            : "这是图像产物预览。"
+                                      note: section.key === "masks" ? "动态掩膜" : undefined
                                     })
                                   }
                                   type="button"
@@ -3152,7 +3319,6 @@ function JobDetail(props: {
             <div className="section-head">
               <div>
                 <h4>日志</h4>
-                <p>优先看最新一条有效进展，再往下翻完整日志尾部。</p>
               </div>
               <div className="logs-head-actions">
                 <span className="section-pill">
@@ -3210,11 +3376,34 @@ function JobDetail(props: {
         </section>
 
         <aside className="detail-inspector-rail">
+          <article className="soft-panel inspector-panel inspector-rhythm-panel">
+            <div className="section-head">
+              <div>
+                <h4>检查顺序</h4>
+              </div>
+            </div>
+            <div className="inspector-rhythm-list">
+              {inspectorRhythm.map((item) => (
+                <button
+                  className={`inspector-rhythm-card ${item.tone}`}
+                  key={item.id}
+                  onClick={() => scrollToInspectorSection(item.id)}
+                  type="button"
+                >
+                  <div>
+                    <span>{item.label}</span>
+                    <strong>{item.status}</strong>
+                  </div>
+                  <p>{item.detail}</p>
+                </button>
+              ))}
+            </div>
+          </article>
+
           <article className="soft-panel inspector-panel">
             <div className="section-head">
               <div>
                 <h4>检查器快照</h4>
-                <p>快速核对时间、产物数量和最新进展。</p>
               </div>
             </div>
             <div className="meta-grid inspector-meta-grid">
@@ -3236,7 +3425,7 @@ function JobDetail(props: {
           </article>
 
           <article className="soft-panel inspector-panel" id="job-ai-panel">
-            <h4>AI 评估</h4>
+            <h4>辅助评估</h4>
             <AdvisorPanel report={advisorReport} />
           </article>
 
@@ -3253,8 +3442,7 @@ function JobDetail(props: {
                       props.onPreviewAsset({
                         url: props.assetUrl(preview.url),
                         name: preview.display_name,
-                        kind: "image",
-                        note: "这是输入预览，不会跳转离开主界面。"
+                        kind: "image"
                       })
                     }
                   >
@@ -3280,6 +3468,67 @@ function MetaCard(props: { label: string; value: string; compact?: boolean }) {
       <strong>{props.value}</strong>
     </article>
   );
+}
+
+function buildInspectorRhythm(
+  selectedJob: JobPayload,
+  latestLogLine: string,
+  criticalLogLine: string,
+  advisorReport: AdvisorReport | null
+) {
+  const summary = selectedJob.result_summary;
+  const evaluation = selectedJob.evaluation;
+  const outputCount = selectedJob.outputs.length;
+  const primaryCount = summary?.primary_artifacts?.length ?? 0;
+  const logCount = selectedJob.logs.length;
+
+  return [
+    {
+      id: "job-summary-panel",
+      label: "摘要",
+      status: summary ? "已生成" : "等待结果",
+      detail: summary?.next_actions?.length ? `下一步 ${summary.next_actions.length} 条` : summary ? "有结果摘要可复查" : "结果回传后生成摘要",
+      tone: summary ? "ready" : "pending"
+    },
+    {
+      id: "job-outputs-panel",
+      label: "证据",
+      status: outputCount > 0 ? `${outputCount} 个产物` : "无产物",
+      detail: primaryCount > 0 ? `核心检查对象 ${primaryCount} 个` : outputCount > 0 ? "按用途分组查看" : "等待远端输出下载",
+      tone: outputCount > 0 ? "ready" : "pending"
+    },
+    {
+      id: "job-logs-panel",
+      label: "日志",
+      status: criticalLogLine ? "待排查" : logCount > 0 ? "可追踪" : "暂无日志",
+      detail: criticalLogLine || latestLogLine || "运行开始后会显示日志尾部",
+      tone: criticalLogLine ? "attention" : logCount > 0 ? "ready" : "pending"
+    },
+    {
+      id: "job-evaluation-panel",
+      label: "评分",
+      status: evaluation ? "人工已评" : advisorReport ? "自动已评" : "待评估",
+      detail: evaluation
+        ? "人工评分"
+        : advisorReport
+          ? `结论：${advisorReport.readiness}`
+          : "等待评分",
+      tone: evaluation || advisorReport ? "ready" : "pending"
+    }
+  ];
+}
+
+function buildAdvisorCompactStatus(state: AdvisorStatus, report: AdvisorReport | null, suggested: boolean) {
+  if (!state.enabled) {
+    return "未启用";
+  }
+  if (!state.configured) {
+    return "未配置";
+  }
+  if (report) {
+    return "已有草稿";
+  }
+  return suggested ? "可生成草稿" : "等待结果";
 }
 
 function currentStepLabel(steps: JobPayload["phase_display"]["steps"]) {
@@ -3391,7 +3640,7 @@ function buildOutputSections(outputs: OutputItem[], model: string): OutputSectio
     main: {
       key: "main",
       title: "核心成果",
-      description: model === "monst3r" ? "优先查看三维场景、点云和主要导出结果。" : "优先查看重建点云和主要可视化结果。",
+      description: model === "monst3r" ? "三维场景、点云、主要导出。" : "点云与主要可视化。",
       accent: "blue",
       defaultOpen: true,
       items: []
@@ -3407,7 +3656,7 @@ function buildOutputSections(outputs: OutputItem[], model: string): OutputSectio
     masks: {
       key: "masks",
       title: "掩膜与动态区域",
-      description: "黑白动态 mask、扩张 mask 等辅助可视化，不是最终彩色重建。",
+      description: "动态 mask 与扩张 mask。",
       accent: "gold",
       defaultOpen: false,
       items: []
@@ -3431,7 +3680,7 @@ function buildOutputSections(outputs: OutputItem[], model: string): OutputSectio
     other: {
       key: "other",
       title: "其他产物",
-      description: "未归类但仍可下载查看的文件。",
+      description: "未归类文件。",
       accent: "slate",
       defaultOpen: false,
       items: []
@@ -3516,7 +3765,7 @@ function Spann3rParams() {
   return (
     <div className="param-static-note">
       <strong>当前 Runner 使用固定序列参数</strong>
-      <p>Spann3R 这轮先不在前端暴露细调项，提交时会走后端默认序列配置。</p>
+      <p>提交时使用后端默认序列配置。</p>
       <div className="param-static-grid">
         <span>resolution 224</span>
         <span>kf_every 10</span>
@@ -3542,8 +3791,6 @@ function ParamField(props: {
   choices?: ParamChoice[];
   onChange: (value: string) => void;
 }) {
-  const activeChoice = props.choices?.find((item) => item.value === props.value);
-
   if (props.choices && props.choices.length > 0) {
     return (
       <label className="field compact">
@@ -3555,7 +3802,6 @@ function ParamField(props: {
             </option>
           ))}
         </select>
-        {activeChoice ? <small className="field-note">{activeChoice.note}</small> : null}
       </label>
     );
   }
@@ -3607,7 +3853,7 @@ function FilterPill(props: {
 function MessageBanner(props: { kind: "info" | "error"; message: string }) {
   return (
     <section className={`message-banner ${props.kind}`}>
-      <strong>{props.kind === "info" ? "提示" : "需要处理"}</strong>
+      <strong>{props.kind === "info" ? "状态" : "需要处理"}</strong>
       <span>{props.message}</span>
     </section>
   );
@@ -3822,6 +4068,51 @@ function summarizeMatrixRowScore(compareModels: string[], jobsByModel: Record<st
   };
 }
 
+function summarizeJobEvidence(job?: SampleMatrixJob) {
+  if (!job) {
+    return {
+      label: "证据：无任务",
+      detail: "尚无任务记录",
+      countLabel: "--",
+      ready: false,
+      tone: "none" as "none" | "partial" | "ready"
+    };
+  }
+
+  const artifacts = job.primary_artifacts ?? [];
+  if (artifacts.length === 0) {
+    return {
+      label: "证据：待回传",
+      detail: job.status === "finished" ? "核心产物暂无" : `阶段：${job.phase}`,
+      countLabel: "0",
+      ready: false,
+      tone: "partial" as "none" | "partial" | "ready"
+    };
+  }
+
+  const firstArtifact = artifacts[0];
+  return {
+    label: "证据：已回传",
+    detail: firstArtifact.label || roleLabel(firstArtifact.role),
+    countLabel: String(artifacts.length),
+    ready: true,
+    tone: "ready" as "none" | "partial" | "ready"
+  };
+}
+
+function summarizeMatrixRowEvidence(compareModels: string[], jobsByModel: Record<string, SampleMatrixJob>) {
+  const digests = compareModels.map((model) => summarizeJobEvidence(jobsByModel[model]));
+  const ready = digests.filter((digest) => digest.ready).length;
+  const firstReady = digests.find((digest) => digest.ready);
+  const tone: "none" | "partial" | "ready" = ready === 0 ? "none" : ready === compareModels.length ? "ready" : "partial";
+  return {
+    ready,
+    total: compareModels.length,
+    label: firstReady ? firstReady.detail : "暂无核心产物",
+    tone
+  };
+}
+
 function matrixRowMatchesFilter(row: SampleMatrixRowView, filterKey: SampleMatrixFilterKey) {
   switch (filterKey) {
     case "attention":
@@ -3920,6 +4211,227 @@ function collectSampleMatrixJobIds(rows: SampleMatrixRowView[]) {
   return ids;
 }
 
+function buildSampleMatrixReport(
+  rows: SampleMatrixRowView[],
+  modelCatalog: ModelCatalogItem[],
+  context: {
+    filterKey: SampleMatrixFilterKey;
+    generatedAt: string;
+    manifestPurpose?: string;
+    manifestUpdated?: string | null;
+    modelScope: SampleMatrixReportModelScope;
+    selectedRowCount: number;
+    sortKey: SampleMatrixSortKey;
+    visibleRowCount: number;
+  }
+) {
+  const summary = summarizeSampleMatrixReportRows(rows, context.modelScope);
+  const lines = [
+    "# Sample Matrix Compare Report",
+    "",
+    `- Generated: ${context.generatedAt}`,
+    `- Scope: ${context.selectedRowCount > 0 ? `selected ${context.selectedRowCount} rows` : `filtered ${context.visibleRowCount} rows`}`,
+    `- Sort: ${sampleMatrixSortLabel(context.sortKey)}`,
+    `- Filter: ${sampleMatrixFilterLabel(context.filterKey)}`,
+    `- Model scope: ${sampleMatrixReportModelScopeLabel(context.modelScope)}`,
+    `- Manifest updated: ${context.manifestUpdated ?? "unknown"}`,
+    context.manifestPurpose ? `- Manifest purpose: ${context.manifestPurpose}` : "",
+    "",
+    "## Summary",
+    "",
+    `- Samples: ${rows.length}`,
+    `- Model cells: ${summary.modelCells}`,
+    `- Finished cells: ${summary.finished}`,
+    `- Attention cells: ${summary.attention}`,
+    `- Evidence-ready cells: ${summary.evidenceReady}`,
+    `- Average score: ${summary.average !== null ? summary.average.toFixed(2) : "--"}`
+  ].filter(Boolean);
+
+  rows.forEach((row) => {
+    const reportModels = sampleMatrixReportModels(row, context.modelScope);
+    lines.push(
+      "",
+      `## ${row.sample.id}`,
+      "",
+      `- Status: ${sampleStatusLabel(row.sample.status)}`,
+      `- Source: ${sourceTypeLabel(row.sample.source_type)} / ${sampleTargetSummary(row.sample)}`,
+      `- Matrix: ${row.rowStats.finished}/${row.rowStats.total} finished, ${row.rowStats.attention} attention, ${row.rowStats.missing} missing`,
+      `- Score: ${sampleMatrixReportScoreLabel(row.rowScore)}`,
+      `- Evidence: ${row.rowEvidence.ready}/${row.rowEvidence.total} (${row.rowEvidence.label})`,
+      `- Seed job: ${row.sample.seed_job_id ?? "--"}`,
+      ""
+    );
+
+    if (row.sample.manual_criteria?.length) {
+      lines.push(`- Criteria: ${row.sample.manual_criteria.join("; ")}`, "");
+    }
+
+    if (reportModels.length === 0) {
+      lines.push("No model cells match the current report scope.");
+      return;
+    }
+
+    lines.push("| Model | Role | Job | Status | Score | Evidence | Phase |", "| --- | --- | --- | --- | --- | --- | --- |");
+    reportModels.forEach((model) => {
+      const job = row.jobsByModel[model];
+      const scoreDigest = summarizeScoreSnapshot(job?.score_snapshot);
+      const evidenceDigest = summarizeJobEvidence(job);
+      const scoreLabel = scoreDigest.average !== null ? `${scoreDigest.average.toFixed(2)} (${scoreDigest.metricCount})` : "--";
+      lines.push(
+        [
+          modelDisplayName(model, modelCatalog),
+          row.requiredModelSet.has(model) ? "Required" : "Optional",
+          job?.job_id ?? "--",
+          job ? job.status_label : "未跑",
+          scoreLabel,
+          `${evidenceDigest.countLabel} / ${evidenceDigest.detail}`,
+          job?.progress_message || job?.phase || "--"
+        ]
+          .map(escapeMarkdownCell)
+          .join(" | ")
+          .replace(/^/, "| ")
+          .replace(/$/, " |")
+      );
+    });
+  });
+
+  return {
+    fileName: `sample-matrix-report-${safeFileTimestamp(context.generatedAt)}.md`,
+    markdown: `${lines.join("\n")}\n`
+  };
+}
+
+function sampleMatrixReportModels(row: SampleMatrixRowView, scope: SampleMatrixReportModelScope) {
+  switch (scope) {
+    case "required":
+      return row.compareModels.filter((model) => row.requiredModelSet.has(model));
+    case "with_jobs":
+      return row.compareModels.filter((model) => Boolean(row.jobsByModel[model]?.job_id));
+    case "finished":
+      return row.compareModels.filter((model) => row.jobsByModel[model]?.status === "finished");
+    case "all":
+    default:
+      return row.compareModels;
+  }
+}
+
+function summarizeSampleMatrixReportRows(rows: SampleMatrixRowView[], modelScope: SampleMatrixReportModelScope) {
+  const summary = {
+    modelCells: 0,
+    finished: 0,
+    attention: 0,
+    evidenceReady: 0,
+    scoreCount: 0,
+    scoreTotal: 0
+  };
+
+  rows.forEach((row) => {
+    sampleMatrixReportModels(row, modelScope).forEach((model) => {
+      const job = row.jobsByModel[model];
+      const scoreDigest = summarizeScoreSnapshot(job?.score_snapshot);
+      const evidenceDigest = summarizeJobEvidence(job);
+      summary.modelCells += 1;
+      if (job?.status === "finished") {
+        summary.finished += 1;
+      }
+      if (job?.status === "failed" || job?.status === "cancelled") {
+        summary.attention += 1;
+      }
+      if (evidenceDigest.ready) {
+        summary.evidenceReady += 1;
+      }
+      if (scoreDigest.average !== null) {
+        summary.scoreCount += 1;
+        summary.scoreTotal += scoreDigest.average;
+      }
+    });
+  });
+
+  return {
+    modelCells: summary.modelCells,
+    finished: summary.finished,
+    attention: summary.attention,
+    evidenceReady: summary.evidenceReady,
+    average: summary.scoreCount > 0 ? summary.scoreTotal / summary.scoreCount : null
+  };
+}
+
+function sampleMatrixReportScoreLabel(score: ReturnType<typeof summarizeMatrixRowScore>) {
+  return score.average !== null ? `${score.average.toFixed(2)} (${score.metricCount} metrics)` : "--";
+}
+
+function sampleTargetSummary(sample: SampleManifestEntry) {
+  if (sample.target_file_count) {
+    return `${sample.target_file_count} files`;
+  }
+  if (sample.target_duration_seconds) {
+    return `${sample.target_duration_seconds} seconds`;
+  }
+  return "--";
+}
+
+function sampleMatrixReportModelScopeLabel(scope: SampleMatrixReportModelScope) {
+  switch (scope) {
+    case "required":
+      return "Required models";
+    case "with_jobs":
+      return "Models with jobs";
+    case "finished":
+      return "Finished model jobs";
+    case "all":
+    default:
+      return "All model columns";
+  }
+}
+
+function sampleMatrixSortLabel(sortKey: SampleMatrixSortKey) {
+  switch (sortKey) {
+    case "completion":
+      return "completion";
+    case "score":
+      return "score";
+    case "attention":
+      return "attention";
+    case "manifest":
+    default:
+      return "manifest";
+  }
+}
+
+function sampleMatrixFilterLabel(filterKey: SampleMatrixFilterKey) {
+  switch (filterKey) {
+    case "attention":
+      return "attention";
+    case "running":
+      return "running";
+    case "unfinished":
+      return "unfinished";
+    case "all":
+    default:
+      return "all";
+  }
+}
+
+function escapeMarkdownCell(value: string | number | null | undefined) {
+  return String(value ?? "--").replace(/\r?\n/g, " ").replace(/\|/g, "\\|");
+}
+
+function safeFileTimestamp(value: string) {
+  return value.replace(/[:.]/g, "-").replace(/[^0-9A-Za-z_-]/g, "_");
+}
+
+function downloadTextFile(fileName: string, contents: string, mimeType: string) {
+  const blob = new Blob([contents], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function isImageLikeFile(file: File) {
   return file.type.startsWith("image/") || /\.(png|jpe?g|bmp|webp)$/i.test(file.name);
 }
@@ -3965,7 +4477,7 @@ function SummaryStat(props: { label: string; value: string }) {
 
 function AdvisorPanel(props: { report: AdvisorReport | null }) {
   if (!props.report) {
-    return <span className="muted-text">点上方“AI评估”后，会基于参数、摘要、scene_meta 和日志生成建议。</span>;
+    return <span className="muted-text">暂无自动评估。</span>;
   }
 
   return (
@@ -4019,11 +4531,11 @@ function AdvisorWorkbench(props: {
     return (
       <div className={`advisor-workbench ${props.compact ? "compact" : ""}`}>
         <div className="advisor-config-note">
-          <strong>AI 评估暂不可用</strong>
+          <strong>辅助评估未就绪</strong>
           <p>{props.advisorState.message}</p>
           <div className="advisor-workbench-actions">
             <button onClick={props.onConfigure} type="button">
-              立即配置
+              配置
             </button>
           </div>
         </div>
@@ -4034,9 +4546,7 @@ function AdvisorWorkbench(props: {
   if (!props.job) {
     return (
       <div className={`advisor-workbench ${props.compact ? "compact" : ""}`}>
-        <div className="empty-state">
-          先在“运行与结果”里选中一条任务，再来这里让 AI 做判断。通常优先评估已完成、失败或已取消的任务。
-        </div>
+        <div className="empty-state">先选中一条任务。</div>
       </div>
     );
   }
@@ -4065,26 +4575,22 @@ function AdvisorWorkbench(props: {
             onClick={() => props.onEvaluate(job.job.job_id)}
             type="button"
           >
-            {props.actionKey === "advisor" ? "评估中..." : report ? "重新评估" : "开始评估"}
+            {props.actionKey === "advisor" ? "生成中..." : report ? "重新生成" : "生成草稿"}
           </button>
         </div>
       </div>
 
       {!report ? (
         <div className="advisor-config-note">
-          <strong>{suggested ? "现在适合调用 AI" : "暂时先别急着评估"}</strong>
-          <p>
-            {suggested
-              ? "当前任务已经有足够信息可供总结，点右侧按钮就能得到问题诊断、下一步建议和汇报话术。"
-              : "任务还在运行时，优先先看日志和阶段进度；等任务完成、失败或取消后再让 AI 做判断更有效。"}
-          </p>
+          <strong>{suggested ? "可生成评估草稿" : "等待任务结束"}</strong>
+          <p>{suggested ? "会读取参数、摘要和日志。" : "完成、失败或取消后再生成。"}</p>
         </div>
       ) : (
         <>
           <AdvisorPanel report={report} />
           {props.compact ? null : (
             <div className="advisor-copy-row">
-              <button onClick={() => void props.onCopy(report.summary, "AI 摘要")} type="button">
+              <button onClick={() => void props.onCopy(report.summary, "评估摘要")} type="button">
                 复制摘要
               </button>
               {report.teacher_talk ? (
@@ -4337,57 +4843,26 @@ function inputHint(model: string, sourceType: string) {
     return "上传 1 个视频文件";
   }
   if (model === "monst3r") {
-    return "上传连续帧图片，建议 3 张以上";
+    return "上传连续帧图片，3 张以上";
   }
   if (model === "spann3r") {
-    return sourceType === "frames" ? "上传连续帧图片，建议 3 到 12 张" : "上传多视角图片，建议 3 张以上";
+    return sourceType === "frames" ? "上传连续帧图片，3 到 12 张" : "上传多视角图片，3 张以上";
   }
   if (model === "fast3r") {
-    return sourceType === "frames" ? "上传关键帧或连续帧，建议 4 张以上" : "上传多视角图片，建议 4 到 12 张";
+    return sourceType === "frames" ? "上传关键帧或连续帧，4 张以上" : "上传多视角图片，4 到 12 张";
   }
   return model === "mast3r" ? "上传 2 张或更多同场景图片" : "上传 2 张或更多图片";
 }
 
 function buildCreateGuidance(model: string, sourceType: string, fileCount: number) {
-  if (model === "monst3r" && sourceType === "video") {
-    return [
-      "先用 1 段短视频做样例测试，长度尽量控制在几十帧以内。",
-      "推荐先用正式基线：图像尺寸 512、最大帧数 48、批大小 1；如果只想先验链路，再切到 224 / 24 帧。",
-      fileCount === 1 ? "当前文件数量正确，可以直接创建任务。" : "视频模式请只放 1 个视频文件。"
-    ];
-  }
-  if (model === "monst3r") {
-    return [
-      "帧序列建议选连续视角变化的小样本，先用 3 到 12 张测试。",
-      "先用推荐基线跑第一版，只有在结果不错时再把帧数和窗口参数往上加。",
-      fileCount >= 2 ? "当前已满足最小输入要求。" : "帧序列模式至少需要 2 张图片。"
-    ];
-  }
-  if (model === "mast3r") {
-    return [
-      "MASt3R 更适合做静态多图重建对比，建议先用同一物体或小场景的 3 到 8 张图片测试。",
-      "今晚先直接复用 DUSt3R 的标准参数，重点看匹配可视化和点云是否更稳。",
-      fileCount >= 2 ? "当前已满足 MASt3R 的最小输入要求。" : "MASt3R 至少需要 2 张图片。"
-    ];
-  }
-  if (model === "spann3r") {
-    return [
-      "Spann3R 更像序列型全局点图工作流，优先给它连续视角的图片或关键帧。",
-      "这一轮前端先走固定序列参数，重点先看全局一致性和 memory 行为是否稳定。",
-      fileCount >= 2 ? "当前已满足 Spann3R 的最小输入要求。" : "Spann3R 至少需要 2 张图片或帧。"
-    ];
-  }
-  if (model === "fast3r") {
-    return [
-      "Fast3R 适合更长一点的多视角图集或关键帧集合，先从 4 到 12 张起步。",
-      "先保留标准分辨率和点数上限，稳定后再压到快速档做大批量比较。",
-      fileCount >= 2 ? "当前已满足 Fast3R 的最小输入要求。" : "Fast3R 至少需要 2 张图片或帧。"
-    ];
+  const modelLabel = statusModelLabel(model);
+  const inputLabel = sourceTypeLabel(sourceType);
+  if (sourceType === "video") {
+    return [`${modelLabel} · ${inputLabel}`, fileCount === 1 ? "输入已就绪。" : "需要 1 个视频文件。"];
   }
   return [
-    "DUSt3R 最稳妥的起步方式是先用同一场景的 2 到 5 张图片。",
-    "如果图片超过 6 张，建议把场景图改成 swin-5，避免 complete 配对过多。",
-    fileCount >= 2 ? "当前已满足 DUSt3R 的最小输入要求。" : "DUSt3R 至少需要 2 张图片。"
+    `${modelLabel} · ${inputLabel}`,
+    fileCount >= 2 ? "输入已就绪。" : "至少需要 2 张图片或帧。"
   ];
 }
 
@@ -4435,16 +4910,16 @@ function buildCreateReadiness(
 function buildParamPanelIntro(mode: CreateParamMode) {
   switch (mode) {
     case "video_sequence":
-      return "视频序列参数已经整理成推荐档位，先用标准档，只有做时长或窗口对比时再改。";
+      return "视频序列参数档位。";
     case "fast3r_collection":
-      return "Fast3R 当前只暴露分辨率和点数上限，先把正式样例跑稳，再切快速档做大批量对比。";
+      return "Fast3R 分辨率与点数上限。";
     case "spann3r_sequence":
-      return "Spann3R 当前先走后端固定序列参数，前端这里只展示这轮实际会使用的默认配置。";
+      return "Spann3R 固定序列参数。";
     case "catalog":
-      return "目录模型先展示部署语义和阻塞原因，不暴露可提交参数。";
+      return "目录模型暂不暴露参数。";
     case "image_collection":
     default:
-      return "这些参数已经整理成推荐档位了。直接优先选择带“推荐”字样的选项，只有做对比实验时再切到其它档。";
+      return "图像集合参数档位。";
   }
 }
 
@@ -4475,86 +4950,21 @@ function buildCreateLaunchMessage(serviceReady: boolean, model: string, sourceTy
 }
 
 function buildCaptureChecklist(model: string, sourceType: string, fileCount: number) {
-  if (model === "monst3r" && sourceType === "video") {
-    return [
-      {
-        title: "视频先拍短一点",
-        body: "先用 6 到 12 秒、主体稳定在画面中央的短视频起步，别一开始就上特别长的素材。"
-      },
-      {
-        title: "保证明显视差",
-        body: "尽量让相机绕主体缓慢移动，不要只做前后推拉，不然很容易塌成平面。"
-      },
-      {
-        title: "当前上传检查",
-        body: fileCount === 1 ? "视频数量正确，可以直接继续。" : "视频模式请只放 1 个视频文件。"
-      }
-    ];
-  }
-
-  if (model === "monst3r") {
-    return [
-      {
-        title: "帧序列要连贯",
-        body: "尽量用连续视角变化的帧，别混入跨度太大的图片。"
-      },
-      {
-        title: "少量先验链路",
-        body: "第一次先用 3 到 12 张连续帧验证流程，结果稳定后再补更长序列。"
-      },
-      {
-        title: "当前上传检查",
-        body: fileCount >= 2 ? "帧数已满足最小要求。" : "帧序列模式至少上传 2 张图片。"
-      }
-    ];
-  }
-
-  if (model === "spann3r") {
-    return [
-      {
-        title: "连续性比单张质量更重要",
-        body: "优先给 Spann3R 连续视角或连续帧，不要混入跨度特别大的图。"
-      },
-      {
-        title: "先做小序列稳定性验证",
-        body: "第一次先用 3 到 12 张连续输入确认全局点图和 memory 行为。"
-      },
-      {
-        title: "当前上传检查",
-        body: fileCount >= 2 ? "当前数量已满足 Spann3R 的起步要求。" : "Spann3R 至少上传 2 张图片或帧。"
-      }
-    ];
-  }
-
-  if (model === "fast3r") {
-    return [
-      {
-        title: "优先整理多视角图集",
-        body: "Fast3R 更适合较完整的图集或关键帧集合，尽量保证覆盖物体一圈或主要路径。"
-      },
-      {
-        title: "先保留标准分辨率",
-        body: "第一轮不要急着压低分辨率，先确认轨迹和重建完整性，再做快速档对比。"
-      },
-      {
-        title: "当前上传检查",
-        body: fileCount >= 2 ? "当前数量已满足 Fast3R 的起步要求。" : "Fast3R 至少上传 2 张图片或帧。"
-      }
-    ];
-  }
-
+  const target = sourceType === "video" ? "1 个视频" : "2 张以上图片或帧";
+  const ready = sourceType === "video" ? fileCount === 1 : fileCount >= 2;
+  const body = ready ? `已选择 ${fileCount} 个文件。` : `需要 ${target}。`;
   return [
     {
-      title: "优先拍有纹理、有棱角的静态物体",
-      body: "纸箱、工具箱、桌面物体都适合；玻璃、镜子、大白墙先尽量避开。"
+      title: "输入要求",
+      body: target
     },
     {
-      title: "多图要来自同一场景",
-      body: "图片间要有重叠视角，主体尽量占画面的 40% 到 70%，别让背景比主体更抢眼。"
+      title: "来源",
+      body: sourceTypeLabel(sourceType)
     },
     {
-      title: "当前上传检查",
-      body: fileCount >= 2 ? `当前已选 ${fileCount} 个文件，可以直接创建任务。` : "静态多图模式至少上传 2 张图片。"
+      title: "当前文件",
+      body
     }
   ];
 }
@@ -4562,16 +4972,16 @@ function buildCaptureChecklist(model: string, sourceType: string, fileCount: num
 function buildAdvisorChecklist(advisorReady: boolean) {
   return [
     {
-      title: "结果出来后第一时间评估",
-      body: "任务完成、失败或取消时最值得点 AI 评估，它会结合参数、摘要、scene_meta 和日志给判断。"
+      title: "当前状态",
+      body: advisorReady ? "已配置，可生成草稿。" : "未就绪，先补配置。"
     },
     {
-      title: "别在纯运行中频繁点",
-      body: "运行中的任务信息还不完整，更适合先看阶段卡片和最新日志，避免无效调用。"
+      title: "定位",
+      body: "现阶段只作为辅助草稿。"
     },
     {
-      title: "直接拿来写汇报",
-      body: advisorReady ? "AI 会给可直接复制的汇报话术，适合组会前快速整理表达。" : "先把 AI 接口配置好，才能启用自动诊断和汇报话术。"
+      title: "后续",
+      body: "评估框架会单独重构。"
     }
   ];
 }
@@ -4579,16 +4989,16 @@ function buildAdvisorChecklist(advisorReady: boolean) {
 function buildSystemChecklist() {
   return [
     {
-      title: "先建任务，再盯结果",
-      body: "把上传和参数选择放在“文件与新建”，把状态、日志和产物放在“运行与结果”，别在首页来回翻。"
+      title: "任务流",
+      body: "文件与新建 -> 运行与结果 -> Matrix。"
     },
     {
-      title: "完成后再做 AI 总结",
-      body: "一条任务结束后，先看核心产物，再去 AI 工作台生成诊断、下一步建议和汇报话术。"
+      title: "评估",
+      body: "辅助评估先保留为草稿入口。"
     },
     {
-      title: "本地服务异常先重启",
-      body: "如果顶栏提示未连接，先在这里或顶栏重启本地服务，不要继续点任务按钮硬试。"
+      title: "服务",
+      body: "本地异常时从顶部或系统页恢复。"
     }
   ];
 }
@@ -4604,9 +5014,22 @@ function buildActionMessage(action: string, jobId: string) {
     case "cancel":
       return `任务 ${jobId} 已请求取消。`;
     case "advisor":
-      return `任务 ${jobId} 的 AI 评估已更新。`;
+      return `任务 ${jobId} 的辅助评估已更新。`;
     default:
       return `任务 ${jobId} 已更新。`;
+  }
+}
+
+function batchActionLabel(action: BatchJobAction) {
+  switch (action) {
+    case "dispatch":
+      return "运行";
+    case "retry":
+      return "重试";
+    case "cancel":
+      return "取消";
+    default:
+      return "操作";
   }
 }
 
@@ -5013,34 +5436,34 @@ function matchesJobQuery(item: JobListItem, normalizedQuery: string) {
 
 function buildOverviewHeadline(job: JobListItem | null, runningCount: number, attentionCount: number) {
   if (!job) {
-    return "先创建一条小任务，把整条链路确认跑通。";
+    return "创建一条样例任务。";
   }
   if (job.job.status === "running") {
-    return runningCount > 1 ? `当前有 ${runningCount} 条任务在跑，先盯住这一条。` : "当前有任务在跑，先观察这条的阶段推进。";
+    return runningCount > 1 ? `运行中 ${runningCount} 条。` : "任务运行中。";
   }
   if (attentionCount > 0) {
-    return "有任务需要人工处理，先看错误原因和最新日志。";
+    return "有待处理任务。";
   }
   if (job.job.status === "finished") {
-    return "已有结果回传，下一步优先检查核心成果和日志摘要。";
+    return "结果已回传。";
   }
-  return "当前没有正在执行的任务，可以直接发起新的测试。";
+  return "当前空闲。";
 }
 
 function buildOverviewMessage(job: JobListItem | null, runningCount: number, attentionCount: number) {
   if (!job) {
-    return "建议今晚先完成一条 DUSt3R 或 MonST3R 的正式样例，确认输入、远端执行、结果回传三段都稳定。";
+    return "输入、远端执行、结果回传会在任务中心汇总。";
   }
   if (job.job.status === "running") {
-    return `${statusModelLabel(job.job.model)} 正在执行“${job.phase_display.label}”。如果进度长期不动，就先看详情页里的最新日志和阶段卡片。`;
+    return `${statusModelLabel(job.job.model)} · ${job.phase_display.label}`;
   }
   if (attentionCount > 0) {
-    return "失败或取消的任务已经单独归到“待处理”筛选里，先修复那里的阻塞，再继续批量测试。";
+    return "待处理筛选会集中显示失败和取消任务。";
   }
   if (job.job.status === "finished") {
-    return `当前焦点任务已经完成。建议先检查 ${statusModelLabel(job.job.model)} 的核心结果，再决定是否复制参数继续跑更多样例。`;
+    return `${statusModelLabel(job.job.model)} · 核心结果可检查。`;
   }
-  return runningCount > 0 ? "后台仍有其他任务在执行。" : "当前后端空闲，适合立刻发起下一条任务。";
+  return runningCount > 0 ? "后台仍有其他任务在执行。" : "可发起下一条任务。";
 }
 
 function formatParamLabel(key: string) {
@@ -5066,25 +5489,25 @@ function formatParamLabel(key: string) {
 function describeOutput(filename: string) {
   const lower = filename.toLowerCase();
   if (/dynamic_mask|enlarged_dynamic_mask/.test(lower)) {
-    return "黑白动态掩膜，用来标记运动区域，不是最终重建结果";
+    return "动态区域掩膜";
   }
   if (/scene\.glb/.test(lower)) {
-    return "MonST3R 三维场景，优先查看这个";
+    return "MonST3R 三维场景";
   }
   if (/pred_traj\.txt/.test(lower)) {
-    return "MonST3R 相机轨迹，用来检查运动是否连续";
+    return "MonST3R 相机轨迹";
   }
   if (/pred_intrinsics\.txt/.test(lower)) {
     return "MonST3R 预测相机内参";
   }
   if (/^conf_\d+\.npy$/.test(lower) || /^init_conf_\d+\.npy$/.test(lower)) {
-    return "MonST3R 置信数组，用于质量诊断";
+    return "MonST3R 置信数组";
   }
   if (/^frame_\d+\.npy$/.test(lower)) {
     return "MonST3R 每帧几何数组";
   }
   if (/frame_\d+\.png/.test(lower)) {
-    return "彩色帧预览，可用来快速确认输入抽帧";
+    return "彩色帧预览";
   }
   const suffix = filename.split(".").pop()?.toLowerCase();
   switch (suffix) {

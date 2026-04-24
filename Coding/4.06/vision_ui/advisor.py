@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -45,12 +46,11 @@ DEFAULT_CONFIG = {
 
 def load_advisor_config() -> dict[str, Any]:
     SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
-    if not SETTINGS_PATH.exists():
-        return dict(DEFAULT_CONFIG)
-
-    payload = json.loads(SETTINGS_PATH.read_text(encoding="utf-8-sig"))
     merged = dict(DEFAULT_CONFIG)
-    merged.update(payload)
+    if SETTINGS_PATH.exists():
+        payload = json.loads(SETTINGS_PATH.read_text(encoding="utf-8-sig"))
+        merged.update(payload)
+    _apply_advisor_env_overrides(merged)
     return merged
 
 
@@ -96,6 +96,31 @@ def save_advisor_config(payload: dict[str, Any]) -> dict[str, Any]:
     return advisor_config_public()
 
 
+def _apply_advisor_env_overrides(config: dict[str, Any]) -> None:
+    env_enabled = os.getenv("KYKT_ADVISOR_ENABLED")
+    if env_enabled is not None:
+        config["enabled"] = env_enabled.strip().lower() in {"1", "true", "yes", "on"}
+
+    env_map = {
+        "base_url": "KYKT_ADVISOR_BASE_URL",
+        "api_key": "KYKT_ADVISOR_API_KEY",
+        "model": "KYKT_ADVISOR_MODEL",
+        "system_prompt": "KYKT_ADVISOR_SYSTEM_PROMPT",
+    }
+    for key, env_name in env_map.items():
+        value = os.getenv(env_name)
+        if value is not None:
+            config[key] = value.strip()
+
+    env_temperature = os.getenv("KYKT_ADVISOR_TEMPERATURE")
+    if env_temperature is not None:
+        config["temperature"] = float(env_temperature)
+
+    env_max_tokens = os.getenv("KYKT_ADVISOR_MAX_TOKENS")
+    if env_max_tokens is not None:
+        config["max_tokens"] = int(env_max_tokens)
+
+
 def advisor_status() -> dict[str, Any]:
     config = load_advisor_config()
     base_url = str(config.get("base_url") or "").strip()
@@ -129,9 +154,9 @@ def save_advisor_report(job_id: str, payload: dict[str, Any]) -> dict[str, Any]:
 def evaluate_job_with_advisor(job_id: str) -> dict[str, Any]:
     status = advisor_status()
     if not status["enabled"]:
-        raise RuntimeError("AI 评估尚未启用。请先编辑 settings/advisor.json，把 enabled 改成 true，并填入 base_url、api_key、model。")
+        raise RuntimeError("AI 评估尚未启用。请先在配置页或本地环境变量中启用，并填入 base_url、api_key、model。")
     if not status["configured"]:
-        raise RuntimeError("AI 评估配置不完整。请检查 settings/advisor.json 里的 base_url、api_key、model。")
+        raise RuntimeError("AI 评估配置不完整。请检查配置页、本地 settings/advisor.json 或 KYKT_ADVISOR_* 环境变量。")
 
     config = load_advisor_config()
     context = build_advisor_context(job_id)

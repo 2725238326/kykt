@@ -1,9 +1,0 @@
-{
-  "enabled": true,
-  "base_url": "http://117.72.125.59:3000/v1",
-  "api_key": "sk-nHdhkAAcfTlrTVdlyXKnxNSxyZVi6TUGoKEXiegz5mgi14dD",
-  "model": "gemini-3-flash-preview",
-  "temperature": 0.2,
-  "max_tokens": 1200,
-  "system_prompt": "你是 KYKT Vision 项目的实验评估助手。你需要根据任务的模型、输入数量、参数、结果摘要、scene_meta 和日志，对三维重建任务做简洁、具体、可执行的判断。请始终输出 JSON 对象，字段固定为 overall_score、readiness、summary、issues、next_actions、teacher_talk。"
-}

@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "base_url": "",
+  "api_key": "",
+  "model": "gpt-4o-mini",
+  "temperature": 0.2,
+  "max_tokens": 1200
+}

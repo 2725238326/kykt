@@ -272,20 +272,20 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 
 ### Phase 3 - Jobs workbench improvements
 
-- [ ] Add stronger batch operations in `Jobs`.
+- [x] Add stronger batch operations in `Jobs`.
 - [x] Add better filtered-selection handoff behavior.
 - [x] Add log keyword highlighting, not just filtering.
 - [x] Add a stronger attention-first view for failed/cancelled jobs.
-- [ ] Improve the right-side inspector rhythm for summary/evidence/logs/evaluation.
+- [x] Improve the right-side inspector rhythm for summary/evidence/logs/evaluation.
 
 ### Phase 4 - Sample Matrix as a real compare workspace
 
 - [x] Add sort/filter and bulk ID operations.
 - [x] Add unassigned-job pool visibility.
-- [ ] Add clearer row/column compare hierarchy for samples vs models.
+- [x] Add clearer row/column compare hierarchy for samples vs models.
 - [x] Surface runner/deployment constraints inside matrix context where useful.
-- [ ] Add stronger score/evidence digest for quick compare.
-- [ ] Add exportable compare/report path for selected sample/model subsets.
+- [x] Add stronger score/evidence digest for quick compare.
+- [x] Add exportable compare/report path for selected sample/model subsets.
 
 ### Phase 5 - System page as model-management console
 
@@ -321,8 +321,10 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 ### Phase 8 - Delivery and reporting
 
 - [ ] Add job bundle export.
-- [ ] Add sample/model comparison report export.
+- [x] Add sample/model comparison report export.
 - [ ] Improve advisor/evaluation/report contract consistency.
+- [ ] Redesign AI/advisor evaluation around an evidence contract instead of generic diagnosis copy.
+- [x] Reduce noisy on-page guidance copy and downgrade current AI/advisor UI to an auxiliary draft path.
 - [x] Make the app better for final inspection and handoff, not only internal testing.
 - [x] Put usability improvements into the 3R roadmap as a first-class route, not only as visual polish.
 
