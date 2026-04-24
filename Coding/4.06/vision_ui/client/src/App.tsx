@@ -30,27 +30,32 @@ const DEFAULT_BOOTSTRAP: BootstrapPayload = {
     {
       value: "dust3r",
       label: "DUSt3R",
-      description: "图片对 / 多图三维重建"
+      description: "图片对 / 多图三维重建",
+      param_family: "image_collection"
     },
     {
       value: "mast3r",
       label: "MASt3R",
-      description: "更强的静态多图匹配与三维重建"
+      description: "更强的静态多图匹配与三维重建",
+      param_family: "image_collection"
     },
     {
       value: "monst3r",
       label: "MonST3R",
-      description: "视频 / 帧序列动态三维重建"
+      description: "视频 / 帧序列动态三维重建",
+      param_family: "video_sequence"
     },
     {
       value: "spann3r",
       label: "Spann3R",
-      description: "Spatial memory 全局点图重建"
+      description: "Spatial memory 全局点图重建",
+      param_family: "spann3r_sequence"
     },
     {
       value: "fast3r",
       label: "Fast3R",
-      description: "长图集快速前馈三维重建"
+      description: "长图集快速前馈三维重建",
+      param_family: "fast3r_collection"
     }
   ],
   source_types: [
@@ -94,7 +99,7 @@ type ParamChoice = {
 };
 
 type PresetKey = "quick" | "standard" | "enhanced";
-type CreateParamMode = "dust3r" | "monst3r" | "spann3r" | "fast3r";
+type CreateParamMode = "image_collection" | "video_sequence" | "spann3r_sequence" | "fast3r_collection" | "catalog";
 
 type PresetDescriptor = {
   key: PresetKey;
@@ -324,11 +329,13 @@ function App() {
         label: item.label,
         description: item.description,
         family: item.family ?? "integrated",
+        param_family: item.param_family ?? fallbackParamFamilyForModel(item.value),
         source_types: [],
         runner_status: item.runner_status ?? "integrated",
         research_priority: item.research_priority ?? 0,
         active_track: item.active_track ?? true,
-        runnable: true
+        runnable: true,
+        launch_blocker: item.launch_blocker ?? null
       })),
     [bootstrapData.model_catalog, bootstrapData.models, samplesPayload?.model_catalog]
   );
@@ -350,13 +357,20 @@ function App() {
     () => selectedModelCatalog ?? bootstrapData.models.find((item) => item.value === formState.model) ?? null,
     [bootstrapData.models, formState.model, selectedModelCatalog]
   );
-  const createParamMode = useMemo(() => getCreateParamMode(formState.model), [formState.model]);
+  const createParamMode = useMemo(
+    () => getCreateParamMode(formState.model, modelCatalog),
+    [formState.model, modelCatalog]
+  );
   const selectedModelSourceTypes = useMemo(
     () => allowedSourceTypesForModel(formState.model, modelCatalog),
     [formState.model, modelCatalog]
   );
+  const selectedModelLaunchBlocker = useMemo(
+    () => buildModelLaunchBlocker(selectedModelCatalog),
+    [selectedModelCatalog]
+  );
   const activePreset = activePresets[formState.model] ?? null;
-  const supportsPresets = createParamMode !== "spann3r";
+  const supportsPresets = createParamMode !== "spann3r_sequence" && createParamMode !== "catalog";
   const selectedListJob = useMemo(
     () => (selectedJobId ? jobs.find((item) => item.job.job_id === selectedJobId) ?? null : null),
     [jobs, selectedJobId]
@@ -447,8 +461,17 @@ function App() {
   );
   const createReadiness = useMemo(
     () =>
-      buildCreateReadiness(serviceReady, selectedModelSourceTypes, formState.model, formState.source_type, files.length, pendingImageCount, pendingVideoCount),
-    [files.length, formState.model, formState.source_type, pendingImageCount, pendingVideoCount, selectedModelSourceTypes, serviceReady]
+      buildCreateReadiness(
+        serviceReady,
+        selectedModelCatalog,
+        selectedModelSourceTypes,
+        formState.model,
+        formState.source_type,
+        files.length,
+        pendingImageCount,
+        pendingVideoCount
+      ),
+    [files.length, formState.model, formState.source_type, pendingImageCount, pendingVideoCount, selectedModelCatalog, selectedModelSourceTypes, serviceReady]
   );
   const summary = bootstrap?.summary ?? {
     total: jobs.length,
@@ -836,25 +859,27 @@ function App() {
     setFormState((current) => {
       const nextSourceTypes = allowedSourceTypesForModel(value, modelCatalog);
       const nextSourceType = nextSourceTypes.includes(current.source_type) ? current.source_type : nextSourceTypes[0] ?? "images";
+      const nextParamMode = getCreateParamMode(value, modelCatalog);
       const baseState = {
         ...current,
         model: value,
         source_type: nextSourceType
       };
-      switch (getCreateParamMode(value)) {
-        case "monst3r":
+      switch (nextParamMode) {
+        case "video_sequence":
           return {
             ...baseState,
             ...defaultMonst3rParams
           };
-        case "fast3r":
+        case "fast3r_collection":
           return {
             ...baseState,
             ...defaultFast3rParams
           };
-        case "spann3r":
+        case "spann3r_sequence":
+        case "catalog":
           return baseState;
-        case "dust3r":
+        case "image_collection":
         default:
           return {
             ...baseState,
@@ -862,9 +887,10 @@ function App() {
           };
       }
     });
+    const nextParamMode = getCreateParamMode(value, modelCatalog);
     setActivePresets((current) => ({
       ...current,
-      [value]: getCreateParamMode(value) === "spann3r" ? null : "standard"
+      [value]: nextParamMode === "spann3r_sequence" || nextParamMode === "catalog" ? null : "standard"
     }));
   }
 
@@ -904,20 +930,21 @@ function App() {
 
   function applyPreset(preset: PresetKey) {
     setFormState((current) => {
-      switch (getCreateParamMode(current.model)) {
-        case "monst3r":
+      switch (getCreateParamMode(current.model, modelCatalog)) {
+        case "video_sequence":
           return {
             ...current,
             ...buildMonst3rPreset(preset)
           };
-        case "fast3r":
+        case "fast3r_collection":
           return {
             ...current,
             ...buildFast3rPreset(preset)
           };
-        case "spann3r":
+        case "spann3r_sequence":
+        case "catalog":
           return current;
-        case "dust3r":
+        case "image_collection":
         default:
           return {
             ...current,
@@ -944,6 +971,10 @@ function App() {
 
     if (!serviceReady) {
       setErrorMessage("本地服务还没准备好，请等顶部状态变成“就绪”。");
+      return;
+    }
+    if (selectedModelLaunchBlocker) {
+      setErrorMessage(selectedModelLaunchBlocker);
       return;
     }
 
@@ -1255,13 +1286,25 @@ function App() {
                     </div>
                     <div className="create-model-facts">
                       {selectedModelCatalog?.family ? <span>{modelFamilyLabel(selectedModelCatalog.family)}</span> : null}
+                      {selectedModelCatalog?.param_family ? <span>参数族：{paramFamilyLabel(selectedModelCatalog.param_family)}</span> : null}
                       <span>输入：{selectedModelSourceTypes.map((type) => sourceTypeLabel(type)).join(" / ")}</span>
                       {selectedModelCatalog ? <span>状态：{runnerStatusLabel(selectedModelCatalog.runner_status)}</span> : null}
                     </div>
+                    {selectedModelLaunchBlocker ? (
+                      <p className="create-model-note blocked">{selectedModelLaunchBlocker}</p>
+                    ) : null}
                     {catalogOnlyModelCatalog.length > 0 ? (
-                      <p className="create-model-note">
-                        目录中还有 {catalogOnlyModelCatalog.map((item) => item.label).join(" / ")}，当前先保留在研究/部署视图里，不进入创建流程。
-                      </p>
+                      <div className="create-model-blockers" aria-label="目录模型阻塞原因">
+                        {catalogOnlyModelCatalog.map((item) => (
+                          <article key={item.value}>
+                            <div>
+                              <strong>{item.label}</strong>
+                              <span>{runnerStatusLabel(item.runner_status)}</span>
+                            </div>
+                            <p>{buildModelLaunchBlocker(item)}</p>
+                          </article>
+                        ))}
+                      </div>
                     ) : null}
                   </div>
 
@@ -1377,7 +1420,7 @@ function App() {
                         </div>
                       </div>
                     ) : null}
-                    {createParamMode === "dust3r" ? (
+                    {createParamMode === "image_collection" ? (
                       <div className="param-grid">
                         {Object.keys(defaultDust3rParams).map((key) => (
                           <ParamField
@@ -1389,12 +1432,14 @@ function App() {
                           />
                         ))}
                       </div>
-                    ) : createParamMode === "monst3r" ? (
+                    ) : createParamMode === "video_sequence" ? (
                       <Monst3rParams formState={formState} updateFormField={updateFormField} />
-                    ) : createParamMode === "fast3r" ? (
+                    ) : createParamMode === "fast3r_collection" ? (
                       <Fast3rParams formState={formState} updateFormField={updateFormField} />
-                    ) : (
+                    ) : createParamMode === "spann3r_sequence" ? (
                       <Spann3rParams />
+                    ) : (
+                      <CatalogOnlyParams blocker={selectedModelLaunchBlocker} />
                     )}
                   </details>
                 </article>
@@ -1403,10 +1448,10 @@ function App() {
               <div className="create-submit-dock">
                 <div>
                   <span className="mini-label">Launch</span>
-                  <strong>{buildCreateLaunchHeadline(serviceReady, files.length)}</strong>
-                  <p>{buildCreateLaunchMessage(serviceReady, formState.model, formState.source_type, files.length)}</p>
+                  <strong>{buildCreateLaunchHeadline(serviceReady, files.length, selectedModelLaunchBlocker)}</strong>
+                  <p>{buildCreateLaunchMessage(serviceReady, formState.model, formState.source_type, files.length, selectedModelLaunchBlocker)}</p>
                 </div>
-                <button className="primary-button" disabled={!serviceReady || submitting} type="submit">
+                <button className="primary-button" disabled={!serviceReady || submitting || Boolean(selectedModelLaunchBlocker)} type="submit">
                   {submitting ? "创建中..." : `创建 ${selectedModel?.label ?? "模型"} 任务`}
                 </button>
               </div>
@@ -3306,6 +3351,15 @@ function Spann3rParams() {
   );
 }
 
+function CatalogOnlyParams(props: { blocker: string | null }) {
+  return (
+    <div className="param-static-note blocked">
+      <strong>当前模型暂不进入创建队列</strong>
+      <p>{props.blocker ?? "该目录模型还没有可派发 runner、部署合同或 smoke 结果。"}</p>
+    </div>
+  );
+}
+
 function ParamField(props: {
   name: string;
   value: string;
@@ -3884,30 +3938,55 @@ function isParamFieldKey(key: keyof FormState) {
   return key in defaultDust3rParams || key in defaultMonst3rParams || key in defaultFast3rParams;
 }
 
-function getCreateParamMode(model: string): CreateParamMode {
-  switch (model) {
-    case "monst3r":
-      return "monst3r";
-    case "spann3r":
-      return "spann3r";
-    case "fast3r":
-      return "fast3r";
-    case "mast3r":
-    case "dust3r":
+function fallbackParamFamilyForModel(model: string) {
+  const localRegistry: Record<string, string> = {
+    dust3r: "image_collection",
+    mast3r: "image_collection",
+    monst3r: "video_sequence",
+    spann3r: "spann3r_sequence",
+    fast3r: "fast3r_collection",
+    align3r: "video_sequence",
+    cut3r: "streaming_sequence",
+    pi3x: "research_catalog",
+    zipmap: "research_catalog",
+    lingbot_map: "research_catalog"
+  };
+  return localRegistry[model] ?? "image_collection";
+}
+
+function createParamModeForFamily(paramFamily: string | undefined): CreateParamMode {
+  switch (paramFamily) {
+    case "image_collection":
+      return "image_collection";
+    case "video_sequence":
+      return "video_sequence";
+    case "spann3r_sequence":
+      return "spann3r_sequence";
+    case "fast3r_collection":
+      return "fast3r_collection";
     default:
-      return "dust3r";
+      return "catalog";
   }
+}
+
+function getCreateParamMode(model: string, catalog?: ModelCatalogItem[]): CreateParamMode {
+  const catalogItem = catalog?.find((item) => item.value === model);
+  if (catalogItem && !catalogItem.runnable) {
+    return "catalog";
+  }
+  return createParamModeForFamily(catalogItem?.param_family ?? fallbackParamFamilyForModel(model));
 }
 
 function getParamDefaultsForMode(mode: CreateParamMode) {
   switch (mode) {
-    case "monst3r":
+    case "video_sequence":
       return defaultMonst3rParams;
-    case "fast3r":
+    case "fast3r_collection":
       return defaultFast3rParams;
-    case "spann3r":
+    case "spann3r_sequence":
+    case "catalog":
       return {};
-    case "dust3r":
+    case "image_collection":
     default:
       return defaultDust3rParams;
   }
@@ -4107,6 +4186,7 @@ function buildCreateGuidance(model: string, sourceType: string, fileCount: numbe
 
 function buildCreateReadiness(
   serviceReady: boolean,
+  modelItem: ModelCatalogItem | null,
   allowedSourceTypes: string[],
   model: string,
   sourceType: string,
@@ -4120,6 +4200,7 @@ function buildCreateReadiness(
       : sourceType === "frames"
         ? imageCount >= 2
         : imageCount >= 2;
+  const modelReady = modelItem?.runnable ?? true;
   return [
     {
       label: "服务",
@@ -4128,8 +4209,8 @@ function buildCreateReadiness(
     },
     {
       label: "模型",
-      value: statusModelLabel(model),
-      tone: "ready"
+      value: modelReady ? statusModelLabel(model) : "Blocked",
+      tone: modelReady ? "ready" : "blocked"
     },
     {
       label: "输入",
@@ -4146,21 +4227,26 @@ function buildCreateReadiness(
 
 function buildParamPanelIntro(mode: CreateParamMode) {
   switch (mode) {
-    case "monst3r":
+    case "video_sequence":
       return "视频序列参数已经整理成推荐档位，先用标准档，只有做时长或窗口对比时再改。";
-    case "fast3r":
+    case "fast3r_collection":
       return "Fast3R 当前只暴露分辨率和点数上限，先把正式样例跑稳，再切快速档做大批量对比。";
-    case "spann3r":
+    case "spann3r_sequence":
       return "Spann3R 当前先走后端固定序列参数，前端这里只展示这轮实际会使用的默认配置。";
-    case "dust3r":
+    case "catalog":
+      return "目录模型先展示部署语义和阻塞原因，不暴露可提交参数。";
+    case "image_collection":
     default:
       return "这些参数已经整理成推荐档位了。直接优先选择带“推荐”字样的选项，只有做对比实验时再切到其它档。";
   }
 }
 
-function buildCreateLaunchHeadline(serviceReady: boolean, fileCount: number) {
+function buildCreateLaunchHeadline(serviceReady: boolean, fileCount: number, modelBlocker: string | null) {
   if (!serviceReady) {
     return "等待本地服务";
+  }
+  if (modelBlocker) {
+    return "模型暂不可创建";
   }
   if (fileCount === 0) {
     return "先选择输入文件";
@@ -4168,9 +4254,12 @@ function buildCreateLaunchHeadline(serviceReady: boolean, fileCount: number) {
   return "可以创建任务";
 }
 
-function buildCreateLaunchMessage(serviceReady: boolean, model: string, sourceType: string, fileCount: number) {
+function buildCreateLaunchMessage(serviceReady: boolean, model: string, sourceType: string, fileCount: number, modelBlocker: string | null) {
   if (!serviceReady) {
     return "本地服务就绪后才能提交，当前配置会保留在页面上。";
+  }
+  if (modelBlocker) {
+    return modelBlocker;
   }
   if (fileCount === 0) {
     return "先把文件放进 staging 区，再按当前模型和输入来源发起任务。";
@@ -4378,6 +4467,25 @@ function modelFamilyLabel(family: string) {
     streaming_mapping: "流式建图"
   };
   return labels[family] ?? family.replace(/_/g, " ");
+}
+
+function paramFamilyLabel(paramFamily: string) {
+  const labels: Record<string, string> = {
+    image_collection: "图片集合",
+    video_sequence: "视频/帧序列",
+    spann3r_sequence: "Spann3R 序列",
+    fast3r_collection: "Fast3R 图集",
+    streaming_sequence: "流式序列",
+    research_catalog: "研究目录"
+  };
+  return labels[paramFamily] ?? paramFamily.replace(/_/g, " ");
+}
+
+function buildModelLaunchBlocker(item: ModelCatalogItem | null) {
+  if (!item || item.runnable) {
+    return null;
+  }
+  return item.launch_blocker ?? `${item.label} 还没有接入可派发 runner，先保留在部署/研究目录。`;
 }
 
 function runnerStatusLabel(status: string) {

@@ -1,0 +1,12 @@
+{"timestamp":"2026-04-24T04:51:15.548Z","type":"tmux_hook","mode":null,"reason":"invalid_config","turn_id":"019dbdd2-747e-7631-8649-b777f26a6f94","thread_id":"019db9a0-4ee0-7901-95d8-4754b741881a","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-04-24T04:51:16.155Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-04-24T04:53:11.065Z","type":"tmux_hook","mode":null,"reason":"invalid_config","turn_id":"019dbdd4-905c-7a42-bf85-94f789854763","thread_id":"019db9a0-4ee0-7901-95d8-4754b741881a","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-04-24T04:53:11.440Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-04-24T04:54:39.648Z","type":"tmux_hook","mode":null,"reason":"invalid_config","turn_id":"019dbdd1-c465-7852-9ac4-0dad858f7b8d","thread_id":"019dbdd1-c207-73c1-bbc3-bad8c2da0089","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-04-24T04:54:39.825Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-04-24T04:55:55.101Z","type":"tmux_hook","mode":null,"reason":"invalid_config","turn_id":"019dbdd6-5d49-7e51-bc74-2c615a8f7c10","thread_id":"019db9a0-4ee0-7901-95d8-4754b741881a","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-04-24T04:55:55.319Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-04-24T05:06:25.284Z","type":"tmux_hook","mode":null,"reason":"invalid_config","turn_id":"019dbde1-a10e-7d40-aeb0-af76f595246f","thread_id":"019dbde1-9c18-7322-83fb-7fdb49a4a63f","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-04-24T05:06:25.531Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-04-24T05:21:46.042Z","type":"tmux_hook","mode":null,"reason":"invalid_config","turn_id":"019dbde1-9b5b-7242-83d2-beef551a636e","thread_id":"019dbde1-86bf-7821-bd68-e3bd33646979","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-04-24T05:21:46.400Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}

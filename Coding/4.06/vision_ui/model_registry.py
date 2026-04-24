@@ -15,6 +15,7 @@ class ModelSpec:
     runner_status: str
     research_priority: int
     active_track: bool = True
+    launch_blocker: str | None = None
 
 
 @dataclass(frozen=True)
@@ -23,10 +24,12 @@ class ModelCatalogEntry:
     label: str
     description: str
     family: str
+    param_family: str
     source_types: tuple[str, ...]
     runner_status: str
     research_priority: int
     active_track: bool = True
+    launch_blocker: str | None = None
 
 
 MODEL_REGISTRY: dict[str, ModelSpec] = {
@@ -95,10 +98,12 @@ MODEL_CATALOG: dict[str, ModelCatalogEntry] = {
         label=spec.label,
         description=spec.description,
         family=spec.family,
+        param_family=spec.param_family,
         source_types=spec.source_types,
         runner_status=spec.runner_status,
         research_priority=spec.research_priority,
         active_track=spec.active_track,
+        launch_blocker=spec.launch_blocker,
     )
     for key, spec in MODEL_REGISTRY.items()
 }
@@ -110,6 +115,7 @@ MODEL_CATALOG.update(
             label="Spann3R",
             description="Spatial memory 全局点图重建",
             family="memory_global_pointmap",
+            param_family="spann3r_sequence",
             source_types=("images", "frames"),
             runner_status="smoke_ready",
             research_priority=95,
@@ -119,15 +125,18 @@ MODEL_CATALOG.update(
             label="Align3R",
             description="动态视频深度一致性与动态点云",
             family="video_depth_consistency",
+            param_family="video_sequence",
             source_types=("video", "frames"),
             runner_status="env_blocked_curope",
             research_priority=94,
+            launch_blocker="远端 Align3R 仍缺 curope / Depth Pro / Depth Anything V2 环境确认和官方 smoke run。",
         ),
         "fast3r": ModelCatalogEntry(
             value="fast3r",
             label="Fast3R",
             description="长图集快速前馈三维重建",
             family="large_image_collection",
+            param_family="fast3r_collection",
             source_types=("images", "frames"),
             runner_status="smoke_ready_attention_fallback",
             research_priority=90,
@@ -137,39 +146,47 @@ MODEL_CATALOG.update(
             label="CUT3R",
             description="在线 / persistent-state 三维感知",
             family="streaming_state_reconstruction",
+            param_family="streaming_sequence",
             source_types=("video", "frames", "images"),
             runner_status="env_blocked_curope",
             research_priority=88,
+            launch_blocker="远端 CUT3R 仍缺 curope / gsplat / evo / open3d 环境确认、权重落位和官方 smoke run。",
         ),
         "pi3x": ModelCatalogEntry(
             value="pi3x",
             label="Pi3X",
             description="无参考视角通用视觉几何",
             family="general_visual_geometry",
+            param_family="research_catalog",
             source_types=("images", "video", "frames"),
             runner_status="frontier_research",
             research_priority=55,
             active_track=False,
+            launch_blocker="前沿预研条目，尚未定义 runner、部署合同和标准输出。",
         ),
         "zipmap": ModelCatalogEntry(
             value="zipmap",
             label="ZipMap",
             description="线性时间有状态三维重建",
             family="stateful_linear_reconstruction",
+            param_family="research_catalog",
             source_types=("images", "video", "frames"),
             runner_status="frontier_research",
             research_priority=50,
             active_track=False,
+            launch_blocker="前沿预研条目，尚未定义 runner、部署合同和标准输出。",
         ),
         "lingbot_map": ModelCatalogEntry(
             value="lingbot_map",
             label="LingBot-Map",
             description="流式几何上下文建图",
             family="streaming_mapping",
+            param_family="research_catalog",
             source_types=("video", "frames"),
             runner_status="frontier_research",
             research_priority=45,
             active_track=False,
+            launch_blocker="前沿预研条目，尚未定义 runner、部署合同和标准输出。",
         ),
     }
 )
@@ -180,10 +197,12 @@ MODEL_OPTIONS = [
         "value": spec.value,
         "label": spec.label,
         "description": spec.description,
+        "param_family": spec.param_family,
         "family": spec.family,
         "runner_status": spec.runner_status,
         "research_priority": spec.research_priority,
         "active_track": spec.active_track,
+        "launch_blocker": spec.launch_blocker,
     }
     for spec in MODEL_REGISTRY.values()
 ]
@@ -195,11 +214,13 @@ MODEL_CATALOG_OPTIONS = [
         "label": spec.label,
         "description": spec.description,
         "family": spec.family,
+        "param_family": spec.param_family,
         "source_types": list(spec.source_types),
         "runner_status": spec.runner_status,
         "research_priority": spec.research_priority,
         "active_track": spec.active_track,
         "runnable": spec.value in MODEL_REGISTRY,
+        "launch_blocker": spec.launch_blocker,
     }
     for spec in sorted(MODEL_CATALOG.values(), key=lambda item: (-item.research_priority, item.value))
 ]

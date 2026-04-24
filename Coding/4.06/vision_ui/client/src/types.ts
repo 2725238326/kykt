@@ -167,21 +167,25 @@ export type BootstrapPayload = {
     value: string;
     label: string;
     description: string;
+    param_family?: string;
     family?: string;
     runner_status?: string;
     research_priority?: number;
     active_track?: boolean;
+    launch_blocker?: string | null;
   }>;
   model_catalog?: Array<{
     value: string;
     label: string;
     description: string;
     family: string;
+    param_family: string;
     source_types: string[];
     runner_status: string;
     research_priority: number;
     active_track: boolean;
     runnable: boolean;
+    launch_blocker?: string | null;
   }>;
   source_types: Array<{
     value: string;

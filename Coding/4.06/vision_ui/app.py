@@ -542,10 +542,25 @@ def _build_job_params(
     return {}
 
 
+def _catalog_entry_for(model: str) -> dict | None:
+    return next((item for item in MODEL_CATALOG_OPTIONS if item["value"] == model), None)
+
+
+def _minimum_input_count(model: str, source_type: str) -> int:
+    family = param_family_for(model)
+    if family == "video_sequence" and source_type == "video":
+        return 1
+    return 2
+
+
 def _validate_new_job(model: str, source_type: str, files: list[UploadFile]) -> None:
     model_values = {item["value"] for item in MODEL_OPTIONS}
     source_values = {item["value"] for item in SOURCE_TYPE_OPTIONS}
     if model not in model_values:
+        catalog_entry = _catalog_entry_for(model)
+        if catalog_entry:
+            blocker = catalog_entry.get("launch_blocker") or "该模型还没有接入可派发 runner。"
+            raise HTTPException(status_code=400, detail=f"{catalog_entry['label']} 当前是目录模型，暂不可创建：{blocker}")
         raise HTTPException(status_code=400, detail=f"不支持的模型：{model}")
     if source_type not in source_values:
         raise HTTPException(status_code=400, detail=f"不支持的输入类型：{source_type}")
@@ -554,19 +569,19 @@ def _validate_new_job(model: str, source_type: str, files: list[UploadFile]) -> 
         raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 仅支持这些输入类型：{allowed}")
     if not files:
         raise HTTPException(status_code=400, detail="没有上传输入文件。")
-    if model in {"dust3r", "mast3r", "spann3r", "fast3r"} and len(files) < 2:
-        raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 至少需要两张输入图片。")
-    if model == "monst3r" and source_type == "video" and len(files) != 1:
-        raise HTTPException(status_code=400, detail="MonST3R 视频模式请上传 1 个视频文件；多张图片请改选“帧序列”。")
-    if model == "monst3r" and source_type == "frames" and len(files) < 2:
-        raise HTTPException(status_code=400, detail="MonST3R 帧序列模式至少需要 2 张图片。")
+    if source_type == "video" and len(files) != 1:
+        raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 视频模式请上传 1 个视频文件；多张图片请改选“帧序列”。")
+    minimum = _minimum_input_count(model, source_type)
+    if len(files) < minimum:
+        unit = "个视频文件" if source_type == "video" else "张图片或帧"
+        raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 至少需要 {minimum} {unit}。")
 
 
 def _validate_dispatchable(job) -> None:
-    if job.model in {"dust3r", "mast3r", "spann3r", "fast3r"} and len(job.input_files) < 2:
-        raise HTTPException(status_code=400, detail=f"{get_model_spec(job.model).label} 至少需要两张输入图片。")
-    if job.model == "monst3r" and len(job.input_files) < 1:
-        raise HTTPException(status_code=400, detail="MonST3R 至少需要 1 个视频或一组帧序列。")
+    minimum = _minimum_input_count(job.model, job.source_type)
+    if len(job.input_files) < minimum:
+        unit = "个视频文件" if job.source_type == "video" else "张图片或帧"
+        raise HTTPException(status_code=400, detail=f"{get_model_spec(job.model).label} 至少需要 {minimum} {unit}。")
 
 
 async def _create_job_from_request(

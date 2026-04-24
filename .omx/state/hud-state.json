@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-04-23T18:49:13.937Z",
-  "turn_count": 63,
-  "last_progress_at": "2026-04-23T18:49:13.937Z",
-  "last_agent_output": "继续改完了，这一轮主要把 Create 页的模型逻辑和浅色工作台再收了一遍。\n\n`Create` 现在已经按 `model_catalog` 驱动，不再只看旧的可创建列表。模型下拉会分成“可创建模型”"
+  "last_turn_at": "2026-04-24T05:21:45.994Z",
+  "turn_count": 69,
+  "last_progress_at": "2026-04-24T05:21:45.994Z",
+  "last_agent_output": "完成了本轮 Create/registry 语义对齐：\n\n- 后端 `model_catalog` 现在输出 `param_family` 和 `launch_blocker`。\n- Create 参"
 }
