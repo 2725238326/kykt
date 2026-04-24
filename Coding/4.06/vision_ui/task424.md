@@ -273,9 +273,9 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 ### Phase 3 - Jobs workbench improvements
 
 - [ ] Add stronger batch operations in `Jobs`.
-- [ ] Add better filtered-selection handoff behavior.
-- [ ] Add log keyword highlighting, not just filtering.
-- [ ] Add a stronger attention-first view for failed/cancelled jobs.
+- [x] Add better filtered-selection handoff behavior.
+- [x] Add log keyword highlighting, not just filtering.
+- [x] Add a stronger attention-first view for failed/cancelled jobs.
 - [ ] Improve the right-side inspector rhythm for summary/evidence/logs/evaluation.
 
 ### Phase 4 - Sample Matrix as a real compare workspace

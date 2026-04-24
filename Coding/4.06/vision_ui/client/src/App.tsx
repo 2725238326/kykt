@@ -502,6 +502,15 @@ function App() {
     : false;
 
   useEffect(() => {
+    if (activeWorkspace !== "jobs" || filteredJobs.length === 0) {
+      return;
+    }
+    if (!selectedJobId || selectedFilteredIndex < 0) {
+      setSelectedJobId(filteredJobs[0].job.job_id);
+    }
+  }, [activeWorkspace, filteredJobs, selectedFilteredIndex, selectedJobId]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function boot() {
@@ -2795,10 +2804,16 @@ function JobDetail(props: {
       return haystack.includes(normalizedLogQuery);
     });
   }, [normalizedLogQuery, props.selectedJob.logs]);
+  const totalLogLines = useMemo(() => countLogLines(props.selectedJob.logs), [props.selectedJob.logs]);
+  const logKeywordHits = useMemo(
+    () => countLogKeywordHits(props.selectedJob.logs, normalizedLogQuery),
+    [normalizedLogQuery, props.selectedJob.logs]
+  );
   const outputSections = buildOutputSections(props.selectedJob.outputs, job.model);
   const progress = props.selectedJob.phase_display;
   const advisorSuggested = isAdvisorSuggested(job.status);
   const advisorReport = props.selectedJob.advisor_report ?? null;
+  const attentionJob = job.status === "failed" || job.status === "cancelled";
 
   useEffect(() => {
     setLogQuery("");
@@ -2934,6 +2949,41 @@ function JobDetail(props: {
           取消
         </button>
       </div>
+
+      {attentionJob ? (
+        <article className={`attention-inspector ${job.status}`}>
+          <div>
+            <span className="mini-label">Attention</span>
+            <strong>{job.status === "failed" ? "失败任务优先排查" : "已取消任务复查"}</strong>
+            <p>{buildAttentionJobMessage(job.status, job.error_message, criticalLogLine, latestLogLine)}</p>
+          </div>
+          <div className="attention-inspector-actions">
+            {job.error_message ? (
+              <button className="ghost-button small" onClick={() => void props.onCopy(job.error_message ?? "", "错误原因")} type="button">
+                复制错误
+              </button>
+            ) : null}
+            {criticalLogLine ? (
+              <button className="ghost-button small" onClick={() => void props.onCopy(criticalLogLine, "可疑日志")} type="button">
+                复制可疑行
+              </button>
+            ) : null}
+            {latestLogLine ? (
+              <button className="ghost-button small" onClick={() => void props.onCopy(latestLogLine, "最新日志")} type="button">
+                复制最新日志
+              </button>
+            ) : null}
+            <button
+              className="ghost-button small"
+              disabled={props.running || props.actionKey === "retry"}
+              onClick={() => props.onAction(`/api/jobs/${job.job_id}/retry`, "retry")}
+              type="button"
+            >
+              {props.actionKey === "retry" ? "重试中..." : "重试任务"}
+            </button>
+          </div>
+        </article>
+      ) : null}
 
       <div className="inspector-nav-strip">
         <span className="mini-label">检查器导航</span>
@@ -3106,7 +3156,9 @@ function JobDetail(props: {
               </div>
               <div className="logs-head-actions">
                 <span className="section-pill">
-                  {normalizedLogQuery ? `命中 ${filteredLogs.length}/${props.selectedJob.logs.length}` : `${props.selectedJob.logs.length} 份`}
+                  {normalizedLogQuery
+                    ? `命中 ${logKeywordHits}/${totalLogLines} 行 · ${filteredLogs.length}/${props.selectedJob.logs.length} 份`
+                    : `${props.selectedJob.logs.length} 份`}
                 </span>
                 {latestLogLine ? (
                   <button className="ghost-button small" onClick={() => void props.onCopy(latestLogLine, "最新日志")} type="button">
@@ -3143,7 +3195,9 @@ function JobDetail(props: {
                 {filteredLogs.map((log) => (
                   <div className="log-card" key={log.relative_path}>
                     <strong>{log.name}</strong>
-                    <pre>{log.tail || "暂无日志。"}</pre>
+                    <pre>
+                      <HighlightedLogTail query={normalizedLogQuery} text={log.tail || "暂无日志。"} />
+                    </pre>
                   </div>
                 ))}
               </div>
@@ -3237,6 +3291,62 @@ function currentStepLabel(steps: JobPayload["phase_display"]["steps"]) {
     return "全部阶段完成";
   }
   return `共 ${steps.length} 个阶段`;
+}
+
+function HighlightedLogTail(props: { text: string; query: string }) {
+  if (!props.query) {
+    return <>{props.text}</>;
+  }
+  const pattern = new RegExp(`(${escapeRegExp(props.query)})`, "gi");
+  const parts = props.text.split(pattern);
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.toLowerCase() === props.query.toLowerCase() ? (
+          <mark className="log-hit" key={`${part}-${index}`}>
+            {part}
+          </mark>
+        ) : (
+          <span key={`${part}-${index}`}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function countLogLines(logs: JobPayload["logs"]) {
+  return logs.reduce((total, log) => {
+    const lines = (log.tail || "").split(/\r?\n/).filter((line) => line.trim().length > 0);
+    return total + lines.length;
+  }, 0);
+}
+
+function countLogKeywordHits(logs: JobPayload["logs"], query: string) {
+  if (!query) {
+    return 0;
+  }
+  const needle = query.toLowerCase();
+  return logs.reduce((total, log) => {
+    const lines = (log.tail || "").split(/\r?\n/).filter((line) => line.trim().length > 0);
+    return total + lines.filter((line) => line.toLowerCase().includes(needle)).length;
+  }, 0);
+}
+
+function buildAttentionJobMessage(status: string, errorMessage: string | null | undefined, criticalLogLine: string, latestLogLine: string) {
+  if (errorMessage) {
+    return errorMessage;
+  }
+  if (criticalLogLine) {
+    return `优先查看可疑日志：${criticalLogLine}`;
+  }
+  if (latestLogLine) {
+    return `没有明确错误行，先从最新日志判断是否需要重试：${latestLogLine}`;
+  }
+  return status === "cancelled" ? "任务已取消，先确认是否需要清理远端残留或复制任务重跑。" : "任务失败但没有回传明确日志，先检查远端状态和 dispatch 日志。";
 }
 
 function getLatestLogLine(logs: JobPayload["logs"]) {

@@ -2906,14 +2906,57 @@ body {
   width: 100%;
 }
 
+.attention-inspector {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(194, 84, 102, 0.24);
+  border-radius: 14px;
+  padding: 12px;
+  background: linear-gradient(180deg, #fff5f7 0%, #ffffff 100%);
+}
+
+.attention-inspector.cancelled {
+  border-color: rgba(188, 127, 24, 0.24);
+  background: linear-gradient(180deg, #fff9ee 0%, #ffffff 100%);
+}
+
+.attention-inspector strong {
+  display: block;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.attention-inspector p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.attention-inspector-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .critical-log-banner {
   border: 1px solid rgba(255, 107, 122, 0.34);
   border-radius: 10px;
   padding: 10px 12px;
   background: rgba(255, 107, 122, 0.1);
-  color: #ffc6ce;
+  color: var(--accent-danger);
   font-size: 12px;
   line-height: 1.45;
+}
+
+.log-hit {
+  border-radius: 4px;
+  padding: 0 2px;
+  background: #fff2a8;
+  color: #5b4200;
 }
 
 .sample-compare-row {
@@ -3279,6 +3322,11 @@ body {
 
   .log-filter-strip {
     align-items: stretch;
+  }
+
+  .attention-inspector {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .log-filter-field {
