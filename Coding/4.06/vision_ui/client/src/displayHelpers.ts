@@ -117,6 +117,7 @@ export function runnerStatusLabel(status: string) {
   const labels: Record<string, string> = {
     baseline: "基座保留",
     validated_smoke: "Smoke 已过",
+    validated_smoke_attention_fallback: "Smoke 已过（attention fallback）",
     validated_standard_sample: "标准样例已过",
     smoke_ready: "Smoke 已过",
     smoke_ready_attention_fallback: "Smoke 已过（需 attention fallback）",

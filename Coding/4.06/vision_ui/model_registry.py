@@ -75,7 +75,7 @@ MODEL_REGISTRY: dict[str, ModelSpec] = {
         source_types=("images", "frames"),
         default_runner="spann3r_runner.py",
         family="memory_global_pointmap",
-        runner_status="smoke_ready",
+        runner_status="validated_smoke",
         research_priority=95,
     ),
     "fast3r": ModelSpec(
@@ -86,7 +86,7 @@ MODEL_REGISTRY: dict[str, ModelSpec] = {
         source_types=("images", "frames"),
         default_runner="fast3r_runner.py",
         family="large_image_collection",
-        runner_status="smoke_ready_attention_fallback",
+        runner_status="validated_smoke_attention_fallback",
         research_priority=90,
     ),
 }
@@ -117,7 +117,7 @@ MODEL_CATALOG.update(
             family="memory_global_pointmap",
             param_family="spann3r_sequence",
             source_types=("images", "frames"),
-            runner_status="smoke_ready",
+            runner_status="validated_smoke",
             research_priority=95,
         ),
         "align3r": ModelCatalogEntry(
@@ -138,7 +138,7 @@ MODEL_CATALOG.update(
             family="large_image_collection",
             param_family="fast3r_collection",
             source_types=("images", "frames"),
-            runner_status="smoke_ready_attention_fallback",
+            runner_status="validated_smoke_attention_fallback",
             research_priority=90,
         ),
         "cut3r": ModelCatalogEntry(

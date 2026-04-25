@@ -117,7 +117,7 @@ function buildDeploymentNextAction(
   if (missingRequiredFiles > 0) {
     return `先补齐 ${missingRequiredFiles} 个必需文件，再刷新部署状态。`;
   }
-  if (item.runner_status === "smoke_ready_attention_fallback") {
+  if (item.runner_status === "smoke_ready_attention_fallback" || item.runner_status === "validated_smoke_attention_fallback") {
     return "可从 Create 创建，但先用小样例确认 attention fallback 的速度和显存。";
   }
   if (checkpointCount === 0) {
@@ -149,7 +149,7 @@ function buildModelConstraintTags(
   if (checkpointCount === 0) {
     tags.push("checkpoint pending");
   }
-  if (item?.runner_status === "smoke_ready_attention_fallback") {
+  if (item?.runner_status === "smoke_ready_attention_fallback" || item?.runner_status === "validated_smoke_attention_fallback") {
     tags.push("attention fallback");
   }
   if (item?.runner_status === "env_blocked_curope") {

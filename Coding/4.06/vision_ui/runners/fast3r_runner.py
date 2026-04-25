@@ -37,6 +37,35 @@ def write_ply(points: np.ndarray, colors: np.ndarray, target: Path) -> None:
             handle.write(f"{point[0]:.6f} {point[1]:.6f} {point[2]:.6f} {int(color[0])} {int(color[1])} {int(color[2])}\n")
 
 
+def build_attention_fallback(torch_module):
+    def scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
+        scale_factor = scale if scale is not None else q.size(-1) ** -0.5
+        scores = torch_module.matmul(q, k.transpose(-2, -1)) * scale_factor
+
+        if is_causal:
+            target_length = q.size(-2)
+            source_length = k.size(-2)
+            causal_mask = torch_module.ones(
+                (target_length, source_length),
+                dtype=torch_module.bool,
+                device=q.device,
+            ).tril(diagonal=0)
+            scores = scores.masked_fill(~causal_mask, float("-inf"))
+
+        if attn_mask is not None:
+            if attn_mask.dtype == torch_module.bool:
+                scores = scores.masked_fill(~attn_mask, float("-inf"))
+            else:
+                scores = scores + attn_mask
+
+        weights = torch_module.softmax(scores, dim=-1)
+        if dropout_p and dropout_p > 0:
+            weights = torch_module.dropout(weights, dropout_p, train=True)
+        return torch_module.matmul(weights, v)
+
+    return scaled_dot_product_attention
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fast3R server-side job runner")
     parser.add_argument("--job-dir", required=True)
@@ -61,6 +90,7 @@ def main() -> None:
 
     import torch
     from fast3r.dust3r.utils.image import load_images, rgb
+    from fast3r.croco.models import blocks as fast3r_blocks
     from fast3r.models.fast3r import Fast3R
     from fast3r.models.multiview_dust3r_module import estimate_cam_pose_one_sample, estimate_focal
 
@@ -72,12 +102,34 @@ def main() -> None:
         sys.exit(1)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device == "cuda":
+        try:
+            torch.backends.cuda.enable_flash_sdp(False)
+            torch.backends.cuda.enable_mem_efficient_sdp(False)
+            torch.backends.cuda.enable_math_sdp(True)
+            print("[fast3r_runner] Forced PyTorch math SDP backend for sm75 compatibility.", flush=True)
+        except Exception as exc:
+            print(f"[fast3r_runner] Could not adjust SDP backend: {exc}", flush=True)
+        fast3r_blocks.scaled_dot_product_attention = build_attention_fallback(torch)
+        print("[fast3r_runner] Installed local scaled-dot-product attention fallback.", flush=True)
     checkpoint_dir = Path(args.checkpoint_dir)
     write_status(job_dir, "starting", f"正在启动 Fast3R，输入图片数：{len(image_files)}。")
     write_status(job_dir, "running_matches", "正在加载 Fast3R 模型并执行前馈推理...", f"0/{len(image_files)}")
 
     print(f"Fast3R command: checkpoint_dir={checkpoint_dir} attention_backend={args.attention_backend} image_size={args.image_size}")
-    model = Fast3R.from_pretrained(str(checkpoint_dir), attn_implementation=args.attention_backend)
+    actual_attention_backend = args.attention_backend
+    try:
+        model = Fast3R.from_pretrained(str(checkpoint_dir), attn_implementation=args.attention_backend)
+    except TypeError as exc:
+        if "attn_implementation" not in str(exc):
+            raise
+        actual_attention_backend = f"default_loader(requested={args.attention_backend})"
+        print(
+            "[fast3r_runner] Fast3R.from_pretrained does not accept attn_implementation; "
+            "retrying with the checkpoint default attention backend.",
+            flush=True,
+        )
+        model = Fast3R.from_pretrained(str(checkpoint_dir))
     model.eval().to(device)
 
     views = load_images([str(path) for path in image_files], size=args.image_size, verbose=True)
@@ -150,7 +202,8 @@ def main() -> None:
     metadata = {
         "input_files": [path.name for path in image_files],
         "profiling_info": profiling_info,
-        "attention_backend": args.attention_backend,
+        "attention_backend": actual_attention_backend,
+        "requested_attention_backend": args.attention_backend,
         "device": device,
         "image_size": args.image_size,
         "checkpoint_dir": str(checkpoint_dir),
@@ -166,7 +219,8 @@ def main() -> None:
         "artifact_count": 4,
         "n_points": int(len(points)),
         "raw_point_count": int(raw_point_count),
-        "attention_backend": args.attention_backend,
+        "attention_backend": actual_attention_backend,
+        "requested_attention_backend": args.attention_backend,
         "profiling_info": profiling_info,
         "params": {
             "image_size": args.image_size,

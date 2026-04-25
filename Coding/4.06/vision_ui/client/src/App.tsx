@@ -4919,7 +4919,7 @@ function buildMatrixModelConstraint(item: ModelCatalogItem) {
       detail: item.launch_blocker ?? "目录模型暂不进入创建队列。"
     };
   }
-  if (item.runner_status === "smoke_ready_attention_fallback") {
+  if (item.runner_status === "smoke_ready_attention_fallback" || item.runner_status === "validated_smoke_attention_fallback") {
     return {
       tone: "partial",
       label: "Fallback",

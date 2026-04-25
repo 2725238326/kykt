@@ -54,6 +54,8 @@ It currently provides:
 - First `App.tsx` split step completed: shared API/default bootstrap/model parameter config now lives in `client/src/appConfig.ts`
 - Display helpers and deployment readiness helpers now live outside `App.tsx`
 - Jobs inspector can export a ZIP bundle for the selected job through `/api/jobs/{job_id}/bundle`
+- Fast3R platform E2E succeeded as job `20260425-113002`
+- Spann3R platform E2E succeeded as job `20260425-113227`
 
 ### Desktop shell
 
@@ -102,7 +104,7 @@ Release outputs:
 
 ## Remaining high-priority work
 
-- full end-to-end Spann3R and Fast3R validation through the rebuilt client
 - continue splitting `client/src/App.tsx` into smaller workspace containers, hooks, and helper modules
+- inspect Fast3R / Spann3R output quality and select better comparison samples
 - keep tightening report/evaluation/Advisor contracts
 - decide whether to fully bundle Python/.venv for portable release builds

@@ -47,9 +47,9 @@ Old/SfmLearner-Pytorch-master/
 | --- | --- | --- | --- | --- |
 | MASt3R | `/hdd3/kykt26/code/mast3r` | `mast3r` | Platform smoke passed as job `20260420-222729` | Select better 3-8 image static sample |
 | MonST3R | `/hdd3/kykt26/code/monst3r` | `monst3r` | Standard 512/48-frame video sample passed as job `20260420-222928` | Manually inspect GLB/trajectory/frame quality |
-| Spann3R | `/hdd3/kykt26/code/spann3r` | `spann3r` | Env ready, `curope` compiled for sm75, official `s00567` smoke passed | Run full client-driven end-to-end validation and confirm output contract holds |
+| Spann3R | `/hdd3/kykt26/code/spann3r` | `spann3r` | Env ready, `curope` compiled for sm75, official `s00567` smoke passed; platform E2E passed as job `20260425-113227` using MonST3R frame previews | Inspect pointcloud/transforms output and decide the next static multiview sample |
 | Align3R | `/hdd3/kykt26/code/align3r` | `align3r` | Env exists, core deps mostly installed; `curope` compile blocked by local CUDA 11.3 vs torch cu121 mismatch | Keep catalog-visible but blocked until slow path or rebuild path is confirmed |
-| Fast3R | `/hdd3/kykt26/code/fast3r` | `fast3r` | Env ready, local HF weights loaded, 2-image forward smoke passed with `pytorch_naive` attention fallback on sm75 | Run full client-driven end-to-end validation and keep fallback explicit |
+| Fast3R | `/hdd3/kykt26/code/fast3r` | `fast3r` | Env ready, local HF weights loaded; platform E2E passed as job `20260425-113002` after runner fallback for local Fast3R loader and sm75 attention | Inspect pointcloud/camera output and keep fallback explicit in reports |
 | CUT3R | `/hdd3/kykt26/code/cut3r` | `cut3r` | Env exists, checkpoints present; demo currently fails in RoPE path without compiled `curope` | Keep catalog-visible but blocked until `curope` / torch-CUDA path is fixed |
 
 ## Official Setup Notes
@@ -81,14 +81,16 @@ Implemented:
 - `tools/check_3r_remote.ps1` remote deployment checker
 - Spann3R first smoke completed at `/hdd3/kykt26/code/spann3r/output/demo/s00567_smoke`
 - Fast3R first smoke completed at `/hdd3/kykt26/code/fast3r/output/smoke_static_pair/smoke_summary.json`
+- Fast3R platform E2E completed as local job `20260425-113002`; output contract returned `pointcloud.ply`, `camera_poses.json`, `confidence_summary.json`, `metadata.json`, `scene_meta.json`, logs, and result summary
+- Spann3R platform E2E completed as local job `20260425-113227` using six MonST3R frame previews
 - Server verification after upload: `missing_directories=0`, `missing_conda_envs=0`, `missing_required_files=0`
 
 Next app tasks:
 
-1. Run full end-to-end Spann3R / Fast3R jobs through the desktop client.
-2. Keep blocked-model deployment state explicit and reusable between backend and frontend.
-3. Continue splitting `client/src/App.tsx` into workspace-sized components, hooks, and helper modules.
-4. Keep tightening evaluation/report/Advisor contracts.
+1. Inspect Fast3R job `20260425-113002` and Spann3R job `20260425-113227` outputs in the desktop client.
+2. Pick better static multiview / medium-collection samples for higher-quality Spann3R and Fast3R comparison.
+3. Keep blocked-model deployment state explicit and reusable between backend and frontend.
+4. Continue splitting `client/src/App.tsx` and tightening evaluation/report/Advisor contracts.
 
 ## Download / Upload Planning
 

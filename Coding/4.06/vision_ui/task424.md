@@ -341,7 +341,9 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 - [x] Move shared API/default bootstrap/model parameter config out of `client/src/App.tsx`.
 - [x] Move shared display/formatting and deployment readiness helpers out of `client/src/App.tsx`.
 - [ ] Continue splitting `client/src/App.tsx` into workspace-sized components, hooks, and helper modules.
-- [ ] Run full end-to-end Spann3R / Fast3R validation through the desktop client.
+- [x] Run platform end-to-end Fast3R validation (`20260425-113002`).
+- [x] Run platform end-to-end Spann3R validation (`20260425-113227`).
+- [ ] Inspect Fast3R / Spann3R output quality through the desktop client and select better comparison samples.
 
 ---
 

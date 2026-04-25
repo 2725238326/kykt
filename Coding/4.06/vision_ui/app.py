@@ -717,7 +717,8 @@ def build_sample_job_matrix(manifest: dict, jobs) -> dict:
     for job in jobs:
         sample_id = getattr(job, "sample_id", None) or seed_job_to_sample_id.get(job.job_id)
         if sample_id and sample_id in grouped:
-            grouped[sample_id][job.model] = _job_compare_record(job, sample_id_override=sample_id)
+            if job.model not in grouped[sample_id]:
+                grouped[sample_id][job.model] = _job_compare_record(job, sample_id_override=sample_id)
         elif sample_id:
             unassigned.append(_job_compare_record(job))
 

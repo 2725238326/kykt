@@ -40,6 +40,8 @@ The app should remain a local desktop workbench. The server should run model job
 - Moved shared display/formatting helpers into `client/src/displayHelpers.ts` and deployment readiness helpers into `client/src/deploymentHelpers.ts`.
 - Added job bundle export via `GET /api/jobs/{job_id}/bundle`, with a Jobs inspector export action.
 - Updated Sample Matrix backend mapping so manifest `seed_job_id` values populate matrix cells without mutating historical job records.
+- Fast3R runner now handles the local Fast3R loader API and sm75 attention fallback; platform E2E succeeded as job `20260425-113002`.
+- Spann3R platform E2E succeeded as job `20260425-113227` using MonST3R frame previews.
 
 ### Desktop Shell
 
