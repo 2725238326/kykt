@@ -37,6 +37,8 @@ The app should remain a local desktop workbench. The server should run model job
 - Added a system-page deployment console backed by `/api/deployment/status`.
 - Consolidated `client/src/styles.css` onto a single Workbench Light foundation plus layout refinement instead of stacked dark/light override passes.
 - Started splitting `client/src/App.tsx` by moving API/bootstrap defaults, parameter presets, and Create parameter option tables into `client/src/appConfig.ts`.
+- Moved shared display/formatting helpers into `client/src/displayHelpers.ts` and deployment readiness helpers into `client/src/deploymentHelpers.ts`.
+- Added job bundle export via `GET /api/jobs/{job_id}/bundle`, with a Jobs inspector export action.
 
 ### Desktop Shell
 
@@ -46,5 +48,5 @@ The app should remain a local desktop workbench. The server should run model job
 
 1. Continue splitting `client/src/App.tsx` into workspace containers, data hooks, and pure helper modules.
 2. Add pagination or windowing for very large local job histories.
-3. Add optional job-bundle export for selected jobs.
-4. Unify query / polling state so jobs, samples, and deployment views share more reusable loading/error logic.
+3. Unify query / polling state so jobs, samples, and deployment views share more reusable loading/error logic.
+4. Continue tightening report/evaluation/Advisor evidence contracts.

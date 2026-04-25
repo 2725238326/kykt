@@ -56,4 +56,4 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run build
 - Run full end-to-end Spann3R and Fast3R jobs through the desktop client
 - Make blocked-model deployment state more explicit and reusable
 - Continue splitting `client/src/App.tsx` into workspace-sized components, hooks, and helper modules
-- Add job bundle export and continue tightening report/evaluation contracts
+- Continue tightening report/evaluation/Advisor contracts

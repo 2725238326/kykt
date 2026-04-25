@@ -67,6 +67,8 @@ Frontend:
 
 - `E:/kykt/Coding/4.06/vision_ui/client/src/App.tsx`
 - `E:/kykt/Coding/4.06/vision_ui/client/src/appConfig.ts`
+- `E:/kykt/Coding/4.06/vision_ui/client/src/displayHelpers.ts`
+- `E:/kykt/Coding/4.06/vision_ui/client/src/deploymentHelpers.ts`
 - `E:/kykt/Coding/4.06/vision_ui/client/src/styles.css`
 - `E:/kykt/Coding/4.06/vision_ui/client/src/types.ts`
 
@@ -322,7 +324,7 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 
 ### Phase 8 - Delivery and reporting
 
-- [ ] Add job bundle export.
+- [x] Add job bundle export.
 - [x] Add sample/model comparison report export.
 - [ ] Improve advisor/evaluation/report contract consistency.
 - [ ] Redesign AI/advisor evaluation around an evidence contract instead of generic diagnosis copy.
@@ -336,6 +338,7 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 - [x] Collapse `client/src/styles.css` to a single light-theme foundation plus layout refinement.
 - [x] Keep the Jobs page as the main desktop workbench pattern.
 - [x] Move shared API/default bootstrap/model parameter config out of `client/src/App.tsx`.
+- [x] Move shared display/formatting and deployment readiness helpers out of `client/src/App.tsx`.
 - [ ] Continue splitting `client/src/App.tsx` into workspace-sized components, hooks, and helper modules.
 - [ ] Run full end-to-end Spann3R / Fast3R validation through the desktop client.
 

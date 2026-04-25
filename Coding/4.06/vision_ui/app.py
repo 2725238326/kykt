@@ -9,12 +9,13 @@ import shutil
 import subprocess
 import threading
 import time
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -33,6 +34,7 @@ from job_store import (
     clear_job_runtime,
     create_job,
     duplicate_job,
+    get_job_dir,
     get_log_snippets,
     iter_input_items,
     list_jobs,
@@ -325,6 +327,40 @@ def resolve_local_output(job, relative_path: str) -> Path:
     if not target.exists():
         raise HTTPException(status_code=404, detail="本地输出文件不存在。")
     return target
+
+
+def build_job_bundle(job_id: str) -> Path:
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    job_dir = get_job_dir(job_id).resolve()
+    root = ROOT.resolve()
+    try:
+        job_dir.relative_to(root)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="任务目录路径不合法。") from exc
+
+    if not job_dir.exists():
+        raise HTTPException(status_code=404, detail=f"任务目录不存在：{job_id}。")
+
+    bundle_dir = ROOT / "local_jobs" / "_bundles"
+    bundle_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    bundle_path = bundle_dir / f"{job_id}-bundle-{timestamp}.zip"
+
+    with zipfile.ZipFile(bundle_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for path in sorted(job_dir.rglob("*")):
+            if not path.is_file():
+                continue
+            try:
+                relative_path = path.resolve().relative_to(job_dir)
+            except ValueError:
+                continue
+            archive.write(path, arcname=str(Path(job_id) / relative_path))
+
+    return bundle_path
 
 
 def serialize_previews(job) -> list[dict]:
@@ -900,6 +936,16 @@ async def job_detail_api(job_id: str):
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
 
     return JSONResponse(_job_payload(job))
+
+
+@app.get("/api/jobs/{job_id}/bundle")
+async def job_bundle_api(job_id: str):
+    bundle_path = build_job_bundle(job_id)
+    return FileResponse(
+        path=str(bundle_path),
+        filename=bundle_path.name,
+        media_type="application/zip",
+    )
 
 
 @app.get("/api/health")

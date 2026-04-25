@@ -25,6 +25,40 @@ import {
   presetDescriptors
 } from "./appConfig";
 import type { ParamChoice, PresetKey } from "./appConfig";
+import {
+  backendStatusText,
+  delay,
+  describeOutput,
+  fileExtensionLabel,
+  findModelCatalogItem,
+  formatCountMap,
+  formatDateTime,
+  formatDuration,
+  formatModelList,
+  formatParamLabel,
+  formatSourceTypeList,
+  friendlyError,
+  jobFilterLabel,
+  metricLabel,
+  modelDisplayName,
+  modelFamilyLabel,
+  paramFamilyLabel,
+  runnerStatusLabel,
+  sampleStatusLabel,
+  scoringCategoryLabel,
+  serviceStatusLabel,
+  sourceTypeLabel,
+  statusLabel,
+  statusModelLabel
+} from "./displayHelpers";
+import type { ModelCatalogItem } from "./displayHelpers";
+import {
+  buildDeploymentComponentRows,
+  buildModelActionRows,
+  formatDeploymentCacheStatus,
+  formatDeploymentDirectoryStatus,
+  formatDeploymentEnvSummary
+} from "./deploymentHelpers";
 
 type CreateParamMode = "image_collection" | "video_sequence" | "spann3r_sequence" | "fast3r_collection" | "catalog";
 
@@ -66,7 +100,6 @@ type SampleMatrixRowView = {
   rowScore: ReturnType<typeof summarizeMatrixRowScore>;
   rowEvidence: ReturnType<typeof summarizeMatrixRowEvidence>;
 };
-type ModelCatalogItem = NonNullable<BootstrapPayload["model_catalog"]>[number];
 type PreviewAsset = {
   url: string;
   name: string;
@@ -2994,6 +3027,9 @@ function JobDetail(props: {
         >
           取消
         </button>
+        <a className="ghost-button" download href={props.assetUrl(`/api/jobs/${job.job_id}/bundle`)}>
+          导出包
+        </a>
       </div>
 
       {attentionJob ? (
@@ -4474,43 +4510,6 @@ function AdvisorWorkbench(props: {
   );
 }
 
-function delay(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-function friendlyError(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    if (/Failed to fetch|NetworkError|fetch/i.test(error.message)) {
-      return "本地服务暂时不可用，请等顶部状态变成“就绪”。";
-    }
-    return error.message;
-  }
-  return fallback;
-}
-
-function serviceStatusLabel(state: ServiceState) {
-  if (state === "ready") {
-    return "就绪";
-  }
-  if (state === "degraded") {
-    return "未连接";
-  }
-  return "启动中";
-}
-
-function backendStatusText(status: BackendStatusPayload | null) {
-  if (!status) {
-    return "正在检查桌面后端托管状态。";
-  }
-  if (status.running && status.managed_by_tauri) {
-    return status.log_path ? `桌面端已自动启动后端。日志：${status.log_path}` : "桌面端已自动启动后端。";
-  }
-  if (status.running) {
-    return "检测到已有后端，当前会直接复用。";
-  }
-  return status.message || "后端暂未启动。";
-}
-
 function isParamFieldKey(key: keyof FormState) {
   return key in defaultDust3rParams || key in defaultMonst3rParams || key in defaultFast3rParams;
 }
@@ -4905,80 +4904,6 @@ function isAdvisorSuggested(status: string) {
   return status === "finished" || status === "failed" || status === "cancelled";
 }
 
-function statusLabel(status: string) {
-  switch (status) {
-    case "running":
-      return "运行中";
-    case "finished":
-      return "完成";
-    case "failed":
-      return "失败";
-    case "cancelled":
-      return "取消";
-    case "draft":
-      return "草稿";
-    case "ready":
-      return "就绪";
-    default:
-      return status;
-  }
-}
-
-function statusModelLabel(model: string) {
-  switch (model) {
-    case "dust3r":
-      return "DUSt3R";
-    case "mast3r":
-      return "MASt3R";
-    case "monst3r":
-      return "MonST3R";
-    case "spann3r":
-      return "Spann3R";
-    case "align3r":
-      return "Align3R";
-    case "fast3r":
-      return "Fast3R";
-    case "cut3r":
-      return "CUT3R";
-    case "pi3x":
-      return "Pi3X";
-    case "zipmap":
-      return "ZipMap";
-    case "lingbot_map":
-      return "LingBot-Map";
-    default:
-      return model;
-  }
-}
-
-function modelFamilyLabel(family: string) {
-  const labels: Record<string, string> = {
-    pairwise_pointmap: "Pairwise 点图",
-    static_matching_reconstruction: "静态匹配重建",
-    video_dynamic_reconstruction: "视频动态重建",
-    memory_global_pointmap: "空间记忆",
-    video_depth_consistency: "视频深度一致",
-    large_image_collection: "长图集",
-    streaming_state_reconstruction: "状态流式",
-    general_visual_geometry: "通用视觉几何",
-    stateful_linear_reconstruction: "线性状态",
-    streaming_mapping: "流式建图"
-  };
-  return labels[family] ?? family.replace(/_/g, " ");
-}
-
-function paramFamilyLabel(paramFamily: string) {
-  const labels: Record<string, string> = {
-    image_collection: "图片集合",
-    video_sequence: "视频/帧序列",
-    spann3r_sequence: "Spann3R 序列",
-    fast3r_collection: "Fast3R 图集",
-    streaming_sequence: "流式序列",
-    research_catalog: "研究目录"
-  };
-  return labels[paramFamily] ?? paramFamily.replace(/_/g, " ");
-}
-
 function buildModelLaunchBlocker(item: ModelCatalogItem | null) {
   if (!item || item.runnable) {
     return null;
@@ -5009,276 +4934,6 @@ function buildMatrixModelConstraint(item: ModelCatalogItem) {
     };
   }
   return null;
-}
-
-function findModelCatalogItem(value: string, catalog: ModelCatalogItem[]) {
-  return catalog.find((item) => item.value === value) ?? null;
-}
-
-function runnerStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    baseline: "基座保留",
-    validated_smoke: "Smoke 已过",
-    validated_standard_sample: "标准样例已过",
-    smoke_ready: "Smoke 已过",
-    smoke_ready_attention_fallback: "Smoke 已过（需 attention fallback）",
-    env_partial: "环境部分就绪",
-    env_blocked_curope: "环境受 curope 阻塞",
-    planned: "待接入",
-    frontier_research: "前沿预研",
-    integrated: "已接入"
-  };
-  return labels[status] ?? status.replace(/_/g, " ");
-}
-
-function formatDeploymentEnvSummary(payload: DeploymentStatusPayload) {
-  const targets = ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"];
-  return payload.conda_envs
-    .filter((item) => targets.includes(item.component))
-    .map((item) => `${item.component}:${item.exists ? "OK" : "缺失"}${item.path ? ` (${item.path})` : ""}`)
-    .join(" / ");
-}
-
-function formatDeploymentCacheStatus(payload: DeploymentStatusPayload | null) {
-  if (!payload?.cache) {
-    return "暂无缓存信息";
-  }
-  const state = payload.cache.state ?? payload.source ?? "unknown";
-  const age = typeof payload.cache.age_seconds === "number" ? `${payload.cache.age_seconds.toFixed(1)}s` : "-";
-  const fetched = payload.fetched_at ?? "-";
-  return `${state} / age ${age} / fetched ${fetched}`;
-}
-
-function formatDeploymentDirectoryStatus(payload: DeploymentStatusPayload | null) {
-  if (!payload?.directories?.length) {
-    return "暂无目录状态";
-  }
-  return payload.directories
-    .filter((item) => ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"].includes(item.name))
-    .map((item) => `${item.name}:${item.state}${item.readme_setup ? "" : "/README缺失"}`)
-    .join(" / ");
-}
-
-function buildDeploymentComponentRows(payload: DeploymentStatusPayload | null, catalog: ModelCatalogItem[] = []) {
-  if (!payload) {
-    return [];
-  }
-  const targets = ["mast3r", "monst3r", "spann3r", "align3r", "fast3r", "cut3r"];
-  return targets.map((component) => {
-    const modelItem = findModelCatalogItem(component, catalog);
-    const directory = payload.directories.find((item) => item.name === component);
-    const env = payload.conda_envs.find((item) => item.component === component);
-    const files = payload.known_files.filter((item) => item.component === component);
-    const missingRequiredFiles = files.filter((item) => /required/i.test(item.need) && !item.exists).length;
-    const checkpointCount = payload.checkpoints?.filter((item) => item.component === component).length ?? 0;
-    const blocked = !directory?.exists || !env?.exists || missingRequiredFiles > 0;
-    const tone = blocked ? "blocked" : checkpointCount > 0 ? "ready" : "partial";
-
-    return {
-      component,
-      tone,
-      modelItem,
-      nextAction: buildDeploymentNextAction(modelItem, directory?.exists ?? false, env?.exists ?? false, missingRequiredFiles, checkpointCount),
-      constraints: buildModelConstraintTags(modelItem, directory?.exists ?? false, env?.exists ?? false, missingRequiredFiles, checkpointCount),
-      directory: directory?.exists ? (directory.readme_setup ? "OK" : "README 待补") : "缺失",
-      env: env?.exists ? "OK" : "缺失",
-      files: files.length > 0 ? `${files.length - missingRequiredFiles}/${files.length}` : "未登记",
-      checkpoints: checkpointCount > 0 ? `${checkpointCount} 个` : "待确认"
-    };
-  });
-}
-
-function buildModelActionRows(payload: DeploymentStatusPayload | null, catalog: ModelCatalogItem[]) {
-  if (!payload) {
-    return [];
-  }
-  return buildDeploymentComponentRows(payload, catalog)
-    .map((row) => {
-      const item = row.modelItem;
-      const stateLabel = !item?.runnable
-        ? "目录模型"
-        : row.tone === "ready"
-          ? "可创建"
-          : row.tone === "partial"
-            ? "需确认"
-            : "阻塞";
-      return {
-        value: row.component,
-        label: modelDisplayName(row.component, catalog),
-        tone: !item?.runnable ? "blocked" : row.tone,
-        stateLabel,
-        nextAction: row.nextAction,
-        constraints: row.constraints
-      };
-    })
-    .sort((left, right) => modelActionSortRank(left.tone) - modelActionSortRank(right.tone) || left.label.localeCompare(right.label));
-}
-
-function modelActionSortRank(tone: string) {
-  if (tone === "blocked") {
-    return 0;
-  }
-  if (tone === "partial") {
-    return 1;
-  }
-  return 2;
-}
-
-function buildDeploymentNextAction(
-  item: ModelCatalogItem | null,
-  hasDirectory: boolean,
-  hasEnv: boolean,
-  missingRequiredFiles: number,
-  checkpointCount: number
-) {
-  if (!item) {
-    return "先把该模型补进 model registry，再绑定部署检查结果。";
-  }
-  if (!item.runnable) {
-    return item.launch_blocker ?? "先完成 runner、输出合同和 smoke run，再开放 Create 创建入口。";
-  }
-  if (!hasDirectory) {
-    return "先确认远端代码目录是否存在，必要时按上传计划解压 repo。";
-  }
-  if (!hasEnv) {
-    return "先补齐独立 conda env，再跑官方 demo smoke。";
-  }
-  if (missingRequiredFiles > 0) {
-    return `先补齐 ${missingRequiredFiles} 个必需文件，再刷新部署状态。`;
-  }
-  if (item.runner_status === "smoke_ready_attention_fallback") {
-    return "可从 Create 创建，但先用小样例确认 attention fallback 的速度和显存。";
-  }
-  if (checkpointCount === 0) {
-    return "部署基本可见，下一步确认权重/checkpoint 是否已登记。";
-  }
-  return "可从 Create 发起任务；建议用样例矩阵做同输入横向对比。";
-}
-
-function buildModelConstraintTags(
-  item: ModelCatalogItem | null,
-  hasDirectory: boolean,
-  hasEnv: boolean,
-  missingRequiredFiles: number,
-  checkpointCount: number
-) {
-  const tags: string[] = [];
-  if (!item?.runnable) {
-    tags.push("catalog-only");
-  }
-  if (!hasDirectory) {
-    tags.push("code-dir missing");
-  }
-  if (!hasEnv) {
-    tags.push("env missing");
-  }
-  if (missingRequiredFiles > 0) {
-    tags.push(`files missing ${missingRequiredFiles}`);
-  }
-  if (checkpointCount === 0) {
-    tags.push("checkpoint pending");
-  }
-  if (item?.runner_status === "smoke_ready_attention_fallback") {
-    tags.push("attention fallback");
-  }
-  if (item?.runner_status === "env_blocked_curope") {
-    tags.push("curope blocked");
-  }
-  return tags;
-}
-
-function modelDisplayName(value: string, catalog: ModelCatalogItem[]) {
-  return findModelCatalogItem(value, catalog)?.label ?? value.replace(/_/g, " ");
-}
-
-function formatModelList(values: string[], catalog: ModelCatalogItem[]) {
-  if (values.length === 0) {
-    return "暂无";
-  }
-  return values.map((value) => modelDisplayName(value, catalog)).join(" / ");
-}
-
-function formatSourceTypeList(sourceTypes: string[]) {
-  if (sourceTypes.length === 0) {
-    return "未登记";
-  }
-  return sourceTypes.map((type) => sourceTypeLabel(type)).join(" / ");
-}
-
-function formatCountMap(values: Record<string, number> | undefined, labeler: (value: string) => string) {
-  if (!values || Object.keys(values).length === 0) {
-    return "暂无";
-  }
-  return Object.entries(values)
-    .map(([key, value]) => `${labeler(key)} ${value}`)
-    .join(" / ");
-}
-
-function sampleStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    needs_selection: "待选样例"
-  };
-  if (/^seeded_from_job_/i.test(status)) {
-    return "已有种子任务";
-  }
-  return labels[status] ?? status.replace(/_/g, " ");
-}
-
-function scoringCategoryLabel(category: string) {
-  const labels: Record<string, string> = {
-    engineering: "工程成本",
-    result_quality: "结果质量",
-    platform: "平台交付"
-  };
-  return labels[category] ?? category.replace(/_/g, " ");
-}
-
-function metricLabel(metric: string) {
-  const labels: Record<string, string> = {
-    setup_time: "环境准备",
-    weight_download_difficulty: "权重获取",
-    runtime_seconds: "运行耗时",
-    peak_gpu_memory_mb: "峰值显存",
-    runner_integration_difficulty: "Runner 接入",
-    structure_completeness_1_to_5: "结构完整度",
-    trajectory_stability_1_to_5: "轨迹稳定性",
-    noise_level_1_to_5: "噪声水平",
-    dynamic_handling_1_to_5: "动态处理",
-    depth_temporal_consistency_1_to_5: "深度时序一致",
-    presentation_usability_1_to_5: "展示可用性",
-    noninteractive_runner: "非交互 Runner",
-    status_json: "状态 JSON",
-    scene_meta_json: "场景元数据",
-    result_summary: "结果摘要",
-    frontend_core_preview: "前端核心预览"
-  };
-  return labels[metric] ?? metric.replace(/_/g, " ");
-}
-
-function sourceTypeLabel(sourceType: string) {
-  switch (sourceType) {
-    case "images":
-      return "图片";
-    case "video":
-      return "视频";
-    case "frames":
-      return "帧序列";
-    default:
-      return sourceType;
-  }
-}
-
-function jobFilterLabel(filter: JobFilter) {
-  switch (filter) {
-    case "running":
-      return "运行中";
-    case "attention":
-      return "待处理";
-    case "finished":
-      return "已完成";
-    default:
-      return "全部";
-  }
 }
 
 function canDispatchJobStatus(status: string) {
@@ -5332,110 +4987,6 @@ function buildOverviewMessage(job: JobListItem | null, runningCount: number, att
     return `${statusModelLabel(job.job.model)} · 核心结果可检查。`;
   }
   return runningCount > 0 ? "后台仍有其他任务在执行。" : "可发起下一条任务。";
-}
-
-function formatParamLabel(key: string) {
-  const labels: Record<string, string> = {
-    image_size: "图像尺寸",
-    scene_graph: "场景图",
-    niter: "对齐迭代",
-    lr: "学习率",
-    batch_size: "批大小",
-    max_points: "最大点数",
-    match_viz_count: "匹配线数量",
-    fps: "抽帧 FPS",
-    num_frames: "最大帧数",
-    not_batchify: "省显存模式",
-    real_time: "实时模式",
-    window_wise: "窗口模式",
-    window_size: "窗口大小",
-    window_overlap_ratio: "窗口重叠率"
-  };
-  return labels[key] ?? key.replace(/_/g, " ");
-}
-
-function describeOutput(filename: string) {
-  const lower = filename.toLowerCase();
-  if (/dynamic_mask|enlarged_dynamic_mask/.test(lower)) {
-    return "动态区域掩膜";
-  }
-  if (/scene\.glb/.test(lower)) {
-    return "MonST3R 三维场景";
-  }
-  if (/pred_traj\.txt/.test(lower)) {
-    return "MonST3R 相机轨迹";
-  }
-  if (/pred_intrinsics\.txt/.test(lower)) {
-    return "MonST3R 预测相机内参";
-  }
-  if (/^conf_\d+\.npy$/.test(lower) || /^init_conf_\d+\.npy$/.test(lower)) {
-    return "MonST3R 置信数组";
-  }
-  if (/^frame_\d+\.npy$/.test(lower)) {
-    return "MonST3R 每帧几何数组";
-  }
-  if (/frame_\d+\.png/.test(lower)) {
-    return "彩色帧预览";
-  }
-  const suffix = filename.split(".").pop()?.toLowerCase();
-  switch (suffix) {
-    case "png":
-    case "jpg":
-    case "jpeg":
-    case "webp":
-      return "图像预览或匹配可视化";
-    case "ply":
-      return "点云模型，建议用 MeshLab 打开";
-    case "glb":
-    case "gltf":
-      return "三维场景文件";
-    case "txt":
-      return "轨迹或相机文本";
-    case "npy":
-      return "数组产物";
-    case "mp4":
-    case "mov":
-    case "avi":
-    case "mkv":
-    case "webm":
-      return "视频产物";
-    default:
-      return "任务产物";
-  }
-}
-
-function fileExtensionLabel(filename: string) {
-  return filename.split(".").pop()?.toUpperCase() || "FILE";
-}
-
-function formatDuration(value: number | null) {
-  if (!value || value <= 0) {
-    return "-";
-  }
-  const hours = Math.floor(value / 3600);
-  const minutes = Math.floor((value % 3600) / 60);
-  const seconds = value % 60;
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
-  }
-  return `${seconds}s`;
-}
-
-function formatDateTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return date.toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
 }
 
 export default App;

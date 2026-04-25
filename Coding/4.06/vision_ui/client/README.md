@@ -56,6 +56,7 @@ If the project root moves, set `KYKT_BACKEND_ROOT` to the `vision_ui` directory 
 - Sample Matrix compare workspace with report export and locate-job handoff
 - System deployment console with readiness matrix and next-action cards
 - Advisor as an auxiliary draft path
+- Job bundle export from the selected Jobs inspector task
 - Tauri-managed local backend process for the release executable
 - Desktop/backend status reporting showing whether FastAPI was reused or started by Tauri
 
@@ -69,5 +70,5 @@ If the project root moves, set `KYKT_BACKEND_ROOT` to the `vision_ui` directory 
 
 - Continue splitting `src/App.tsx` into smaller workspace-sized components, hooks, and helper modules
 - Run full end-to-end Spann3R / Fast3R validation through the desktop client
-- Add job bundle export and continue tightening report/evaluation contracts
+- Continue tightening report/evaluation/Advisor contracts
 - Decide whether to fully bundle Python/.venv for portable release builds

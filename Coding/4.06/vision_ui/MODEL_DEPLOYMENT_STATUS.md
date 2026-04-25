@@ -76,6 +76,7 @@ Implemented:
 - Jobs split-pane workbench with batch actions, keyboard navigation, and inspector rhythm
 - Sample Matrix compare workspace with sort/filter/bulk/report flow
 - System deployment console with readiness matrix and next-action cards
+- Jobs inspector ZIP bundle export through `/api/jobs/{job_id}/bundle`
 - `tools/check_3r_remote.ps1` remote deployment checker
 - Spann3R first smoke completed at `/hdd3/kykt26/code/spann3r/output/demo/s00567_smoke`
 - Fast3R first smoke completed at `/hdd3/kykt26/code/fast3r/output/smoke_static_pair/smoke_summary.json`
@@ -86,7 +87,7 @@ Next app tasks:
 1. Run full end-to-end Spann3R / Fast3R jobs through the desktop client.
 2. Keep blocked-model deployment state explicit and reusable between backend and frontend.
 3. Continue splitting `client/src/App.tsx` into workspace-sized components, hooks, and helper modules.
-4. Add job bundle export and keep tightening evaluation/report contracts.
+4. Keep tightening evaluation/report/Advisor contracts.
 
 ## Download / Upload Planning
 
