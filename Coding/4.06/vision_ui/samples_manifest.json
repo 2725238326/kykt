@@ -17,6 +17,26 @@
   ],
   "samples": [
     {
+      "id": "static_pair_easy",
+      "source_type": "images",
+      "target_file_count": "2",
+      "status": "seeded_from_job_20260420-222729",
+      "seed_job_id": "20260420-222729",
+      "purpose": "Two-image static baseline already validated through MASt3R; useful for export, inspector, and static pipeline regression checks.",
+      "required_models": [
+        "mast3r"
+      ],
+      "optional_models": [
+        "spann3r",
+        "fast3r"
+      ],
+      "manual_criteria": [
+        "Two views should have clear overlap and parallax.",
+        "MASt3R pointcloud and match visualization should remain inspectable.",
+        "Use as a quick static sanity check before larger 3R comparison samples."
+      ]
+    },
+    {
       "id": "static_multiview_small",
       "source_type": "images",
       "target_file_count": "3-8",

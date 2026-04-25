@@ -77,6 +77,7 @@ Implemented:
 - Sample Matrix compare workspace with sort/filter/bulk/report flow
 - System deployment console with readiness matrix and next-action cards
 - Jobs inspector ZIP bundle export through `/api/jobs/{job_id}/bundle`
+- Sample Matrix now maps manifest `seed_job_id` entries into matrix cells; `static_pair_easy` is seeded from MASt3R job `20260420-222729`, and `video_static_short` remains seeded from MonST3R job `20260420-222928`
 - `tools/check_3r_remote.ps1` remote deployment checker
 - Spann3R first smoke completed at `/hdd3/kykt26/code/spann3r/output/demo/s00567_smoke`
 - Fast3R first smoke completed at `/hdd3/kykt26/code/fast3r/output/smoke_static_pair/smoke_summary.json`

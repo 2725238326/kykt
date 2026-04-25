@@ -39,6 +39,7 @@ The app should remain a local desktop workbench. The server should run model job
 - Started splitting `client/src/App.tsx` by moving API/bootstrap defaults, parameter presets, and Create parameter option tables into `client/src/appConfig.ts`.
 - Moved shared display/formatting helpers into `client/src/displayHelpers.ts` and deployment readiness helpers into `client/src/deploymentHelpers.ts`.
 - Added job bundle export via `GET /api/jobs/{job_id}/bundle`, with a Jobs inspector export action.
+- Updated Sample Matrix backend mapping so manifest `seed_job_id` values populate matrix cells without mutating historical job records.
 
 ### Desktop Shell
 

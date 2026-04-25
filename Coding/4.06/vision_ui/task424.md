@@ -287,6 +287,7 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 - [x] Add sort/filter and bulk ID operations.
 - [x] Add unassigned-job pool visibility.
 - [x] Add clearer row/column compare hierarchy for samples vs models.
+- [x] Map manifest `seed_job_id` jobs into Sample Matrix cells for existing MASt3R / MonST3R baseline jobs.
 - [x] Surface runner/deployment constraints inside matrix context where useful.
 - [x] Add stronger score/evidence digest for quick compare.
 - [x] Add exportable compare/report path for selected sample/model subsets.

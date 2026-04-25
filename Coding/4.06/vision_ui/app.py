@@ -680,10 +680,11 @@ def _prepare_job_for_dispatch(job_id: str, message: str) -> None:
     _launch_remote_job(job_id)
 
 
-def _job_compare_record(job) -> dict:
+def _job_compare_record(job, sample_id_override: str | None = None) -> dict:
     evaluation = load_evaluation(job.job_id)
     result_summary = load_result_summary(job.job_id)
     primary_artifacts = (result_summary or {}).get("primary_artifacts") or []
+    sample_id = sample_id_override if sample_id_override is not None else getattr(job, "sample_id", None)
     return {
         "job_id": job.job_id,
         "model": job.model,
@@ -692,7 +693,7 @@ def _job_compare_record(job) -> dict:
         "phase": job.phase,
         "progress_message": job.progress_message,
         "created_at": job.created_at,
-        "sample_id": getattr(job, "sample_id", None),
+        "sample_id": sample_id,
         "score_snapshot": {
             key: evaluation.get(key)
             for key in EVALUATION_SCORE_FIELDS
@@ -703,19 +704,25 @@ def _job_compare_record(job) -> dict:
 
 
 def build_sample_job_matrix(manifest: dict, jobs) -> dict:
-    sample_ids = {str(sample.get("id")) for sample in (manifest.get("samples") or []) if sample.get("id")}
+    samples = manifest.get("samples") or []
+    sample_ids = {str(sample.get("id")) for sample in samples if sample.get("id")}
+    seed_job_to_sample_id = {
+        str(sample.get("seed_job_id")): str(sample.get("id"))
+        for sample in samples
+        if sample.get("id") and sample.get("seed_job_id")
+    }
     grouped: dict[str, dict[str, dict]] = {sample_id: {} for sample_id in sample_ids}
     unassigned: list[dict] = []
 
     for job in jobs:
-        sample_id = getattr(job, "sample_id", None)
+        sample_id = getattr(job, "sample_id", None) or seed_job_to_sample_id.get(job.job_id)
         if sample_id and sample_id in grouped:
-            grouped[sample_id][job.model] = _job_compare_record(job)
+            grouped[sample_id][job.model] = _job_compare_record(job, sample_id_override=sample_id)
         elif sample_id:
             unassigned.append(_job_compare_record(job))
 
     rows = []
-    for sample in manifest.get("samples") or []:
+    for sample in samples:
         sample_id = str(sample.get("id"))
         rows.append({"sample_id": sample_id, "jobs_by_model": grouped.get(sample_id, {})})
 
