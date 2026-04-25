@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type {
   AdvisorConfig,
@@ -303,6 +303,7 @@ function App() {
     fast3r: "standard"
   });
   const recoveryInFlightRef = useRef(false);
+  const jobSearchInputRef = useRef<HTMLInputElement | null>(null);
   const [formState, setFormState] = useState<FormState>({
     model: "dust3r",
     source_type: "images",
@@ -567,6 +568,11 @@ function App() {
     const timer = window.setInterval(() => void loadDesktopBackendStatus(), serviceReady ? 8000 : 1200);
     return () => window.clearInterval(timer);
   }, [serviceReady]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleGlobalJobHotkeys);
+    return () => window.removeEventListener("keydown", handleGlobalJobHotkeys);
+  }, [activeWorkspace, filteredJobs.length, selectedFilteredIndex]);
 
   useEffect(() => {
     if (!previewAsset) {
@@ -941,6 +947,32 @@ function App() {
     const baseIndex = selectedFilteredIndex >= 0 ? selectedFilteredIndex : 0;
     const nextIndex = Math.max(0, Math.min(filteredJobs.length - 1, baseIndex + offset));
     setSelectedJobId(filteredJobs[nextIndex].job.job_id);
+  }
+
+  function focusJobSearch() {
+    jobSearchInputRef.current?.focus();
+    jobSearchInputRef.current?.select();
+  }
+
+  function handleGlobalJobHotkeys(event: KeyboardEvent) {
+    if (activeWorkspace !== "jobs") {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    const isTypingTarget =
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement ||
+      target?.isContentEditable;
+    if ((event.key === "j" || event.key === "k") && !isTypingTarget) {
+      event.preventDefault();
+      moveSelectedJob(event.key === "j" ? 1 : -1);
+      return;
+    }
+    if (event.key === "/" && !isTypingTarget) {
+      event.preventDefault();
+      focusJobSearch();
+    }
   }
 
   async function copyText(value: string, label: string) {
@@ -1556,10 +1588,22 @@ function App() {
                 <label className="field compact job-search-field">
                   <span>快速检索</span>
                   <input
+                    ref={jobSearchInputRef}
                     value={jobQuery}
                     onChange={(event) => setJobQuery(event.target.value)}
+                    onKeyDown={(event: ReactKeyboardEvent<HTMLInputElement>) => {
+                      if (event.key === "ArrowDown") {
+                        event.preventDefault();
+                        moveSelectedJob(1);
+                      }
+                      if (event.key === "ArrowUp") {
+                        event.preventDefault();
+                        moveSelectedJob(-1);
+                      }
+                    }}
                     placeholder="任务ID / 模型 / 状态 / 输入类型"
                   />
+                  <p className="field-note jobs-shortcut-note">快捷键：/ 聚焦检索，J / K 切换选中任务。</p>
                 </label>
                 <div className="job-lane-grid" aria-label="任务队列入口">
                   {jobLaneCards.map((lane) => (
@@ -1636,6 +1680,9 @@ function App() {
                       disabled={filteredJobs.length === 0 || selectedFilteredIndex < 0 || selectedFilteredIndex >= filteredJobs.length - 1}
                     >
                       下一条
+                    </button>
+                    <button className="ghost-button small" type="button" onClick={focusJobSearch}>
+                      检索
                     </button>
                     <button
                       className="ghost-button small"

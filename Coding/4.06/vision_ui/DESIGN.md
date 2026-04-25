@@ -32,16 +32,19 @@ Do **not** style this like a landing page, portfolio site, mobile app, or playfu
 ## Chosen visual direction
 
 Use a **Workbench Light** style inspired by:
+
 - Linear
 - Raycast
 - Warp
 
 Interpretation for this project:
+
 - Linear = structure, hierarchy, calm order
 - Raycast = polished desktop utility feel
 - Warp = engineering workbench / runtime console energy
 
 The result should be:
+
 - light but not flat white
 - compact but not cramped
 - modern but not flashy
@@ -96,6 +99,7 @@ Overview, Create, Jobs, Advisor, and System pages should share the same design l
 ## Visual language
 
 ### Overall tone
+
 - light neutral base
 - cool, technical, precise
 - subtle premium feel
@@ -104,7 +108,8 @@ Overview, Create, Jobs, Advisor, and System pages should share the same design l
 - no playful rounded toy aesthetic
 
 ### Surfaces
-Use layered dark surfaces with clear separation:
+Use layered light surfaces with clear separation:
+
 - app frame background
 - panel background
 - inset blocks
@@ -112,9 +117,11 @@ Use layered dark surfaces with clear separation:
 - hovered state background
 
 The UI should rely more on:
+
 - border definition
 - tonal separation
 - section grouping
+
 than on blur or large shadows.
 
 ### Corners
@@ -292,7 +299,7 @@ Do not make them overly playful or animated.
 ### Log views
 Logs should feel like embedded console surfaces:
 - mono font
-- dark inset surface
+- light inset surface
 - high readability
 - clear separation from decorative UI
 
@@ -501,7 +508,7 @@ Keep it aligned with the same panel system and density.
 - Do use compact panel systems
 - Do use strong section hierarchy
 - Do use semantic state colors carefully
-- Do use neutral dark surfaces
+- Do use neutral light surfaces
 - Do use monospace for job ids, paths, and technical metadata
 - Do favor scanning speed over visual spectacle
 - Do make compare views feel structured and disciplined
