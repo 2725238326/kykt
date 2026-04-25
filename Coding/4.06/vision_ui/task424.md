@@ -66,6 +66,7 @@ If a round only touches one narrow area, Codex may skim the unrelated documents,
 Frontend:
 
 - `E:/kykt/Coding/4.06/vision_ui/client/src/App.tsx`
+- `E:/kykt/Coding/4.06/vision_ui/client/src/appConfig.ts`
 - `E:/kykt/Coding/4.06/vision_ui/client/src/styles.css`
 - `E:/kykt/Coding/4.06/vision_ui/client/src/types.ts`
 
@@ -334,7 +335,8 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 - [x] Restore and keep `Workbench Light` as the only active theme direction.
 - [x] Collapse `client/src/styles.css` to a single light-theme foundation plus layout refinement.
 - [x] Keep the Jobs page as the main desktop workbench pattern.
-- [ ] Split `client/src/App.tsx` into workspace-sized components and hooks.
+- [x] Move shared API/default bootstrap/model parameter config out of `client/src/App.tsx`.
+- [ ] Continue splitting `client/src/App.tsx` into workspace-sized components, hooks, and helper modules.
 - [ ] Run full end-to-end Spann3R / Fast3R validation through the desktop client.
 
 ---

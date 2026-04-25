@@ -92,7 +92,7 @@ Light mode should feel calm, not washed out.
 
 ### 6. One system, not many mini-styles
 All pages must feel like one product.
-Overview, Create, Jobs, Advisor, and System pages should share the same design language.
+Overview, Create, Jobs, Sample Matrix, System, and Advisor should share the same design language.
 
 ---
 
@@ -385,121 +385,42 @@ Emphasize:
 - cache freshness
 - last errors
 
-### 6. AI Workspace
-This should look like a diagnostic assistant inside the tool, not a separate chatbot product.
-Keep it aligned with the same panel system and density.
+### 6. Advisor
+This should look like an auxiliary evaluation lane inside the tool, not a separate chatbot product.
+Keep it aligned with the same panel system, density, and evidence-first reading order.
 
 ---
 
-## Current refinement priorities (2026-04-23 / round 2)
+## Current refinement priorities (2026-04-25)
 
-### Jobs detail must behave like an inspector
-- Keep a clear inspector split:
-  - main lane = result summary, output groups, logs
-  - rail lane = quick snapshot, manual evaluation, AI evaluation, input previews
-- Avoid stacking many equal-weight panels in one long vertical flow.
-- Preserve reading rhythm: status first, then evidence, then deep logs.
+### Product surface
+- Keep the app framed as Workbench Light: a local desktop workbench for 3R / visual-geometry model work.
+- Treat the current navigation as stable: Overview / Create / Jobs / Sample Matrix / System / Advisor.
+- Keep operational tone over visual novelty; every refinement should improve scan speed, comparison, or handoff.
 
-### Sample Matrix must read as a matrix, not card feed
-- Each sample row should have:
-  - sample context (id, purpose, source type, seed linkage)
-  - model execution matrix cells
-- Each model cell should show:
-  - execution status
-  - score snapshot (if available)
-  - primary artifact hint (if available)
-  - quick jump to the related job (when present)
-- Required models should be visually distinct from optional models.
+### Create
+- Keep Create as a launch console with visible service, model, input, and source readiness before submission.
+- Keep the model picker catalog-driven and explicit about runnable models vs catalog-only research models.
+- Preserve the input staging matrix with filename, type, size, and direct remove action.
 
-### Keep operational tone over visual novelty
-- Prefer information clarity over decorative layering.
-- New styling changes must improve scan speed, not increase ornament.
-- All improvements should keep compatibility with existing APIs and workflows.
+### Jobs
+- Keep Jobs as the primary split-pane workbench: filtered list and queue tooling on the left, inspector detail on the right.
+- Preserve keyboard flow: `/` focuses search, `J` / `K` moves selection, and search-box `Up` / `Down` steps through filtered results.
+- Keep logs keyword narrowing inline and preserve latest/suspicious line copy shortcuts regardless of filter.
 
-### Create page second-round constraints
-- Treat Create as a configuration workspace, not a plain web form.
-- The page should expose three visible zones:
-  - task configuration
-  - input staging matrix
-  - presets/advanced parameter control
-- Input staging should show filename, type, size, and direct remove action in a matrix/table-like shape.
-- Keep guidance copy close to configuration, but avoid turning guidance into the dominant visual block.
+### Sample Matrix
+- Keep the matrix as a comparison surface, not a card feed.
+- Preserve sort/filter controls, row selection, bulk job-id copy, unassigned-job pool, and locate-job handoff.
+- Keep score strength, metric count, model status, and artifact hints compact inside matrix cells.
 
-### Jobs / Matrix third-round constraints
-- Jobs left pane should include operational tooling, not only list rendering:
-  - quick query (id/model/status/source/phase)
-  - lane-level entry points (queue/running/attention)
-  - selection navigator (prev/next/copy id)
-  - lightweight quick actions for the selected list item
-- Sample Matrix rows should expose row-level execution rhythm:
-  - completion ratio (finished / total)
-  - running / attention / pending / missing counts
-- Sample Matrix cells should expose score strength signals:
-  - score snapshot value
-  - metric count
-  - compact strength indicator (low/medium/high)
-  - keep locate-job action visible in the same cell
-- Keep all these upgrades compact; do not trade scanning speed for decorative complexity.
+### System
+- Keep deployment readiness as a model-target matrix with directory, environment, files, and checkpoints visible before narrative text.
+- Make blocked-model state reusable across Create, Sample Matrix, and System instead of duplicating wording.
 
-### Jobs / Matrix fourth-round constraints
-- Jobs detail should support fast navigation inside one long inspector:
-  - section jump strip (summary / outputs / logs / manual eval / AI eval / inputs)
-  - output group anchors for quick targeting
-  - logs section should expose latest line + suspicious line (copy-ready)
-- Sample Matrix should support compare re-ordering as an operation:
-  - sort by manifest / completion / score / attention
-  - filter by all / attention / running / unfinished
-  - preserve matrix readability after sorting (no list-card fallback)
-- Keep interaction weight light:
-  - all controls remain inline and compact
-  - no modal-heavy workflow for basic compare/navigation tasks
-
-### Jobs / Matrix fifth-round constraints
-- Sample Matrix should support bulk operations on current compare scope:
-  - row-level selection (per sample row)
-  - select-all for current filtered rows
-  - batch copy of related job IDs (seed + model jobs)
-  - step-through locate (next job) for fast inspector handoff
-- Bulk behavior should follow scope-first logic:
-  - when rows are selected, operations apply to selected rows
-  - when no rows are selected, operations apply to current filtered rows
-- Jobs logs should support keyword-driven narrowing:
-  - inline keyword input (no modal)
-  - hit count feedback (matched / total)
-  - clear action for quick reset
-  - preserve latest/suspicious copy shortcuts regardless of filter
-
-### Page-wide sixth-round constraints
-- Overview should expose a compact operation dock:
-  - running count
-  - attention count
-  - total task entry
-  - system readiness entry
-- Create should behave like a launch console:
-  - show service/model/input/source readiness before the form is submitted
-  - keep the launch action grouped with the current launch summary
-  - avoid hiding readiness behind explanatory copy
-- Jobs list should support batch handoff:
-  - copying all task IDs in the current filter is a first-class action
-  - the action belongs near previous/next navigation, not inside job cards
-- Sample Matrix should expose unassigned work:
-  - jobs without sample binding should be visible as a small pool
-  - the pool should support copy IDs and locate job
-- System should expose deployment readiness as a matrix:
-  - row = active model target
-  - columns = directory, environment, files, checkpoints
-  - status should be visible before long text summaries
-
-### Create seventh-round constraints
-- The model picker should be catalog-driven, not hardcoded to the legacy create list.
-- Create must distinguish between:
-  - runnable models that can be submitted now
-  - catalog/research models that are visible but not yet creatable
-- The selected model block should show:
-  - supported input types
-  - model family
-  - runner/deployment status
-- Do not force every non-MonST3R model into a plain image-only assumption.
+### Engineering
+- Split `client/src/App.tsx` into workspace-sized components, data hooks, shared config, and pure helpers.
+- Run full end-to-end Spann3R and Fast3R validation through the desktop client.
+- Tighten job bundle export, report export, manual evaluation, and Advisor draft contracts without changing the core information architecture.
 
 ---
 

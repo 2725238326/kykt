@@ -36,6 +36,7 @@ The app should remain a local desktop workbench. The server should run model job
 - Added Sample Matrix compare tooling: sorting, filtering, bulk ID copy, report export, and locate-job handoff.
 - Added a system-page deployment console backed by `/api/deployment/status`.
 - Consolidated `client/src/styles.css` onto a single Workbench Light foundation plus layout refinement instead of stacked dark/light override passes.
+- Started splitting `client/src/App.tsx` by moving API/bootstrap defaults, parameter presets, and Create parameter option tables into `client/src/appConfig.ts`.
 
 ### Desktop Shell
 
@@ -43,7 +44,7 @@ The app should remain a local desktop workbench. The server should run model job
 
 ## Next Architecture Tasks
 
-1. Split `client/src/App.tsx` into workspace containers and data hooks.
+1. Continue splitting `client/src/App.tsx` into workspace containers, data hooks, and pure helper modules.
 2. Add pagination or windowing for very large local job histories.
 3. Add optional job-bundle export for selected jobs.
 4. Unify query / polling state so jobs, samples, and deployment views share more reusable loading/error logic.

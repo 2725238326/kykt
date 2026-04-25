@@ -51,6 +51,7 @@ It currently provides:
 - System deployment console backed by `/api/deployment/status`
 - Advisor as an auxiliary draft/evaluation lane
 - Workbench Light styling aligned with `DESIGN.md`
+- First `App.tsx` split step completed: shared API/default bootstrap/model parameter config now lives in `client/src/appConfig.ts`
 
 ### Desktop shell
 
@@ -100,6 +101,6 @@ Release outputs:
 ## Remaining high-priority work
 
 - full end-to-end Spann3R and Fast3R validation through the rebuilt client
-- split `client/src/App.tsx` into smaller workspace containers and hooks
+- continue splitting `client/src/App.tsx` into smaller workspace containers, hooks, and helper modules
 - add job bundle export and keep tightening report/evaluation contracts
 - decide whether to fully bundle Python/.venv for portable release builds

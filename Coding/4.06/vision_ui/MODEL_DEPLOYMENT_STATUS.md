@@ -85,7 +85,7 @@ Next app tasks:
 
 1. Run full end-to-end Spann3R / Fast3R jobs through the desktop client.
 2. Keep blocked-model deployment state explicit and reusable between backend and frontend.
-3. Split `client/src/App.tsx` into workspace-sized components and hooks.
+3. Continue splitting `client/src/App.tsx` into workspace-sized components, hooks, and helper modules.
 4. Add job bundle export and keep tightening evaluation/report contracts.
 
 ## Download / Upload Planning

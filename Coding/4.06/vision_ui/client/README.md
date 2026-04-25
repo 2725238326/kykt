@@ -67,7 +67,7 @@ If the project root moves, set `KYKT_BACKEND_ROOT` to the `vision_ui` directory 
 
 ## Next
 
-- Split `src/App.tsx` into smaller workspace-sized components/hooks
+- Continue splitting `src/App.tsx` into smaller workspace-sized components, hooks, and helper modules
 - Run full end-to-end Spann3R / Fast3R validation through the desktop client
 - Add job bundle export and continue tightening report/evaluation contracts
 - Decide whether to fully bundle Python/.venv for portable release builds
