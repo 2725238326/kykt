@@ -1,6 +1,6 @@
 # Client Rebuild Direction
 
-Last updated: 2026-04-10
+Last updated: 2026-04-25
 
 ## Recommendation
 
@@ -11,50 +11,54 @@ The long-term client stack for this project is:
 - System integration: Rust only for shell / file / process / OS bridge
 - Existing backend: keep FastAPI + SSH/SCP during the migration
 
-## Why this is better than Go or pure Rust for UI
+## Why this remains the right stack
 
-Go and Rust are both excellent for system-facing tools, but they are not the fastest way
-to build a polished Apple-like interface.
+Go and Rust are both excellent for system-facing tools, but they are not the fastest way to iterate on a dense desktop workbench UI.
 
-- Apple-style UI needs high iteration speed, layout freedom, and motion polish.
-- React + TypeScript is much faster for this part.
-- Tauri lets us keep a strong web UI while still shipping a real local desktop app.
+- React + TypeScript gives the best iteration speed for high-density product UI.
+- Tauri lets us ship a real local desktop app without giving up the web-style workflow.
+- The current app is no longer a generic rebuild exercise; it is now a workbench product with concrete operator workflows.
 
 ## Visual direction
 
 Reference inspiration:
 
 - `VoltAgent/awesome-design-md`
-- Apple-style rules: black / light-gray rhythm, single blue accent, pill buttons,
-  restrained shadows, large SF-like typography, product-first layout
+- Workbench Light rules: neutral light surfaces, compact hierarchy, restrained blue accent, semantic state colors, dense desktop layout, comparison-first workflows
+
+Primary design source of truth:
+
+- `E:\kykt\Coding\4.06\vision_ui\DESIGN.md`
 
 ## Current implementation state
 
 ### React client
 
-The rebuilt client now lives under:
+The rebuilt client lives under:
 
 - `E:\kykt\Coding\4.06\vision_ui\client`
 
-It already has:
+It currently provides:
 
-- task creation against FastAPI JSON APIs
-- recent jobs list with polling
-- selected task detail with progress timeline
-- output cards with view / download / local open
-- summary panel generated from returned result metadata
-- Apple-inspired visual baseline
-- DUSt3R parameter panel for image-set jobs
-- MonST3R parameter panel for video or frame-sequence jobs
-- output recognition for images, PLY point clouds, GLB scenes, video files, trajectory text, and NPY artifacts
+- Overview command center for focus job, runtime health, and quick navigation
+- Create workspace driven by `model_catalog`
+- runnable-vs-catalog model distinction with explicit launch blockers
+- family-based parameter routing for DUSt3R / MASt3R / MonST3R / Spann3R / Fast3R flows
+- input staging matrix with filename / type / size / remove actions
+- Jobs split-pane workbench with filters, lane cards, batch actions, selection navigator, and keyboard navigation
+- inspector-style task detail with summary, outputs, logs, manual evaluation, advisor lane, and input previews
+- Sample Matrix compare workspace with sorting, filtering, bulk ID operations, compare-report export, and locate-job handoff
+- System deployment console backed by `/api/deployment/status`
+- Advisor as an auxiliary draft/evaluation lane
+- Workbench Light styling aligned with `DESIGN.md`
 
 ### Desktop shell
 
-The Tauri 2 shell has now been scaffolded under:
+The Tauri 2 shell is scaffolded under:
 
 - `E:\kykt\Coding\4.06\vision_ui\client\src-tauri`
 
-Current assumption:
+Current behavior:
 
 - Tauri checks `127.0.0.1:8765` on startup.
 - If no backend is listening, Tauri starts the local FastAPI backend from the `vision_ui` project root.
@@ -66,7 +70,7 @@ Current assumption:
 
 ### Phase 1
 
-Keep expanding the rebuilt React client until it fully covers the current workflow.
+Keep expanding the rebuilt React client until it fully covers the operational workflow.
 
 ### Phase 2
 
@@ -74,20 +78,7 @@ Use Tauri as the standard local desktop entry and move only the native-only piec
 
 ### Phase 3
 
-Replace the current Jinja pages as the primary interface once the new client covers:
-
-- job creation
-- recent jobs
-- task detail
-- progress polling
-- output preview / download / local open
-- MonST3R task flow
-
-### Phase 4
-
-After the first MonST3R validation examples are stable, make the React client the
-default product surface and keep the old Jinja pages only as a fallback/debug
-interface.
+Keep the React client as the default product surface and reduce the legacy Jinja pages to fallback/debug usage only.
 
 ## Current launch paths
 
@@ -108,8 +99,7 @@ Release outputs:
 
 ## Remaining high-priority work
 
-- first end-to-end MonST3R validation run through the rebuilt client
-- result grouping for MonST3R artifacts such as GLB scene, trajectory, depth, confidence, and dynamic masks
-- better output grouping and richer result summary cards
-- fully portable Python/.venv bundling for release builds
-- switch the project default entry away from the legacy Jinja pages
+- full end-to-end Spann3R and Fast3R validation through the rebuilt client
+- split `client/src/App.tsx` into smaller workspace containers and hooks
+- add job bundle export and keep tightening report/evaluation contracts
+- decide whether to fully bundle Python/.venv for portable release builds

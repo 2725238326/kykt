@@ -1,6 +1,6 @@
 # Active 3R Model Deployment Status
 
-Last updated: 2026-04-21
+Last updated: 2026-04-25
 
 ## Scope
 
@@ -44,18 +44,18 @@ Old/SfmLearner-Pytorch-master/
 ## Model Status
 
 | Model | Server dir | Env | Current state | Next action |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | MASt3R | `/hdd3/kykt26/code/mast3r` | `mast3r` | Platform smoke passed as job `20260420-222729` | Select better 3-8 image static sample |
 | MonST3R | `/hdd3/kykt26/code/monst3r` | `monst3r` | Standard 512/48-frame video sample passed as job `20260420-222928` | Manually inspect GLB/trajectory/frame quality |
-| Spann3R | `/hdd3/kykt26/code/spann3r` | `spann3r` | Env ready, `curope` compiled for sm75, official `s00567` smoke passed | Write runner contract around `*.ply`, `*.npy`, `transforms.json` |
-| Align3R | `/hdd3/kykt26/code/align3r` | `align3r` | Env exists, core deps mostly installed; `curope` compile blocked by local CUDA 11.3 vs torch cu121 mismatch | Use slow path if possible, or rebuild env with torch/cu118-compatible compile path |
-| Fast3R | `/hdd3/kykt26/code/fast3r` | `fast3r` | Env ready, local HF weights loaded, 2-image forward smoke passed after forcing `pytorch_naive` attention on sm75 | Encode attention fallback in future runner |
-| CUT3R | `/hdd3/kykt26/code/cut3r` | `cut3r` | Env exists, checkpoints present; demo currently fails in RoPE path without compiled `curope` | Fix `curope`/torch-CUDA compile path or constrain input/model path |
+| Spann3R | `/hdd3/kykt26/code/spann3r` | `spann3r` | Env ready, `curope` compiled for sm75, official `s00567` smoke passed | Run full client-driven end-to-end validation and confirm output contract holds |
+| Align3R | `/hdd3/kykt26/code/align3r` | `align3r` | Env exists, core deps mostly installed; `curope` compile blocked by local CUDA 11.3 vs torch cu121 mismatch | Keep catalog-visible but blocked until slow path or rebuild path is confirmed |
+| Fast3R | `/hdd3/kykt26/code/fast3r` | `fast3r` | Env ready, local HF weights loaded, 2-image forward smoke passed with `pytorch_naive` attention fallback on sm75 | Run full client-driven end-to-end validation and keep fallback explicit |
+| CUT3R | `/hdd3/kykt26/code/cut3r` | `cut3r` | Env exists, checkpoints present; demo currently fails in RoPE path without compiled `curope` | Keep catalog-visible but blocked until `curope` / torch-CUDA path is fixed |
 
 ## Official Setup Notes
 
 | Model | Official repo | Baseline env from official docs | First smoke command | Key risk |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Spann3R | `https://github.com/HengyiWang/spann3r` | Python 3.9, CUDA 11.8, PyTorch 2.3.0 | `python demo.py --demo_path ./examples/s00567 --kf_every 10 --vis --vis_cam` | Requires `croco/models/curope` build; Open3D version sensitivity |
 | Align3R | `https://github.com/jiah-cloud/Align3R` | Python 3.11, PyTorch CUDA 12.1 install path | `bash demo.sh` | Requires Depth Pro / Depth Anything V2 / RAFT and `curope` |
 | Fast3R | `https://github.com/facebookresearch/fast3r` | Python 3.11, CUDA 12.4 example install path | `python fast3r/viz/demo.py` | Do not install DUSt3R `cuROPE`; HF weight download/cache needed |
@@ -70,20 +70,23 @@ Implemented:
 - `model_catalog` in `/api/bootstrap`
 - `/api/samples`
 - `samples_manifest.json`
-- Release desktop app rebuilt after the 3R roadmap work
-- Workbench/system model-roadmap panel
-- Workbench/system sample/evaluation panel wired to `/api/samples`
+- Workbench Light desktop UI aligned with `DESIGN.md`
+- Overview command center
+- Create workspace with runnable-vs-catalog distinction
+- Jobs split-pane workbench with batch actions, keyboard navigation, and inspector rhythm
+- Sample Matrix compare workspace with sort/filter/bulk/report flow
+- System deployment console with readiness matrix and next-action cards
 - `tools/check_3r_remote.ps1` remote deployment checker
 - Spann3R first smoke completed at `/hdd3/kykt26/code/spann3r/output/demo/s00567_smoke`
 - Fast3R first smoke completed at `/hdd3/kykt26/code/fast3r/output/smoke_static_pair/smoke_summary.json`
-- Server verification after upload: `missing_directories=0`, `missing_conda_envs=0`, `missing_required_files=0`.
+- Server verification after upload: `missing_directories=0`, `missing_conda_envs=0`, `missing_required_files=0`
 
 Next app tasks:
 
-1. Add Spann3R runner using smoke output contract.
-2. Add Fast3R runner with `pytorch_naive` attention fallback for TITAN RTX / sm75.
-3. Fix Align3R / CUT3R `curope` build path or use confirmed slow-path settings.
-4. Add model-to-model comparison view grouped by sample id.
+1. Run full end-to-end Spann3R / Fast3R jobs through the desktop client.
+2. Keep blocked-model deployment state explicit and reusable between backend and frontend.
+3. Split `client/src/App.tsx` into workspace-sized components and hooks.
+4. Add job bundle export and keep tightening evaluation/report contracts.
 
 ## Download / Upload Planning
 

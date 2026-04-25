@@ -1,6 +1,6 @@
 # KYKT Vision Client
 
-React + TypeScript rebuild for the local vision desktop-style client. The desktop shell uses Tauri 2 and can supervise the local FastAPI backend.
+React + TypeScript workbench client for the local KYKT desktop app. The desktop shell uses Tauri 2 and can supervise the local FastAPI backend.
 
 ## Run
 
@@ -49,19 +49,25 @@ If the project root moves, set `KYKT_BACKEND_ROOT` to the `vision_ui` directory 
 
 ## Current scope
 
-- dashboard
-- local job creation
-- recent jobs
-- selected job detail
-- polling against FastAPI JSON APIs
-- Apple-inspired visual direction
-- output cards with local open / view / download actions
-- Tauri 2 shell scaffold under `src-tauri`
+- Workbench Light desktop UI aligned with `DESIGN.md`
+- Overview command center
+- Create workspace with runnable-vs-catalog model distinction
+- Jobs split-pane inspector with filters, batch actions, and keyboard navigation
+- Sample Matrix compare workspace with report export and locate-job handoff
+- System deployment console with readiness matrix and next-action cards
+- Advisor as an auxiliary draft path
 - Tauri-managed local backend process for the release executable
-- desktop UI backend status chip showing whether FastAPI was reused or started by Tauri
+- Desktop/backend status reporting showing whether FastAPI was reused or started by Tauri
+
+## Keyboard flow in Jobs
+
+- `/` focuses the jobs search box
+- `J` / `K` moves the current selection in the filtered list
+- `↑` / `↓` in the search box also steps the current selection
 
 ## Next
 
-- replace current Jinja entry pages as the default launch target
-- first end-to-end MonST3R validation through the desktop client
-- decide whether to fully bundle Python/.venv for portable release builds
+- Split `src/App.tsx` into smaller workspace-sized components/hooks
+- Run full end-to-end Spann3R / Fast3R validation through the desktop client
+- Add job bundle export and continue tightening report/evaluation contracts
+- Decide whether to fully bundle Python/.venv for portable release builds

@@ -1,6 +1,6 @@
 # App Architecture / Performance Optimization Notes
 
-Last updated: 2026-04-21
+Last updated: 2026-04-25
 
 ## Current Architecture
 
@@ -30,10 +30,12 @@ The app should remain a local desktop workbench. The server should run model job
   - job list polling uses 4s only when jobs are running; otherwise 12s
   - selected job detail uses 4s only while selected job is running; otherwise 15s
   - samples polling uses 60s
-- Added model roadmap and sample/evaluation panels backed by `model_catalog` and `/api/samples`.
-- Added sample scoring-category overview and seed job hints.
-- Added a manual evaluation panel in task detail with persisted scoring fields and notes.
-- Added a system-page remote deployment summary panel backed by `/api/deployment/status`.
+- Added a catalog-driven Create workspace that distinguishes runnable models from catalog-only models.
+- Unified model semantics across Create, Jobs, Sample Matrix, and System using `model_catalog` / `/api/samples`.
+- Added stronger Jobs workbench behavior: batch actions, filtered-selection handoff, attention-first failure handling, and keyboard-centric navigation.
+- Added Sample Matrix compare tooling: sorting, filtering, bulk ID copy, report export, and locate-job handoff.
+- Added a system-page deployment console backed by `/api/deployment/status`.
+- Consolidated `client/src/styles.css` onto a single Workbench Light foundation plus layout refinement instead of stacked dark/light override passes.
 
 ### Desktop Shell
 
@@ -41,7 +43,7 @@ The app should remain a local desktop workbench. The server should run model job
 
 ## Next Architecture Tasks
 
-1. Add `spann3r_runner.py` and `fast3r_runner.py`.
-2. Add a model-comparison view grouped by sample id.
-3. Add pagination or windowing for very large local job histories.
-4. Add optional result bundle export for selected jobs and model-comparison reports.
+1. Split `client/src/App.tsx` into workspace containers and data hooks.
+2. Add pagination or windowing for very large local job histories.
+3. Add optional job-bundle export for selected jobs.
+4. Unify query / polling state so jobs, samples, and deployment views share more reusable loading/error logic.

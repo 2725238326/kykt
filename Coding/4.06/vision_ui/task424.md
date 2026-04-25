@@ -1,6 +1,6 @@
 # Task 424 - Codex Long-Flow Work Order
 
-Last updated: 2026-04-24
+Last updated: 2026-04-25
 
 ## 1. Purpose
 
@@ -277,6 +277,7 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 - [x] Add log keyword highlighting, not just filtering.
 - [x] Add a stronger attention-first view for failed/cancelled jobs.
 - [x] Improve the right-side inspector rhythm for summary/evidence/logs/evaluation.
+- [x] Add keyboard-centric navigation (`/`, `J/K`, arrow support in search).
 
 ### Phase 4 - Sample Matrix as a real compare workspace
 
@@ -327,6 +328,14 @@ cd E:/kykt/Coding/4.06/vision_ui/client && npm run tauri build
 - [x] Reduce noisy on-page guidance copy and downgrade current AI/advisor UI to an auxiliary draft path.
 - [x] Make the app better for final inspection and handoff, not only internal testing.
 - [x] Put usability improvements into the 3R roadmap as a first-class route, not only as visual polish.
+
+### Phase 9 - Current frontend cleanup priorities
+
+- [x] Restore and keep `Workbench Light` as the only active theme direction.
+- [x] Collapse `client/src/styles.css` to a single light-theme foundation plus layout refinement.
+- [x] Keep the Jobs page as the main desktop workbench pattern.
+- [ ] Split `client/src/App.tsx` into workspace-sized components and hooks.
+- [ ] Run full end-to-end Spann3R / Fast3R validation through the desktop client.
 
 ---
 
