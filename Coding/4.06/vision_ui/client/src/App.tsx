@@ -2,7 +2,6 @@ import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, use
 import { invoke } from "@tauri-apps/api/core";
 import type {
   AdvisorConfig,
-  AdvisorReport,
   AdvisorStatus,
   BackendStatusPayload,
   BootstrapPayload,
@@ -102,19 +101,23 @@ import { ModelRoadmapPanel } from "./ModelRoadmapPanel";
 import { SummaryPanel } from "./SummaryPanel";
 import { SampleMatrixPanel } from "./SampleMatrixPanel";
 import { EvaluationPanel } from "./EvaluationPanel";
+import { AdvisorPanel, AdvisorWorkbench } from "./AdvisorWorkbench";
+import {
+  buildAdvisorCompactStatus,
+  buildAttentionJobMessage,
+  buildInspectorRhythm,
+  buildOutputSections,
+  countLogKeywordHits,
+  countLogLines,
+  currentStepLabel,
+  getCriticalLogLine,
+  getLatestLogLine,
+  HighlightedLogTail
+} from "./jobInspectorHelpers";
 
 type ServiceState = "starting" | "ready" | "degraded";
 type JobFilter = "all" | "running" | "attention" | "finished";
 type WorkspaceTab = "overview" | "create" | "jobs" | "advisor" | "system";
-type OutputItem = JobPayload["outputs"][number];
-type OutputSection = {
-  key: string;
-  title: string;
-  description: string;
-  accent: "blue" | "green" | "gold" | "slate";
-  defaultOpen: boolean;
-  items: OutputItem[];
-};
 type PreviewAsset = {
   url: string;
   name: string;
@@ -2688,258 +2691,6 @@ function MetaCard(props: { label: string; value: string; compact?: boolean }) {
   );
 }
 
-function buildInspectorRhythm(
-  selectedJob: JobPayload,
-  latestLogLine: string,
-  criticalLogLine: string,
-  advisorReport: AdvisorReport | null
-) {
-  const summary = selectedJob.result_summary;
-  const evaluation = selectedJob.evaluation;
-  const outputCount = selectedJob.outputs.length;
-  const primaryCount = summary?.primary_artifacts?.length ?? 0;
-  const logCount = selectedJob.logs.length;
-
-  return [
-    {
-      id: "job-summary-panel",
-      label: "摘要",
-      status: summary ? "已生成" : "等待结果",
-      detail: summary?.next_actions?.length ? `下一步 ${summary.next_actions.length} 条` : summary ? "有结果摘要可复查" : "结果回传后生成摘要",
-      tone: summary ? "ready" : "pending"
-    },
-    {
-      id: "job-outputs-panel",
-      label: "证据",
-      status: outputCount > 0 ? `${outputCount} 个产物` : "无产物",
-      detail: primaryCount > 0 ? `核心检查对象 ${primaryCount} 个` : outputCount > 0 ? "按用途分组查看" : "等待远端输出下载",
-      tone: outputCount > 0 ? "ready" : "pending"
-    },
-    {
-      id: "job-logs-panel",
-      label: "日志",
-      status: criticalLogLine ? "待排查" : logCount > 0 ? "可追踪" : "暂无日志",
-      detail: criticalLogLine || latestLogLine || "运行开始后会显示日志尾部",
-      tone: criticalLogLine ? "attention" : logCount > 0 ? "ready" : "pending"
-    },
-    {
-      id: "job-evaluation-panel",
-      label: "评分",
-      status: evaluation ? "人工已评" : advisorReport ? "自动已评" : "待评估",
-      detail: evaluation
-        ? "人工评分"
-        : advisorReport
-          ? `结论：${advisorReport.readiness}`
-          : "等待评分",
-      tone: evaluation || advisorReport ? "ready" : "pending"
-    }
-  ];
-}
-
-function buildAdvisorCompactStatus(state: AdvisorStatus, report: AdvisorReport | null, suggested: boolean) {
-  if (!state.enabled) {
-    return "未启用";
-  }
-  if (!state.configured) {
-    return "未配置";
-  }
-  if (report) {
-    return "已有草稿";
-  }
-  return suggested ? "可生成草稿" : "等待结果";
-}
-
-function currentStepLabel(steps: JobPayload["phase_display"]["steps"]) {
-  const currentIndex = steps.findIndex((step) => step.state === "current");
-  if (currentIndex >= 0) {
-    return `第 ${currentIndex + 1} / ${steps.length} 阶段`;
-  }
-  if (steps.every((step) => step.state === "done")) {
-    return "全部阶段完成";
-  }
-  return `共 ${steps.length} 个阶段`;
-}
-
-function HighlightedLogTail(props: { text: string; query: string }) {
-  if (!props.query) {
-    return <>{props.text}</>;
-  }
-  const pattern = new RegExp(`(${escapeRegExp(props.query)})`, "gi");
-  const parts = props.text.split(pattern);
-  return (
-    <>
-      {parts.map((part, index) =>
-        part.toLowerCase() === props.query.toLowerCase() ? (
-          <mark className="log-hit" key={`${part}-${index}`}>
-            {part}
-          </mark>
-        ) : (
-          <span key={`${part}-${index}`}>{part}</span>
-        )
-      )}
-    </>
-  );
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function countLogLines(logs: JobPayload["logs"]) {
-  return logs.reduce((total, log) => {
-    const lines = (log.tail || "").split(/\r?\n/).filter((line) => line.trim().length > 0);
-    return total + lines.length;
-  }, 0);
-}
-
-function countLogKeywordHits(logs: JobPayload["logs"], query: string) {
-  if (!query) {
-    return 0;
-  }
-  const needle = query.toLowerCase();
-  return logs.reduce((total, log) => {
-    const lines = (log.tail || "").split(/\r?\n/).filter((line) => line.trim().length > 0);
-    return total + lines.filter((line) => line.toLowerCase().includes(needle)).length;
-  }, 0);
-}
-
-function buildAttentionJobMessage(status: string, errorMessage: string | null | undefined, criticalLogLine: string, latestLogLine: string) {
-  if (errorMessage) {
-    return errorMessage;
-  }
-  if (criticalLogLine) {
-    return `优先查看可疑日志：${criticalLogLine}`;
-  }
-  if (latestLogLine) {
-    return `没有明确错误行，先从最新日志判断是否需要重试：${latestLogLine}`;
-  }
-  return status === "cancelled" ? "任务已取消，先确认是否需要清理远端残留或复制任务重跑。" : "任务失败但没有回传明确日志，先检查远端状态和 dispatch 日志。";
-}
-
-function getLatestLogLine(logs: JobPayload["logs"]) {
-  for (const log of logs) {
-    const lines = (log.tail || "")
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    for (let index = lines.length - 1; index >= 0; index -= 1) {
-      const line = lines[index];
-      if (!/futurewarning|warning, cannot find cuda-compiled version of rope2d/i.test(line)) {
-        return line;
-      }
-    }
-  }
-  return "";
-}
-
-function getCriticalLogLine(logs: JobPayload["logs"]) {
-  const criticalPattern = /traceback|exception|fatal|runtimeerror|oom|cuda out of memory|failed|error/i;
-  const ignoredPattern = /futurewarning|warning, cannot find cuda-compiled version of rope2d/i;
-  for (const log of logs) {
-    const lines = (log.tail || "")
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    for (let index = lines.length - 1; index >= 0; index -= 1) {
-      const line = lines[index];
-      if (ignoredPattern.test(line)) {
-        continue;
-      }
-      if (criticalPattern.test(line)) {
-        return line;
-      }
-    }
-  }
-  return "";
-}
-
-function buildOutputSections(outputs: OutputItem[], model: string): OutputSection[] {
-  const buckets: Record<string, OutputSection> = {
-    main: {
-      key: "main",
-      title: "核心成果",
-      description: model === "monst3r" ? "三维场景、点云、主要导出。" : "点云与主要可视化。",
-      accent: "blue",
-      defaultOpen: true,
-      items: []
-    },
-    camera: {
-      key: "camera",
-      title: "相机与轨迹",
-      description: "相机内参、位姿、轨迹等文本产物。",
-      accent: "slate",
-      defaultOpen: true,
-      items: []
-    },
-    masks: {
-      key: "masks",
-      title: "掩膜与动态区域",
-      description: "动态 mask 与扩张 mask。",
-      accent: "gold",
-      defaultOpen: false,
-      items: []
-    },
-    confidence: {
-      key: "confidence",
-      title: "置信度与数组",
-      description: "置信图、深度数组和中间数值文件。",
-      accent: "slate",
-      defaultOpen: false,
-      items: []
-    },
-    visuals: {
-      key: "visuals",
-      title: "图像可视化",
-      description: "可直接浏览的 PNG/JPG 结果图。",
-      accent: "green",
-      defaultOpen: true,
-      items: []
-    },
-    other: {
-      key: "other",
-      title: "其他产物",
-      description: "未归类文件。",
-      accent: "slate",
-      defaultOpen: false,
-      items: []
-    }
-  };
-
-  outputs.forEach((output) => {
-    const name = output.display_name.toLowerCase();
-    if (output.is_model3d || output.is_pointcloud || /scene\.glb|pointcloud|matches\./i.test(name)) {
-      buckets.main.items.push(output);
-      return;
-    }
-    if (/traj|intrinsics|poses?|focal|camera/i.test(name) || name.endsWith(".txt")) {
-      buckets.camera.items.push(output);
-      return;
-    }
-    if (/mask/i.test(name)) {
-      buckets.masks.items.push(output);
-      return;
-    }
-    if (/conf|depth|frame_.*\.npy|\.npy$/i.test(name)) {
-      buckets.confidence.items.push(output);
-      return;
-    }
-    if (output.is_image) {
-      buckets.visuals.items.push(output);
-      return;
-    }
-    buckets.other.items.push(output);
-  });
-
-  const orderedKeys =
-    model === "monst3r"
-      ? ["main", "visuals", "camera", "masks", "confidence", "other"]
-      : ["main", "visuals", "camera", "masks", "confidence", "other"];
-
-  return orderedKeys
-    .map((key) => buckets[key])
-    .filter((section) => section && section.items.length > 0);
-}
-
 function Monst3rParams(props: {
   formState: FormState;
   updateFormField: (key: keyof FormState, value: string) => void;
@@ -3029,137 +2780,6 @@ function ParamField(props: {
       <span>{formatParamLabel(props.name)}</span>
       <input value={props.value} onChange={(event) => props.onChange(event.target.value)} />
     </label>
-  );
-}
-
-function AdvisorPanel(props: { report: AdvisorReport | null }) {
-  if (!props.report) {
-    return <span className="muted-text">暂无自动评估。</span>;
-  }
-
-  return (
-    <div className="advisor-panel">
-      <div className="summary-strip">
-        <SummaryStat label="评分" value={String(props.report.overall_score || "-")} />
-        <SummaryStat label="结论" value={props.report.readiness || "-"} />
-        <SummaryStat label="模型" value={props.report.advisor_model || "-"} />
-      </div>
-      <p className="advisor-summary">{props.report.summary}</p>
-      {props.report.issues.length > 0 ? (
-        <div>
-          <strong>主要问题</strong>
-          <ul>
-            {props.report.issues.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      {props.report.next_actions.length > 0 ? (
-        <div>
-          <strong>下一步</strong>
-          <ul>
-            {props.report.next_actions.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      {props.report.teacher_talk ? (
-        <div className="advisor-quote">
-          <strong>可直接汇报</strong>
-          <p>{props.report.teacher_talk}</p>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function AdvisorWorkbench(props: {
-  job: JobPayload | null;
-  advisorState: AdvisorStatus;
-  actionKey: string | null;
-  onEvaluate: (jobId: string) => void;
-  onConfigure: () => void;
-  onCopy: (value: string, label: string) => Promise<void>;
-  compact?: boolean;
-}) {
-  if (!props.advisorState.enabled || !props.advisorState.configured) {
-    return (
-      <div className={`advisor-workbench ${props.compact ? "compact" : ""}`}>
-        <div className="advisor-config-note">
-          <strong>辅助评估未就绪</strong>
-          <p>{props.advisorState.message}</p>
-          <div className="advisor-workbench-actions">
-            <button onClick={props.onConfigure} type="button">
-              配置
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!props.job) {
-    return (
-      <div className={`advisor-workbench ${props.compact ? "compact" : ""}`}>
-        <div className="empty-state">先选中一条任务。</div>
-      </div>
-    );
-  }
-
-  const job = props.job;
-  const report = job.advisor_report ?? null;
-  const suggested = isAdvisorSuggested(job.job.status);
-
-  return (
-    <div className={`advisor-workbench ${props.compact ? "compact" : ""}`}>
-      <div className="advisor-workbench-head">
-        <div>
-          <strong>{job.job.job_id}</strong>
-          <p>
-            {statusModelLabel(job.job.model)} · {statusLabel(job.job.status)} · {sourceTypeLabel(job.job.source_type)}
-          </p>
-        </div>
-        <div className="advisor-workbench-actions">
-          {report?.teacher_talk ? (
-            <button onClick={() => void props.onCopy(report.teacher_talk, "汇报话术")} type="button">
-              复制汇报话术
-            </button>
-          ) : null}
-          <button
-            disabled={!suggested || props.actionKey === "advisor"}
-            onClick={() => props.onEvaluate(job.job.job_id)}
-            type="button"
-          >
-            {props.actionKey === "advisor" ? "生成中..." : report ? "重新生成" : "生成草稿"}
-          </button>
-        </div>
-      </div>
-
-      {!report ? (
-        <div className="advisor-config-note">
-          <strong>{suggested ? "可生成评估草稿" : "等待任务结束"}</strong>
-          <p>{suggested ? "会读取参数、摘要和日志。" : "完成、失败或取消后再生成。"}</p>
-        </div>
-      ) : (
-        <>
-          <AdvisorPanel report={report} />
-          {props.compact ? null : (
-            <div className="advisor-copy-row">
-              <button onClick={() => void props.onCopy(report.summary, "评估摘要")} type="button">
-                复制摘要
-              </button>
-              {report.teacher_talk ? (
-                <button onClick={() => void props.onCopy(report.teacher_talk, "汇报话术")} type="button">
-                  复制汇报话术
-                </button>
-              ) : null}
-            </div>
-          )}
-        </>
-      )}
-    </div>
   );
 }
 
