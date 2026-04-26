@@ -16,6 +16,8 @@
     --line:rgba(11,31,58,.22);
     --soft:rgba(11,31,58,.055);
     --accent:#315b8c;
+    --good:#3f7f68;
+    --warn:#b56b45;
     --sans:"Noto Sans SC",system-ui,sans-serif;
     --serif:"Noto Serif SC",serif;
     --mono:"IBM Plex Mono",ui-monospace,monospace;
@@ -28,41 +30,53 @@
   .slide.dark{background:linear-gradient(135deg,#091a31 0%,#102947 100%);color:#f5f7fb}
   .slide.light{background:linear-gradient(135deg,#f5f7fa 0%,#eef2f6 100%);color:var(--ink)}
   .slide::before{content:"";position:absolute;inset:5.2vh 6vw 8.2vh;border-top:1px solid currentColor;opacity:.12;pointer-events:none}
-  .chrome,.foot{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;letter-spacing:.08em;opacity:.72}
+  .chrome,.foot{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:13px;letter-spacing:.06em;opacity:.75}
   .foot{margin-top:auto}
   .frame{flex:1;min-height:0;padding-top:3vh}
   .center{display:grid;align-content:center}
-  .kicker{font-weight:700;font-size:13px;letter-spacing:.08em;color:var(--accent);margin-bottom:1.8vh}
+  .kicker{font-weight:700;font-size:15px;letter-spacing:.06em;color:var(--accent);margin-bottom:1.7vh}
   .dark .kicker{color:#b6c9e5}
   h1,h2,h3{font-family:var(--serif);font-weight:700;letter-spacing:0}
-  .hero-title{font-size:clamp(56px,6.6vw,94px);line-height:1.08}
-  .title{font-size:clamp(32px,3.45vw,52px);line-height:1.18}
-  .subtitle{font-size:clamp(23px,2.2vw,34px);line-height:1.35;font-weight:500;margin-top:2.2vh}
-  .lead{font-size:clamp(16px,1.18vw,20px);line-height:1.68;color:var(--muted)}
+  .hero-title{font-size:clamp(60px,7vw,104px);line-height:1.06}
+  .title{font-size:clamp(38px,4vw,64px);line-height:1.14}
+  .subtitle{font-size:clamp(26px,2.4vw,38px);line-height:1.32;font-weight:500;margin-top:2.2vh}
+  .lead{font-size:clamp(18px,1.38vw,24px);line-height:1.62;color:var(--muted)}
   .dark .lead{color:rgba(245,247,251,.78)}
-  .body{font-size:clamp(14px,1.02vw,17px);line-height:1.62;color:rgba(11,31,58,.82)}
+  .body{font-size:clamp(16px,1.16vw,20px);line-height:1.58;color:rgba(11,31,58,.84)}
   .dark .body{color:rgba(245,247,251,.82)}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:start}
   .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:2.4vw}
   .grid-4{display:grid;grid-template-columns:repeat(2,1fr);gap:2.4vh 2vw}
   .grid-4-wide{display:grid;grid-template-columns:repeat(4,1fr);gap:1.35vw}
-  .card{border:1px solid var(--line);background:rgba(255,255,255,.42);padding:2.2vh 1.7vw;border-radius:4px;min-height:0}
+  .card{border:1px solid var(--line);background:rgba(255,255,255,.42);padding:2.25vh 1.75vw;border-radius:4px;min-height:0}
   .dark .card{border-color:rgba(245,247,251,.22);background:rgba(255,255,255,.045)}
-  .card h3{font-size:clamp(20px,1.55vw,27px);margin-bottom:1.1vh}
-  .compact-card{padding:1.6vh 1.25vw}
-  .compact-card h3{font-size:clamp(17px,1.22vw,22px);margin-bottom:.7vh}
-  .label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.8vh}
+  .card h3{font-size:clamp(22px,1.7vw,30px);margin-bottom:1vh}
+  .compact-card{padding:1.6vh 1.3vw}
+  .compact-card h3{font-size:clamp(19px,1.35vw,25px);margin-bottom:.65vh}
+  .label{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:.75vh}
   .dark .label{color:rgba(245,247,251,.58)}
   .stat{font-family:var(--serif);font-weight:800;font-size:clamp(38px,4.2vw,64px);line-height:1;color:var(--accent)}
   .dark .stat{color:#c9dcf4}
-  .note{font-size:clamp(13px,.95vw,16px);line-height:1.56;color:rgba(11,31,58,.76);margin-top:1.2vh}
+  .note{font-size:clamp(14px,1.02vw,18px);line-height:1.52;color:rgba(11,31,58,.76);margin-top:1.1vh}
   .dark .note{color:rgba(245,247,251,.76)}
   .rowline{display:grid;grid-template-columns:1fr 2.4fr 1fr;gap:1.2vw;align-items:start;border-top:1px solid var(--line);padding:1.55vh 0}
   .dark .rowline{border-color:rgba(245,247,251,.2)}
-  .rowline .k{font-family:var(--serif);font-weight:700;font-size:clamp(18px,1.25vw,24px)}
-  .rowline .v{font-size:clamp(13px,.98vw,16px);line-height:1.55;color:rgba(11,31,58,.78)}
+  .rowline .k{font-family:var(--serif);font-weight:700;font-size:clamp(20px,1.4vw,27px)}
+  .rowline .v{font-size:clamp(15px,1.08vw,19px);line-height:1.5;color:rgba(11,31,58,.8)}
   .dark .rowline .v{color:rgba(245,247,251,.78)}
-  .rowline .m{font-family:var(--mono);font-size:11px;justify-self:end;opacity:.62}
+  .rowline .m{font-family:var(--mono);font-size:12px;justify-self:end;opacity:.62}
+  .claim{border-left:4px solid var(--accent);padding:1.1vh 1.2vw;margin-top:2.2vh;background:rgba(49,91,140,.07);font-size:clamp(17px,1.22vw,22px);line-height:1.55;color:rgba(11,31,58,.86)}
+  .dark .claim{border-color:#c9dcf4;background:rgba(255,255,255,.06);color:rgba(245,247,251,.86)}
+  .thesis{font-family:var(--serif);font-size:clamp(20px,1.5vw,28px);line-height:1.42;font-weight:700;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:1.45vh 0;margin-top:2.4vh}
+  .dark .thesis{border-color:rgba(245,247,251,.22)}
+  .axis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1vw;margin-top:2vh}
+  .axis{border:1px solid var(--line);padding:1.25vh 1vw;border-radius:4px;background:rgba(255,255,255,.045)}
+  .axis h3{font-size:clamp(18px,1.25vw,23px);margin-bottom:.5vh}
+  .axis p{font-size:clamp(13px,.92vw,16px);line-height:1.45;color:rgba(245,247,251,.76)}
+  .framework{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2vw;margin-top:2.2vh}
+  .framework .card{padding:1.5vh 1.05vw}
+  .framework h3{font-size:clamp(18px,1.32vw,25px)}
+  .framework p{font-size:clamp(14px,1vw,18px);line-height:1.48;color:rgba(11,31,58,.78)}
   .formula-card{padding:2vh 1.7vw}
   .formula-title{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:rgba(245,247,251,.58);margin-bottom:1.2vh}
   .formula-main{font-family:Georgia,var(--serif),serif;font-weight:700;font-size:clamp(22px,2.05vw,34px);line-height:1.25}
@@ -206,7 +220,8 @@
   @keyframes tsSignal{0%{left:20%;top:45%;opacity:0}12%,24%{opacity:1}38%{left:48%;top:31%;opacity:1}55%{left:74%;top:45%;opacity:1}70%,100%{left:82%;top:45%;opacity:0}}
   @keyframes tsBar{0%,20%{width:34%}55%{width:var(--w)}100%{width:var(--w)}}
   a{color:inherit}
-  #nav{position:fixed;left:50%;bottom:2.5vh;transform:translateX(-50%);display:flex;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(10,31,58,.12);z-index:5}
+  #nav{position:fixed;left:50%;bottom:1.25vh;transform:translateX(-50%);display:flex;gap:8px;padding:6px 11px;border-radius:999px;background:rgba(10,31,58,.12);z-index:5;opacity:.48;transition:opacity .18s ease}
+  #nav:hover{opacity:1}
   .dot{width:8px;height:8px;border:0;border-radius:99px;background:rgba(10,31,58,.25);padding:0}
   .dot.active{width:24px;background:var(--accent)}
   body.dark-nav #nav{background:rgba(255,255,255,.1)}
@@ -229,11 +244,12 @@
   <div class="frame center">
     <div class="kicker">教师-学生学习框架</div>
     <h1 class="hero-title">教师-学生模型</h1>
-    <h2 class="subtitle">原理、训练机制与 Depth Anything v1/v2 案例分析</h2>
+    <h2 class="subtitle">把高成本监督，交给可部署模型</h2>
+    <p class="lead" style="max-width:62vw;margin-top:2.6vh">核心问题只有一个：训练阶段如何制造更丰富的监督，推理阶段为什么只需要留下学生模型。</p>
     <div class="grid-3" style="margin-top:6vh">
-      <div class="card"><div class="label">第一部分</div><h3>模型机制</h3><p class="body">教师如何提供软标签、伪标签和特征监督；学生如何通过损失函数承接能力。</p></div>
-      <div class="card"><div class="label">第二部分</div><h3>深度估计案例</h3><p class="body">Depth Anything v1/v2 如何把教师学生框架扩展为大规模数据引擎。</p></div>
-      <div class="card"><div class="label">第三部分</div><h3>动态演示</h3><p class="body"><a href="training_demo.html">打开训练演示页</a>：观察教师生成目标、学生更新和误差下降。</p></div>
+      <div class="card"><div class="label">第一部分</div><h3>先拆机制</h3><p class="body">教师到底给了什么信号，学生又通过哪些损失项吸收这些信号。</p></div>
+      <div class="card"><div class="label">第二部分</div><h3>再看训练</h3><p class="body">固定教师、EMA 教师、伪标签过滤、强扰动输入分别解决什么问题。</p></div>
+      <div class="card"><div class="label">第三部分</div><h3>最后落到案例</h3><p class="body">用 Depth Anything v1/v2 解释：教师学生框架如何变成深度估计的数据引擎。</p></div>
     </div>
   </div>
   <div class="foot"><div>课程汇报材料</div><div>知识蒸馏 · 自训练 · 单目深度估计</div></div>
@@ -244,28 +260,18 @@
   <div class="frame">
     <div class="grid-2" style="align-items:end">
       <div>
-        <div class="kicker">核心定义</div>
-        <h2 class="title">教师-学生模型把“监督”从人工标签扩展为模型行为。</h2>
+        <div class="kicker">先给一套读法</div>
+        <h2 class="title">教师学生模型可以拆成四个问题。</h2>
       </div>
-      <p class="lead">教师可以是模型集成、大模型、EMA 模型或冻结预训练编码器；学生通过匹配教师的输出、特征或伪标签，获得可部署能力或更强泛化能力。</p>
+      <p class="lead">它不是一个固定网络结构，而是一种训练组织方式：把强模型、额外数据、复杂增强留在训练阶段，把能力迁移到更便宜的学生模型上。</p>
     </div>
-    <div class="grid-2" style="margin-top:3vh">
-      <div>
-      <div class="mini-table">
-        <div><div class="label">教师端</div><p class="body">高能力、高成本，负责知识生产。</p></div>
-        <div><div class="label">学生端</div><p class="body">轻量化、可部署，负责能力承接。</p></div>
-        <div><div class="label">训练阶段</div><p class="body">允许使用大模型、额外数据、复杂增强。</p></div>
-        <div><div class="label">推理阶段</div><p class="body">只保留学生模型，满足延迟与资源约束。</p></div>
-      </div>
-      <div class="callout" style="margin-top:2vh">
-        <div class="label">作用机制</div>
-        <div class="compact-rows">
-          <div class="compact-row"><b>信号</b><span>教师输出不仅给答案，还给相似性、置信度和像素级结构。</span></div>
-          <div class="compact-row"><b>压力</b><span>学生在容量、扰动或数据域上更受约束，因此被迫学习稳定规律。</span></div>
-          <div class="compact-row"><b>规模</b><span>伪标签把无标签样本转成训练目标，监督规模不再只受人工标注限制。</span></div>
-        </div>
-      </div>
+    <div class="framework">
+      <div class="card"><div class="label">问题一</div><h3>谁来教？</h3><p>大模型、模型集成、EMA 教师、冻结预训练编码器，都是“教师”。</p></div>
+      <div class="card"><div class="label">问题二</div><h3>教什么？</h3><p>概率分布、伪标签、深度图、注意力图、中间特征都可以是监督。</p></div>
+      <div class="card"><div class="label">问题三</div><h3>怎么学？</h3><p>学生同时承受任务损失、蒸馏损失、特征对齐和一致性约束。</p></div>
+      <div class="card"><div class="label">问题四</div><h3>哪里会坏？</h3><p>教师偏差、伪标签噪声、分布外样本和评测集质量都会影响上限。</p></div>
     </div>
+    <div class="grid-2" style="margin-top:2vh">
     <div class="card">
       <div class="label">动态图解：监督如何流动</div>
       <div class="ts-diagram" aria-label="教师学生模型动态信号流图">
@@ -303,11 +309,15 @@
       </div>
       <div class="rowline" style="margin-top:2vh"><div class="k">关键收益</div><div class="v">用高成本训练过程换取低成本部署模型；用无标签数据扩大训练分布；用软分布和中间特征传递结构信息。</div><div class="m">收益</div></div>
     </div>
+    <div class="callout">
+      <div class="label">核心主张</div>
+      <h3>监督不再只等于人工标签。</h3>
+      <p class="body">教师学生模型把“标签”泛化成“模型行为”。只要这种行为能转成训练目标，就能拿来约束学生。</p>
+      <div class="compact-rows">
+        <div class="compact-row"><b>例子</b><span>分类任务里，教师给类别概率分布；深度估计里，教师给逐像素伪深度图。</span></div>
+        <div class="compact-row"><b>边界</b><span>学生不会自动变强，只有当教师信号更干净、数据覆盖更广或输入扰动更合理时才会受益。</span></div>
+      </div>
     </div>
-    <div class="grid-3" style="margin-top:1.8vh">
-      <div class="card compact-card"><div class="label">模型压缩</div><h3>强模型 → 轻模型</h3><p class="body">用教师的软输出和中间特征训练更小学生模型，降低延迟、显存和部署成本。</p></div>
-      <div class="card compact-card"><div class="label">半监督学习</div><h3>少标注 → 多样本</h3><p class="body">教师给无标签样本生成伪标签，扩大训练分布并提升未知场景泛化。</p></div>
-      <div class="card compact-card"><div class="label">表示迁移</div><h3>输出 → 表示空间</h3><p class="body">冻结编码器、注意力图或嵌入表示可作为监督目标，帮助学生继承语义结构。</p></div>
     </div>
   </div>
   <div class="foot"><div>定义</div><div>教师信号作为结构化监督</div></div>
@@ -318,9 +328,15 @@
   <div class="frame">
     <div class="grid-2" style="align-items:end">
       <div>
-        <div class="kicker">损失函数视角</div>
-        <h2 class="title">教师学生模型的本质是目标函数设计。</h2>
-        <p class="lead" style="margin-top:2vh">不同教师信号对应不同损失项；权重决定训练目标更偏模型压缩、半监督扩数据，还是表示迁移。</p>
+        <div class="kicker">从“教什么”落到“怎么优化”</div>
+        <h2 class="title">损失函数定义了学生该模仿什么。</h2>
+        <p class="lead" style="margin-top:2vh">教师学生模型的重点不是多加一个网络，而是把教师行为拆成可优化的目标：输出要像、特征要对齐、增强前后要一致。</p>
+        <div class="claim">权重不是装饰：α、β、γ、δ 决定训练到底偏向任务监督、模型压缩、半监督扩数据，还是表示迁移。</div>
+        <div class="axis-grid">
+          <div class="axis"><h3>压缩</h3><p>β 更高，学生重点拟合教师输出分布，适合低延迟部署。</p></div>
+          <div class="axis"><h3>扩数据</h3><p>伪标签权重更高，并依赖过滤、扰动和重采样扩大分布。</p></div>
+          <div class="axis"><h3>迁移</h3><p>γ 更高，学生对齐中间特征或注意力，继承语义结构。</p></div>
+        </div>
       </div>
       <div class="card formula-card">
         <div class="formula-title">总目标函数</div>
@@ -351,17 +367,7 @@
       <div class="card compact-card"><div class="label">特征对齐</div><h3>L<sub>feat</sub></h3><p class="body">对齐中间表示、注意力图或冻结编码器特征，继承语义结构。</p></div>
       <div class="card compact-card"><div class="label">一致性约束</div><h3>L<sub>cons</sub></h3><p class="body">不同增强视图保持预测一致，形成鲁棒性约束。</p></div>
     </div>
-    <div class="dense-table">
-      <div><div class="label">目标偏向</div><p class="body">模型压缩</p></div>
-      <div><p class="body">提高 β：更强调输出分布匹配，适合把大模型或集成模型压进学生模型。</p></div>
-      <div><p class="body">典型场景：移动端部署、低延迟推理、显存受限平台。</p></div>
-      <div><div class="label">目标偏向</div><p class="body">半监督扩数据</p></div>
-      <div><p class="body">提高伪标签样本权重，并配合过滤、增强和重采样，扩大训练分布。</p></div>
-      <div><p class="body">典型场景：Depth Anything v1 的 62M 无标签图像。</p></div>
-      <div><div class="label">目标偏向</div><p class="body">表示迁移</p></div>
-      <div><p class="body">提高 γ：让学生对齐教师的中间特征、注意力或冻结编码器表示。</p></div>
-      <div><p class="body">典型场景：DINOv2 特征对齐、语义结构继承。</p></div>
-    </div>
+    <div class="thesis">结论：教师学生训练不是“多一个模型”，而是把教师行为拆成可度量、可加权、可组合的优化项。</div>
   </div>
   <div class="foot"><div>机制</div><div>输出蒸馏 · 特征对齐 · 一致性约束</div></div>
 </section>
@@ -405,8 +411,8 @@
   <div class="frame grid-2">
     <div>
       <div class="kicker">通用训练流程</div>
-      <h2 class="title">嵌入式动画展示教师-学生训练如何完成。</h2>
-      <p class="lead" style="margin-top:2vh">右侧动画循环展示四个阶段：教师产生目标，学生接收扰动输入，联合损失更新参数，最终只部署学生模型。</p>
+      <h2 class="title">训练循环：教师造目标，学生在约束中更新。</h2>
+      <p class="lead" style="margin-top:2vh">训练过程可以拆成四步：教师产生目标，学生接收扰动输入，联合损失更新参数，最终只部署学生模型。</p>
       <div style="margin-top:3vh">
         <div class="rowline"><div class="k">1. 生成目标</div><div class="v">教师对样本输出软标签、伪标签或特征目标。</div><div class="m">目标</div></div>
         <div class="rowline"><div class="k">2. 加难输入</div><div class="v">学生看到增强、遮挡、噪声或域变化后的输入。</div><div class="m">扰动</div></div>
@@ -481,28 +487,29 @@
   <div class="chrome"><div>信号类型与学习压力</div><div>06 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">分类框架</div>
-      <h2 class="title">三类教师信号对应三类学习压力。</h2>
+      <div class="kicker">教师信号的三种来源</div>
+      <h2 class="title">三类教师信号，对应三类典型例子。</h2>
       <div class="map">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none">
           <line x1="50" y1="50" x2="22" y2="22"></line><line x1="50" y1="50" x2="78" y2="22"></line><line x1="50" y1="50" x2="50" y2="82"></line>
         </svg>
         <div class="node main" style="--x:50%;--y:50%"><div class="label">教师信号</div><h3>监督来源</h3><p class="note">输出、特征、动态更新。</p></div>
-        <div class="node" style="--x:22%;--y:24%"><div class="label">输出信号</div><h3>输出教师</h3><p class="note">未归一化输出、概率、深度图、掩码。</p></div>
-        <div class="node" style="--x:78%;--y:24%"><div class="label">特征信号</div><h3>特征教师</h3><p class="note">中间层、注意力图、嵌入表示。</p></div>
-        <div class="node" style="--x:50%;--y:82%"><div class="label">动态信号</div><h3>动态教师</h3><p class="note">EMA 教师或迭代教师。</p></div>
+        <div class="node" style="--x:22%;--y:24%"><div class="label">输出信号</div><h3>软标签 / 伪标签</h3><p class="note">分类概率、深度图、分割掩码。</p></div>
+        <div class="node" style="--x:78%;--y:24%"><div class="label">特征信号</div><h3>表示空间对齐</h3><p class="note">中间层、注意力图、嵌入表示。</p></div>
+        <div class="node" style="--x:50%;--y:82%"><div class="label">动态信号</div><h3>EMA 教师</h3><p class="note">教师随训练平滑更新。</p></div>
       </div>
     </div>
     <div>
-      <div class="kicker">有效条件</div>
-      <h2 class="title">增益来自教师与学生的约束差异。</h2>
+      <div class="kicker">三个可验证例子</div>
+      <h2 class="title">每类信号都要落到一个具体场景。</h2>
       <div style="margin-top:3vh">
-        <div class="rowline"><div class="k">输入差异</div><div class="v">教师看干净图像，学生看扰动图像，从而学习不变性。</div><div class="m">扰动</div></div>
-        <div class="rowline"><div class="k">容量差异</div><div class="v">教师大而慢，学生小而快，压缩过程形成正则化。</div><div class="m">压缩</div></div>
-        <div class="rowline"><div class="k">数据差异</div><div class="v">教师把无标签图像转成训练目标，扩大学生看到的分布。</div><div class="m">规模</div></div>
-        <div class="rowline"><div class="k">风险控制</div><div class="v">伪标签噪声需要过滤、增强、重采样或更高质量教师。</div><div class="m">噪声</div></div>
+        <div class="rowline"><div class="k">分类蒸馏</div><div class="v">教师给“猫 0.71、狐 0.13、狗 0.08”这种软分布，学生学到类别之间的相似关系。</div><div class="m">软目标</div></div>
+        <div class="rowline"><div class="k">Mean Teacher</div><div class="v">EMA 教师给学生提供更稳定的预测目标，常用于半监督和一致性训练。</div><div class="m">动态教师</div></div>
+        <div class="rowline"><div class="k">Depth Anything</div><div class="v">教师把真实无标签图像转成逐像素伪深度图，学生在大规模真实分布上学习深度。</div><div class="m">稠密伪标签</div></div>
+        <div class="rowline"><div class="k">机制边界</div><div class="v">学生不是天然更强。真正的增益来自更广的数据、更稳的目标、更强的扰动约束。</div><div class="m">条件</div></div>
       </div>
     </div>
+    <div class="thesis" style="grid-column:1/-1;margin-top:-1.4vh">选择教师信号时先看任务形态：分类任务优先讲输出分布，稠密预测优先讲伪标签，半监督稳定性优先讲 EMA 或一致性约束。</div>
   </div>
   <div class="foot"><div>分类框架</div><div>输出信号 · 特征信号 · 动态信号</div></div>
 </section>
@@ -539,6 +546,7 @@
         <div><div class="label">失败模式</div><p class="body">透明、反射、细杆、天空和远距物体容易暴露伪标签偏差。</p></div>
       </div>
     </div>
+    <div class="thesis" style="grid-column:1/-1;margin-top:-1vh">单目深度估计把教师学生框架的价值放大了：每张无标签 RGB 图像都可以被教师转成一张稠密训练目标，监督规模从“样本数”变成“像素级目标数”。</div>
   </div>
   <div class="foot"><div>任务背景</div><div>RGB 图像 → 稠密深度图</div></div>
 </section>
@@ -547,8 +555,9 @@
   <div class="chrome"><div>Depth Anything v1：数据引擎</div><div>08 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">CVPR 2024</div>
-      <h2 class="title">Depth Anything v1 将教师学生框架扩展为大规模数据引擎。</h2>
+      <div class="kicker">Depth Anything v1 的关键读法</div>
+      <h2 class="title">v1 不是“多训一点数据”，而是把教师变成标注机器。</h2>
+      <p class="lead" style="margin-top:2vh">先用有标注深度数据训练教师，再让教师给 62M 真实无标签图像生成伪深度，学生最终吃到的是一个被扩展过的真实世界训练集。</p>
       <div class="grid-4" style="margin-top:4vh">
         <div class="card"><div class="label">有标注数据</div><div class="stat">1.5M</div><p class="note">6 个有深度标注数据源，用于训练初始教师。</p></div>
         <div class="card"><div class="label">无标注数据</div><div class="stat">62M</div><p class="note">8 个真实图像集合，由教师自动生成伪深度。</p></div>
@@ -558,7 +567,7 @@
     </div>
     <div class="figure" style="height:60vh">
       <img src="images/v1_fig2_pipeline.png" alt="Depth Anything v1 pipeline figure">
-      <div class="cap">Depth Anything v1 · 图 2：伪标签生成与鲁棒训练流程</div>
+      <div class="cap">Depth Anything v1 · 图 2：教师生成伪深度，学生在强扰动下学习</div>
     </div>
   </div>
   <div class="foot"><div>Depth Anything v1</div><div>arXiv:2401.10891</div></div>
@@ -568,15 +577,16 @@
   <div class="chrome"><div>Depth Anything v1：论文证据</div><div>09 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">论文证据</div>
-      <h2 class="title">v1 的关键不是新网络结构，而是教师生成的大规模真实图像监督。</h2>
+      <div class="kicker">证据链</div>
+      <h2 class="title">v1 的实验支撑的是“监督扩展”这件事。</h2>
+      <p class="lead" style="margin-top:2vh">数据表说明训练来源如何扩展；零样本结果说明这种扩展没有只记住训练集；可视化图说明伪深度在开放场景里仍能形成稳定结构。</p>
       <div class="figure" style="height:27vh;margin-top:3vh"><img src="images/v1_table1_data.png" alt="Depth Anything v1 Table 1"></div>
       <div class="figure" style="height:24vh;margin-top:2vh"><img src="images/v1_table2_zero_shot.png" alt="Depth Anything v1 Table 2"></div>
     </div>
     <div>
       <div class="figure" style="height:42vh"><img src="images/v1_teaser_web.jpg" alt="Depth Anything v1 teaser"></div>
-      <div class="rowline" style="margin-top:3vh"><div class="k">机制解释</div><div class="v">教师在干净图像上生成伪深度，学生在强扰动图像上恢复该目标；差异化输入使学生学到鲁棒结构，而非只复制输出。</div><div class="m">鲁棒</div></div>
-      <div class="rowline"><div class="k">汇报重点</div><div class="v">讲 v1 时要把“无标签规模 + 强扰动 + DINOv2 特征对齐”作为统一机制，而不是分散成三个技巧。</div><div class="m">结论</div></div>
+      <div class="rowline" style="margin-top:3vh"><div class="k">为什么有效</div><div class="v">教师在干净图像上生成伪深度，学生在强扰动图像上恢复该目标；这让学生学到更稳的几何结构。</div><div class="m">扰动</div></div>
+      <div class="rowline"><div class="k">整合判断</div><div class="v">无标签规模、强扰动、DINOv2 特征不是孤立技巧；它们共同服务于监督扩展。</div><div class="m">主线</div></div>
     </div>
   </div>
   <div class="foot"><div>实验证据</div><div>训练数据 · 零样本结果 · 可视化效果</div></div>
@@ -586,14 +596,15 @@
   <div class="chrome"><div>Depth Anything v2：合成到真实的桥接</div><div>10 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">从标签质量到真实分布</div>
-      <h2 class="title">Depth Anything v2 将问题进一步拆成标签质量与真实分布桥接。</h2>
+      <div class="kicker">Depth Anything v2 的关键读法</div>
+      <h2 class="title">v2 补上的不是规模，而是教师标签质量。</h2>
+      <p class="lead" style="margin-top:2vh">v1 已经证明“真实无标签图像很有价值”。v2 进一步追问：如果教师本身的深度标签更准确，伪标签上限是不是还能再抬高？</p>
       <div class="flow" style="grid-template-columns:repeat(3,1fr);margin-top:4vh">
         <div class="step"><div class="n">01</div><div class="t">合成数据教师</div><div class="d">使用 595K 高质量合成图像训练高精度教师。</div></div>
         <div class="step"><div class="n">02</div><div class="t">真实伪标签</div><div class="d">教师给 62M 真实无标签图像生成深度伪标签。</div></div>
         <div class="step"><div class="n">03</div><div class="t">多规模学生</div><div class="d">训练不同规模学生模型，兼顾质量、速度与部署成本。</div></div>
       </div>
-      <div class="rowline" style="margin-top:4vh"><div class="k">核心变化</div><div class="v">v1 强调真实无标签规模；v2 先提升教师标签质量，再用教师将合成精度迁移到真实图像分布。</div><div class="m">桥接</div></div>
+      <div class="rowline" style="margin-top:3vh"><div class="k">核心变化</div><div class="v">v1 强调真实无标签规模；v2 先提升教师标签质量，再用教师将合成精度迁移到真实图像分布。</div><div class="m">桥接</div></div>
       <div class="callout" style="margin-top:2vh">
         <div class="label">桥接逻辑</div>
         <div class="compact-rows">
@@ -616,7 +627,8 @@
   <div class="frame grid-2">
     <div>
       <div class="kicker">v1 / v2 对比</div>
-      <h2 class="title">两版模型体现了教师学生框架从“扩数据”到“提标签质量”的升级。</h2>
+      <h2 class="title">v1 解决覆盖，v2 解决伪标签上限。</h2>
+      <p class="lead" style="margin-top:2vh">这两版不是简单迭代关系，而是把教师学生框架的两个旋钮分开了：数据覆盖和教师质量。</p>
       <div class="mini-table" style="margin-top:4vh">
         <div><div class="label">Depth Anything v1</div><p class="body">1.5M 有标注 + 62M 无标注；重点是用真实无标签图像扩展场景覆盖。</p></div>
         <div><div class="label">Depth Anything v2</div><p class="body">595K 合成图像 + 62M 真实伪标签；重点是用精确合成标签训练更强教师。</p></div>
@@ -624,8 +636,8 @@
         <div><div class="label">学生角色</div><p class="body">吸收大规模目标，并满足不同参数规模与推理速度需求。</p></div>
       </div>
       <div class="callout" style="margin-top:2vh">
-        <div class="label">汇报表述</div>
-        <p class="body">v1 证明“教师可以把无标签真实图像变成可训练监督”；v2 证明“教师质量本身决定伪标签上限”。两者合起来说明教师学生框架不是单纯压缩，而是可扩展监督系统。</p>
+        <div class="label">结论</div>
+        <p class="body">v1 证明“教师可以把无标签真实图像变成可训练监督”；v2 证明“教师质量决定伪标签上限”。两者合起来说明教师学生框架不是单纯压缩，而是一套可扩展监督系统。</p>
       </div>
     </div>
     <div>
@@ -645,13 +657,13 @@
   <div class="chrome"><div>总结与讨论</div><div>12 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">总结</div>
-      <h2 class="title">讲清教师学生模型，需要同时覆盖角色、信号、约束和风险。</h2>
+      <div class="kicker">结论</div>
+      <h2 class="title">这套框架可以用一句话收住。</h2>
       <div style="margin-top:3vh">
-        <div class="rowline"><div class="k">角色</div><div class="v">教师负责高成本知识生产；学生负责低成本部署和泛化能力承接。</div><div class="m">01</div></div>
-        <div class="rowline"><div class="k">信号</div><div class="v">监督可以是软标签、伪标签、特征、注意力图或一致性目标。</div><div class="m">02</div></div>
-        <div class="rowline"><div class="k">约束</div><div class="v">差异化输入、容量压缩和数据扩展共同形成额外学习压力。</div><div class="m">03</div></div>
-        <div class="rowline"><div class="k">风险</div><div class="v">教师错误会被复制，需要过滤、扰动、重训和评测集质量控制。</div><div class="m">04</div></div>
+        <div class="rowline"><div class="k">角色</div><div class="v">教师负责高成本知识生产；学生负责低成本部署和泛化能力承接。</div><div class="m">谁</div></div>
+        <div class="rowline"><div class="k">信号</div><div class="v">监督可以是软标签、伪标签、特征、注意力图或一致性目标。</div><div class="m">教什么</div></div>
+        <div class="rowline"><div class="k">约束</div><div class="v">差异化输入、容量压缩和数据扩展共同形成额外学习压力。</div><div class="m">怎么教</div></div>
+        <div class="rowline"><div class="k">风险</div><div class="v">教师错误会被复制，需要过滤、扰动、重训和评测集质量控制。</div><div class="m">何时坏</div></div>
       </div>
       <div class="callout" style="margin-top:2vh">
         <div class="label">一句话结论</div>
@@ -659,8 +671,8 @@
       </div>
     </div>
     <div>
-      <div class="card"><div class="label">动态演示</div><h3>训练动态演示页</h3><p class="body">用于课堂中解释教师生成目标、学生接收扰动输入、损失下降和伪标签噪声控制。</p><p class="note"><a href="training_demo.html">打开训练演示页</a></p></div>
-      <div class="card" style="margin-top:2vh"><div class="label">参考论文</div><p class="body">Hinton 等知识蒸馏论文；Depth Anything v1，arXiv:2401.10891；Depth Anything v2，arXiv:2406.09414；DINOv2 视觉基础特征。</p></div>
+      <div class="card"><div class="label">演示模块</div><h3>训练循环动画</h3><p class="body">解释教师生成目标、学生接收扰动输入、损失下降和伪标签噪声控制。</p><p class="note"><a href="training_demo.html">打开训练演示页</a></p></div>
+      <div class="card" style="margin-top:2vh"><div class="label">理论线索</div><p class="body">Hinton 等知识蒸馏论文；Mean Teacher 的 EMA 教师；Depth Anything v1/v2 的伪深度标注链路；DINOv2 特征先验。</p></div>
       <div class="card" style="margin-top:2vh"><div class="label">讨论问题</div><p class="body">什么时候学生能超过教师？伪标签噪声如何过滤？Depth Anything 的教师是压缩对象，还是数据分布桥接器？</p></div>
       <div class="callout" style="margin-top:2vh">
         <div class="label">回答路径</div>
