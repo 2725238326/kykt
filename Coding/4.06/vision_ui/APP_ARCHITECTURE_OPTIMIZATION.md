@@ -1,6 +1,6 @@
 # App Architecture / Performance Optimization Notes
 
-Last updated: 2026-04-25
+Last updated: 2026-04-26
 
 ## Current Architecture
 
@@ -41,6 +41,7 @@ The app should remain a local desktop workbench. The server should run model job
 - Moved Sample Matrix report/evidence helpers into `client/src/sampleMatrixHelpers.ts`, file staging helpers into `client/src/fileHelpers.ts`, and Create/job workflow helpers into `client/src/workflowHelpers.ts`.
 - Moved shared UI primitives into `client/src/uiPrimitives.tsx`, model roadmap into `client/src/ModelRoadmapPanel.tsx`, Sample Matrix into `client/src/SampleMatrixPanel.tsx`, manual evaluation into `client/src/EvaluationPanel.tsx`, and job result summary rendering into `client/src/SummaryPanel.tsx`.
 - Moved advisor rendering into `client/src/AdvisorWorkbench.tsx` and shared job inspector/log/output helpers into `client/src/jobInspectorHelpers.tsx`.
+- Moved the Jobs inspector/detail surface into `client/src/JobDetail.tsx`, reducing `client/src/App.tsx` to the workspace shell, data flow, and remaining Create/System panels.
 - Added job bundle export via `GET /api/jobs/{job_id}/bundle`, with a Jobs inspector export action.
 - Updated Sample Matrix backend mapping so manifest `seed_job_id` values populate matrix cells without mutating historical job records.
 - Fast3R runner now handles the local Fast3R loader API and sm75 attention fallback; platform E2E succeeded as job `20260425-113002`.
@@ -52,7 +53,7 @@ The app should remain a local desktop workbench. The server should run model job
 
 ## Next Architecture Tasks
 
-1. Continue splitting `client/src/App.tsx` into workspace containers, data hooks, and pure helper modules.
+1. Extract the remaining Create/System workspace sections from `client/src/App.tsx`, then move shared polling/bootstrap state into focused data hooks.
 2. Add pagination or windowing for very large local job histories.
 3. Unify query / polling state so jobs, samples, and deployment views share more reusable loading/error logic.
 4. Continue tightening report/evaluation/Advisor evidence contracts.
