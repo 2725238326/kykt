@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教师-学生模型 · 12页学术汇报版</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b1f3a;
+    --paper:#f3f5f7;
+    --muted:#5c6b7f;
+    --line:rgba(11,31,58,.22);
+    --soft:rgba(11,31,58,.055);
+    --accent:#315b8c;
+    --sans:"Noto Sans SC",system-ui,sans-serif;
+    --serif:"Noto Serif SC",serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-family:var(--sans);color:var(--ink)}
+  body{background:linear-gradient(135deg,#edf1f5 0%,#f8f9fb 62%,#e7edf3 100%)}
+  #deck{position:fixed;inset:0;display:flex;transition:transform .42s cubic-bezier(.22,1,.36,1);will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;padding:5.2vh 6vw 8.2vh;display:flex;flex-direction:column;position:relative;overflow:hidden;contain:layout paint style}
+  .slide.dark{background:linear-gradient(135deg,#091a31 0%,#102947 100%);color:#f5f7fb}
+  .slide.light{background:linear-gradient(135deg,#f5f7fa 0%,#eef2f6 100%);color:var(--ink)}
+  .slide::before{content:"";position:absolute;inset:5.2vh 6vw 8.2vh;border-top:1px solid currentColor;opacity:.12;pointer-events:none}
+  .chrome,.foot{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;letter-spacing:.08em;opacity:.72}
+  .foot{margin-top:auto}
+  .frame{flex:1;min-height:0;padding-top:3vh}
+  .center{display:grid;align-content:center}
+  .kicker{font-weight:700;font-size:13px;letter-spacing:.08em;color:var(--accent);margin-bottom:1.8vh}
+  .dark .kicker{color:#b6c9e5}
+  h1,h2,h3{font-family:var(--serif);font-weight:700;letter-spacing:0}
+  .hero-title{font-size:clamp(56px,6.6vw,94px);line-height:1.08}
+  .title{font-size:clamp(32px,3.45vw,52px);line-height:1.18}
+  .subtitle{font-size:clamp(23px,2.2vw,34px);line-height:1.35;font-weight:500;margin-top:2.2vh}
+  .lead{font-size:clamp(16px,1.18vw,20px);line-height:1.68;color:var(--muted)}
+  .dark .lead{color:rgba(245,247,251,.78)}
+  .body{font-size:clamp(14px,1.02vw,17px);line-height:1.62;color:rgba(11,31,58,.82)}
+  .dark .body{color:rgba(245,247,251,.82)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:start}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:2.4vw}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);gap:2.4vh 2vw}
+  .grid-4-wide{display:grid;grid-template-columns:repeat(4,1fr);gap:1.35vw}
+  .card{border:1px solid var(--line);background:rgba(255,255,255,.42);padding:2.2vh 1.7vw;border-radius:4px;min-height:0}
+  .dark .card{border-color:rgba(245,247,251,.22);background:rgba(255,255,255,.045)}
+  .card h3{font-size:clamp(20px,1.55vw,27px);margin-bottom:1.1vh}
+  .compact-card{padding:1.6vh 1.25vw}
+  .compact-card h3{font-size:clamp(17px,1.22vw,22px);margin-bottom:.7vh}
+  .label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:.8vh}
+  .dark .label{color:rgba(245,247,251,.58)}
+  .stat{font-family:var(--serif);font-weight:800;font-size:clamp(38px,4.2vw,64px);line-height:1;color:var(--accent)}
+  .dark .stat{color:#c9dcf4}
+  .note{font-size:clamp(13px,.95vw,16px);line-height:1.56;color:rgba(11,31,58,.76);margin-top:1.2vh}
+  .dark .note{color:rgba(245,247,251,.76)}
+  .rowline{display:grid;grid-template-columns:1fr 2.4fr 1fr;gap:1.2vw;align-items:start;border-top:1px solid var(--line);padding:1.55vh 0}
+  .dark .rowline{border-color:rgba(245,247,251,.2)}
+  .rowline .k{font-family:var(--serif);font-weight:700;font-size:clamp(18px,1.25vw,24px)}
+  .rowline .v{font-size:clamp(13px,.98vw,16px);line-height:1.55;color:rgba(11,31,58,.78)}
+  .dark .rowline .v{color:rgba(245,247,251,.78)}
+  .rowline .m{font-family:var(--mono);font-size:11px;justify-self:end;opacity:.62}
+  .formula{font-family:Georgia,serif;font-size:clamp(24px,2.2vw,36px);font-weight:700;line-height:1.25}
+  .figure{border:1px solid var(--line);background:#fff;border-radius:4px;padding:1.2vh 1vw}
+  .dark .figure{border-color:rgba(245,247,251,.2)}
+  .figure img{width:100%;height:100%;object-fit:contain;display:block}
+  .cap{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);margin-top:.8vh}
+  .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:1vw;align-items:stretch}
+  .step{border-top:2px solid currentColor;padding-top:1.4vh}
+  .step .n{font-family:var(--mono);font-size:12px;opacity:.55}
+  .step .t{font-family:var(--serif);font-weight:700;font-size:clamp(18px,1.35vw,24px);margin:.7vh 0}
+  .step .d{font-size:clamp(12px,.92vw,15px);line-height:1.5;opacity:.78}
+  .map{position:relative;height:50vh;margin-top:3vh}
+  .map svg{position:absolute;inset:0;width:100%;height:100%;opacity:.45}
+  .map line,.map path{stroke:currentColor;stroke-width:1.2;fill:none;vector-effect:non-scaling-stroke}
+  .node{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:18.5vw;border:1px solid var(--line);background:rgba(255,255,255,.45);padding:1.8vh 1.3vw;border-radius:4px}
+  .dark .node{border-color:rgba(245,247,251,.22);background:rgba(255,255,255,.045)}
+  .node.main{width:20vw;text-align:center}
+  .node h3{font-size:clamp(18px,1.45vw,25px);margin-bottom:.6vh}
+  .mini-table{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line)}
+  .dark .mini-table{border-color:rgba(245,247,251,.22)}
+  .mini-table>div{padding:1.4vh 1.2vw;border-bottom:1px solid var(--line)}
+  .mini-table>div:nth-child(odd){border-right:1px solid var(--line)}
+  .mini-table>div:nth-last-child(-n+2){border-bottom:0}
+  .dark .mini-table>div{border-color:rgba(245,247,251,.22)}
+  .dense-table{display:grid;grid-template-columns:1fr 1.4fr 1.3fr;border:1px solid var(--line);margin-top:2.2vh}
+  .dark .dense-table{border-color:rgba(245,247,251,.22)}
+  .dense-table>div{padding:1.25vh 1vw;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .dense-table>div:nth-child(3n){border-right:0}
+  .dense-table>div:nth-last-child(-n+3){border-bottom:0}
+  .dark .dense-table>div{border-color:rgba(245,247,251,.22)}
+  .callout{border:1px solid var(--line);background:var(--soft);padding:1.45vh 1.2vw;border-radius:4px}
+  .dark .callout{border-color:rgba(245,247,251,.22);background:rgba(255,255,255,.06)}
+  .callout h3{font-size:clamp(18px,1.25vw,24px);margin-bottom:.6vh}
+  .compact-rows{display:grid;gap:.75vh;margin-top:1vh}
+  .compact-row{display:grid;grid-template-columns:5.4vw 1fr;gap:.8vw;align-items:start;font-size:clamp(12px,.9vw,15px);line-height:1.45;color:rgba(11,31,58,.78)}
+  .dark .compact-row{color:rgba(245,247,251,.78)}
+  .compact-row b{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .dark .compact-row b{color:rgba(245,247,251,.58)}
+  .bars{display:grid;gap:1.2vh}
+  .bar{display:grid;grid-template-columns:5vw 1fr 3vw;gap:.9vw;align-items:center;font-family:var(--mono);font-size:12px}
+  .track{height:1.1vh;background:rgba(11,31,58,.12)}
+  .dark .track{background:rgba(255,255,255,.14)}
+  .fill{height:100%;background:var(--accent)}
+  .dark .fill{background:#c9dcf4}
+  .depth-demo{display:grid;grid-template-columns:1fr .16fr 1fr .16fr 1fr;gap:1vw;align-items:center}
+  .tile{border:1px solid var(--line);padding:1.4vh 1vw;border-radius:4px;background:rgba(255,255,255,.45)}
+  .dark .tile{border-color:rgba(245,247,251,.22);background:rgba(255,255,255,.045)}
+  .fake-img,.fake-depth,.fake-net{height:16vh;border-radius:3px;margin:1.2vh 0}
+  .fake-img{background:linear-gradient(135deg,#263b58 0%,#8ba1ad 43%,#f2d28d 44%,#334f73 100%)}
+  .fake-depth{background:linear-gradient(90deg,#101726,#1f4778,#73a8cc,#f2d18a)}
+  .fake-net{display:grid;grid-template-columns:repeat(5,1fr);gap:.4vw;align-items:center}
+  .fake-net span{height:3vh;border:1px solid currentColor;border-radius:999px;opacity:.55}
+  .arrow{height:1px;background:currentColor;position:relative;opacity:.45}
+  .arrow::after{content:"";position:absolute;right:-1px;top:50%;width:7px;height:7px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:translateY(-50%) rotate(45deg)}
+  .embedded-train{height:66vh;border:1px solid var(--line);border-radius:5px;background:rgba(255,255,255,.68);position:relative;overflow:hidden;padding:2vh 1.4vw}
+  .train-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);margin-bottom:1vh}
+  .train-scene{position:relative;height:calc(100% - 3.2vh);border:1px solid rgba(11,31,58,.12);background:linear-gradient(135deg,#f8fafc,#edf2f7);border-radius:4px;overflow:hidden}
+  .train-box{position:absolute;border:1px solid rgba(11,31,58,.24);background:#fff;border-radius:4px;padding:1.2vh 1vw}
+  .train-box h3{font-size:clamp(16px,1.08vw,20px);margin:.35vh 0}
+  .train-box p{font-size:11px;line-height:1.42;color:var(--muted)}
+  .train-data{left:3%;top:12%;width:20.5%}
+  .train-teacher{left:28%;top:12%;width:20.5%}
+  .train-student{left:53%;top:12%;width:20.5%}
+  .train-loss{right:3%;top:12%;width:20.5%;height:39vh}
+  .samples{display:grid;grid-template-columns:repeat(3,1fr);gap:.45vw;margin-top:1vh}
+  .samples span{aspect-ratio:1;border:1px solid rgba(11,31,58,.16);border-radius:3px;background:linear-gradient(135deg,#243b55,#8aa4b8 52%,#f0cf8b 53%,#314e72);animation:samplePulse 7.2s infinite ease-in-out}
+  .samples span:nth-child(2n){animation-delay:.5s}
+  .samples span:nth-child(3n){animation-delay:1s}
+  .train-arrow{position:absolute;height:1px;background:rgba(11,31,58,.36);transform-origin:left center}
+  .train-arrow::after{content:"";position:absolute;right:-1px;top:50%;width:7px;height:7px;border-top:1px solid rgba(11,31,58,.65);border-right:1px solid rgba(11,31,58,.65);transform:translateY(-50%) rotate(45deg)}
+  .a-data-teacher{left:23.5%;top:37%;width:4.5%}
+  .a-teacher-student{left:48.5%;top:37%;width:4.5%}
+  .a-student-loss{left:73.5%;top:37%;width:4.5%}
+  .token{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 8px rgba(49,91,140,.12);opacity:0}
+  .token.pseudo{animation:tokenPseudo 7.2s infinite ease-in-out}
+  .token.perturb{background:var(--warn);animation:tokenPerturb 7.2s infinite ease-in-out}
+  .token.grad{background:var(--good);animation:tokenGrad 7.2s infinite ease-in-out}
+  .train-stepbar{position:absolute;left:4%;right:4%;bottom:2.2vh;display:grid;grid-template-columns:repeat(4,1fr);gap:.6vw}
+  .train-stepbar div{font-size:11px;font-family:var(--mono);padding:.7vh .6vw;border-top:2px solid rgba(11,31,58,.2);color:var(--muted);animation:stepEmphasis 7.2s infinite}
+  .train-stepbar div:nth-child(2){animation-delay:1.8s}
+  .train-stepbar div:nth-child(3){animation-delay:3.6s}
+  .train-stepbar div:nth-child(4){animation-delay:5.4s}
+  .train-equation{position:absolute;left:4%;right:24.5%;bottom:8vh;border:1px solid rgba(11,31,58,.16);background:rgba(255,255,255,.62);display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+  .train-equation div{padding:1vh .8vw;border-right:1px solid rgba(11,31,58,.12);font-size:11px;line-height:1.35;color:var(--muted)}
+  .train-equation div:last-child{border-right:0}
+  .train-equation b{display:block;font-family:var(--serif);font-size:clamp(15px,1.05vw,19px);color:var(--ink);margin-bottom:.25vh}
+  .dist-bars{display:grid;gap:.7vh;margin-top:1vh}
+  .dist-row{display:grid;grid-template-columns:3.8vw 1fr;gap:.6vw;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .dist-track{height:.85vh;background:rgba(11,31,58,.12)}
+  .dist-fill{height:100%;background:var(--accent);animation:teacherDist 7.2s infinite ease-in-out}
+  .dist-row:nth-child(2) .dist-fill{animation-name:teacherDistB}
+  .dist-row:nth-child(3) .dist-fill{animation-name:teacherDistC}
+  .student-fill{height:100%;background:var(--good);animation:studentConverge 7.2s infinite ease-in-out}
+  .loss-svg{width:100%;height:16vh;margin-top:1vh}
+  .loss-path{stroke:var(--accent);stroke-width:4;fill:none;stroke-dasharray:360;stroke-dashoffset:360;animation:lossReveal 7.2s infinite ease-in-out}
+  .loss-dot{fill:var(--accent);animation:lossDot 7.2s infinite ease-in-out}
+  @keyframes samplePulse{0%,100%{filter:saturate(.8);opacity:.65}25%,65%{filter:saturate(1.2);opacity:1}}
+  @keyframes tokenPseudo{0%,12%{left:24%;top:37%;opacity:0}18%,32%{opacity:1}42%,100%{left:49%;top:37%;opacity:0}}
+  @keyframes tokenPerturb{0%,33%{left:49%;top:37%;opacity:0}42%,58%{opacity:1}69%,100%{left:74%;top:37%;opacity:0}}
+  @keyframes tokenGrad{0%,58%{left:74%;top:37%;opacity:0}66%,82%{opacity:1}92%,100%{left:88%;top:37%;opacity:0}}
+  @keyframes stepEmphasis{0%,18%,100%{border-color:rgba(11,31,58,.2);color:var(--muted)}8%,16%{border-color:var(--accent);color:var(--ink)}}
+  @keyframes teacherDist{0%,100%{width:72%}45%,75%{width:72%}}
+  @keyframes teacherDistB{0%,100%{width:18%}45%,75%{width:18%}}
+  @keyframes teacherDistC{0%,100%{width:8%}45%,75%{width:8%}}
+  @keyframes studentConverge{0%{width:34%}35%{width:46%}65%{width:62%}100%{width:72%}}
+  @keyframes lossReveal{0%{stroke-dashoffset:360}18%{stroke-dashoffset:300}52%{stroke-dashoffset:150}84%,100%{stroke-dashoffset:0}}
+  @keyframes lossDot{0%{transform:translate(16px,94px)}35%{transform:translate(76px,70px)}65%{transform:translate(135px,48px)}100%{transform:translate(190px,33px)}}
+  a{color:inherit}
+  #nav{position:fixed;left:50%;bottom:2.5vh;transform:translateX(-50%);display:flex;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(10,31,58,.12);z-index:5}
+  .dot{width:8px;height:8px;border:0;border-radius:99px;background:rgba(10,31,58,.25);padding:0}
+  .dot.active{width:24px;background:var(--accent)}
+  body.dark-nav #nav{background:rgba(255,255,255,.1)}
+  body.dark-nav .dot{background:rgba(255,255,255,.32)}
+  body.dark-nav .dot.active{background:#fff}
+  @media(max-width:900px){
+    .grid-2,.grid-3,.grid-4,.flow,.depth-demo{grid-template-columns:1fr}
+    .slide{padding:4vh 5vw 8vh}
+    .map{height:auto;display:grid;gap:1.2vh}
+    .map svg{display:none}
+    .node{position:static;transform:none;width:auto}
+  }
+</style>
+</head>
+<body class="dark-nav">
+<main id="deck">
+
+<section class="slide dark">
+  <div class="chrome"><div>Academic Report · Computer Vision</div><div>01 / 12</div></div>
+  <div class="frame center">
+    <div class="kicker">Teacher-Student Learning</div>
+    <h1 class="hero-title">教师-学生模型</h1>
+    <h2 class="subtitle">原理、训练机制与 Depth Anything v1/v2 案例分析</h2>
+    <div class="grid-3" style="margin-top:6vh">
+      <div class="card"><div class="label">Part I</div><h3>模型机制</h3><p class="body">教师如何提供软标签、伪标签和特征监督；学生如何通过损失函数承接能力。</p></div>
+      <div class="card"><div class="label">Part II</div><h3>深度估计案例</h3><p class="body">Depth Anything v1/v2 如何把教师学生框架扩展为大规模数据引擎。</p></div>
+      <div class="card"><div class="label">Part III</div><h3>动态演示</h3><p class="body"><a href="training_demo.html">打开训练演示页</a>：观察 teacher 生成目标、student 更新和误差下降。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>课程汇报材料</div><div>Knowledge Distillation · Self-Training · MDE</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>Definition and Motivation</div><div>02 / 12</div></div>
+  <div class="frame">
+    <div class="grid-2" style="align-items:end">
+      <div>
+        <div class="kicker">核心定义</div>
+        <h2 class="title">教师-学生模型把“监督”从人工标签扩展为模型行为。</h2>
+      </div>
+      <p class="lead">Teacher 可以是模型集成、大模型、EMA 模型或冻结预训练编码器；Student 通过匹配 teacher 的输出、特征或伪标签，获得可部署能力或更强泛化能力。</p>
+    </div>
+    <div class="grid-2" style="margin-top:3vh">
+      <div>
+      <div class="mini-table">
+        <div><div class="label">Teacher</div><p class="body">高能力、高成本，负责知识生产。</p></div>
+        <div><div class="label">Student</div><p class="body">轻量化、可部署，负责能力承接。</p></div>
+        <div><div class="label">Training side</div><p class="body">允许使用大模型、额外数据、复杂增强。</p></div>
+        <div><div class="label">Inference side</div><p class="body">只保留 student，满足延迟与资源约束。</p></div>
+      </div>
+      <div class="callout" style="margin-top:2vh">
+        <div class="label">Why it works</div>
+        <div class="compact-rows">
+          <div class="compact-row"><b>Signal</b><span>teacher 输出不仅给答案，还给相似性、置信度和像素级结构。</span></div>
+          <div class="compact-row"><b>Pressure</b><span>student 在容量、扰动或数据域上更受约束，因此被迫学习稳定规律。</span></div>
+          <div class="compact-row"><b>Scale</b><span>伪标签把无标签样本转成训练目标，监督规模不再只受人工标注限制。</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Supervision expansion</div>
+      <div class="flow" style="grid-template-columns:1fr .18fr 1.15fr .18fr 1fr">
+        <div class="step"><div class="n">01</div><div class="t">Data</div><div class="d">有标签、无标签、真实或合成样本。</div></div>
+        <div class="arrow"></div>
+        <div class="step"><div class="n">02</div><div class="t">Teacher Signal</div><div class="d">软标签、伪标签、特征、注意力或一致性目标。</div></div>
+        <div class="arrow"></div>
+        <div class="step"><div class="n">03</div><div class="t">Student</div><div class="d">在任务损失和教师监督共同约束下更新。</div></div>
+      </div>
+      <div class="rowline" style="margin-top:4vh"><div class="k">关键收益</div><div class="v">用高成本训练过程换取低成本部署模型；用无标签数据扩大训练分布；用软分布和中间特征传递结构信息。</div><div class="m">Benefit</div></div>
+    </div>
+    </div>
+    <div class="grid-3" style="margin-top:2.6vh">
+      <div class="card compact-card"><div class="label">Model compression</div><h3>强模型 → 轻模型</h3><p class="body">用 teacher 的软输出和中间特征训练更小 student，降低延迟、显存和部署成本。</p></div>
+      <div class="card compact-card"><div class="label">Semi-supervised learning</div><h3>少标注 → 多样本</h3><p class="body">teacher 给无标签样本生成伪标签，扩大训练分布并提升未知场景泛化。</p></div>
+      <div class="card compact-card"><div class="label">Representation transfer</div><h3>输出 → 表示空间</h3><p class="body">冻结编码器、attention 或 embedding 可作为监督目标，帮助 student 继承语义结构。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>Definition</div><div>Teacher signal as structured supervision</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>Mechanism: Objective Function</div><div>03 / 12</div></div>
+  <div class="frame">
+    <div class="grid-2" style="align-items:end">
+      <div>
+        <div class="kicker">损失函数视角</div>
+        <h2 class="title">教师学生模型的本质是目标函数设计。</h2>
+        <p class="lead" style="margin-top:2vh">不同教师信号对应不同损失项；权重决定训练目标更偏模型压缩、半监督扩数据，还是表示迁移。</p>
+      </div>
+      <div class="card">
+        <div class="formula">L = αL<sub>task</sub> + βT²KL(p<sub>T</sub><sup>τ</sup> || p<sub>S</sub><sup>τ</sup>) + γL<sub>feat</sub></div>
+        <p class="note">其中 T 为温度系数，用于平滑 teacher 概率分布；feature loss 可采用 L2、cosine 或注意力图对齐。</p>
+      </div>
+    </div>
+    <div class="grid-4-wide" style="margin-top:3vh">
+      <div class="card compact-card"><div class="label">Task supervision</div><h3>L<sub>task</sub></h3><p class="body">真实标签约束任务目标，避免 student 偏离评价指标。</p></div>
+      <div class="card compact-card"><div class="label">Output distillation</div><h3>L<sub>KD</sub></h3><p class="body">匹配 teacher 概率或 dense prediction，传递类别关系与不确定性。</p></div>
+      <div class="card compact-card"><div class="label">Feature alignment</div><h3>L<sub>feat</sub></h3><p class="body">对齐中间表示、attention 或冻结编码器特征，继承语义结构。</p></div>
+      <div class="card compact-card"><div class="label">Consistency</div><h3>L<sub>cons</sub></h3><p class="body">不同增强视图保持预测一致，形成鲁棒性约束。</p></div>
+    </div>
+    <div class="dense-table">
+      <div><div class="label">目标偏向</div><p class="body">模型压缩</p></div>
+      <div><p class="body">提高 β：更强调输出分布匹配，适合把大模型或集成模型压进 student。</p></div>
+      <div><p class="body">典型场景：移动端部署、低延迟推理、显存受限平台。</p></div>
+      <div><div class="label">目标偏向</div><p class="body">半监督扩数据</p></div>
+      <div><p class="body">提高伪标签样本权重，并配合过滤、增强和重采样，扩大训练分布。</p></div>
+      <div><p class="body">典型场景：Depth Anything v1 的 62M 无标签图像。</p></div>
+      <div><div class="label">目标偏向</div><p class="body">表示迁移</p></div>
+      <div><p class="body">提高 γ：让 student 对齐 teacher 的中间特征、注意力或冻结编码器表示。</p></div>
+      <div><p class="body">典型场景：DINOv2 特征对齐、语义结构继承。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>Mechanism</div><div>Output · Feature · Consistency</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>Mechanism: Soft Target</div><div>04 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">知识蒸馏</div>
+      <h2 class="title">Soft target 保留类别关系，而不是只给 one-hot 答案。</h2>
+      <p class="lead" style="margin-top:2vh">在 Hinton 等人的经典蒸馏设定中，teacher 的软概率分布提供了 hard label 中不存在的相似性信息，这类信息常被称为 dark knowledge。</p>
+      <div class="rowline" style="margin-top:4vh"><div class="k">Temperature</div><div class="v">升高温度 T 会平滑概率分布，让非最大类的相对关系更容易被 student 学到。</div><div class="m">T</div></div>
+      <div class="rowline"><div class="k">Boundary</div><div class="v">低概率类别不是噪音，而是 teacher 对决策边界和类别相似性的表达。</div><div class="m">KL</div></div>
+      <div class="rowline"><div class="k">Logits</div><div class="v">蒸馏通常在 softmax 前后的 logit / probability 上完成，目标是逼近 teacher 的函数形状。</div><div class="m">z</div></div>
+      <div class="rowline"><div class="k">Risk</div><div class="v">若 teacher 对分布外样本过度自信，soft target 也会传播错误，需要过滤或保持真实标签项。</div><div class="m">Noise</div></div>
+    </div>
+    <div class="card">
+      <div class="label">Teacher probability distribution</div>
+      <div class="bars" style="margin-top:3vh">
+        <div class="bar"><div>Cat</div><div class="track"><div class="fill" style="width:71%"></div></div><div>0.71</div></div>
+        <div class="bar"><div>Fox</div><div class="track"><div class="fill" style="width:13%;opacity:.62"></div></div><div>0.13</div></div>
+        <div class="bar"><div>Dog</div><div class="track"><div class="fill" style="width:8%;opacity:.5"></div></div><div>0.08</div></div>
+        <div class="bar"><div>Truck</div><div class="track"><div class="fill" style="width:1%;opacity:.28"></div></div><div>0.00</div></div>
+      </div>
+      <div class="callout" style="margin-top:3vh"><h3>Student learns relations</h3><p class="body">soft target 把“像什么、不像什么、边界在哪里”一起编码到训练目标中。</p></div>
+      <div class="dense-table" style="grid-template-columns:.8fr 1.2fr 1.2fr;margin-top:2vh">
+        <div><div class="label">Hard label</div><p class="body">one-hot</p></div>
+        <div><p class="body">只强调正确类别，非目标类全部被压到 0。</p></div>
+        <div><p class="body">适合校准任务目标，但相似类关系弱。</p></div>
+        <div><div class="label">Soft label</div><p class="body">teacher distribution</p></div>
+        <div><p class="body">保留类别排序、置信度和不确定性。</p></div>
+        <div><p class="body">适合压缩模型并传递决策边界。</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>Classical Distillation</div><div>Distilling the Knowledge in a Neural Network, 2015</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>Training Framework</div><div>05 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">通用训练流程</div>
+      <h2 class="title">嵌入式动画展示 teacher-student 训练如何完成。</h2>
+      <p class="lead" style="margin-top:2vh">右侧动画循环展示四个阶段：teacher 产生目标，student 接收扰动输入，联合损失更新参数，最终只部署 student。</p>
+      <div style="margin-top:3vh">
+        <div class="rowline"><div class="k">1. 生成目标</div><div class="v">teacher 对样本输出 soft label、pseudo label 或 feature target。</div><div class="m">Target</div></div>
+        <div class="rowline"><div class="k">2. 加难输入</div><div class="v">student 看到增强、遮挡、噪声或域变化后的输入。</div><div class="m">Perturb</div></div>
+        <div class="rowline"><div class="k">3. 匹配更新</div><div class="v">用任务损失、蒸馏损失、特征对齐和一致性约束更新 student。</div><div class="m">Loss</div></div>
+        <div class="rowline"><div class="k">4. 部署学生</div><div class="v">推理阶段只保留 student，teacher 和伪标注流程退出部署链路。</div><div class="m">Deploy</div></div>
+      </div>
+      <div class="callout" style="margin-top:2vh">
+        <div class="label">Training details</div>
+        <div class="compact-rows">
+          <div class="compact-row"><b>Frozen</b><span>固定 teacher 可稳定伪标签；EMA teacher 则随 student 平滑更新。</span></div>
+          <div class="compact-row"><b>Filter</b><span>低置信伪标签、边界噪声和异常深度需要被降权或剔除。</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="embedded-train" aria-label="teacher-student training animation">
+      <div class="train-head"><span>Embedded animation · training loop</span><span>loops automatically</span></div>
+      <div class="train-scene">
+        <div class="train-box train-data">
+          <div class="label">Data pool</div>
+          <h3>有标签 / 无标签样本</h3>
+          <p>真实图像、增强视图或合成数据。</p>
+          <div class="samples"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <div class="train-box train-teacher">
+          <div class="label">Teacher</div>
+          <h3>生成结构化目标</h3>
+          <p>soft target / pseudo label / feature target</p>
+          <div class="dist-bars">
+            <div class="dist-row"><div>A</div><div class="dist-track"><div class="dist-fill"></div></div></div>
+            <div class="dist-row"><div>B</div><div class="dist-track"><div class="dist-fill"></div></div></div>
+            <div class="dist-row"><div>C</div><div class="dist-track"><div class="dist-fill"></div></div></div>
+          </div>
+        </div>
+        <div class="train-box train-student">
+          <div class="label">Student</div>
+          <h3>在扰动输入上拟合</h3>
+          <p>学生分布逐步逼近 teacher 目标。</p>
+          <div class="dist-bars">
+            <div class="dist-row"><div>A</div><div class="dist-track"><div class="student-fill"></div></div></div>
+            <div class="dist-row"><div>B</div><div class="dist-track"><div class="student-fill" style="animation-delay:.15s"></div></div></div>
+            <div class="dist-row"><div>C</div><div class="dist-track"><div class="student-fill" style="animation-delay:.3s"></div></div></div>
+          </div>
+        </div>
+        <div class="train-box train-loss">
+          <div class="label">Optimization</div>
+          <h3>蒸馏损失下降</h3>
+          <svg class="loss-svg" viewBox="0 0 220 120">
+            <path d="M16 94 C48 72, 74 64, 102 52 S158 35, 202 28" class="loss-path"></path>
+            <circle r="6" cx="0" cy="0" class="loss-dot"></circle>
+          </svg>
+          <p>KL / L1 / feature alignment 共同约束 student。</p>
+        </div>
+        <div class="train-arrow a-data-teacher"></div>
+        <div class="train-arrow a-teacher-student"></div>
+        <div class="train-arrow a-student-loss"></div>
+        <div class="token pseudo"></div>
+        <div class="token perturb"></div>
+        <div class="token grad"></div>
+        <div class="train-equation">
+          <div><b>L<sub>task</sub></b>真实标签保持任务指标。</div>
+          <div><b>L<sub>KD</sub></b>teacher 输出约束 student。</div>
+          <div><b>L<sub>cons</sub></b>增强视图保持一致。</div>
+        </div>
+        <div class="train-stepbar"><div>1 Target</div><div>2 Perturb</div><div>3 Match</div><div>4 Update</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>Training Algorithm</div><div>Teacher target · Student constraint</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>Taxonomy and Learning Pressure</div><div>06 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">分类框架</div>
+      <h2 class="title">三类教师信号对应三类学习压力。</h2>
+      <div class="map">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="50" y1="50" x2="22" y2="22"></line><line x1="50" y1="50" x2="78" y2="22"></line><line x1="50" y1="50" x2="50" y2="82"></line>
+        </svg>
+        <div class="node main" style="--x:50%;--y:50%"><div class="label">Teacher signal</div><h3>监督来源</h3><p class="note">输出、特征、动态更新。</p></div>
+        <div class="node" style="--x:22%;--y:24%"><div class="label">Output</div><h3>输出教师</h3><p class="note">logits、概率、深度图、mask。</p></div>
+        <div class="node" style="--x:78%;--y:24%"><div class="label">Feature</div><h3>特征教师</h3><p class="note">中间层、attention、embedding。</p></div>
+        <div class="node" style="--x:50%;--y:82%"><div class="label">Dynamic</div><h3>动态教师</h3><p class="note">EMA teacher 或迭代 teacher。</p></div>
+      </div>
+    </div>
+    <div>
+      <div class="kicker">有效条件</div>
+      <h2 class="title">增益来自 teacher 与 student 的约束差异。</h2>
+      <div style="margin-top:3vh">
+        <div class="rowline"><div class="k">输入差异</div><div class="v">teacher 看 clean image，student 看扰动 image，学习不变性。</div><div class="m">Perturb</div></div>
+        <div class="rowline"><div class="k">容量差异</div><div class="v">teacher 大而慢，student 小而快，压缩过程形成正则化。</div><div class="m">Compress</div></div>
+        <div class="rowline"><div class="k">数据差异</div><div class="v">teacher 把无标签图像转成训练目标，扩大学生看到的分布。</div><div class="m">Scale</div></div>
+        <div class="rowline"><div class="k">风险控制</div><div class="v">伪标签噪声需要过滤、增强、重采样或更高质量 teacher。</div><div class="m">Noise</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>Taxonomy</div><div>Output · Feature · Dynamic</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>Application Background: MDE</div><div>07 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">Monocular Depth Estimation</div>
+      <h2 class="title">单目深度估计适合展示教师学生模型的数据扩展价值。</h2>
+      <p class="lead" style="margin-top:2vh">高质量深度标注昂贵，真实场景分布复杂，传感器深度和合成深度都存在偏差。教师学生框架可以把有限标注、强预训练模型和大规模无标签图像连接起来。</p>
+      <div class="grid-3" style="margin-top:4vh">
+        <div class="card"><div class="label">Label cost</div><p class="body">深度传感器、人工清洗和合成渲染成本高。</p></div>
+        <div class="card"><div class="label">Domain gap</div><p class="body">室内、室外、反射、透明、天气等场景差异显著。</p></div>
+        <div class="card"><div class="label">Dense output</div><p class="body">每个像素都需要预测，teacher 可生成 dense pseudo depth。</p></div>
+      </div>
+      <div class="rowline" style="margin-top:3vh"><div class="k">为什么适合</div><div class="v">深度图是 dense prediction，teacher 可以把每张无标签 RGB 图像转成逐像素训练目标。</div><div class="m">Dense</div></div>
+      <div class="rowline"><div class="k">核心难点</div><div class="v">单目深度存在尺度歧义，student 既要学语义先验，也要保持几何边界与相对深度排序。</div><div class="m">Scale</div></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="depth-demo">
+          <div class="tile"><div class="label">RGB input</div><div class="fake-img"></div><p class="note">单张真实图像。</p></div>
+          <div class="arrow"></div>
+          <div class="tile"><div class="label">MDE model</div><div class="fake-net"><span></span><span></span><span></span><span></span><span></span></div><p class="note">编码语义与几何线索。</p></div>
+          <div class="arrow"></div>
+          <div class="tile"><div class="label">Depth map</div><div class="fake-depth"></div><p class="note">输出相对或度量深度。</p></div>
+        </div>
+      </div>
+      <div class="mini-table" style="margin-top:2vh">
+        <div><div class="label">Teacher target</div><p class="body">逐像素相对深度、度量深度或边界结构。</p></div>
+        <div><div class="label">Student pressure</div><p class="body">在真实分布、增强输入和轻量模型约束下拟合深度。</p></div>
+        <div><div class="label">Evaluation</div><p class="body">零样本跨数据集表现比单一训练集误差更能说明泛化。</p></div>
+        <div><div class="label">Failure modes</div><p class="body">透明、反射、细杆、天空和远距物体容易暴露伪标签偏差。</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>Task Background</div><div>RGB image to dense depth</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>Depth Anything v1: Data Engine</div><div>08 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">CVPR 2024</div>
+      <h2 class="title">Depth Anything v1 将教师学生框架扩展为大规模数据引擎。</h2>
+      <div class="grid-4" style="margin-top:4vh">
+        <div class="card"><div class="label">Labeled</div><div class="stat">1.5M</div><p class="note">6 个有深度标注数据源，用于训练初始 teacher。</p></div>
+        <div class="card"><div class="label">Unlabeled</div><div class="stat">62M</div><p class="note">8 个真实图像集合，由 teacher 自动生成伪深度。</p></div>
+        <div class="card"><div class="label">Backbone</div><div class="stat" style="font-size:38px">DINOv2</div><p class="note">强视觉预训练编码器提供语义先验。</p></div>
+        <div class="card"><div class="label">Training</div><div class="stat" style="font-size:38px">Robust</div><p class="note">强扰动和特征对齐，使 student 不只是复制 teacher。</p></div>
+      </div>
+    </div>
+    <div class="figure" style="height:60vh">
+      <img src="images/v1_fig2_pipeline.png" alt="Depth Anything v1 pipeline figure">
+      <div class="cap">Depth Anything v1 · Figure 2: pseudo labels and robust training pipeline</div>
+    </div>
+  </div>
+  <div class="foot"><div>Depth Anything v1</div><div>arXiv:2401.10891</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>Depth Anything v1: Evidence</div><div>09 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">论文证据</div>
+      <h2 class="title">v1 的关键不是新网络结构，而是教师生成的大规模真实图像监督。</h2>
+      <div class="figure" style="height:27vh;margin-top:3vh"><img src="images/v1_table1_data.png" alt="Depth Anything v1 Table 1"></div>
+      <div class="figure" style="height:24vh;margin-top:2vh"><img src="images/v1_table2_zero_shot.png" alt="Depth Anything v1 Table 2"></div>
+    </div>
+    <div>
+      <div class="figure" style="height:42vh"><img src="images/v1_teaser_web.jpg" alt="Depth Anything v1 teaser"></div>
+      <div class="rowline" style="margin-top:3vh"><div class="k">机制解释</div><div class="v">teacher 在 clean image 上生成 pseudo depth，student 在强扰动图像上恢复该目标；差异化输入使 student 学到鲁棒结构，而非只复制输出。</div><div class="m">Robust</div></div>
+      <div class="rowline"><div class="k">汇报重点</div><div class="v">讲 v1 时要把“无标签规模 + 强扰动 + DINOv2 特征对齐”作为统一机制，而不是分散成三个技巧。</div><div class="m">Takeaway</div></div>
+    </div>
+  </div>
+  <div class="foot"><div>Empirical Evidence</div><div>Training data · zero-shot results · qualitative effects</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>Depth Anything v2: Synthetic-to-Real Bridge</div><div>10 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">CVPR 2024 / NeurIPS 2024 direction</div>
+      <h2 class="title">Depth Anything v2 将问题进一步拆成标签质量与真实分布桥接。</h2>
+      <div class="flow" style="grid-template-columns:repeat(3,1fr);margin-top:4vh">
+        <div class="step"><div class="n">01</div><div class="t">Synthetic teacher</div><div class="d">使用 595K 高质量合成图像训练高精度 teacher。</div></div>
+        <div class="step"><div class="n">02</div><div class="t">Real pseudo labels</div><div class="d">teacher 给 62M 真实无标签图像生成深度伪标签。</div></div>
+        <div class="step"><div class="n">03</div><div class="t">Student models</div><div class="d">训练不同规模 student，兼顾质量、速度与部署成本。</div></div>
+      </div>
+      <div class="rowline" style="margin-top:4vh"><div class="k">核心变化</div><div class="v">v1 强调真实无标签规模；v2 先提升 teacher 标签质量，再用 teacher 将合成精度迁移到真实图像分布。</div><div class="m">Bridge</div></div>
+      <div class="callout" style="margin-top:2vh">
+        <div class="label">Bridge logic</div>
+        <div class="compact-rows">
+          <div class="compact-row"><b>Quality</b><span>合成数据给 teacher 更干净的几何监督，减少传感器噪声和人工清洗误差。</span></div>
+          <div class="compact-row"><b>Coverage</b><span>真实无标签图像提供场景覆盖，由 teacher 统一生成可学习目标。</span></div>
+          <div class="compact-row"><b>Deploy</b><span>最终训练不同规模 student，让同一监督体系服务速度和精度取舍。</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="figure" style="height:31vh"><img src="images/v2_fig7_pipeline.png" alt="Depth Anything v2 pipeline"></div>
+      <div class="figure" style="height:26vh;margin-top:2vh"><img src="images/v2_fig5_6_synthetic_transfer.png" alt="Depth Anything v2 synthetic transfer"></div>
+    </div>
+  </div>
+  <div class="foot"><div>Depth Anything v2</div><div>arXiv:2406.09414</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>Comparison and Evaluation</div><div>11 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">v1 / v2 对比</div>
+      <h2 class="title">两版模型体现了教师学生框架从“扩数据”到“提标签质量”的升级。</h2>
+      <div class="mini-table" style="margin-top:4vh">
+        <div><div class="label">Depth Anything v1</div><p class="body">1.5M labeled + 62M unlabeled；重点是用真实无标签图像扩展场景覆盖。</p></div>
+        <div><div class="label">Depth Anything v2</div><p class="body">595K synthetic + 62M real pseudo labels；重点是用精确合成标签训练更强 teacher。</p></div>
+        <div><div class="label">Teacher role</div><p class="body">伪标签生成器、鲁棒性约束来源、真实分布桥接器。</p></div>
+        <div><div class="label">Student role</div><p class="body">吸收大规模目标，并满足不同参数规模与推理速度需求。</p></div>
+      </div>
+      <div class="callout" style="margin-top:2vh">
+        <div class="label">Report framing</div>
+        <p class="body">v1 证明“teacher 可以把无标签真实图像变成可训练监督”；v2 证明“teacher 质量本身决定伪标签上限”。两者合起来说明教师学生框架不是单纯压缩，而是可扩展监督系统。</p>
+      </div>
+    </div>
+    <div>
+      <div class="figure" style="height:30vh"><img src="images/v2_teaser_web.jpg" alt="Depth Anything v2 teaser"></div>
+      <div class="figure" style="height:24vh;margin-top:2vh"><img src="images/v2_fig8_9_da2k.png" alt="DA-2K benchmark"></div>
+      <p class="note">DA-2K 的引入说明：评测集质量会影响对模型泛化能力的判断，尤其是反射、透明、细结构和多场景覆盖。</p>
+      <div class="mini-table" style="margin-top:2vh">
+        <div><div class="label">Quality axis</div><p class="body">teacher 标签越准，student 上限越高。</p></div>
+        <div><div class="label">Scale axis</div><p class="body">无标签覆盖越广，student 泛化越稳。</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>Evaluation</div><div>Coverage · Precision · Benchmark quality</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>Conclusion and Discussion</div><div>12 / 12</div></div>
+  <div class="frame grid-2">
+    <div>
+      <div class="kicker">总结</div>
+      <h2 class="title">讲清教师学生模型，需要同时覆盖角色、信号、约束和风险。</h2>
+      <div style="margin-top:3vh">
+        <div class="rowline"><div class="k">角色</div><div class="v">teacher 负责高成本知识生产；student 负责低成本部署和泛化能力承接。</div><div class="m">01</div></div>
+        <div class="rowline"><div class="k">信号</div><div class="v">监督可以是软标签、伪标签、特征、注意力图或一致性目标。</div><div class="m">02</div></div>
+        <div class="rowline"><div class="k">约束</div><div class="v">差异化输入、容量压缩和数据扩展共同形成额外学习压力。</div><div class="m">03</div></div>
+        <div class="rowline"><div class="k">风险</div><div class="v">teacher 错误会被复制，需要过滤、扰动、重训和评测集质量控制。</div><div class="m">04</div></div>
+      </div>
+      <div class="callout" style="margin-top:2vh">
+        <div class="label">One-sentence thesis</div>
+        <p class="body">教师学生模型的核心不是“老师教学生”的比喻，而是用高成本模型行为重新定义训练目标，再把这种目标转移到可部署模型上。</p>
+      </div>
+    </div>
+    <div>
+      <div class="card"><div class="label">Interactive demonstration</div><h3>训练动态演示页</h3><p class="body">用于课堂中解释 teacher 生成目标、student 接收扰动输入、损失下降和伪标签噪声控制。</p><p class="note"><a href="training_demo.html">training_demo.html</a></p></div>
+      <div class="card" style="margin-top:2vh"><div class="label">Reference papers</div><p class="body">Hinton et al., Distilling the Knowledge in a Neural Network; Depth Anything v1, arXiv:2401.10891; Depth Anything v2, arXiv:2406.09414; DINOv2 visual foundation features.</p></div>
+      <div class="card" style="margin-top:2vh"><div class="label">Discussion questions</div><p class="body">什么时候 student 能超过 teacher？伪标签噪声如何过滤？Depth Anything 的 teacher 是压缩对象，还是数据分布桥接器？</p></div>
+      <div class="callout" style="margin-top:2vh">
+        <div class="label">Answer path</div>
+        <div class="compact-rows">
+          <div class="compact-row"><b>超过?</b><span>当 student 接收更多扰动、更多数据或更合适归纳偏置时，可能在目标域超过 teacher。</span></div>
+          <div class="compact-row"><b>过滤?</b><span>通过置信度、边界一致性、多教师投票或高质量评测集控制伪标签噪声。</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>End</div><div>Teacher-student learning as scalable supervision</div></div>
+</section>
+
+</main>
+<nav id="nav" aria-label="slides"></nav>
+<script>
+const deck=document.getElementById('deck');
+const slides=[...document.querySelectorAll('.slide')];
+const nav=document.getElementById('nav');
+let idx=0, lock=false;
+deck.style.width=(slides.length*100)+'vw';
+slides.forEach((_,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';
+  b.setAttribute('aria-label','page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+function go(n){
+  if(lock) return;
+  idx=Math.max(0,Math.min(slides.length-1,n));
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  document.body.classList.toggle('dark-nav',slides[idx].classList.contains('dark'));
+  lock=true; setTimeout(()=>lock=false,360);
+}
+addEventListener('keydown',e=>{
+  if(['ArrowRight','PageDown',' '].includes(e.key)) go(idx+1);
+  if(['ArrowLeft','PageUp'].includes(e.key)) go(idx-1);
+  if(e.key==='Home') go(0);
+  if(e.key==='End') go(slides.length-1);
+});
+let wheel=0, to=null;
+addEventListener('wheel',e=>{
+  wheel+=e.deltaY+e.deltaX;
+  if(Math.abs(wheel)>70){go(idx+(wheel>0?1:-1));wheel=0}
+  clearTimeout(to);to=setTimeout(()=>wheel=0,130);
+},{passive:true});
+go(0);
+</script>
+</body>
+</html>

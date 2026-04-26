@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教师-学生模型训练动态演示</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b1f3a;
+    --paper:#f4f6f8;
+    --muted:#64748b;
+    --line:rgba(11,31,58,.2);
+    --soft:rgba(11,31,58,.055);
+    --accent:#315b8c;
+    --good:#2f7d5c;
+    --warn:#b7791f;
+    --bad:#a33d3d;
+    --sans:"Noto Sans SC",system-ui,sans-serif;
+    --serif:"Noto Serif SC",serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:linear-gradient(135deg,#eef2f6,#fafbfc);color:var(--ink);font-family:var(--sans);padding:4vh 4vw}
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:2vw;margin-bottom:3vh}
+  h1{font-family:var(--serif);font-size:clamp(34px,4vw,58px);line-height:1.12}
+  .lead{font-size:clamp(15px,1.08vw,18px);line-height:1.7;color:var(--muted);max-width:58vw;margin-top:1vh}
+  .meta{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted)}
+  .layout{display:grid;grid-template-columns:1.18fr .82fr;gap:2vw;align-items:start}
+  .panel{border:1px solid var(--line);background:rgba(255,255,255,.62);border-radius:6px;padding:2.4vh 1.8vw}
+  .stage{min-height:64vh;position:relative;overflow:hidden}
+  .kicker{font-weight:700;color:var(--accent);font-size:13px;margin-bottom:1vh}
+  .subtitle{font-family:var(--serif);font-weight:700;font-size:clamp(21px,1.7vw,30px);margin-bottom:1vh}
+  .body{font-size:clamp(13px,1vw,16px);line-height:1.6;color:rgba(11,31,58,.78)}
+  .network-row{display:grid;grid-template-columns:1fr .18fr 1fr;gap:1vw;align-items:center;margin-top:3vh}
+  .model-card{border:1px solid var(--line);background:var(--soft);border-radius:5px;padding:2vh 1.4vw;min-height:26vh}
+  .model-title{display:flex;justify-content:space-between;align-items:center;gap:1vw;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em}
+  .model-name{font-family:var(--serif);font-weight:700;font-size:clamp(23px,1.8vw,32px);margin:1.2vh 0}
+  .chip{display:inline-flex;align-items:center;gap:.35em;border:1px solid var(--line);padding:.35em .65em;border-radius:999px;font-size:12px;background:#fff}
+  .arrow{height:1px;background:var(--ink);opacity:.38;position:relative}
+  .arrow::after{content:"";position:absolute;right:-1px;top:50%;width:8px;height:8px;border-top:1px solid var(--ink);border-right:1px solid var(--ink);transform:translateY(-50%) rotate(45deg)}
+  .data-cloud{display:grid;grid-template-columns:repeat(6,1fr);gap:.7vw;margin-top:2vh}
+  .sample{aspect-ratio:1;border:1px solid var(--line);border-radius:4px;background:linear-gradient(135deg,#243b55,#8aa4b8 52%,#f0cf8b 53%,#314e72);position:relative;overflow:hidden}
+  .sample::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,var(--noise,.08))}
+  .sample.active{outline:3px solid rgba(49,91,140,.32)}
+  .bars{display:grid;gap:1.1vh;margin-top:2vh}
+  .bar{display:grid;grid-template-columns:5vw 1fr 3.2vw;gap:.8vw;align-items:center;font-family:var(--mono);font-size:12px}
+  .track{height:1.05vh;background:rgba(11,31,58,.12)}
+  .fill{height:100%;background:var(--accent);width:0%;transition:width .35s ease}
+  .loss-card{display:grid;grid-template-columns:1fr 1fr;gap:1vw;margin-top:2vh}
+  .metric{border-top:2px solid var(--line);padding-top:1.4vh}
+  .metric .n{font-family:var(--serif);font-weight:900;font-size:clamp(30px,3vw,48px);color:var(--accent)}
+  canvas{width:100%;height:190px;border:1px solid var(--line);background:#fff;border-radius:5px;margin-top:1.4vh}
+  .steps{display:grid;gap:1.1vh}
+  .step{display:grid;grid-template-columns:34px 1fr;gap:.8vw;padding:1.2vh 1vw;border:1px solid var(--line);border-radius:5px;background:#fff;cursor:pointer}
+  .step.active{border-color:var(--accent);background:rgba(49,91,140,.08)}
+  .step .num{font-family:var(--mono);color:var(--accent);font-weight:600}
+  .step h3{font-size:15px;margin-bottom:.35vh}
+  .step p{font-size:13px;line-height:1.45;color:var(--muted)}
+  .controls{display:flex;gap:.8vw;flex-wrap:wrap;margin:2vh 0}
+  button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:.72em 1em;border-radius:5px;font-weight:700;cursor:pointer}
+  button.primary{background:var(--ink);color:white;border-color:var(--ink)}
+  button:hover{border-color:var(--accent)}
+  .slider{display:grid;gap:.6vh;margin-top:1.5vh}
+  input[type=range]{width:100%}
+  .explain{margin-top:2vh;border-left:3px solid var(--accent);padding:1.2vh 1vw;background:rgba(49,91,140,.07)}
+  .status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1vw;margin-top:2vh}
+  .status{border:1px solid var(--line);background:#fff;border-radius:5px;padding:1.3vh 1vw}
+  .status .label{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+  .status .value{font-family:var(--serif);font-weight:800;font-size:26px;margin-top:.4vh}
+  .back{color:var(--ink);text-decoration:none;border-bottom:1px solid currentColor}
+  @media(max-width:1000px){
+    body{padding:3vh 4vw}
+    .layout,.network-row,.loss-card,.status-grid{grid-template-columns:1fr}
+    .lead{max-width:none}
+    .arrow{height:2vh;width:1px;justify-self:center}
+    .arrow::after{right:auto;top:auto;bottom:-1px;left:50%;transform:translateX(-50%) rotate(135deg)}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="meta">Interactive Demonstration · Teacher-Student Training</div>
+    <h1>教师-学生训练动态演示</h1>
+    <p class="lead">该页面用于课堂演示：teacher 先产生结构化目标，student 在更难输入上拟合目标；随着迭代进行，蒸馏损失下降，但伪标签噪声会限制上限。</p>
+  </div>
+  <div class="meta"><a class="back" href="index_12.html">返回 12 页汇报</a></div>
+</header>
+
+<div class="layout">
+  <section class="panel stage">
+    <div class="kicker" id="stageKicker">Step 01</div>
+    <div class="subtitle" id="stageTitle">准备 teacher 与训练样本</div>
+    <p class="body" id="stageText">teacher 可以是大模型、模型集成或 EMA 模型；训练样本包含有标签和无标签数据。</p>
+
+    <div class="network-row">
+      <div class="model-card">
+        <div class="model-title"><span>TEACHER</span><span class="chip" id="teacherChip">frozen</span></div>
+        <div class="model-name">高能力模型</div>
+        <p class="body">输出 soft target、pseudo label 或中间特征。推理阶段不会部署 teacher。</p>
+        <div class="bars" id="teacherBars">
+          <div class="bar"><div>Class A</div><div class="track"><div class="fill" data-base="72"></div></div><div>0.72</div></div>
+          <div class="bar"><div>Class B</div><div class="track"><div class="fill" data-base="18"></div></div><div>0.18</div></div>
+          <div class="bar"><div>Class C</div><div class="track"><div class="fill" data-base="8"></div></div><div>0.08</div></div>
+        </div>
+      </div>
+      <div class="arrow"></div>
+      <div class="model-card">
+        <div class="model-title"><span>STUDENT</span><span class="chip" id="studentChip">training</span></div>
+        <div class="model-name">轻量化模型</div>
+        <p class="body">在扰动输入上拟合 teacher 目标，同时受到任务损失和特征对齐约束。</p>
+        <div class="bars" id="studentBars">
+          <div class="bar"><div>Class A</div><div class="track"><div class="fill" data-base="34"></div></div><div id="sA">0.34</div></div>
+          <div class="bar"><div>Class B</div><div class="track"><div class="fill" data-base="33"></div></div><div id="sB">0.33</div></div>
+          <div class="bar"><div>Class C</div><div class="track"><div class="fill" data-base="33"></div></div><div id="sC">0.33</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-cloud" id="cloud"></div>
+    <div class="loss-card">
+      <div class="metric"><div class="meta">Distillation loss</div><div class="n" id="lossValue">1.00</div><p class="body">student 与 teacher 输出分布的距离。</p></div>
+      <div class="metric"><div class="meta">Pseudo-label reliability</div><div class="n" id="reliabilityValue">0.82</div><p class="body">伪标签可靠度受 teacher 质量和噪声过滤影响。</p></div>
+    </div>
+    <canvas id="curve" width="900" height="260" aria-label="loss curve"></canvas>
+  </section>
+
+  <aside class="panel">
+    <div class="kicker">演示控制</div>
+    <div class="steps" id="steps"></div>
+    <div class="controls">
+      <button class="primary" id="play">播放</button>
+      <button id="prev">上一步</button>
+      <button id="next">下一步</button>
+      <button id="reset">重置</button>
+    </div>
+    <div class="slider">
+      <label class="meta" for="noise">伪标签噪声水平：<span id="noiseText">18%</span></label>
+      <input id="noise" type="range" min="0" max="45" value="18">
+    </div>
+    <div class="status-grid">
+      <div class="status"><div class="label">Step</div><div class="value" id="stepValue">1/6</div></div>
+      <div class="status"><div class="label">Student confidence</div><div class="value" id="confValue">34%</div></div>
+      <div class="status"><div class="label">Iteration</div><div class="value" id="iterValue">0</div></div>
+    </div>
+    <div class="explain">
+      <div class="subtitle" style="font-size:22px;margin:0 0 .8vh" id="explainTitle">解释要点</div>
+      <p class="body" id="explainText">第一步强调 teacher 可以很昂贵，因为它只存在于训练阶段；student 才是最终部署模型。</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+const demoSteps=[
+  {t:'准备 teacher 与训练样本',k:'Step 01',d:'teacher 可以是大模型、模型集成或 EMA 模型；训练样本包含有标签和无标签数据。',e:'第一步强调 teacher 可以很昂贵，因为它只存在于训练阶段；student 才是最终部署模型。',iter:0,loss:1.00,conf:.34,rel:.82},
+  {t:'Teacher 生成结构化监督',k:'Step 02',d:'teacher 对样本输出 soft target、pseudo label 或中间特征，形成比 one-hot 标签更丰富的训练目标。',e:'这里的关键不是“给答案”，而是把类别关系、密集预测或表示空间结构传递给 student。',iter:8,loss:.78,conf:.46,rel:.82},
+  {t:'Student 接收更难输入',k:'Step 03',d:'对 student 输入施加强增强、遮挡或域扰动，让学生在更难条件下恢复 teacher 的目标。',e:'如果 teacher 和 student 看到完全相同输入，训练可能退化为复制；扰动提供额外学习压力。',iter:18,loss:.58,conf:.57,rel:.80},
+  {t:'联合优化蒸馏与任务损失',k:'Step 04',d:'训练目标由任务损失、输出蒸馏、特征对齐和一致性约束组成，权重决定训练偏向。',e:'可把总损失写成 L = αLtask + βLKD + γLfeat。不同任务选择不同监督组合。',iter:32,loss:.37,conf:.66,rel:.79},
+  {t:'过滤噪声并继续迭代',k:'Step 05',d:'低置信伪标签、错误预测或高损失样本会被过滤或降权，避免 student 复制 teacher 错误。',e:'伪标签训练的风险是错误累积；过滤、重采样、强增强和更强 teacher 都是常见控制手段。',iter:48,loss:.24,conf:.75,rel:.86},
+  {t:'仅部署 student',k:'Step 06',d:'训练完成后，推理阶段只保留轻量 student；teacher 和伪标注流程不进入部署链路。',e:'最终价值体现在可部署模型：更低延迟、更小显存、更广场景覆盖。',iter:64,loss:.16,conf:.82,rel:.86}
+];
+const cloud=document.getElementById('cloud');
+for(let i=0;i<18;i++){
+  const div=document.createElement('div');
+  div.className='sample';
+  div.style.setProperty('--noise',(0.04+(i%5)*0.035).toFixed(2));
+  cloud.appendChild(div);
+}
+const stepsBox=document.getElementById('steps');
+demoSteps.forEach((s,i)=>{
+  const el=document.createElement('div');
+  el.className='step';
+  el.innerHTML=`<div class="num">${String(i+1).padStart(2,'0')}</div><div><h3>${s.t}</h3><p>${s.d}</p></div>`;
+  el.onclick=()=>setStep(i);
+  stepsBox.appendChild(el);
+});
+let idx=0, timer=null;
+const $=id=>document.getElementById(id);
+function setBars(selector,values){
+  document.querySelectorAll(selector+' .fill').forEach((el,i)=>{el.style.width=(values[i]*100).toFixed(0)+'%'});
+}
+function drawCurve(iter,loss){
+  const c=$('curve'),ctx=c.getContext('2d'),w=c.width,h=c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='rgba(11,31,58,.18)';ctx.lineWidth=1;
+  for(let i=1;i<5;i++){ctx.beginPath();ctx.moveTo(50,i*h/5);ctx.lineTo(w-30,i*h/5);ctx.stroke()}
+  ctx.strokeStyle='#315b8c';ctx.lineWidth=4;ctx.beginPath();
+  for(let x=0;x<=iter;x++){
+    const progress=x/64;
+    const y=(0.92*Math.exp(-progress*2.8)+0.08)*h*.74+24;
+    const px=50+progress*(w-95);
+    if(x===0)ctx.moveTo(px,y);else ctx.lineTo(px,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle='#315b8c';
+  const progress=iter/64, px=50+progress*(w-95), py=loss*h*.62+36;
+  ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(11,31,58,.65)';ctx.font='18px IBM Plex Mono';
+  ctx.fillText('iteration',w-135,h-24);ctx.fillText('loss',18,30);
+}
+function setStep(i){
+  idx=Math.max(0,Math.min(demoSteps.length-1,i));
+  const s=demoSteps[idx];
+  $('stageKicker').textContent=s.k;
+  $('stageTitle').textContent=s.t;
+  $('stageText').textContent=s.d;
+  $('explainText').textContent=s.e;
+  $('stepValue').textContent=(idx+1)+'/'+demoSteps.length;
+  $('iterValue').textContent=s.iter;
+  const noise=Number($('noise').value)/100;
+  const reliability=Math.max(.45,s.rel-noise*.5);
+  const conf=Math.max(.25,Math.min(.9,s.conf-noise*.18));
+  $('lossValue').textContent=(s.loss+noise*.25).toFixed(2);
+  $('reliabilityValue').textContent=reliability.toFixed(2);
+  $('confValue').textContent=Math.round(conf*100)+'%';
+  $('noiseText').textContent=Math.round(noise*100)+'%';
+  setBars('#teacherBars',[.72,.18,.08]);
+  const rest=(1-conf)/2;
+  setBars('#studentBars',[conf,rest,rest]);
+  $('sA').textContent=conf.toFixed(2);
+  $('sB').textContent=rest.toFixed(2);
+  $('sC').textContent=rest.toFixed(2);
+  document.querySelectorAll('.step').forEach((el,j)=>el.classList.toggle('active',j===idx));
+  document.querySelectorAll('.sample').forEach((el,j)=>el.classList.toggle('active',j%6<=idx));
+  $('teacherChip').textContent=idx>=1?'labeling':'frozen';
+  $('studentChip').textContent=idx>=5?'deploy':'training';
+  drawCurve(s.iter,s.loss+noise*.25);
+}
+function play(){
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    if(idx>=demoSteps.length-1){clearInterval(timer);return}
+    setStep(idx+1);
+  },1200);
+}
+$('play').onclick=play;
+$('prev').onclick=()=>setStep(idx-1);
+$('next').onclick=()=>setStep(idx+1);
+$('reset').onclick=()=>{clearInterval(timer);setStep(0)};
+$('noise').oninput=()=>setStep(idx);
+setStep(0);
+</script>
+</body>
+</html>

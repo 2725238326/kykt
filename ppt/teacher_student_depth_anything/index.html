@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>教师学生模型 · Depth Anything 案例</title>
+  <title>教师-学生模型 · 原理与 Depth Anything 案例分析</title>
+<script>
+  if(!location.search.includes('legacy=1')) location.replace('index_12.html');
+</script>
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
@@ -31,7 +35,7 @@
   html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
   /* ============ WebGL 双背景 ============ */
-  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity .45s ease}
   canvas#bg-light{opacity:0}
   canvas#bg-dark{opacity:1}
   body.light-bg canvas#bg-light{opacity:1}
@@ -39,15 +43,15 @@
 
   /* ============ Deck 容器 + 翻页 ============ */
   /* width: NSLIDES * 100vw，会在 JS 里动态矫正 */
-  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
-  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 10vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .52s cubic-bezier(.22,1,.36,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 10vh 6vw;display:flex;flex-direction:column;overflow:hidden;contain:layout paint style}
   .slide.light{color:var(--ink)}
   .slide.dark{color:var(--paper)}
 
   /* 默认页：遮罩较厚，保证文字可读 */
   .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
-  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
-  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.light::before{background:rgba(var(--paper-rgb),.84)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.84)}
   /* Hero 页：遮罩大幅降低，让 WebGL 背景明显透出 */
   .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
   .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
@@ -357,6 +361,216 @@
     opacity:.72;
   }
 
+  /* ---------- explanatory diagrams ---------- */
+  .diagram-card{
+    border:1px solid rgba(127,127,127,.28);
+    background:rgba(255,255,255,.04);
+    padding:3vh 2.2vw;
+    border-radius:6px;
+    min-height:0;
+  }
+  .slide.light .diagram-card{background:rgba(var(--ink-rgb),.035)}
+  .arch-flow{display:grid;grid-template-columns:1fr .36fr 1.08fr .36fr 1fr;align-items:center;gap:1.1vw}
+  .arch-flow.vertical{grid-template-columns:1fr;gap:1.7vh}
+  .diagram-node{
+    border:1px solid currentColor;
+    border-color:rgba(127,127,127,.34);
+    padding:1.7vh 1.2vw;
+    min-height:11.5vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:.8vh;
+    background:rgba(255,255,255,.035);
+  }
+  .slide.light .diagram-node{background:rgba(var(--paper-rgb),.36)}
+  .node-label{font-family:var(--mono);font-size:max(10px,.72vw);letter-spacing:.22em;text-transform:uppercase;opacity:.55}
+  .node-title{font-family:var(--serif-zh);font-weight:700;font-size:1.62vw;line-height:1.18}
+  .node-desc{font-family:var(--sans-zh);font-size:max(12px,.92vw);line-height:1.45;opacity:.74}
+  .diagram-arrow{height:1px;background:currentColor;opacity:.45;position:relative}
+  .diagram-arrow::after{content:"";position:absolute;right:-1px;top:50%;width:7px;height:7px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:translateY(-50%) rotate(45deg)}
+  .diagram-plus{font-family:var(--serif-en);font-size:3vw;line-height:1;opacity:.45;text-align:center}
+  .loss-map{display:grid;grid-template-columns:repeat(3,1fr);gap:1.3vw;align-items:stretch;margin-top:3vh}
+  .loss-card{border-top:2px solid currentColor;padding-top:1.6vh}
+  .loss-card .formula{font-family:var(--serif-en);font-size:2.5vw;font-weight:700;line-height:1}
+  .loss-card .caption{font-family:var(--sans-zh);font-size:max(12px,.92vw);line-height:1.45;opacity:.74;margin-top:1.2vh}
+  .bar-chart{display:grid;gap:1.3vh}
+  .bar-row{display:grid;grid-template-columns:4.5vw 1fr 4vw;gap:1vw;align-items:center;font-family:var(--mono);font-size:max(10px,.78vw);letter-spacing:.12em;text-transform:uppercase}
+  .bar-track{height:1.2vh;background:rgba(127,127,127,.18);overflow:hidden}
+  .bar-fill{height:100%;background:currentColor;opacity:.72}
+  .mindmap{
+    position:relative;
+    min-height:58vh;
+    margin-top:3.6vh;
+  }
+  .mind-lines{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    opacity:.38;
+  }
+  .mind-lines line,
+  .mind-lines path{
+    stroke:currentColor;
+    stroke-width:1.2;
+    fill:none;
+    vector-effect:non-scaling-stroke;
+  }
+  .mind-center,
+  .mind-node{
+    position:absolute;
+    left:var(--x);
+    top:var(--y);
+    transform:translate(-50%,-50%);
+    border:1px solid rgba(127,127,127,.34);
+    background:rgba(255,255,255,.04);
+    border-radius:6px;
+  }
+  .slide.light .mind-center,
+  .slide.light .mind-node{background:rgba(var(--ink-rgb),.035)}
+  .mind-center{
+    width:18vw;
+    min-height:15vh;
+    padding:2.4vh 1.7vw;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:1vh;
+    text-align:center;
+  }
+  .mind-node{
+    width:19vw;
+    min-height:15vh;
+    padding:2vh 1.4vw;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:.75vh;
+  }
+  .mind-node.small{width:15.5vw;min-height:10.5vh;padding:1.55vh 1.1vw}
+  .mind-tag{font-family:var(--mono);font-size:max(10px,.72vw);letter-spacing:.22em;text-transform:uppercase;opacity:.55}
+  .mind-title{font-family:var(--serif-zh);font-weight:700;font-size:1.75vw;line-height:1.16}
+  .mind-center .mind-title{font-size:2.1vw}
+  .mind-desc{font-family:var(--sans-zh);font-size:max(12px,.9vw);line-height:1.45;opacity:.74}
+  .concept-map{position:relative;min-height:57vh;margin-top:3.6vh}
+  .concept-map .lane{
+    position:absolute;
+    top:18vh;
+    bottom:3vh;
+    width:32vw;
+    border:1px solid rgba(127,127,127,.32);
+    border-radius:6px;
+    padding:3vh 2vw;
+    display:flex;
+    flex-direction:column;
+    gap:2.2vh;
+    background:rgba(255,255,255,.035);
+  }
+  .concept-map .lane.left{left:0}
+  .concept-map .lane.right{right:0}
+  .concept-map .hub{
+    position:absolute;
+    left:50%;
+    top:1vh;
+    transform:translateX(-50%);
+    width:23vw;
+    min-height:12vh;
+    border:1px solid rgba(127,127,127,.4);
+    border-radius:6px;
+    padding:2.4vh 1.6vw;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:1vh;
+    background:rgba(var(--ink-rgb),.32);
+  }
+  .concept-map .bridge{
+    position:absolute;
+    left:33vw;
+    right:33vw;
+    top:24vh;
+    height:1px;
+    background:currentColor;
+    opacity:.32;
+  }
+  .concept-item{border-top:1px solid rgba(127,127,127,.28);padding-top:1.4vh}
+  .depth-sketch{display:grid;grid-template-columns:1fr .22fr 1fr .22fr 1fr;gap:1vw;align-items:center}
+  .depth-tile{
+    border:1px solid rgba(127,127,127,.34);
+    min-height:20vh;
+    border-radius:6px;
+    padding:1.6vh 1.2vw;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    background:rgba(255,255,255,.045);
+  }
+  .fake-image,.fake-depth,.fake-network{height:12vh;border-radius:4px;overflow:hidden}
+  .fake-image{background:linear-gradient(135deg,#2d3850 0%,#7e8794 42%,#f0d7a0 43%,#314d6f 100%)}
+  .fake-depth{background:linear-gradient(90deg,#111827 0%,#314c82 34%,#70a6c9 63%,#f2d18b 100%)}
+  .fake-network{display:grid;grid-template-columns:repeat(4,1fr);gap:.45vw;align-items:center}
+  .fake-network span{height:3vh;border:1px solid currentColor;opacity:.45;border-radius:999px}
+
+  /* ---------- academic report tone ---------- */
+  body.academic .slide{padding:5.2vh 6vw 8.8vh 6vw}
+  body.academic .slide::before{background:rgba(var(--paper-rgb),.9)}
+  body.academic .slide.dark::before{background:rgba(var(--ink-rgb),.9)}
+  body.academic .slide.hero.dark::before{background:rgba(var(--ink-rgb),.74)}
+  body.academic .slide.hero.light::before{background:rgba(var(--paper-rgb),.9)}
+  body.academic .chrome,
+  body.academic .foot{
+    letter-spacing:.08em;
+    text-transform:none;
+    font-size:max(11px,.76vw);
+    opacity:.7;
+  }
+  body.academic .kicker,
+  body.academic .node-label,
+  body.academic .mind-tag,
+  body.academic .stat-label,
+  body.academic .pipeline-label{
+    font-family:var(--sans-zh);
+    letter-spacing:.06em;
+    text-transform:none;
+    font-weight:700;
+    opacity:.72;
+  }
+  body.academic .h-hero{font-size:clamp(54px,6.2vw,88px)!important;line-height:1.08}
+  body.academic .h-xl{font-size:clamp(38px,4.3vw,62px)!important;line-height:1.16}
+  body.academic .h-sub{font-size:clamp(24px,2.4vw,36px)!important}
+  body.academic .lead{font-family:var(--sans-zh);font-size:clamp(17px,1.42vw,23px);line-height:1.68;opacity:.82}
+  body.academic .body-zh,
+  body.academic .node-desc,
+  body.academic .mind-desc,
+  body.academic .step-desc,
+  body.academic .stat-note{
+    font-size:clamp(13px,1vw,17px);
+    line-height:1.62;
+  }
+  body.academic .diagram-card,
+  body.academic .diagram-node,
+  body.academic .mind-center,
+  body.academic .mind-node,
+  body.academic .concept-map .lane,
+  body.academic .concept-map .hub,
+  body.academic .depth-tile,
+  body.academic .stat-card{
+    border-radius:3px;
+    border-color:rgba(127,127,127,.38);
+    box-shadow:none;
+  }
+  body.academic .mind-title,
+  body.academic .node-title,
+  body.academic .step-title,
+  body.academic .rowline .k{font-size:clamp(20px,1.55vw,28px);line-height:1.24}
+  body.academic .mind-center .mind-title{font-size:clamp(22px,1.75vw,31px)}
+  body.academic .stat-card .stat-nb{font-size:clamp(34px,4vw,58px)!important}
+  body.academic .callout{font-family:var(--sans-zh);border-left-width:2px}
+  body.academic #nav{opacity:.78}
+
   /* ---------- 网格（layouts.md 所用） ---------- */
   /* 这些类独立挂到任何容器上都能生效，不依赖 .frame 复合选择器 */
   .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
@@ -406,11 +620,11 @@
      - pipeline(data-animate="pipeline"):Space/→ 手动推进
      Motion One 没加载成功时(CDN 断 + 本地丢),所有 [data-anim] 会兜底显示。
   */
-  [data-anim]{opacity:0}
+  [data-anim]{opacity:1}
   [data-anim="left"]{transform:translateX(-24px)}
   [data-anim="right"]{transform:translateX(24px)}
   [data-anim="line"]{opacity:0;transform:translateY(10px)}
-  [data-animate="pipeline"] [data-anim]{opacity:.15}
+  [data-animate="pipeline"] [data-anim]{opacity:1}
 
   /* ---------- 响应式降级 ---------- */
   @media (max-width:900px){
@@ -420,11 +634,20 @@
     .h-hero{font-size:14vw}
     .h-xl{font-size:9vw}
     .pipeline{grid-template-columns:repeat(2,1fr)}
+    .arch-flow{grid-template-columns:1fr}
+    .diagram-arrow{height:2vh;width:1px;justify-self:center}
+    .diagram-arrow::after{right:auto;top:auto;bottom:-1px;left:50%;transform:translateX(-50%) rotate(135deg)}
+    .loss-map{grid-template-columns:1fr}
+    .mindmap,.concept-map{min-height:68vh}
+    .mind-center,.mind-node{position:static;transform:none;width:auto;min-height:auto;margin-bottom:1.5vh}
+    .mind-lines,.concept-map .bridge{display:none}
+    .concept-map .lane,.concept-map .hub{position:static;transform:none;width:auto;margin-bottom:1.5vh}
+    .depth-sketch{grid-template-columns:1fr}
     .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
   }
 </style>
 </head>
-<body>
+<body class="academic">
 
 <canvas id="bg-dark" class="bg"></canvas>
 <canvas id="bg-light" class="bg"></canvas>
@@ -439,13 +662,13 @@
 <!-- SLIDES_HERE -->
 <section class="slide hero dark">
   <div class="chrome">
-    <div>KYKT · Computer Vision</div>
-    <div>Vol.01</div>
+    <div>Academic Report · Computer Vision</div>
+    <div>2026.04</div>
   </div>
   <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
-    <div class="kicker" data-anim>Computer Vision · 2026.04</div>
-    <h1 class="h-hero" style="font-size:8.6vw" data-anim>教师学生</h1>
-    <h2 class="h-sub" data-anim>从知识蒸馏到 Depth Anything 的数据引擎</h2>
+    <div class="kicker" data-anim>Teacher-Student Learning</div>
+    <h1 class="h-hero" style="font-size:8.6vw" data-anim>教师-学生模型</h1>
+    <h2 class="h-sub" data-anim>原理、机制与 Depth Anything 案例分析</h2>
     <p class="lead" style="max-width:62vw" data-anim>
       一类把昂贵监督、模型判断和大规模无标签数据组织起来的训练框架。
     </p>
@@ -454,7 +677,7 @@
     </div>
   </div>
   <div class="foot">
-    <div>教师学生模型调研</div>
+    <div>课程汇报材料</div>
     <div>Depth Anything v1 / v2</div>
   </div>
 </section>
@@ -464,27 +687,33 @@
     <div>Opening · Why It Matters</div>
     <div>02 / 24</div>
   </div>
-  <div class="frame" style="padding-top:6vh">
-    <div class="kicker" data-anim>核心问题</div>
-    <h2 class="h-xl" style="font-size:5.6vw" data-anim>学生不只学标签。</h2>
-    <p class="lead" style="max-width:72vw; margin-top:2vh" data-anim>
-      它还学习教师对输入空间的判断：类别相似性、决策边界、特征结构，以及对无标签样本的标注能力。
-    </p>
-    <div class="grid-3" style="margin-top:7vh">
-      <div class="stat-card" data-anim>
-        <div class="stat-label">Signal 01</div>
-        <div class="stat-nb" style="font-size:3.4vw">Soft</div>
-        <div class="stat-note">软标签保留类别关系，而不是只给 one-hot 答案。</div>
-      </div>
-      <div class="stat-card" data-anim>
-        <div class="stat-label">Signal 02</div>
-        <div class="stat-nb" style="font-size:3.4vw">Pseudo</div>
-        <div class="stat-note">伪标签把无标签数据变成可训练样本。</div>
-      </div>
-      <div class="stat-card" data-anim>
-        <div class="stat-label">Signal 03</div>
-        <div class="stat-nb" style="font-size:3.4vw">Feature</div>
-        <div class="stat-note">中间特征让学生继承语义、几何或表示空间。</div>
+  <div class="frame grid-2-6-6" style="padding-top:5vh; align-items:center">
+    <div>
+      <div class="kicker" data-anim>核心问题</div>
+    <h2 class="h-xl" style="font-size:5.1vw" data-anim>监督信号不局限于标签。</h2>
+      <p class="lead" style="margin-top:2.4vh" data-anim>
+        它还学习教师对输入空间的判断：类别相似性、决策边界、特征结构，以及对无标签样本的标注能力。
+      </p>
+    </div>
+    <div class="diagram-card" data-anim>
+      <div class="arch-flow">
+        <div class="diagram-node">
+          <div class="node-label">Data</div>
+          <div class="node-title">有标签 / 无标签样本</div>
+          <div class="node-desc">图像、增强视图、合成数据或真实数据。</div>
+        </div>
+        <div class="diagram-arrow"></div>
+        <div class="diagram-node">
+          <div class="node-label">Teacher Signal</div>
+          <div class="node-title">软标签 · 伪标签 · 特征</div>
+          <div class="node-desc">监督不再只来自人工标注，也来自模型输出和表示空间。</div>
+        </div>
+        <div class="diagram-arrow"></div>
+        <div class="diagram-node">
+          <div class="node-label">Student</div>
+          <div class="node-title">可部署模型</div>
+          <div class="node-desc">学习任务目标，同时继承教师的结构化判断。</div>
+        </div>
       </div>
     </div>
   </div>
@@ -499,23 +728,46 @@
     <div>Definition · Teacher Student</div>
     <div>03 / 24</div>
   </div>
-  <div class="frame" style="padding-top:5vh">
+  <div class="frame grid-2-6-6" style="padding-top:5vh; align-items:center">
+    <div>
     <div class="kicker" data-anim>角色分工</div>
-    <h2 class="h-xl" style="font-size:5.4vw; margin-bottom:5vh" data-anim>教师提供监督，学生承担部署。</h2>
-    <div class="grid-2-6-6" style="gap:5vw">
+    <h2 class="h-xl" style="font-size:5.2vw; margin-bottom:4vh" data-anim>训练侧提供监督，部署侧承接能力。</h2>
+    <div style="display:grid; gap:2.2vh">
       <div data-anim="left" style="padding:3vh 2vw; border-left:3px solid currentColor">
         <div class="kicker">Teacher</div>
-        <h3 class="h-md">更强、更慢、更贵</h3>
+        <h3 class="h-md">高能力、高成本模型</h3>
         <p class="body-zh" style="margin-top:3vh">
           可以是模型集成、大模型、EMA 模型、人工标注训练出的高精度模型，甚至是冻结的预训练编码器。
         </p>
       </div>
       <div data-anim="right" style="padding:3vh 2vw; border-left:3px solid currentColor">
         <div class="kicker">Student</div>
-        <h3 class="h-md">更小、更快、更可用</h3>
+        <h3 class="h-md">轻量化部署模型</h3>
         <p class="body-zh" style="margin-top:3vh">
           学会逼近教师行为，同时满足真实场景的延迟、显存、平台、泛化和鲁棒性约束。
         </p>
+      </div>
+    </div>
+    </div>
+    <div class="diagram-card" data-anim="right">
+      <div class="arch-flow vertical">
+        <div class="diagram-node">
+          <div class="node-label">Training Side</div>
+          <div class="node-title">高成本知识生产</div>
+          <div class="node-desc">标注数据、模型集成、大模型、预训练特征共同形成 teacher。</div>
+        </div>
+        <div class="diagram-plus">↓</div>
+        <div class="diagram-node">
+          <div class="node-label">Transfer Contract</div>
+          <div class="node-title">输出对齐 / 特征对齐 / 一致性约束</div>
+          <div class="node-desc">损失函数定义学生到底要继承哪一类能力。</div>
+        </div>
+        <div class="diagram-plus">↓</div>
+        <div class="diagram-node">
+          <div class="node-label">Deployment Side</div>
+          <div class="node-title">低成本推理模型</div>
+          <div class="node-desc">上线时只保留 student；teacher 和伪标注流程退出推理链路。</div>
+        </div>
       </div>
     </div>
   </div>
@@ -559,7 +811,7 @@
         <div class="step" data-anim="step">
           <div class="step-nb">05</div>
           <div class="step-title">Deploy</div>
-          <div class="step-desc">保留学生，丢掉昂贵教师和标注流程。</div>
+          <div class="step-desc">推理阶段仅保留学生模型，训练阶段的教师和标注流程不参与部署。</div>
         </div>
       </div>
     </div>
@@ -575,30 +827,39 @@
     <div>Mechanism · Loss Design</div>
     <div>05 / 24</div>
   </div>
-  <div class="frame" style="padding-top:6vh">
-    <div class="kicker" data-anim>损失函数视角</div>
-    <h2 class="h-xl" style="font-size:5.1vw" data-anim>监督被拆成三条损失。</h2>
-    <div class="grid-3" style="margin-top:6vh">
-      <div class="stat-card" data-anim>
-        <div class="stat-label">Task Loss</div>
-        <div class="stat-nb" style="font-size:3.2vw">CE / L1</div>
-        <div class="stat-note">真实标签约束学生别偏离任务目标：分类用交叉熵，深度可用尺度/平移不变回归损失。</div>
-      </div>
-      <div class="stat-card" data-anim>
-        <div class="stat-label">Distill Loss</div>
-        <div class="stat-nb" style="font-size:3.2vw">KL(T)</div>
-        <div class="stat-note">温度 T 让 teacher 概率更平滑，学生学习类别关系、边界和不确定性。</div>
-      </div>
-      <div class="stat-card" data-anim>
-        <div class="stat-label">Feature Loss</div>
-        <div class="stat-nb" style="font-size:3.2vw">cos</div>
-        <div class="stat-note">对齐中间表示或冻结编码器特征，让学生继承语义结构，而不是只追最终数值。</div>
+  <div class="frame grid-2-7-5" style="padding-top:5vh; align-items:center">
+    <div>
+      <div class="kicker" data-anim>损失函数视角</div>
+      <h2 class="h-xl" style="font-size:4.9vw" data-anim>监督被拆成三条损失。</h2>
+      <div class="loss-map" data-anim>
+        <div class="loss-card">
+          <div class="formula">L<sub>task</sub></div>
+          <div class="caption">真实标签约束任务目标：分类 CE，深度估计可用尺度/平移不变回归损失。</div>
+        </div>
+        <div class="loss-card">
+          <div class="formula">L<sub>KD</sub></div>
+          <div class="caption">学生输出匹配 teacher 分布；温度 T 让类别关系和边界信息更平滑。</div>
+        </div>
+        <div class="loss-card">
+          <div class="formula">L<sub>feat</sub></div>
+          <div class="caption">对齐中间层、注意力图或冻结编码器特征，继承语义结构。</div>
+        </div>
       </div>
     </div>
-    <div class="callout" style="margin-top:5vh" data-anim>
-      总目标可以写成：<br>
-      L = 任务监督 + 教师输出对齐 + 表示空间对齐。不同权重对应不同目标：压缩、半监督或表示迁移。
-      <span class="cite">Loss is the contract between teacher and student</span>
+    <div class="diagram-card" data-anim>
+      <div class="arch-flow vertical">
+        <div class="diagram-node">
+          <div class="node-label">Total Objective</div>
+          <div class="node-title">L = αL<sub>task</sub> + βL<sub>KD</sub> + γL<sub>feat</sub></div>
+          <div class="node-desc">权重决定训练目标更偏压缩、半监督扩数据，还是表示迁移。</div>
+        </div>
+        <div class="diagram-plus">↓</div>
+        <div class="diagram-node">
+          <div class="node-label">Student Update</div>
+          <div class="node-title">输出、特征、鲁棒性同时被约束</div>
+          <div class="node-desc">学生不只是拟合最终答案，还学习 teacher 的不确定性和中间结构。</div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="foot">
@@ -637,9 +898,9 @@
     <div style="display:flex; flex-direction:column; justify-content:space-between; gap:3vh">
       <div>
     <div class="kicker" data-anim>软标签</div>
-        <h2 class="h-xl" style="font-size:5.2vw" data-anim>暗知识。</h2>
+        <h2 class="h-xl" style="font-size:5.2vw" data-anim>Soft target 中的类别关系。</h2>
         <p class="lead" style="margin-top:3vh" data-anim>
-          hard label 只说“这是猫”。soft target 还会告诉学生：它不像车，但有一点像狐狸、熊或小狗。
+          hard label 只提供正确类别；soft target 进一步保留类别间相似性、边界信息和教师不确定性。
         </p>
       </div>
       <div class="callout" data-anim>
@@ -648,18 +909,18 @@
         <span class="cite">Temperature makes probabilities smoother</span>
       </div>
     </div>
-    <div data-anim style="display:grid; gap:1.6vh">
-      <div class="rowline">
-        <div class="k">Cat</div><div class="v">Teacher: 0.71 · Student target</div><div class="m">High</div>
+    <div class="diagram-card" data-anim style="align-self:center">
+      <div class="node-label" style="margin-bottom:2vh">Teacher probability distribution</div>
+      <div class="bar-chart">
+        <div class="bar-row"><div>Cat</div><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div><div>0.71</div></div>
+        <div class="bar-row"><div>Fox</div><div class="bar-track"><div class="bar-fill" style="width:13%; opacity:.55"></div></div><div>0.13</div></div>
+        <div class="bar-row"><div>Dog</div><div class="bar-track"><div class="bar-fill" style="width:8%; opacity:.45"></div></div><div>0.08</div></div>
+        <div class="bar-row"><div>Truck</div><div class="bar-track"><div class="bar-fill" style="width:1%; opacity:.25"></div></div><div>0.00</div></div>
       </div>
-      <div class="rowline">
-        <div class="k">Fox</div><div class="v">Teacher: 0.13 · useful similarity</div><div class="m">Medium</div>
-      </div>
-      <div class="rowline">
-        <div class="k">Dog</div><div class="v">Teacher: 0.08 · boundary cue</div><div class="m">Low</div>
-      </div>
-      <div class="rowline">
-        <div class="k">Truck</div><div class="v">Teacher: 0.00 · negative relation</div><div class="m">Near Zero</div>
+      <div class="diagram-node" style="margin-top:3vh">
+        <div class="node-label">What student learns</div>
+        <div class="node-title">类别关系，而不只是正确类</div>
+        <div class="node-desc">soft target 把“像什么、不像什么、边界在哪里”一并传给学生。</div>
       </div>
     </div>
   </div>
@@ -674,24 +935,34 @@
     <div>Taxonomy · Three Families</div>
     <div>08 / 24</div>
   </div>
-  <div class="frame" style="padding-top:6vh">
+  <div class="frame" style="padding-top:5vh">
     <div class="kicker" data-anim>按监督信号分类</div>
-    <h2 class="h-xl" style="font-size:5vw" data-anim>三种教师。</h2>
-    <div class="grid-3" style="margin-top:6vh">
-      <div class="pillar" data-anim>
-        <div class="ic">01</div>
-        <div class="t">输出教师</div>
-        <div class="d">学生匹配 logits、概率、深度图、mask 等最终输出。最直观，适合压缩和伪标签。</div>
+    <h2 class="h-xl" style="font-size:4.7vw" data-anim>教师信号的三条分支。</h2>
+    <div class="mindmap" data-anim>
+      <svg class="mind-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <line x1="50" y1="52" x2="22" y2="27"></line>
+        <line x1="50" y1="52" x2="78" y2="27"></line>
+        <line x1="50" y1="52" x2="50" y2="78"></line>
+      </svg>
+      <div class="mind-center" style="--x:50%;--y:49%;min-height:10.5vh;padding:1.8vh 1.5vw" data-anim>
+        <div class="mind-tag">Teacher Signal</div>
+        <div class="mind-title">监督从哪里来</div>
+        <div class="mind-desc">输出、特征、时间更新，分别对应不同的学生能力。</div>
       </div>
-      <div class="pillar" data-anim>
-        <div class="ic">02</div>
-        <div class="t">特征教师</div>
-        <div class="d">学生匹配中间层表示、注意力图或 embedding。适合继承语义结构。</div>
+      <div class="mind-node" style="--x:22%;--y:28%;min-height:12vh" data-anim>
+        <div class="mind-tag">Output Teacher</div>
+        <div class="mind-title">输出教师</div>
+        <div class="mind-desc">logits、概率、深度图、mask。适合模型压缩与伪标签。</div>
       </div>
-      <div class="pillar" data-anim>
-        <div class="ic">03</div>
-        <div class="t">动态教师</div>
-        <div class="d">teacher 是 student 的 EMA 或迭代版本。适合半监督、自监督和一致性学习。</div>
+      <div class="mind-node" style="--x:78%;--y:28%;min-height:12vh" data-anim>
+        <div class="mind-tag">Feature Teacher</div>
+        <div class="mind-title">特征教师</div>
+        <div class="mind-desc">中间层、注意力图、embedding。适合继承语义结构。</div>
+      </div>
+      <div class="mind-node" style="--x:50%;--y:81%;min-height:9.5vh;padding:1.45vh 1.25vw" data-anim>
+        <div class="mind-tag">Dynamic Teacher</div>
+        <div class="mind-title">动态教师</div>
+        <div class="mind-desc">EMA 或迭代 teacher。适合半监督、自监督和一致性学习。</div>
       </div>
     </div>
   </div>
@@ -708,25 +979,49 @@
   </div>
   <div class="frame" style="padding-top:5vh">
     <div class="kicker" data-anim>概念边界</div>
-    <h2 class="h-xl" style="font-size:5.1vw; margin-bottom:4vh" data-anim>蒸馏偏压缩，自训练偏扩数据。</h2>
-    <div class="grid-2-6-6" style="gap:5vw">
-      <div data-anim="left" style="padding:3vh 2vw; border-left:3px solid currentColor; opacity:.72">
-        <div class="kicker">Knowledge Distillation</div>
-        <h3 class="h-md">从强模型到轻模型</h3>
-        <ul class="body-zh" style="margin-top:3vh; padding-left:1.1em">
-          <li>目标常是部署效率。</li>
-          <li>教师可以是模型集成或大模型。</li>
-          <li>核心监督是软输出或中间特征。</li>
-        </ul>
+    <h2 class="h-xl" style="font-size:4.7vw" data-anim>蒸馏和自训练共享同一骨架。</h2>
+    <div class="concept-map" data-anim>
+      <div class="bridge"></div>
+      <div class="lane left" data-anim="left">
+        <div>
+          <div class="mind-tag">Knowledge Distillation</div>
+          <div class="mind-title">强模型 → 轻模型</div>
+        </div>
+        <div class="concept-item">
+          <div class="mind-tag">Goal</div>
+          <div class="mind-desc">部署效率、低延迟、低显存。</div>
+        </div>
+        <div class="concept-item">
+          <div class="mind-tag">Teacher</div>
+          <div class="mind-desc">模型集成、大模型、冻结特征或高精度模型。</div>
+        </div>
+        <div class="concept-item">
+          <div class="mind-tag">Signal</div>
+          <div class="mind-desc">软输出、中间特征、注意力图。</div>
+        </div>
       </div>
-      <div data-anim="right" style="padding:3vh 2vw; border-left:3px solid currentColor">
-        <div class="kicker">Self-Training</div>
-        <h3 class="h-md">从少标注到多样本</h3>
-        <ul class="body-zh" style="margin-top:3vh; padding-left:1.1em">
-          <li>目标常是提升泛化。</li>
-          <li>教师给无标签数据生成伪标签。</li>
-          <li>关键风险是把教师错误复制给学生。</li>
-        </ul>
+      <div class="hub" data-anim>
+        <div class="mind-tag">Shared Skeleton</div>
+        <div class="mind-title">教师产生目标，学生承接能力</div>
+        <div class="mind-desc">区别在于目标：压缩模型，还是扩展数据。</div>
+      </div>
+      <div class="lane right" data-anim="right">
+        <div>
+          <div class="mind-tag">Self-Training</div>
+          <div class="mind-title">少标注 → 多样本</div>
+        </div>
+        <div class="concept-item">
+          <div class="mind-tag">Goal</div>
+          <div class="mind-desc">提升未知场景泛化能力。</div>
+        </div>
+        <div class="concept-item">
+          <div class="mind-tag">Teacher</div>
+          <div class="mind-desc">给无标签数据生成伪标签。</div>
+        </div>
+        <div class="concept-item">
+          <div class="mind-tag">Risk</div>
+          <div class="mind-desc">错误会被复制，所以需要过滤、扰动或重训。</div>
+        </div>
       </div>
     </div>
   </div>
@@ -741,21 +1036,40 @@
     <div>Mechanism · Why It Works</div>
     <div>10 / 24</div>
   </div>
-  <div class="frame" style="padding-top:6vh">
+  <div class="frame" style="padding-top:5vh">
     <div class="kicker" data-anim>有效条件</div>
-    <h2 class="h-xl" style="font-size:4.9vw" data-anim>增益来自约束差异。</h2>
-    <div style="display:grid; gap:2vh; margin-top:5vh">
-      <div class="rowline" data-anim>
-        <div class="k">输入差异</div><div class="v">teacher 看 clean image，student 看强扰动 image；学生必须学不变性。</div><div class="m">Perturb</div>
+    <h2 class="h-xl" style="font-size:4.7vw" data-anim>增益来自约束差异。</h2>
+    <div class="mindmap" data-anim>
+      <svg class="mind-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <line x1="50" y1="50" x2="24" y2="25"></line>
+        <line x1="50" y1="50" x2="76" y2="25"></line>
+        <line x1="50" y1="50" x2="24" y2="73"></line>
+        <line x1="50" y1="50" x2="76" y2="73"></line>
+      </svg>
+      <div class="mind-center" style="--x:50%;--y:50%" data-anim>
+        <div class="mind-tag">Learning Pressure</div>
+        <div class="mind-title">约束差异形成额外监督</div>
+        <div class="mind-desc">若训练条件完全一致，学生容易退化为对 teacher 输出的表面拟合。</div>
       </div>
-      <div class="rowline" data-anim>
-        <div class="k">容量差异</div><div class="v">teacher 可以大而慢，student 必须小而快；压缩本身带来正则化。</div><div class="m">Compress</div>
+      <div class="mind-node" style="--x:24%;--y:24%;min-height:12.5vh" data-anim>
+        <div class="mind-tag">Perturb</div>
+        <div class="mind-title">输入差异</div>
+        <div class="mind-desc">teacher 看 clean image，student 看强扰动 image，学习不变性。</div>
       </div>
-      <div class="rowline" data-anim>
-        <div class="k">数据差异</div><div class="v">teacher 把无标签图像转成训练目标，student 看到远多于人工标注的数据分布。</div><div class="m">Scale</div>
+      <div class="mind-node" style="--x:76%;--y:24%;min-height:12.5vh" data-anim>
+        <div class="mind-tag">Compress</div>
+        <div class="mind-title">容量差异</div>
+        <div class="mind-desc">teacher 大而慢，student 小而快，压缩本身带来正则化。</div>
       </div>
-      <div class="rowline" data-anim>
-        <div class="k">风险差异</div><div class="v">伪标签会带噪声，所以要过滤高损失区域、增强、重采样或换更强 teacher。</div><div class="m">Noise</div>
+      <div class="mind-node" style="--x:24%;--y:73%;min-height:12.5vh" data-anim>
+        <div class="mind-tag">Scale</div>
+        <div class="mind-title">数据差异</div>
+        <div class="mind-desc">teacher 把无标签图像转成训练目标，扩大学生看到的分布。</div>
+      </div>
+      <div class="mind-node" style="--x:76%;--y:73%;min-height:12.5vh" data-anim>
+        <div class="mind-tag">Noise Control</div>
+        <div class="mind-title">风险差异</div>
+        <div class="mind-desc">伪标签噪声需要通过过滤、增强、重采样或更高质量 teacher 控制。</div>
       </div>
     </div>
   </div>
@@ -770,15 +1084,38 @@
     <div>Act II · Depth Anything</div>
     <div>11 / 24</div>
   </div>
-  <div class="frame" style="display:grid; gap:5vh; align-content:center; min-height:80vh">
-    <div class="kicker" data-anim>Monocular Depth Estimation</div>
-    <h1 class="h-hero" style="font-size:7.1vw" data-anim>一张图估深度</h1>
-    <p class="lead" style="max-width:70vw" data-anim>
-      高质量深度标注昂贵，跨场景差异大，传感器和合成数据都有偏差。教师学生框架把有限监督和大规模无标签图像连接起来。
-    </p>
+  <div class="frame grid-2-6-6" style="padding-top:8vh; align-items:center">
+    <div>
+      <div class="kicker" data-anim>Monocular Depth Estimation</div>
+      <h1 class="h-hero" style="font-size:7.1vw" data-anim>单目深度估计任务</h1>
+      <p class="lead" style="max-width:42vw; margin-top:3vh" data-anim>
+        高质量深度标注昂贵，跨场景差异大，传感器和合成数据都有偏差。教师学生框架把有限监督和大规模无标签图像连接起来。
+      </p>
+    </div>
+    <div class="diagram-card" data-anim>
+      <div class="depth-sketch">
+        <div class="depth-tile">
+          <div class="node-label">RGB Input</div>
+          <div class="fake-image"></div>
+          <div class="node-desc">单张真实图像，没有直接深度观测。</div>
+        </div>
+        <div class="diagram-arrow"></div>
+        <div class="depth-tile">
+          <div class="node-label">MDE Model</div>
+          <div class="fake-network"><span></span><span></span><span></span><span></span></div>
+          <div class="node-desc">编码语义、几何线索和相对尺度。</div>
+        </div>
+        <div class="diagram-arrow"></div>
+        <div class="depth-tile">
+          <div class="node-label">Depth Map</div>
+          <div class="fake-depth"></div>
+          <div class="node-desc">输出每个像素的相对或度量深度。</div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="foot">
-    <div>案例转入</div>
+    <div>案例任务背景</div>
     <div>MDE Foundation Model</div>
   </div>
 </section>
@@ -1034,7 +1371,7 @@
   </div>
   <div class="frame" style="padding-top:6vh">
     <div class="kicker" data-anim>三条实践</div>
-    <h2 class="h-xl" style="font-size:5vw" data-anim>V2 的核心是桥接。</h2>
+    <h2 class="h-xl" style="font-size:5vw" data-anim>V2 的核心是合成到真实的桥接。</h2>
     <div class="grid-3" style="margin-top:7vh">
       <div class="pillar" data-anim>
         <div class="ic">01</div>
@@ -1044,11 +1381,11 @@
       <div class="pillar" data-anim>
         <div class="ic">02</div>
         <div class="t">扩大 teacher 容量</div>
-        <div class="d">先得到更强教师，再把它的深度判断扩展到真实图像空间。</div>
+      <div class="d">先获得高质量教师模型，再将其深度预测能力扩展到真实图像空间。</div>
       </div>
       <div class="pillar" data-anim>
         <div class="ic">03</div>
-        <div class="t">用伪标注真实图像教学生</div>
+      <div class="t">利用真实图像伪标签训练学生</div>
         <div class="d">62M 真实图像作为桥，缓解纯合成训练的域偏移和多样性不足。</div>
       </div>
     </div>
@@ -1067,7 +1404,7 @@
   <div class="frame grid-2-7-5" style="padding-top:5vh">
     <div data-anim>
       <div class="kicker">Figure 7 · 框架原图</div>
-      <h2 class="h-xl" style="font-size:4.8vw">三段式桥接。</h2>
+      <h2 class="h-xl" style="font-size:4.8vw">合成到真实的三阶段流程。</h2>
       <div style="display:grid; gap:1.6vh; margin-top:3vh">
         <div class="rowline">
           <div class="k">01</div><div class="v">Synthetic images 训练最大 teacher：深度标签更精确。</div><div class="m">Teacher</div>
@@ -1140,7 +1477,7 @@
   <div class="frame grid-2-7-5" style="padding-top:5vh">
     <div data-anim>
       <div class="kicker">Figure 1 / official teaser</div>
-      <h2 class="h-xl" style="font-size:4.6vw">细节与效率同时提升。</h2>
+      <h2 class="h-xl" style="font-size:4.6vw">质量、效率与模型规模的折中。</h2>
       <p class="lead" style="margin-top:3vh">
         V2 同时比较质量、速度和参数量，目标不只是扩大模型规模，而是获得可部署的细节质量。
       </p>
@@ -1200,7 +1537,7 @@
   </div>
   <div class="frame" style="padding-top:6vh">
     <div class="kicker" data-anim>总结</div>
-    <h2 class="h-xl" style="font-size:5.1vw" data-anim>教师学生模型的四个层面。</h2>
+    <h2 class="h-xl" style="font-size:5.1vw" data-anim>教师-学生模型的四个分析维度。</h2>
     <div style="display:grid; gap:2vh; margin-top:5vh">
       <div class="rowline" data-anim>
         <div class="k">角色</div><div class="v">teacher 负责昂贵知识生产，student 负责可部署能力承接。</div><div class="m">01</div>
@@ -1305,7 +1642,7 @@ addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/
 
 function bootGL(canvasId, fsSrc){
   const canvas=document.getElementById(canvasId);
-  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:false,powerPreference:'low-power'});
   if(!gl) return ()=>false;
   const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
   const prog=gl.createProgram();
@@ -1321,7 +1658,7 @@ function bootGL(canvasId, fsSrc){
   const lT=gl.getUniformLocation(prog,'u_time');
   const lM=gl.getUniformLocation(prog,'u_mouse');
   const resize=()=>{
-    const d=Math.min(window.devicePixelRatio||1,2);
+    const d=Math.min(window.devicePixelRatio||1,1.25);
     canvas.width=innerWidth*d;canvas.height=innerHeight*d;
     gl.viewport(0,0,canvas.width,canvas.height);
   };
@@ -1336,12 +1673,12 @@ function bootGL(canvasId, fsSrc){
 }
 const drawDark=bootGL('bg-dark',FS_DARK);
 const drawLight=bootGL('bg-light',FS_LIGHT);
-const t0=Date.now();
-(function loop(){
-  const t=(Date.now()-t0)/1000;
-  drawDark(t);drawLight(t);
-  requestAnimationFrame(loop);
-})();
+function renderBackground(){
+  drawDark(0.8);
+  drawLight(0.8);
+}
+renderBackground();
+addEventListener('resize',renderBackground);
 
 // =============== Navigation ===============
 const deck=document.getElementById('deck');
@@ -1369,8 +1706,8 @@ function go(n){
   const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
   document.body.classList.toggle('light-bg',th==='light');
   /* Trigger slide entrance animation after navigation begins. */
-  if(window.__playSlide) setTimeout(()=>window.__playSlide(idx), 450);
-  lock=true;setTimeout(()=>lock=false,700);
+  if(window.__playSlide) setTimeout(()=>window.__playSlide(idx), 170);
+  lock=true;setTimeout(()=>lock=false,430);
 }
 
 /* =============== ESC 索引视图 =============== */
@@ -1476,7 +1813,6 @@ if(motion){
   const { animate, stagger } = motion;
   const EASE = [.22, 1, .36, 1];
   const slides = [...document.querySelectorAll('.slide')];
-  let pipeStep = -1;
   let lastIdx = -1;
 
   function resetAnims(slide){
@@ -1493,11 +1829,8 @@ if(motion){
     const recipe = slide.dataset.animate || (slide.classList.contains('hero') ? 'hero' : 'cascade');
 
     if(recipe === 'pipeline'){
-      pipeStep = -1;
-      slide.querySelectorAll('[data-anim]').forEach(el=>{
-        el.style.opacity='0.15';
-        el.style.transform='none';
-      });
+      const all = [...slide.querySelectorAll('[data-anim]')];
+      animate(all, {opacity:[0,1], y:[8,0]}, {duration:.38, delay:stagger(.04, {start:.05}), easing:EASE});
       return;
     }
 
@@ -1510,42 +1843,32 @@ if(motion){
       const divs   = all.filter(el=>el.dataset.anim==='divider');
       const rights = all.filter(el=>el.dataset.anim==='right');
       const others = all.filter(el=>!['left','right','divider'].includes(el.dataset.anim));
-      if(others.length) animate(others, {opacity:[0,1], y:[12,0]}, {duration:.6, delay:stagger(.1, {start:.15}), easing:EASE});
-      if(lefts.length)  animate(lefts,  {opacity:[0,1], x:[-24,0]}, {duration:.8, delay:.35, easing:EASE});
-      if(divs.length)   animate(divs,   {opacity:[0,.25]},          {duration:.5, delay:.9});
-      if(rights.length) animate(rights, {opacity:[0,1], x:[24,0]},  {duration:.8, delay:1.0, easing:EASE});
+      if(others.length) animate(others, {opacity:[0,1], y:[8,0]}, {duration:.36, delay:stagger(.04, {start:.05}), easing:EASE});
+      if(lefts.length)  animate(lefts,  {opacity:[0,1], x:[-14,0]}, {duration:.42, delay:.12, easing:EASE});
+      if(divs.length)   animate(divs,   {opacity:[0,.25]},          {duration:.24, delay:.18});
+      if(rights.length) animate(rights, {opacity:[0,1], x:[14,0]},  {duration:.42, delay:.18, easing:EASE});
       return;
     }
 
     if(recipe === 'quote'){
       const lines = all.filter(el=>el.dataset.anim==='line');
       const others = all.filter(el=>el.dataset.anim!=='line');
-      if(others.length) animate(others, {opacity:[0,1], y:[8,0]},    {duration:.6, delay:stagger(.12, {start:.2}), easing:EASE});
-      if(lines.length)  animate(lines,  {opacity:[.35,1], y:[10,0]}, {duration:.8, delay:stagger(.55, {start:.5}), easing:EASE});
+      if(others.length) animate(others, {opacity:[0,1], y:[6,0]},    {duration:.34, delay:stagger(.04, {start:.05}), easing:EASE});
+      if(lines.length)  animate(lines,  {opacity:[.35,1], y:[8,0]}, {duration:.42, delay:stagger(.16, {start:.1}), easing:EASE});
       return;
     }
 
     if(recipe === 'hero'){
-      animate(all, {opacity:[0,1], y:[14,0]}, {duration:.9, delay:stagger(.16, {start:.2}), easing:EASE});
+      animate(all, {opacity:[0,1], y:[10,0]}, {duration:.45, delay:stagger(.06, {start:.06}), easing:EASE});
       return;
     }
 
     // default: cascade
-    animate(all, {opacity:[0,1], y:[16,0]}, {duration:.75, delay:stagger(.1, {start:.15}), easing:EASE});
+    animate(all, {opacity:[0,1], y:[10,0]}, {duration:.38, delay:stagger(.04, {start:.05}), easing:EASE});
   }
 
   function pipeAdvance(){
-    const slide = slides[lastIdx];
-    if(!slide || slide.dataset.animate !== 'pipeline') return false;
-    const steps  = [...slide.querySelectorAll('[data-anim="step"]')];
-    const arrows = [...slide.querySelectorAll('[data-anim="arrow"]')];
-    if(pipeStep >= steps.length - 1) return false;
-    pipeStep++;
-    animate(steps[pipeStep], {opacity:[0.15,1], y:[8,0]}, {duration:.5, easing:EASE});
-    if(pipeStep > 0 && arrows[pipeStep-1]){
-      animate(arrows[pipeStep-1], {opacity:[0.15,.7]}, {duration:.3, delay:.15});
-    }
-    return true;
+    return false;
   }
 
   window.__playSlide = playSlide;
