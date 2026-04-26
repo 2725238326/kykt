@@ -84,6 +84,29 @@
   .step .n{font-family:var(--mono);font-size:12px;opacity:.55}
   .step .t{font-family:var(--serif);font-weight:700;font-size:clamp(18px,1.35vw,24px);margin:.7vh 0}
   .step .d{font-size:clamp(12px,.92vw,15px);line-height:1.5;opacity:.78}
+  .ts-diagram{position:relative;height:25vh;margin-top:1.1vh;border:1px solid var(--line);background:rgba(255,255,255,.42);overflow:hidden}
+  .ts-box{position:absolute;border:1px solid var(--line);background:rgba(255,255,255,.62);border-radius:4px;padding:1.1vh .9vw}
+  .ts-box .label{margin-bottom:.4vh}
+  .ts-box h3{font-size:clamp(15px,1vw,19px);margin-bottom:.25vh}
+  .ts-box p{font-size:12px;line-height:1.35;color:var(--muted)}
+  .ts-data{left:3%;top:25%;width:18%}
+  .ts-teacher{left:28%;top:12%;width:19%}
+  .ts-target{left:54%;top:12%;width:19%}
+  .ts-student{right:3%;top:25%;width:18%}
+  .ts-arrow{position:absolute;height:1px;background:rgba(11,31,58,.42)}
+  .ts-arrow::after{content:"";position:absolute;right:-1px;top:50%;width:7px;height:7px;border-top:1px solid rgba(11,31,58,.65);border-right:1px solid rgba(11,31,58,.65);transform:translateY(-50%) rotate(45deg)}
+  .ts-a1{left:21%;top:45%;width:7%}
+  .ts-a2{left:47%;top:31%;width:7%}
+  .ts-a3{left:73%;top:45%;width:6%}
+  .ts-token{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 7px rgba(49,91,140,.13);animation:tsSignal 5.4s infinite ease-in-out}
+  .ts-token:nth-of-type(2){animation-delay:1.8s;background:#6f86a4}
+  .ts-token:nth-of-type(3){animation-delay:3.6s;background:#203f68}
+  .ts-bars{display:grid;gap:.5vh;margin-top:.8vh}
+  .ts-bars span{display:block;height:.75vh;background:rgba(11,31,58,.12);position:relative}
+  .ts-bars span::before{content:"";display:block;height:100%;background:var(--accent);width:var(--w);animation:tsBar 5.4s infinite ease-in-out}
+  .ts-loss{position:absolute;left:28%;right:3%;bottom:1.4vh;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:1vw;padding-top:.75vh}
+  .ts-loss div{font-size:12px;color:var(--muted);line-height:1.35}
+  .ts-loss b{display:block;font-family:var(--serif);font-size:clamp(15px,1vw,18px);color:var(--ink);margin-bottom:.1vh}
   .map{position:relative;height:50vh;margin-top:3vh}
   .map svg{position:absolute;inset:0;width:100%;height:100%;opacity:.45}
   .map line,.map path{stroke:currentColor;stroke-width:1.2;fill:none;vector-effect:non-scaling-stroke}
@@ -180,6 +203,8 @@
   @keyframes studentConverge{0%{width:34%}35%{width:46%}65%{width:62%}100%{width:72%}}
   @keyframes lossReveal{0%{stroke-dashoffset:360}18%{stroke-dashoffset:300}52%{stroke-dashoffset:150}84%,100%{stroke-dashoffset:0}}
   @keyframes lossDot{0%{transform:translate(16px,94px)}35%{transform:translate(76px,70px)}65%{transform:translate(135px,48px)}100%{transform:translate(190px,33px)}}
+  @keyframes tsSignal{0%{left:20%;top:45%;opacity:0}12%,24%{opacity:1}38%{left:48%;top:31%;opacity:1}55%{left:74%;top:45%;opacity:1}70%,100%{left:82%;top:45%;opacity:0}}
+  @keyframes tsBar{0%,20%{width:34%}55%{width:var(--w)}100%{width:var(--w)}}
   a{color:inherit}
   #nav{position:fixed;left:50%;bottom:2.5vh;transform:translateX(-50%);display:flex;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(10,31,58,.12);z-index:5}
   .dot{width:8px;height:8px;border:0;border-radius:99px;background:rgba(10,31,58,.25);padding:0}
@@ -242,18 +267,44 @@
       </div>
     </div>
     <div class="card">
-      <div class="label">监督扩展</div>
-      <div class="flow" style="grid-template-columns:1fr .18fr 1.15fr .18fr 1fr">
-        <div class="step"><div class="n">01</div><div class="t">数据</div><div class="d">有标签、无标签、真实或合成样本。</div></div>
-        <div class="arrow"></div>
-        <div class="step"><div class="n">02</div><div class="t">教师信号</div><div class="d">软标签、伪标签、特征、注意力或一致性目标。</div></div>
-        <div class="arrow"></div>
-        <div class="step"><div class="n">03</div><div class="t">学生模型</div><div class="d">在任务损失和教师监督共同约束下更新。</div></div>
+      <div class="label">动态图解：监督如何流动</div>
+      <div class="ts-diagram" aria-label="教师学生模型动态信号流图">
+        <div class="ts-box ts-data">
+          <div class="label">输入数据</div>
+          <h3>样本池</h3>
+          <p>有标注、无标注、真实或合成样本。</p>
+        </div>
+        <div class="ts-box ts-teacher">
+          <div class="label">教师模型</div>
+          <h3>高成本推理</h3>
+          <p>产生更丰富的监督信号。</p>
+        </div>
+        <div class="ts-box ts-target">
+          <div class="label">教师信号</div>
+          <h3>软目标 / 伪标签</h3>
+          <div class="ts-bars"><span style="--w:72%"></span><span style="--w:31%"></span><span style="--w:14%"></span></div>
+        </div>
+        <div class="ts-box ts-student">
+          <div class="label">学生模型</div>
+          <h3>低成本承接</h3>
+          <p>在约束下更新参数。</p>
+        </div>
+        <div class="ts-arrow ts-a1"></div>
+        <div class="ts-arrow ts-a2"></div>
+        <div class="ts-arrow ts-a3"></div>
+        <div class="ts-token"></div>
+        <div class="ts-token"></div>
+        <div class="ts-token"></div>
+        <div class="ts-loss">
+          <div><b>1. 生成</b>教师把样本转成结构化目标。</div>
+          <div><b>2. 匹配</b>学生拟合输出、特征或一致性。</div>
+          <div><b>3. 部署</b>推理阶段只保留学生模型。</div>
+        </div>
       </div>
-      <div class="rowline" style="margin-top:4vh"><div class="k">关键收益</div><div class="v">用高成本训练过程换取低成本部署模型；用无标签数据扩大训练分布；用软分布和中间特征传递结构信息。</div><div class="m">收益</div></div>
+      <div class="rowline" style="margin-top:2vh"><div class="k">关键收益</div><div class="v">用高成本训练过程换取低成本部署模型；用无标签数据扩大训练分布；用软分布和中间特征传递结构信息。</div><div class="m">收益</div></div>
     </div>
     </div>
-    <div class="grid-3" style="margin-top:2.6vh">
+    <div class="grid-3" style="margin-top:1.8vh">
       <div class="card compact-card"><div class="label">模型压缩</div><h3>强模型 → 轻模型</h3><p class="body">用教师的软输出和中间特征训练更小学生模型，降低延迟、显存和部署成本。</p></div>
       <div class="card compact-card"><div class="label">半监督学习</div><h3>少标注 → 多样本</h3><p class="body">教师给无标签样本生成伪标签，扩大训练分布并提升未知场景泛化。</p></div>
       <div class="card compact-card"><div class="label">表示迁移</div><h3>输出 → 表示空间</h3><p class="body">冻结编码器、注意力图或嵌入表示可作为监督目标，帮助学生继承语义结构。</p></div>
