@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>教师-学生模型与 Depth Anything：从理论到深度估计实践</title>
+<title>教师-学生模型与 Depth Anything：理论演进与深度估计实践</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,20 +65,20 @@
   .rowline .m{font-family:var(--mono);font-size:11px;justify-self:end;opacity:.5;font-weight:600}
   .claim{border-left:4px solid var(--accent);padding:1.4vh 1.8vw;margin-top:3vh;background:rgba(43,88,118,.05);font-size:clamp(17px,1.2vw,22px);line-height:1.6}
   .dark .claim{border-color:#7dd3fc;background:rgba(255,255,255,.03)}
-  .math-board{border:1px solid rgba(255,255,255,.12);background:rgba(15,23,42,0.9);padding:3.5vh 3vw;border-radius:4px;box-shadow:inset 0 0 50px rgba(0,0,0,.4)}
-  .math-line{font-family:"Cambria Math","STIX Two Text","Times New Roman",serif;font-size:clamp(26px,2.4vw,42px);line-height:1.45;color:var(--chalk);letter-spacing:0.03em}
-  .math-line.secondary{font-size:clamp(19px,1.5vw,28px);color:rgba(255,255,255,.75);margin-top:2.8vh;border-top:1px dashed rgba(255,255,255,.15);padding-top:2vh}
+  .math-board{border:1px solid rgba(255,255,255,.12);background:rgba(15,23,42,0.95);padding:4vh 3vw;border-radius:4px;box-shadow:inset 0 0 60px rgba(0,0,0,0.5)}
+  .math-line{font-family:"Cambria Math","STIX Two Text","Times New Roman",serif;font-size:clamp(26px,2.4vw,42px);line-height:1.45;color:var(--chalk);letter-spacing:0.04em}
+  .math-line.secondary{font-size:clamp(18px,1.4vw,26px);color:rgba(255,255,255,0.7);margin-top:3vh;border-top:1px dashed rgba(255,255,255,.2);padding-top:2.5vh}
   .math-eq{display:grid;grid-template-columns:auto 1fr;column-gap:1.2em;align-items:baseline}
-  .math-left{font-style:italic;font-weight:500}
+  .math-left{font-style:italic;font-weight:500;color:rgba(255,255,255,0.9)}
   .math-right{display:flex;align-items:baseline;gap:.6em;flex-wrap:wrap}
-  .math-op{color:rgba(255,255,255,.45);font-weight:400}
-  .math-term.task{color:#fff}
-  .math-term.kd{color:#bae6fd}
+  .math-op{color:rgba(255,255,255,.4);font-weight:400}
+  .math-term.task{color:#fff;text-shadow:0 0 10px rgba(255,255,255,0.2)}
+  .math-term.kd{color:#7dd3fc}
   .math-line sub,.math-line sup{font-size:.65em;line-height:0;position:relative}
   .math-line sub{bottom:-.2em}
   .math-line sup{top:-.5em}
-  .formula-part{border-top:1px solid rgba(255,255,255,.15);padding-top:1.5vh;font-size:clamp(12px,.9vw,16px);line-height:1.55;color:rgba(255,255,255,.7)}
-  .formula-part b{display:block;font-family:var(--serif);font-size:clamp(15px,1.1vw,20px);color:#fff;margin-bottom:.4vh}
+  .formula-part{border-top:1px solid rgba(255,255,255,.15);padding-top:1.5vh;font-size:clamp(12px,.85vw,16px);line-height:1.6;color:rgba(255,255,255,.7)}
+  .formula-part b{display:block;font-family:var(--serif);font-size:clamp(15px,1.1vw,20px);color:#7dd3fc;margin-bottom:.5vh}
   .figure{border:1px solid var(--line);background:#fff;border-radius:2px;padding:2vh;overflow:hidden}
   .dark .figure{border-color:rgba(255,255,255,.1);background:rgba(0,0,0,.25)}
   .figure img{width:100%;height:100%;object-fit:contain;display:block}
@@ -134,64 +134,64 @@
     <div class="kicker">问题引入：高性能模型与部署成本的博弈</div>
     <h1 class="hero-title">教师-学生范式</h1>
     <h2 class="subtitle">通过高成本监督训练，获得高效能部署模型。</h2>
-    <p class="lead" style="margin-top:3.5vh">教师-学生范式（Teacher-Student Paradigm）已不仅限于传统的模型压缩。它本质上是一种高效的监督传递框架：通过引入强模型、伪标签或稳定教师产生的丰富信号，将大模型的判别力或海量无标签数据的几何先验，有效传递给轻量化学生模型。</p>
+    <p class="lead" style="margin-top:3.5vh">教师-学生范式（Teacher-Student Paradigm）已不仅限于传统的模型压缩。它本质上是一种非对称的监督传递框架：通过引入强模型、伪标签或稳定教师产生的丰富信号，将海量无标签数据的隐式规律，转化为可训练的显式目标。</p>
     <div class="grid-3" style="margin-top:7vh">
-      <div class="card"><div class="label">直观理解</div><h3>暗知识传递</h3><p class="body">硬标签只包含结果；教师的软分布则保留了类别间的语义相似性与决策边界信息。</p></div>
-      <div class="card"><div class="label">形式化表达</div><h3>蒸馏目标函数</h3><p class="body">通过任务监督损失与蒸馏一致性损失的组合，在训练中显式约束学生模型的行为。</p></div>
-      <div class="card"><div class="label">实践案例</div><h3>Depth Anything</h3><p class="body">探讨如何利用教师模型作为数据引擎，将 62M 无标签图像转化为稠密的深度监督信号。</p></div>
+      <div class="card"><div class="label">直观理解</div><h3>暗知识传递</h3><p class="body">教师分布保留了类别间的语义相似性。这种“结构化先验”比单一真值标签具有更高信息熵。</p></div>
+      <div class="card"><div class="label">形式化表达</div><h3>目标函数体系</h3><p class="body">涵盖任务监督、分布对齐与特征一致性。通过温度系数暴露分布的长尾信息。</p></div>
+      <div class="card"><div class="label">实践落地</div><h3>Depth Anything</h3><p class="body">探讨如何利用该范式构建深度估计的“数据引擎”，将无标签真实图像转化为稠密监督信号。</p></div>
     </div>
   </div>
   <div class="foot"><div>专题报告</div><div>知识蒸馏 · 伪标签 · 深度估计</div></div>
 </section>
 
 <section class="slide light">
-  <div class="chrome"><div>研究动机：训练成本如何转化为推理收益</div><div>02 / 12</div></div>
+  <div class="chrome"><div>研究动机：计算资源的非对称分配</div><div>02 / 12</div></div>
   <div class="frame">
     <div class="grid-2" style="align-items:end">
       <div>
       <div class="kicker">核心矛盾</div>
       <h2 class="title">精准的模型通常伴随着沉重的推理开销。</h2>
       </div>
-      <p class="lead">在实际部署场景中，大模型（如 DINOv2）虽然精准但推理极慢。教师-学生框架允许我们在训练阶段使用这些“贵”的监督信号，使得轻量化学生模型在保持效率的同时，能获得接近大模型的表现。</p>
+      <p class="lead">大规模预训练模型（如 Vit-L/G）虽然具备极强的泛化力，但其推理延迟和显存占用限制了在移动端或实时场景的部署。教师-学生架构通过“离线繁重训练，在线轻量推理”解决了这一难题。</p>
     </div>
     <div class="grid-2" style="margin-top:4.5vh">
       <div>
-        <div class="rowline"><div class="k">教师 (Teacher)</div><div class="v">可以是超大参数模型、模型集成、或冻结权重的强预训练编码器。核心职责是生成高质量参考信号。</div><div class="m">高成本</div></div>
-        <div class="rowline"><div class="k">学生 (Student)</div><div class="v">轻量化网络，旨在拟合并模仿教师的映射规律。在部署阶段，仅需保留学生模型。</div><div class="m">低成本</div></div>
-        <div class="rowline"><div class="k">信号 (Signal)</div><div class="v">不再受限于人工 One-hot 编码。它可以是概率分布、稠密伪标签、或是特征空间的几何结构。</div><div class="m">多模态</div></div>
-        <div class="claim">这是一种“训练重、推理轻”的策略。</div>
+        <div class="rowline"><div class="k">教师 (Teacher)</div><div class="v">通常是超大参数模型、集成模型或冻结的强编码器。负责在训练阶段输出“参考答案”。</div><div class="m">高算力</div></div>
+        <div class="rowline"><div class="k">学生 (Student)</div><div class="v">轻量化网络，旨在拟合并泛化教师的行为。在部署阶段，教师模型被完全舍弃。</div><div class="m">低功耗</div></div>
+        <div class="rowline"><div class="k">监督 (Signal)</div><div class="v">不再仅限于 Hard Label。它包含 Logits 结构、中间特征图及多视图一致性约束。</div><div class="m">多模态</div></div>
+        <div class="claim">教师-学生模型本质上是在用“训练时的复杂度”补偿“推理时的模型容量”。</div>
       </div>
       <div class="card">
         <div class="label">逻辑示意：监督流向</div>
         <div class="ts-diagram">
-          <div class="ts-box ts-data"><div class="label">样本池</div><h3>多样化输入</h3><p>含标、无标或合成样本</p></div>
-          <div class="ts-box ts-teacher"><div class="label">强模型</div><h3>参考输出</h3><p>产生高信噪比目标</p></div>
-          <div class="ts-box ts-target"><div class="label">软目标</div><h3>丰富语义信号</h3><p>保留类别关系</p></div>
-          <div class="ts-box ts-student"><div class="label">轻量模型</div><h3>拟合更新</h3><p>在约束下优化</p></div>
+          <div class="ts-box ts-data"><div class="label">数据池</div><h3>输入样本</h3><p>含标/无标/真实分布</p></div>
+          <div class="ts-box ts-teacher"><div class="label">强教师</div><h3>生成目标</h3><p>输出高维、平滑分布</p></div>
+          <div class="ts-box ts-target"><div class="label">软信号</div><h3>暗知识载体</h3><p>保留决策边界</p></div>
+          <div class="ts-box ts-student"><div class="label">轻学生</div><h3>拟合更新</h3><p>独立推理模型</p></div>
           <div class="ts-arrow ts-a1"></div><div class="ts-arrow ts-a2"></div><div class="ts-arrow ts-a3"></div>
           <div class="ts-token"></div><div class="ts-token"></div><div class="ts-token"></div>
         </div>
         <div class="mini-table">
-          <div><div class="label">训练阶段</div><p class="body">教师参与，计算密集</p></div>
-          <div><div class="label">部署阶段</div><p class="body">教师离场，学生独立</p></div>
+          <div><div class="label">训练态</div><p class="body">教师+学生：计算密集</p></div>
+          <div><div class="label">部署态</div><p class="body">仅学生：低延迟</p></div>
         </div>
       </div>
     </div>
   </div>
-  <div class="foot"><div>范式理解</div><div>用训练复杂度补偿学生表达力</div></div>
+  <div class="foot"><div>范式理解</div><div>从模型压缩到监督扩展</div></div>
 </section>
 
 <section class="slide light">
   <div class="chrome"><div>直观理解：软分布中的“暗知识”</div><div>03 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">分类任务的启示</div>
-      <h2 class="title">硬标签给出正确答案，软分布揭示语义结构。</h2>
-      <p class="lead" style="margin-top:2.5vh">给定一张“猫”的图片，硬标签 (Hard Label) 只是简单的类别索引。而教师模型给出的软分布 (Soft Distribution) 则保留了猫与狐狸的相似度。这种隐藏在错误类别概率中的关系被 Hinton 等人称为“暗知识”。</p>
+      <div class="kicker">语义空间的拓扑信息</div>
+      <h2 class="title">硬标签给出正确答案，软分布揭示语义联系。</h2>
+      <p class="lead" style="margin-top:2.5vh">在一张“猫”的分类任务中，Hard Label 将除“猫”以外的概率强制设为 0。而 Teacher 输出的 Soft Distribution 可能显示：猫 (0.72) 与狐狸 (0.15) 的相似度远高于猫与汽车 (0.01)。这部分信息即为“暗知识”。</p>
       <div style="margin-top:4.5vh">
-        <div class="rowline"><div class="k">硬标签</div><div class="v">独热编码，将非正确类别全部设为 0，抹杀了类别间的拓扑相似度。</div><div class="m">信息缺失</div></div>
-        <div class="rowline"><div class="k">软标签</div><div class="v">包含“次优选项”的信息，定义了更精细的决策边界。</div><div class="m">结构保留</div></div>
-        <div class="rowline"><div class="k">暗知识</div><div class="v">教师模型在非正确类别上的概率预测，反映了模型对语义空间的理解。</div><div class="m">Dark Knowledge</div></div>
+        <div class="rowline"><div class="k">Hard Label</div><div class="v">独热编码，将非正确类别全部抹除，损失了语义空间的连续性。</div><div class="m">信息坍缩</div></div>
+        <div class="rowline"><div class="k">Soft Label</div><div class="v">包含次优选项的相对概率，定义了更精细、更抗噪的决策边界。</div><div class="m">分布保留</div></div>
+        <div class="rowline"><div class="k">暗知识</div><div class="v">隐藏在错误类别分布中的几何关系，引导学生学习更高阶的特征。</div><div class="m">Dark Knowledge</div></div>
       </div>
     </div>
     <div class="card">
@@ -210,246 +210,291 @@
           <div class="body">Car</div><div style="height:14px;background:var(--accent);width:1%;opacity:.1"></div><div class="body" style="font-family:var(--mono)">0.01</div>
         </div>
       </div>
-      <div class="claim" style="margin-top:6vh">学生模型通过拟合这组分布，学到了跨类别的语义关系。</div>
+      <div class="claim" style="margin-top:6vh">学生通过模仿这组分布，获得了教师对物体相似性的“认知模型”。</div>
     </div>
   </div>
-  <div class="foot"><div>经典蒸馏理论</div><div>Distilling the Knowledge in a Neural Network (2015)</div></div>
+  <div class="foot"><div>经典理论</div><div>Knowledge Distillation, Hinton et al. 2015</div></div>
 </section>
 
 <section class="slide dark">
-  <div class="chrome"><div>形式化表达：蒸馏损失函数的构成</div><div>04 / 12</div></div>
+  <div class="chrome"><div>公式详解 · 目标函数</div><div>04 / 12</div></div>
   <div class="frame">
-    <div class="grid-2">
-      <div>
-        <div class="kicker">数学描述</div>
-        <h2 class="title">在任务监督与教师引导间寻找平衡。</h2>
-        <p class="lead" style="margin-top:2.5vh">典型的目标函数由两部分组成：真实标签引导的任务损失 (CE) 和模仿教师分布的蒸馏损失 (KL)。这种组合确保了学生在保证准确性的同时，能对齐教师的决策分布。</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.5vw;margin-top:5vh">
-          <div class="card"><h3>温度系数 τ</h3><p class="note">平滑 Softmax 输出。τ 越大，分布越平坦，越能暴露出非最大类别的概率细节。</p></div>
-          <div class="card"><h3>权重 λ</h3><p class="note">平衡任务监督与模仿信号。通过交叉验证选择最优比例。</p></div>
+    <div style="text-align:center;margin-bottom:5vh">
+      <h2 class="title">目标函数：学生同时学真实答案和教师分布</h2>
+      <p class="lead" style="margin:2vh auto;opacity:.8">真实标签保证任务不跑偏；教师分布补充类别关系、不确定性和中间表示结构。</p>
+    </div>
+
+    <style>
+      .formula-layout { display: flex; flex-direction: column; align-items: center; gap: 4vh; }
+      .main-eq-box { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 5vh 4vw; border-radius: 8px; box-shadow: inset 0 0 40px rgba(0,0,0,0.5); width: 100%; max-width: 1000px; }
+      .eq-group { display: flex; justify-content: center; align-items: baseline; gap: 0.5em; flex-wrap: wrap; }
+      .eq-term { display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .eq-math { font-family: "Cambria Math", "STIX Two Text", serif; font-size: clamp(28px, 3vw, 48px); line-height: 1.2; color: var(--chalk); }
+      .eq-desc { font-size: 14px; margin-top: 2.5vh; color: rgba(255,255,255,0.6); max-width: 180px; line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 1.2vh; }
+      .eq-plus { font-size: 30px; color: rgba(255,255,255,0.3); padding: 0 10px; align-self: center; transform: translateY(-3vh); }
+      
+      .term-task { color: #ffffff; }
+      .term-kd { color: #7dd3fc; }
+      .term-feat { color: #99f6e4; }
+      .term-cons { color: #fde68a; }
+
+      .sub-eq-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2vw; width: 100%; max-width: 1000px; margin-top: 2vh; }
+      .sub-eq-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 2vh 1.5vw; border-radius: 4px; }
+      .sub-eq-math { font-family: var(--mono); font-size: 18px; color: rgba(255,255,255,0.9); margin-bottom: 1vh; }
+      .sub-eq-text { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+      .hl-param { color: #7dd3fc; font-weight: 600; }
+    </style>
+
+    <div class="formula-layout">
+      <div class="main-eq-box">
+        <div class="eq-group">
+          <div class="eq-term">
+            <div class="eq-math">L<sub>total</sub> =</div>
+          </div>
+          
+          <div class="eq-term">
+            <div class="eq-math term-task">α L<sub>task</sub></div>
+            <div class="eq-desc"><b>任务损失</b><br>通常为 CE 或 L1，确保学生模型对真实标签 (y) 的预测精度。</div>
+          </div>
+
+          <div class="eq-plus">+</div>
+
+          <div class="eq-term">
+            <div class="eq-math term-kd">β τ<sup>2</sup> D<sub>KL</sub>(q<sub>T</sub> || q<sub>S</sub>)</div>
+            <div class="eq-desc"><b>软目标蒸馏</b><br>对齐平滑后的概率分布。τ<sup>2</sup> 用于抵消梯度量级缩放。</div>
+          </div>
+
+          <div class="eq-plus">+</div>
+
+          <div class="eq-term">
+            <div class="eq-math term-feat">γ L<sub>feat</sub></div>
+            <div class="eq-desc"><b>特征对齐</b><br>对齐 Encoder 产生的语义表示，如 DINOv2 的中间特征图。</div>
+          </div>
+
+          <div class="eq-plus">+</div>
+
+          <div class="eq-term">
+            <div class="eq-math term-cons">δ L<sub>cons</sub></div>
+            <div class="eq-desc"><b>一致性约束</b><br>不同扰动视图下的预测稳定性，常见于半监督训练。</div>
+          </div>
         </div>
       </div>
-      <div class="math-board">
-        <div class="label" style="color:rgba(255,255,255,.5);margin-bottom:2.5vh">Total Distillation Loss</div>
-        <div class="math-line math-eq">
-          <span class="math-left">L<sub>total</sub></span>
-          <span class="math-right">
-            <span class="math-op">=</span>
-            <span class="math-term task">(1 - λ) · CE(y, p<sub>S</sub>)</span>
-            <span class="math-op">+</span>
-            <span class="math-term kd">λτ<sup>2</sup> · KL(q<sub>T</sub> || q<sub>S</sub>)</span>
-          </span>
+
+      <div class="sub-eq-grid">
+        <div class="sub-eq-card">
+          <div class="sub-eq-math">q<sub>i</sub> = exp(z<sub>i</sub>/τ) / Σ exp(z<sub>j</sub>/τ)</div>
+          <div class="sub-eq-text">通过<span class="hl-param">温度 τ</span> 平滑输出分布。τ 越大，非最大类别的信号越明显。</div>
         </div>
-        <div class="math-line math-eq secondary">
-          <span class="math-left">q<sub>i</sub></span>
-          <span class="math-right">
-            <span class="math-op">=</span>
-            <span class="math-term">exp(z<sub>i</sub> / τ) / Σ<sub>j</sub> exp(z<sub>j</sub> / τ)</span>
-          </span>
+        <div class="sub-eq-card">
+          <div class="sub-eq-math">α + β + γ + δ = 1</div>
+          <div class="sub-eq-text">各损失项的<span class="hl-param">平衡权重</span>。在 Depth Anything 中，β 与 γ 项对泛化性至关重要。</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3vh;margin-top:5vh">
-          <div class="formula-part"><b>Cross-Entropy (CE)</b>确保学生模型依然能够对齐 Ground Truth 标签。</div>
-          <div class="formula-part"><b>KL-Divergence (KL)</b>最小化学生与教师在 Softmax 输出上的分布差异。</div>
+        <div class="sub-eq-card">
+          <div class="sub-eq-math">D<sub>KL</sub>(T || S)</div>
+          <div class="sub-eq-text"><span class="hl-param">KL 散度</span>。度量学生预测与教师预测在信息熵层面的距离。</div>
         </div>
       </div>
     </div>
-    <div class="thesis">公式的核心：利用 τ 平滑后的分布，显式传递分类边界的拓扑结构。</div>
+
+    <div class="thesis" style="margin-top:4vh;text-align:center;border:0;color:rgba(255,255,255,0.6)">
+      公式设计的本质在于：由 α 项负责“正确”，由 β 与 γ 项负责“结构”与“深度理解”。
+    </div>
   </div>
-  <div class="foot"><div>公式推导</div><div>L_task (1-λ) + L_kd (λτ²)</div></div>
+  <div class="foot"><div>公式推导</div><div>任务损失 + 分布对齐 + 特征对齐</div></div>
 </section>
 
 <section class="slide light">
-  <div class="chrome"><div>训练范式：教师生成目标，学生扰动恢复</div><div>05 / 12</div></div>
+  <div class="chrome"><div>训练算法：动态数据流与损失传导</div><div>05 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">动态演示</div>
-      <h2 class="title">在困难（扰动）输入下恢复稳定（教师）信号。</h2>
-      <p class="lead" style="margin-top:2.5vh">为了增强学生的鲁棒性，常用策略是：教师看到“干净”的原始样本以确保信号质量；而学生则看到经过增强 (Augmented) 的样本。学生必须在这种挑战性输入下恢复出教师的预测。</p>
+      <div class="kicker">动态博弈流程</div>
+      <h2 class="title">在扰动视图下恢复来自教师的稳定映射。</h2>
+      <p class="lead" style="margin-top:2.5vh">现代教师-学生范式（如 FixMatch, Depth Anything）通常采用“非对称增强”策略：教师处理干净数据以输出稳定信号；学生处理极具挑战的增强数据。这种对抗式设计迫使学生学习场景的鲁棒几何结构。</p>
       <div style="margin-top:5vh">
-        <div class="rowline"><div class="k">1. 目标生成</div><div class="v">教师对标准输入进行推理，产生软概率或稠密伪标签映射。</div><div class="m">Target</div></div>
-        <div class="rowline"><div class="k">2. 输入扰动</div><div class="v">学生接收带有噪声、遮挡或对比度变化的增强视图。</div><div class="m">Noise</div></div>
-        <div class="rowline"><div class="k">3. 参数优化</div><div class="v">冻结教师，通过蒸馏损失仅更新学生模型的权重。</div><div class="m">Update</div></div>
+        <div class="rowline"><div class="k">1. 目标锁定</div><div class="v">Teacher 对原始图像 (I) 进行推理，生成作为 Pseudo Label 的 Logits 或深度图。</div><div class="m">Stability</div></div>
+        <div class="rowline"><div class="k">2. 挑战输入</div><div class="v">Student 接收图像 I 的增强版本 (I')，包含噪声、Cutout 或色彩畸变。</div><div class="m">Perturbation</div></div>
+        <div class="rowline"><div class="k">3. 损失传导</div><div class="v">梯度仅通过 Student 模型回传。Teacher 通常被冻结或以 EMA 形式缓慢更新。</div><div class="m">Update</div></div>
       </div>
     </div>
     <div class="embedded-train">
       <div class="train-scene">
-        <div class="train-box train-data"><div class="label">输入数据</div><h3>原始样本</h3><p>含标/无标/真实分布</p><div class="samples"><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
-        <div class="train-box train-teacher"><div class="label">固定教师</div><h3>产生参考目标</h3><p>软分布/伪深度/特征</p><div style="height:14px;background:var(--accent);width:80%;margin-top:12px;opacity:.2"></div></div>
-        <div class="train-box train-student"><div class="label">更新学生</div><h3>扰动输入承接</h3><p>在强增强下逼近目标</p><div style="height:14px;background:var(--accent);width:45%;margin-top:12px"></div></div>
-        <div class="train-box train-loss"><div class="label">优化器</div><h3>误差回传</h3><p>Update Student Only</p></div>
+        <div class="train-box train-data"><div class="label">数据流</div><h3>标准图像 I</h3><p>高质量、低增强</p><div class="samples"><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+        <div class="train-box train-teacher"><div class="label">Frozen Teacher</div><h3>产生 Pseudo-Label</h3><p>输出深度或分类目标</p><div style="height:14px;background:var(--accent);width:80%;margin-top:12px;opacity:.2"></div></div>
+        <div class="train-box train-student"><div class="label">Active Student</div><h3>处理扰动图像 I'</h3><p>在强增强下拟合目标</p><div style="height:14px;background:var(--accent);width:45%;margin-top:12px"></div></div>
+        <div class="train-box train-loss"><div class="label">Optimizer</div><h3>梯度更新</h3><p>Only S weights update</p></div>
         <div class="train-arrow a-dt"></div><div class="train-arrow a-ts"></div><div class="train-arrow a-sl"></div>
         <div class="token pseudo"></div><div class="token perturb"></div><div class="token grad"></div>
         <div style="position:absolute;bottom:12%;left:5%;right:5%;display:grid;grid-template-columns:repeat(4,1fr);gap:15px;opacity:.7">
-          <div style="font-size:12px">Step 1: 教师生成信号</div>
+          <div style="font-size:12px">Step 1: 教师输出参考</div>
           <div style="font-size:12px">Step 2: 学生输入加噪</div>
-          <div style="font-size:12px">Step 3: 对齐预测结果</div>
-          <div style="font-size:12px">Step 4: 梯度回传优化</div>
+          <div style="font-size:12px">Step 3: 计算对齐 Loss</div>
+          <div style="font-size:12px">Step 4: 反向传播优化</div>
         </div>
       </div>
     </div>
   </div>
-  <div class="foot"><div>训练流程</div><div>教师保证信号上限 · 学生提高预测稳定性</div></div>
+  <div class="foot"><div>动态机制</div><div>非对称数据增强与梯度截断</div></div>
 </section>
 
 <section class="slide light">
-  <div class="chrome"><div>教师信号的形态演变</div><div>06 / 12</div></div>
+  <div class="chrome"><div>教师信号的多维表达</div><div>06 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">多样化监督容器</div>
-      <h2 class="title">从单纯概率对齐到特征空间几何。</h2>
+      <div class="kicker">监督容器的演进</div>
+      <h2 class="title">从单纯概率模仿到表示空间对齐。</h2>
       <div class="map">
         <svg viewBox="0 0 100 100"><line x1="50" y1="50" x2="20" y2="25"/><line x1="50" y1="50" x2="80" y2="25"/><line x1="50" y1="50" x2="50" y2="85"/></svg>
-        <div class="node main" style="--x:50%;--y:50%"><div class="label">信号载体</div><h3>蒸馏类型</h3></div>
-        <div class="node" style="--x:20%;--y:22%"><div class="label">输出层</div><h3>软标签 / 伪标签</h3><p class="note">传递最终决策分布。最常见的蒸馏方式。</p></div>
-        <div class="node" style="--x:80%;--y:22%"><div class="label">隐藏层</div><h3>特征表示对齐</h3><p class="note">对齐中间特征图、注意力或嵌入向量。</p></div>
-        <div class="node" style="--x:50%;--y:82%"><div class="label">动态更新</div><h3>EMA 平均教师</h3><p class="note">教师随学生缓慢演进，提升预测一致性。</p></div>
+        <div class="node main" style="--x:50%;--y:50%"><div class="label">载体类型</div><h3>蒸馏范式</h3></div>
+        <div class="node" style="--x:20%;--y:22%"><div class="label">输出层</div><h3>概率/深度图</h3><p class="note">传递任务层面的最终决策结构。适合大规模伪标签生成。</p></div>
+        <div class="node" style="--x:80%;--y:22%"><div class="label">隐藏层</div><h3>特征表示对齐</h3><p class="note">对齐中间特征映射 (FM) 或注意力图。解决“逻辑回归”难以捕获的细粒度细节。</p></div>
+        <div class="node" style="--x:50%;--y:82%"><div class="label">权重空间</div><h3>EMA 平均教师</h3><p class="note">利用模型权重的历史滑动平均，在自训练中提供平稳监督。</p></div>
       </div>
     </div>
     <div style="padding-top:3vh">
-      <div class="rowline"><div class="k">分类蒸馏</div><div class="v">最经典的软概率对齐，传递类别相似性（暗知识）。</div><div class="m">Logits</div></div>
-      <div class="rowline"><div class="k">半监督训练</div><div class="v">利用 EMA 维持一致性，在无标注图像上构建稳定预测。</div><div class="m">EMA</div></div>
-      <div class="rowline"><div class="k">Depth Anything</div><div class="v">将强模型预测的深度图视为海量真实图像的“伪真值”。</div><div class="m">Pseudo Map</div></div>
-      <div class="rowline"><div class="k">中间表示</div><div class="v">强制学生对齐 DINOv2 等预训练特征，获得语义理解力。</div><div class="m">Feature</div></div>
+      <div class="rowline"><div class="k">分类蒸馏</div><div class="v">利用软概率 (Soft-max) 分布传递暗知识。</div><div class="m">Logits</div></div>
+      <div class="rowline"><div class="k">半监督学习</div><div class="v">Mean Teacher 范式：利用 EMA 维持无标数据的预测稳定性。</div><div class="m">EMA</div></div>
+      <div class="rowline"><div class="k">稠密预测</div><div class="v">Depth Anything：将 Teacher 预测的深度图作为 Pseudo Ground Truth。</div><div class="m">Pseudo Map</div></div>
+      <div class="rowline"><div class="k">表示迁移</div><div class="v">DINOv2 等语义特征作为几何学习的辅助约束。</div><div class="m">Feature</div></div>
     </div>
   </div>
-  <div class="foot"><div>实现策略</div><div>输出对齐 · 特征对齐 · 参数滑动</div></div>
+  <div class="foot"><div>策略矩阵</div><div>决策对齐 · 特征对齐 · 参数滑动</div></div>
 </section>
 
 <section class="slide dark">
-  <div class="chrome"><div>风险分析：教师并非绝对真理</div><div>07 / 12</div></div>
+  <div class="chrome"><div>风险分析：教师偏差的代际累积</div><div>07 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">边界模式</div>
-      <h2 class="title">学生会忠实地学到教师的每一个偏差。</h2>
-      <p class="lead" style="margin-top:2.5vh">范式的效能高度依赖教师信号的信噪比。如果教师在特定场景（如透明材质、反光表面）存在系统性偏见，学生模型在学习过程中会将其继承并放大。</p>
+      <div class="kicker">瓶颈与局限</div>
+      <h2 class="title">学生会忠实地“复刻”教师的系统性误差。</h2>
+      <p class="lead" style="margin-top:2.5vh">范式的效能上限取决于教师信号的纯净度。如果教师在特定极端场景（如高光反射、细长物体）存在先验偏差，这种偏差会被学生模型视为“真理”从而固化为系统性偏见。</p>
       <div style="margin-top:5vh">
-        <div class="rowline"><div class="k">伪标签噪声</div><div class="v">低置信度的错误预测会污染训练。需要置信度过滤机制。</div><div class="m">Noise</div></div>
-        <div class="rowline"><div class="k">分布偏移 (OOD)</div><div class="v">教师对未见分布的过度自信会误导学生。</div><div class="m">OOD</div></div>
-        <div class="rowline"><div class="k">容量错位</div><div class="v">学生网络过小，无法拟合极其复杂的教师分布。</div><div class="m">Underfit</div></div>
+        <div class="rowline"><div class="k">噪声反馈环</div><div class="v">错误的伪标签会误导学生。若无置信度阈值过滤，训练将陷入发散。</div><div class="m">Noise</div></div>
+        <div class="rowline"><div class="k">分布偏移</div><div class="v">当无标签数据进入 OOD（分布外）区域，教师的预测将变得不可靠。</div><div class="m">OOD Shift</div></div>
+        <div class="rowline"><div class="k">容量错位</div><div class="v">极小规模学生可能因拟合能力不足，反而由于过强的蒸馏约束抑制了主任务学习。</div><div class="m">Constraint</div></div>
       </div>
     </div>
     <div class="card" style="align-self:stretch">
-      <div class="label">成功蒸馏的关键要素</div>
+      <div class="label">有效蒸馏的先决条件</div>
       <div class="grid-2" style="margin-top:4vh;gap:2.5vh">
-        <div class="card" style="padding:2vh"><h3>分布覆盖</h3><p class="note">无标签数据应能反映真实的推理分布。</p></div>
-        <div class="card" style="padding:2vh"><h3>目标平滑</h3><p class="note">软目标通常比单一硬标签更易于优化。</p></div>
-        <div class="card" style="padding:2vh"><h3>合理扰动</h3><p class="note">强制学生学习核心结构而非表面纹理。</p></div>
-        <div class="card" style="padding:2vh"><h3>真值校准</h3><p class="note">定期利用少量高质量真值进行偏差修正。</p></div>
+        <div class="card" style="padding:2vh"><h3>分布覆盖度</h3><p class="note">无标签图像必须涵盖真实的推理分布。</p></div>
+        <div class="card" style="padding:2vh"><h3>目标平滑度</h3><p class="note">教师输出应比 Hard Label 具有更小的方差。</p></div>
+        <div class="card" style="padding:2vh"><h3>干扰强度</h3><p class="note">强扰动是迫使学生学习“不变性”的唯一途径。</p></div>
+        <div class="card" style="padding:2vh"><h3>指标校准</h3><p class="note">必须保留少量真值用于周期性性能对齐。</p></div>
       </div>
     </div>
   </div>
-  <div class="foot"><div>风险评估</div><div>偏见传递 · 噪声累积 · 泛化边界</div></div>
+  <div class="foot"><div>边界条件</div><div>错误传播 · 泛化瓶颈 · 训练稳定性</div></div>
 </section>
 
 <section class="slide light">
-  <div class="chrome"><div>案例穿插：从 Align3R 到单目深度估计</div><div>08 / 12</div></div>
+  <div class="chrome"><div>案例演进：从 Align3R 到单目深度估计</div><div>08 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">问题背景</div>
-      <h2 class="title">为什么深度估计是三维理解的基石？</h2>
-      <p class="lead" style="margin-top:2.5vh">在 Align3R 的动态视频对齐研究中，我们发现相机位姿估计与跨帧几何约束高度依赖一致的深度先验。单目深度估计的精度，直接决定了重建系统的鲁棒性。</p>
-      <div class="claim" style="margin-top:4vh">深度估计不仅是距离测量，更是对场景几何结构的根本理解。</div>
-      <div class="rowline" style="margin-top:5vh"><div class="k">LiDAR 瓶颈</div><div class="v">真值昂贵且稀疏，无法覆盖日常视频中极其丰富的视觉场景。</div><div class="m">Data Gap</div></div>
-      <div class="rowline"><div class="k">解决方案</div><div class="v">利用教师-学生范式，将海量 RGB 图像转化为可用的几何监督。</div><div class="m">Approach</div></div>
+      <div class="kicker">需求驱动的理论转向</div>
+      <h2 class="title">Align3R 暴露了单目深度的“数据饥渴”。</h2>
+      <p class="lead" style="margin-top:2.5vh">在 Align3R 的动态视频对齐研究中，我们需要在 3D 空间中建立跨帧的几何一致性。然而，由于激光雷达真值 (LiDAR GT) 的稀疏性和高成本，单目深度估计的精度成为了制约整个三维重建系统的核心瓶颈。</p>
+      <div class="claim" style="margin-top:4vh">这驱使我们寻求一种方案：既然真值不够，能否用教师-学生模型将海量 RGB 转化为几何先验？</div>
+      <div class="rowline" style="margin-top:5vh"><div class="k">Align3R 痛点</div><div class="v">深度图边缘模糊、动态物体深度抖动，导致三维对齐失败。</div><div class="m">Pain Point</div></div>
+      <div class="rowline"><div class="k">转向逻辑</div><div class="v">借鉴教师-学生范式，利用 Depth Anything 构建更强的通用深度骨干。</div><div class="m">Pivot</div></div>
     </div>
     <div class="card">
-      <div class="label">从几何对齐到深度感知</div>
+      <div class="label">从对齐需求到深度感知</div>
       <div style="display:flex;flex-direction:column;gap:2.5vh;margin-top:3vh">
-        <div class="card" style="background:rgba(43,88,118,.03)"><h3>Align3R 关注：</h3><p class="body">位姿解算、动态物体遮挡、跨帧几何一致性。</p></div>
-        <div style="text-align:center;font-size:28px;color:var(--accent);font-family:serif">↓</div>
-        <div class="card" style="background:rgba(43,88,118,.03)"><h3>Depth Anything 提供：</h3><p class="body">稠密、稳定、具备强语义先验的逐像素深度映射。</p></div>
+        <div class="card" style="background:rgba(43,88,118,.03)"><h3>Align3R 对深度的依赖：</h3><p class="body">相机位姿解算、稠密三维点云构建、遮挡处理。</p></div>
+        <div style="text-align:center;font-size:28px;color:var(--accent);font-family:serif">↓ 呼唤更强深度模型</div>
+        <div class="card" style="background:rgba(43,88,118,.03)"><h3>Depth Anything 的响应：</h3><p class="body">通过 62M 伪标签蒸馏，获得具备强泛化力的稠密几何映射。</p></div>
       </div>
-      <div class="thesis" style="margin-top:5vh">深度估计为复杂的三维几何对齐提供了核心的基础输入。</div>
+      <div class="thesis" style="margin-top:5vh">单目深度估计在此不仅是下游任务，更是解决复杂几何对齐的基础预处理器。</div>
     </div>
   </div>
-  <div class="foot"><div>过渡逻辑</div><div>Align3R 研究脉络 → 深度感知需求</div></div>
+  <div class="foot"><div>案例脉络</div><div>Align3R 几何需求 → 深度数据瓶颈 → 蒸馏方案引入</div></div>
 </section>
 
 <section class="slide light">
   <div class="chrome"><div>Depth Anything v1：教师作为数据引擎</div><div>09 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">核心方法</div>
+      <div class="kicker">核心方法论</div>
       <h2 class="title">利用 62M 无标签图像突破监督瓶颈。</h2>
-      <p class="lead" style="margin-top:2.5vh">v1 的核心贡献在于建立了一个海量伪标签引擎。既然昂贵的激光雷达数据有限，那就让强教师去“自动标注”全世界。通过在海量图像上生成深度目标，学生模型获得了惊人的泛化力。</p>
+      <p class="lead" style="margin-top:2.5vh">v1 的核心逻辑在于：既然标注极其昂贵，那就让教师去“自动标注”全世界。通过在海量真实图像上生成伪深度（Pseudo Depth），学生模型获得了远超人工有限真值集的几何认知力。</p>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.5vw;margin-top:5vh">
-        <div class="card"><div class="label">有标注训练</div><div class="stat">1.5M</div><p class="note">基于 6 个开源真值集训练初始教师模型。</p></div>
-        <div class="card"><div class="label">伪标注扩展</div><div class="stat">62M</div><p class="note">利用教师生成海量真实场景的深度伪标签。</p></div>
+        <div class="card"><div class="label">强教师训练</div><div class="stat">1.5M</div><p class="note">基于 6 个开源真值集训练具备基础能力的初始教师模型。</p></div>
+        <div class="card"><div class="label">伪标注扩展</div><div class="stat">62M</div><p class="note">利用 Teacher 模型将海量真实图像转化为稠密的伪深度数据。</p></div>
       </div>
-      <div class="claim" style="margin-top:4vh">关键亮点：利用 DINOv2 作为语义先验教师，解决了几何与语义的对齐。</div>
+      <div class="claim" style="margin-top:4vh">关键技术：引入冻结的 DINOv2 作为语义先验教师，辅助学生解决几何模糊问题。</div>
     </div>
     <div class="figure" style="height:62vh">
       <img src="images/v1_fig2_pipeline.png" alt="Depth Anything v1 Pipeline">
-      <div class="cap">Depth Anything v1：大规模伪标签自训练流程</div>
+      <div class="cap">Depth Anything v1：基于大规模伪标签蒸馏的自训练闭环</div>
     </div>
   </div>
-  <div class="foot"><div>Case Study v1</div><div>Li et al., Depth Anything (2024)</div></div>
+  <div class="foot"><div>Case Study v1</div><div>Li et al., Depth Anything (arXiv 2024)</div></div>
 </section>
 
 <section class="slide light">
   <div class="chrome"><div>证据链：零样本泛化能力的本质</div><div>10 / 12</div></div>
   <div class="frame grid-2">
     <div>
-      <div class="kicker">实验观察</div>
+      <div class="kicker">实验观测</div>
       <h2 class="title">在大规模真实分布上学习，而非在真值集上过拟合。</h2>
-      <p class="lead" style="margin-top:2.5vh">证据表明，Depth Anything 在从未见过的测试集（Zero-shot）上表现远超特定数据集训练的模型。这说明了“数据覆盖度”在深度估计这一稠密预测任务中的核心价值。</p>
+      <p class="lead" style="margin-top:2.5vh">实验证明，在零样本（Zero-shot）测试集上，Depth Anything 的表现优于在特定真值集上训练的监督模型。这揭示了“场景覆盖度”在稠密预测任务中甚至比“绝对精度”更具决定性。</p>
       <div class="figure" style="height:26vh;margin-top:4vh"><img src="images/v1_table1_data.png"></div>
       <div class="figure" style="height:22vh;margin-top:2vh"><img src="images/v1_table2_zero_shot.png"></div>
     </div>
     <div>
       <div class="figure" style="height:40vh"><img src="images/v1_teaser_web.jpg"></div>
-      <div class="callout" style="margin-top:4vh"><h3>结论：</h3><p class="body">伪标签虽然不如 LiDAR 精确，但其带来的场景多样性和规模，弥补了人工真值的稀疏性，从而构建了更鲁棒的几何理解。</p></div>
+      <div class="callout" style="margin-top:4vh"><h3>结论推导：</h3><p class="body">伪标签虽然精度有限，但其提供的“规模感”和“多样性”弥补了人工 LiDAR 数据在长尾场景（如极远物体、复杂材质）的缺失。</p></div>
     </div>
   </div>
-  <div class="foot"><div>验证分析</div><div>数据集多样性 · 跨域泛化性</div></div>
+  <div class="foot"><div>验证环节</div><div>数据多样性 · 跨场景验证 · 鲁棒性分析</div></div>
 </section>
 
 <section class="slide dark">
-  <div class="chrome"><div>Depth Anything v2：追求极高的标签质量</div><div>11 / 12</div></div>
+  <div class="chrome"><div>Depth Anything v2：追求极高的标签信噪比</div><div>11 / 12</div></div>
   <div class="frame grid-2">
     <div>
       <div class="kicker">迭代逻辑</div>
-      <h2 class="title">如果教师更准，学生的上限就更高。</h2>
-      <p class="lead" style="margin-top:2.5vh">v2 指出 v1 的局限在于真实图像伪标签中存在的几何瑕疵。其核心策略是：先通过高质量的合成数据（Synthetic Data）培养一个“完美的几何教师”，再将其知识迁移到真实图像。</p>
+      <h2 class="title">如果教师更准，学生的性能上限就更高。</h2>
+      <p class="lead" style="margin-top:2.5vh">v2 指出 v1 的瓶颈在于真实图像伪标签中存在的几何瑕疵（如边缘空洞）。其核心策略是：先通过高质量的合成数据（Synthetic Data）培养一个“完美的几何教师”，再将其知识迁移到真实分布。</p>
       <div style="margin-top:6vh">
-        <div class="rowline"><div class="k">合成数据教师</div><div class="v">在 595K 极其干净、精确的合成样本上训练，捕捉完美几何特征。</div><div class="m">Quality</div></div>
-        <div class="rowline"><div class="k">大规模迁移</div><div class="v">将高质量教师产生的深度图应用到 62M 真实无标签分布。</div><div class="m">Transfer</div></div>
-        <div class="rowline"><div class="k">全规模部署</div><div class="v">通过蒸馏，让轻量化学生也能继承“完美几何”能力。</div><div class="m">Efficiency</div></div>
+        <div class="rowline"><div class="k">合成数据教师</div><div class="v">在 595K 极其干净、几何精确的合成样本上训练，捕捉完美物理结构。</div><div class="m">Quality</div></div>
+        <div class="rowline"><div class="k">跨域迁移</div><div class="v">利用高质量教师为 62M 真实图像重塑伪深度，降低标签噪声。</div><div class="m">Transfer</div></div>
+        <div class="rowline"><div class="k">全量化部署</div><div class="v">通过知识蒸馏推出 S、M、L 多规模学生模型，适配不同算力平台。</div><div class="m">Scaling</div></div>
       </div>
     </div>
     <div>
       <div class="figure" style="height:34vh"><img src="images/v2_fig7_pipeline.png"></div>
       <div class="figure" style="height:28vh;margin-top:2vh"><img src="images/v2_fig5_6_synthetic_transfer.png"></div>
-      <div class="thesis" style="margin-top:4vh">从“数据量引擎”进化为“质量+量引擎”。</div>
+      <div class="thesis" style="margin-top:4vh">从单纯追求“数据量”进化为“量与质”的双重对齐。</div>
     </div>
   </div>
-  <div class="foot"><div>Case Study v2</div><div>Li et al., Depth Anything v2 (2024)</div></div>
+  <div class="foot"><div>Case Study v2</div><div>Li et al., Depth Anything v2 (arXiv 2024.06)</div></div>
 </section>
 
 <section class="slide dark">
-  <div class="chrome"><div>总结与讨论：教师-学生范式的边界</div><div>12 / 12</div></div>
+  <div class="chrome"><div>总结与讨论：教师-学生模型的角色转变</div><div>12 / 12</div></div>
   <div class="frame grid-2">
     <div>
       <div class="kicker">汇报总结</div>
-      <h2 class="title">从模型压缩到大规模监督生成器。</h2>
-      <div class="claim" style="margin-top:4.5vh">教师-学生范式已成为 CV 领域利用无标签图像构建“数据引擎”的核心手段。</div>
+      <h2 class="title">从单纯的模型压缩，到大规模监督生成器。</h2>
+      <div class="claim" style="margin-top:4.5vh">教师-学生架构已经成为深度学习时代处理“难以获取真值的稠密预测任务”的核心基础设施。</div>
       <div style="margin-top:5vh">
-        <div class="rowline"><div class="k">逻辑收束</div><div class="v">学生通过 CE+KL 损失，在扰动中学习教师的软分布，实现能力的稳定传递。</div><div class="m">Theory</div></div>
-        <div class="rowline"><div class="k">实践启示</div><div class="v">Depth Anything 展示了如何将合成数据、伪标签与自训练有效融合，解决真值获取难题。</div><div class="m">Practice</div></div>
+        <div class="rowline"><div class="k">理论收束</div><div class="v">通过损失体系和温度控制，实现跨模型容量的知识稳定传递。</div><div class="m">Mechanism</div></div>
+        <div class="rowline"><div class="k">案例启示</div><div class="v">Depth Anything 系列证明了：合成数据与伪标签蒸馏的结合，是构建通用视觉模型的最短路径。</div><div class="m">Vision</div></div>
       </div>
     </div>
     <div>
       <div class="card" style="margin-top:2.5vh">
         <h3>讨论要点：</h3>
-        <p class="note" style="margin-top:2.5vh"><b>1. 角色关联：</b>Align3R 定义了三维一致性需求，而 Depth Anything 提供了实现这种一致性的核心工具。</p>
-        <p class="note" style="margin-top:2vh"><b>2. 范式核心：</b>教师不仅是给出答案的人，更是给出解决问题的“结构”和“规模”的人。</p>
+        <p class="note" style="margin-top:2.5vh"><b>1. 角色关联：</b>Align3R 定义了对高一致性深度的迫切需求，而 Depth Anything 则利用教师-学生范式完美填补了这一真值缺口。</p>
+        <p class="note" style="margin-top:2vh"><b>2. 范式核心：</b>优秀的教师并非给出标准答案，而是通过软分布向学生展示“解决问题的概率结构”。</p>
       </div>
       <div style="margin-top:5vh;padding:2.5vh;border:1px dashed rgba(255,255,255,.2);border-radius:2px">
-        <p class="body" style="font-family:serif;font-style:italic">“最好的蒸馏，是让学生在更广阔的视野中，看到更稳定的规律。”</p>
+        <p class="body" style="font-family:serif;font-style:italic">“最好的蒸馏，是让学生在被扰动的视野中，看到最稳定的几何本质。”</p>
       </div>
     </div>
   </div>
-  <div class="foot"><div>Academic Tutorial</div><div>感谢聆听 · 欢迎提问</div></div>
+  <div class="foot"><div>Academic Tutorial</div><div>感谢聆听 · 欢迎讨论</div></div>
 </section>
 
 </main>
@@ -486,5 +531,16 @@ addEventListener('wheel',e=>{
 },{passive:true});
 go(0);
 </script>
+<!--
+Internal content note for future revisions. This block is intentionally non-rendered and must not change the visible slide content.
+
+Discussion summary: Depth Anything student model output vs semantic features
+1. The final output of the student model is a depth map, not semantic labels such as person, car, sky, or road.
+2. During encoding, the student can still learn and use semantic information. Monocular depth estimation depends on scene semantics: sky is usually far, ground depth is continuous, object boundaries matter, and foreground/background regions often have different geometry.
+3. In Depth Anything, DINOv2 can be explained as a semantic feature teacher. It does not provide manual semantic segmentation labels; it provides implicit semantic structure in feature space.
+4. L_feat transfers this structure by aligning the student's intermediate features with the frozen DINOv2 features. The student therefore learns object boundaries, region consistency, and foreground/background relationships while still being optimized for depth.
+5. A concise explanation for presentation: Depth Anything does not ask the student to output semantics; it asks the student to use semantic structure to predict depth.
+6. Suggested transition with Align3R: Align3R motivates why consistent depth and geometry matter. Depth Anything then explains how teacher-student training supplies large-scale depth supervision, where pseudo-depth teaches geometry and DINOv2 feature alignment helps preserve semantic structure.
+-->
 </body>
 </html>

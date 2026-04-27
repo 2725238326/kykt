@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3R 系列模型综述：从 DUSt3R 到 Align3R</title>
+<link rel="icon" href="data:,">
+<style>
+  :root{
+    --ink:#10213a;
+    --muted:#58687f;
+    --paper:#f4f6f8;
+    --line:rgba(16,33,58,.16);
+    --blue:#2d6fa3;
+    --cyan:#1b8e9a;
+    --green:#4f7e57;
+    --orange:#b66f35;
+    --dark:#0d1b2e;
+    --serif:"Noto Serif SC","Source Han Serif SC","Songti SC",serif;
+    --sans:"Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"IBM Plex Mono","Cascadia Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65}
+  a{color:inherit}
+  .hero{min-height:78vh;background:linear-gradient(135deg,#0b1728,#173657);color:#f7fbff;padding:7vh 7vw;display:grid;grid-template-columns:1.05fr .95fr;gap:5vw;align-items:center}
+  .kicker{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#79d3e6;font-weight:700}
+  h1,h2,h3{font-family:var(--serif);letter-spacing:0;margin:0}
+  h1{font-size:clamp(54px,7vw,116px);line-height:1.03;margin-top:2vh}
+  h2{font-size:clamp(34px,4.4vw,66px);line-height:1.12}
+  h3{font-size:clamp(22px,2vw,34px);line-height:1.2}
+  .lead{font-size:clamp(18px,1.5vw,25px);color:rgba(247,251,255,.78);max-width:68ch;margin-top:3vh}
+  .hero-grid{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);padding:3vh 2vw;border-radius:6px}
+  .chain{display:grid;gap:1.2vh}
+  .chain-row{display:grid;grid-template-columns:8.2em 1fr;gap:1vw;align-items:start;border-top:1px solid rgba(255,255,255,.14);padding-top:1.3vh}
+  .chain-row:first-child{border-top:0;padding-top:0}
+  .tag{font-family:var(--mono);font-weight:700;color:#80ddf1}
+  .chain-row p{margin:0;color:rgba(247,251,255,.8)}
+  main{padding:0 0 8vh}
+  section{padding:8vh 7vw;border-top:1px solid var(--line)}
+  .section-head{display:grid;grid-template-columns:.8fr 1.2fr;gap:5vw;align-items:end;margin-bottom:5vh}
+  .section-head p{font-size:20px;color:var(--muted);margin:0}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vw}
+  .card{background:#fff;border:1px solid var(--line);border-radius:6px;padding:2.2vh 1.6vw;min-height:18vh}
+  .card .meta{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:.9vh}
+  .card p{margin:.9vh 0 0;color:rgba(16,33,58,.78)}
+  .thesis{font-family:var(--serif);font-size:clamp(24px,2.3vw,40px);line-height:1.34;border-left:5px solid var(--blue);padding:1.5vh 2vw;background:rgba(45,111,163,.06);margin:4vh 0}
+  .diagram{background:#fff;border:1px solid var(--line);border-radius:6px;padding:3vh 2vw}
+  .pipeline{display:grid;grid-template-columns:1fr .14fr 1fr .14fr 1fr .14fr 1fr;align-items:center;gap:.7vw}
+  .box{border:1px solid var(--line);background:#f8fafc;border-radius:5px;padding:1.7vh 1vw;min-height:13vh}
+  .box b{display:block;font-family:var(--serif);font-size:22px;margin-bottom:.4vh}
+  .box span{display:block;color:var(--muted);font-size:14px}
+  .arrow{height:1px;background:var(--line);position:relative}
+  .arrow:after{content:"";position:absolute;right:0;top:50%;width:8px;height:8px;border-top:1px solid var(--line);border-right:1px solid var(--line);transform:translateY(-50%) rotate(45deg)}
+  .timeline{display:grid;grid-template-columns:repeat(6,1fr);gap:1vw}
+  .step{background:#fff;border:1px solid var(--line);border-top:4px solid var(--blue);padding:2vh 1.1vw;border-radius:5px}
+  .step:nth-child(2){border-top-color:var(--cyan)}
+  .step:nth-child(3){border-top-color:var(--green)}
+  .step:nth-child(4){border-top-color:var(--orange)}
+  .step:nth-child(5){border-top-color:#7659a7}
+  .step:nth-child(6){border-top-color:#555}
+  .step .year{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:700}
+  .step h3{font-size:25px;margin:.5vh 0}
+  .step p{font-size:15px;color:rgba(16,33,58,.78);margin:0}
+  .compare{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line)}
+  .compare th,.compare td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:1.3vh 1vw;text-align:left;vertical-align:top}
+  .compare th{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted);background:#f8fafc}
+  .compare td:first-child{font-family:var(--serif);font-weight:700;font-size:21px;white-space:nowrap}
+  .dark{background:var(--dark);color:#f7fbff}
+  .dark .section-head p,.dark .card p{color:rgba(247,251,255,.74)}
+  .dark .card,.dark .diagram{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.15)}
+  .dark .box{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
+  .dark .box span{color:rgba(247,251,255,.7)}
+  .dark .compare{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.15)}
+  .dark .compare th,.dark .compare td{border-color:rgba(255,255,255,.15)}
+  .dark .compare th{background:rgba(255,255,255,.06);color:rgba(247,251,255,.64)}
+  .note-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5vw}
+  .source-list{display:grid;grid-template-columns:repeat(2,1fr);gap:.8vh 1.5vw;margin-top:3vh}
+  .source-list a{display:block;background:#fff;border:1px solid var(--line);padding:1.1vh 1vw;border-radius:4px;text-decoration:none;color:var(--muted)}
+  .footer{padding:4vh 7vw;color:var(--muted);font-family:var(--mono);font-size:12px}
+  @media(max-width:980px){
+    .hero,.section-head,.cards,.note-grid,.source-list{grid-template-columns:1fr}
+    .timeline{grid-template-columns:1fr 1fr}
+    .pipeline{grid-template-columns:1fr}
+    .arrow{height:3vh;width:1px;margin:auto}
+    .arrow:after{right:auto;left:50%;top:auto;bottom:0;transform:translateX(-50%) rotate(135deg)}
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div>
+    <div class="kicker">3D foundation models survey</div>
+    <h1>3R 系列模型综述</h1>
+    <p class="lead">从 DUSt3R 到 Align3R，这一组模型的共同点不是名字里都有 “3R”，而是把传统几何视觉里的匹配、深度、位姿、重建，逐步改写成可学习的密集 3D 表示问题。</p>
+  </div>
+  <div class="hero-grid">
+    <div class="chain">
+      <div class="chain-row"><div class="tag">入口</div><p>传统 SfM/MVS 依赖匹配、相机标定、位姿估计和三角化，链条长，任何一环不稳都会影响重建。</p></div>
+      <div class="chain-row"><div class="tag">转折</div><p>DUSt3R 直接回归 pointmap，把“先求相机再三角化”的流程换成“先预测 3D，再反推出几何量”。</p></div>
+      <div class="chain-row"><div class="tag">扩展</div><p>MASt3R 加强匹配，Spann3R 加入空间记忆，MonST3R/Align3R 处理动态视频，Pow3R 引入先验条件。</p></div>
+      <div class="chain-row"><div class="tag">衔接</div><p>这条线能自然接到我们前面讲的深度估计：Depth Anything 给单帧深度先验，Align3R/DUSt3R 负责跨帧几何对齐。</p></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="section-head">
+      <div>
+        <div class="kicker">Problem</div>
+        <h2>3R 模型解决的不是“画出 3D”，而是重写几何流程。</h2>
+      </div>
+      <p>传统三维重建通常先做特征匹配，再估计相机，再三角化生成点云。3R 系列的核心变化是：把这些中间几何变量交给大模型直接预测或联合优化。</p>
+    </div>
+    <div class="diagram">
+      <div class="pipeline">
+        <div class="box"><b>图像输入</b><span>单张图、多张图、视频帧，通常不要求完整标定。</span></div>
+        <div class="arrow"></div>
+        <div class="box"><b>Transformer 编码</b><span>跨视角交互，让像素同时看见外观和几何上下文。</span></div>
+        <div class="arrow"></div>
+        <div class="box"><b>Pointmap 回归</b><span>每个像素直接预测 3D 坐标和置信度。</span></div>
+        <div class="arrow"></div>
+        <div class="box"><b>几何量恢复</b><span>深度、匹配、位姿、点云、重建都从 dense 3D 表示导出。</span></div>
+      </div>
+    </div>
+    <div class="thesis">可以把 DUSt3R 系列理解成“几何视觉的大模型化”：不再手写整条几何管线，而是学习一个能输出可用 3D 表示的通用前端。</div>
+  </section>
+
+  <section class="dark">
+    <div class="section-head">
+      <div>
+        <div class="kicker">Family map</div>
+        <h2>这一族模型的演进，是从静态两图走向动态视频。</h2>
+      </div>
+      <p>每个模型都在补 DUSt3R 的一个短板：匹配精度、全局一致性、长序列记忆、动态物体、已知先验利用、端到端速度。</p>
+    </div>
+    <div class="timeline">
+      <div class="step"><div class="year">CVPR 2024</div><h3>DUSt3R</h3><p>无标定、无位姿条件下，从图像对预测 pointmap，统一深度、位姿、匹配和重建。</p></div>
+      <div class="step"><div class="year">ECCV 2024</div><h3>MASt3R</h3><p>在 DUSt3R 的 3D 头之外加入匹配头，把 2D matching 放到 3D 几何里约束。</p></div>
+      <div class="step"><div class="year">2024</div><h3>Spann3R</h3><p>引入 spatial memory，让多视图 pointmap 更直接进入全局坐标系。</p></div>
+      <div class="step"><div class="year">2024</div><h3>MonST3R</h3><p>面向动态场景，估计每个时间步的几何，尝试走向 4D reconstruction。</p></div>
+      <div class="step"><div class="year">CVPR 2025</div><h3>Align3R</h3><p>利用 DUSt3R 对齐单目深度，让动态视频获得时间一致的深度和相机位姿。</p></div>
+      <div class="step"><div class="year">CVPR 2025</div><h3>Pow3R</h3><p>允许在推理时加入相机内参、相对位姿、稀疏/稠密深度等先验信息。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <div class="kicker">Core models</div>
+        <h2>重点模型按“解决什么问题”来讲。</h2>
+      </div>
+      <p>综述时不要按论文年份干读。更好的讲法是：先讲共同表示，再讲每个模型在这个表示上加了什么能力。</p>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <div class="meta">DUSt3R · 基座</div>
+        <h3>把重建变成 pointmap 回归</h3>
+        <p>输入任意图像对，输出两个图像对应的 3D 点图和置信度。它弱化了传统相机模型的硬约束，使单目、双目、多视图任务能落到同一种 dense 3D 表示上。</p>
+      </article>
+      <article class="card">
+        <div class="meta">MASt3R · 匹配</div>
+        <h3>让图像匹配“接地到 3D”</h3>
+        <p>MASt3R 沿用 DUSt3R 的几何头，同时增加 dense descriptor/matching 能力。它不是只找纹理相似点，而是让匹配被 3D 几何一致性约束。</p>
+      </article>
+      <article class="card">
+        <div class="meta">Spann3R · 全局记忆</div>
+        <h3>从局部图像对走向全局坐标</h3>
+        <p>DUSt3R 的 pairwise pointmap 需要后续全局对齐。Spann3R 通过空间记忆保存历史 3D 信息，让后续帧直接预测到统一坐标中。</p>
+      </article>
+      <article class="card">
+        <div class="meta">MonST3R · 动态场景</div>
+        <h3>静态几何不够，物体会动</h3>
+        <p>MonST3R 关注动态场景里的 per-timestep geometry。它把 DUSt3R 的几何优先思路带到运动场景，为 4D reconstruction 提供 feed-forward 起点。</p>
+      </article>
+      <article class="card">
+        <div class="meta">Align3R · 视频深度</div>
+        <h3>把单帧深度对齐成一致视频深度</h3>
+        <p>Align3R 的关键是利用 DUSt3R 对齐不同时刻的单目深度。它解释了我们为什么会从 Align3R 深度模块继续看 Depth Anything 和教师学生框架。</p>
+      </article>
+      <article class="card">
+        <div class="meta">Pow3R / VGGT · 后续方向</div>
+        <h3>一个方向利用先验，一个方向端到端输出</h3>
+        <p>Pow3R 让模型在有先验时用上先验；VGGT 则代表另一条路线：直接预测相机、深度、pointmap 和 3D tracks，进一步减少几何后处理。</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <div class="kicker">Comparison</div>
+        <h2>一张表把区别讲清楚。</h2>
+      </div>
+      <p>听众最容易混淆的是：这些模型都“做 3D”，到底差在哪。表格要围绕输入、核心输出、主要贡献和限制来讲。</p>
+    </div>
+    <table class="compare">
+      <thead>
+        <tr><th>模型</th><th>输入场景</th><th>核心输出</th><th>主要贡献</th><th>适合讲的限制</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>DUSt3R</td><td>任意图像对/图像集合</td><td>pointmap、confidence、可导出深度/位姿/匹配</td><td>用直接 3D 回归替代传统多阶段几何管线</td><td>多视图全局一致性仍依赖对齐优化</td></tr>
+        <tr><td>MASt3R</td><td>图像对、宽基线匹配</td><td>3D pointmap + dense descriptors</td><td>把图像匹配放进 3D 表示中学习</td><td>仍主要服务静态或准静态匹配问题</td></tr>
+        <tr><td>Spann3R</td><td>有序或无序图像集合</td><td>全局坐标中的 pointmap</td><td>用 spatial memory 缓解反复全局对齐</td><td>记忆机制的可靠性依赖序列质量和历史信息</td></tr>
+        <tr><td>MonST3R</td><td>动态场景视频/图像序列</td><td>逐时间步几何与动态 3D 表示</td><td>把 DUSt3R 范式推进到运动场景</td><td>动态遮挡、非刚体运动仍是难点</td></tr>
+        <tr><td>Align3R</td><td>单目动态视频 + 单帧深度估计</td><td>时间一致深度、相机位姿、动态点云</td><td>用 DUSt3R 对齐单帧深度，解决视频深度尺度漂移</td><td>依赖初始单目深度质量，也受动态区域对齐影响</td></tr>
+        <tr><td>Pow3R</td><td>图像 + 可选相机/深度/位姿先验</td><td>增强后的重建、深度、位姿</td><td>让 feed-forward 3D 模型利用测试时已知先验</td><td>属于增强通用性，不是完全替代前面模型</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="dark">
+    <div class="section-head">
+      <div>
+        <div class="kicker">Connection to our topic</div>
+        <h2>和教师学生、Depth Anything 的衔接。</h2>
+      </div>
+      <p>这部分是我们自己的讲解线：不是单独堆论文，而是解释为什么 3R 系列会把我们带到深度估计和教师学生模型。</p>
+    </div>
+    <div class="note-grid">
+      <div class="card">
+        <div class="meta">从 Align3R 看深度</div>
+        <h3>视频深度需要跨帧一致</h3>
+        <p>单帧深度模型可以输出漂亮深度图，但视频里每一帧的尺度、边界和相机位姿必须一致。Align3R 说明：深度不是孤立预测，而是几何系统的一部分。</p>
+      </div>
+      <div class="card">
+        <div class="meta">从 Depth Anything 看监督</div>
+        <h3>好的单帧深度来自大规模伪标签</h3>
+        <p>Depth Anything 用教师给无标签图像生成伪深度，再让学生学习。它提供的是高质量单帧深度先验，后续可以被 Align3R 这类方法对齐到视频几何里。</p>
+      </div>
+      <div class="card">
+        <div class="meta">语义与几何</div>
+        <h3>学生输出深度，但中间会用语义</h3>
+        <p>DINOv2 这类特征教师不输出语义标签，而是提供隐式语义结构。学生模型最终输出深度图，但中间特征会吸收物体边界、区域一致性和前景背景关系。</p>
+      </div>
+      <div class="card">
+        <div class="meta">综述主线</div>
+        <h3>一句话收束</h3>
+        <p>3R 系列负责把图像组织成一致 3D 表示；教师学生模型负责把难获得的深度监督扩展到海量数据。两者在单目视频几何理解中自然接上。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div>
+        <div class="kicker">Reading order</div>
+        <h2>建议按这条顺序读论文。</h2>
+      </div>
+      <p>先看 DUSt3R 建立范式，再看 MASt3R 理解匹配增强，然后看 Align3R/MonST3R 进入动态场景；Spann3R 和 Pow3R 作为扩展方向补充。</p>
+    </div>
+    <div class="source-list">
+      <a href="https://arxiv.org/abs/2312.14132">DUSt3R: Geometric 3D Vision Made Easy</a>
+      <a href="https://arxiv.org/abs/2406.09756">MASt3R: Grounding Image Matching in 3D</a>
+      <a href="https://arxiv.org/abs/2408.16061">Spann3R: 3D Reconstruction with Spatial Memory</a>
+      <a href="https://arxiv.org/abs/2410.03825">MonST3R: Geometry in the Presence of Motion</a>
+      <a href="https://arxiv.org/abs/2412.03079">Align3R: Aligned Monocular Depth Estimation for Dynamic Videos</a>
+      <a href="https://arxiv.org/abs/2503.17316">Pow3R: Camera and Scene Priors for Unconstrained 3D Reconstruction</a>
+      <a href="https://arxiv.org/abs/2503.11651">VGGT: Visual Geometry Grounded Transformer</a>
+      <a href="research_notes.md">本目录研究笔记</a>
+    </div>
+  </section>
+</main>
+
+<div class="footer">Created for the 3R model survey draft. Local folder: ppt/3r_models_survey.</div>
+</body>
+</html>
