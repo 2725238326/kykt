@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-04-27T10:06:30.867Z",
-  "turn_count": 123,
-  "last_progress_at": "2026-04-27T10:06:30.867Z",
-  "last_agent_output": "已开新文件夹并写好第一版综述：\n\n- [index.html](E:/kykt/ppt/3r_models_survey/index.html)\n- [research_notes.md](E:/ky"
+  "last_turn_at": "2026-04-27T10:36:21.936Z",
+  "turn_count": 127,
+  "last_progress_at": "2026-04-27T10:36:21.936Z",
+  "last_agent_output": "你讲 B 的核心任务不是“介绍 Depth Anything 论文”，而是把后 5 页串成一条线：\n\n**Align3R 暴露深度需求 → Depth Anything v1 用教师生成伪深度 → 实"
 }
