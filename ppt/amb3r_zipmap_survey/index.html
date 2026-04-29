@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMB3R 与 ZipMap 调研展示</title>
+<link rel="icon" href="data:,">
+<style>
+  :root{
+    --ink:#102033;
+    --muted:#637085;
+    --paper:#f7f8fa;
+    --line:rgba(16,32,51,.16);
+    --soft:rgba(16,32,51,.055);
+    --blue:#235f87;
+    --cyan:#157c88;
+    --green:#4f7752;
+    --orange:#9b6734;
+    --red:#954b4b;
+    --dark:#111827;
+    --dark2:#1f2937;
+    --sans:"Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+    --serif:"Noto Serif SC","Source Han Serif SC","Songti SC",serif;
+    --mono:"IBM Plex Mono","Cascadia Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);color:var(--ink);font-family:var(--sans)}
+  #deck{position:fixed;inset:0;display:flex;transition:transform .42s cubic-bezier(.22,1,.36,1);will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;padding:5vh 6vw 7.5vh;display:flex;flex-direction:column;position:relative;overflow:hidden;contain:layout paint style}
+  .slide.light{background:linear-gradient(135deg,#fbfcfd 0%,#eef2f6 100%)}
+  .slide.dark{background:linear-gradient(135deg,var(--dark) 0%,var(--dark2) 100%);color:#f7fafc}
+  .slide::before{content:"";position:absolute;inset:5vh 6vw 7.5vh;border-top:1px solid currentColor;opacity:.11;pointer-events:none}
+  .chrome,.foot{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:12px;letter-spacing:.08em;opacity:.68}
+  .foot{margin-top:auto}
+  .frame{flex:1;min-height:0;padding-top:3.2vh}
+  .center{display:grid;align-content:center}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--blue);margin-bottom:1.3vh}
+  .dark .kicker{color:#86d6e8}
+  h1,h2,h3{font-family:var(--serif);font-weight:800;letter-spacing:0}
+  .hero-title{font-size:clamp(58px,7vw,108px);line-height:1.04;max-width:1100px}
+  .title{font-size:clamp(38px,4.2vw,70px);line-height:1.12;max-width:1160px}
+  .subtitle{font-size:clamp(22px,2.2vw,36px);line-height:1.38;font-weight:500;margin-top:2vh;max-width:1050px}
+  .lead{font-size:clamp(17px,1.25vw,23px);line-height:1.66;color:var(--muted)}
+  .dark .lead{color:rgba(247,250,252,.77)}
+  .body{font-size:clamp(14px,1vw,18px);line-height:1.58;color:rgba(16,32,51,.82)}
+  .dark .body{color:rgba(247,250,252,.8)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:start}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vw}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1vw}
+  .card{border:1px solid var(--line);background:rgba(255,255,255,.58);padding:2vh 1.45vw;border-radius:6px;min-height:0}
+  .dark .card{border-color:rgba(247,250,252,.2);background:rgba(255,255,255,.055)}
+  .card h3{font-size:clamp(20px,1.45vw,29px);line-height:1.22;margin-bottom:.8vh}
+  .label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:.7vh}
+  .dark .label{color:rgba(247,250,252,.58)}
+  .thesis{font-family:var(--serif);font-size:clamp(22px,1.75vw,34px);line-height:1.42;border-left:5px solid var(--blue);padding:1.3vh 1.5vw;background:rgba(35,95,135,.08);margin-top:2.6vh}
+  .dark .thesis{border-color:#86d6e8;background:rgba(255,255,255,.065)}
+  .rowline{display:grid;grid-template-columns:1.05fr 2.4fr .7fr;gap:1.2vw;align-items:start;border-top:1px solid var(--line);padding:1.35vh 0}
+  .dark .rowline{border-color:rgba(247,250,252,.17)}
+  .rowline .k{font-family:var(--serif);font-weight:800;font-size:clamp(18px,1.25vw,25px)}
+  .rowline .v{font-size:clamp(13px,.98vw,17px);line-height:1.5;color:rgba(16,32,51,.8)}
+  .dark .rowline .v{color:rgba(247,250,252,.78)}
+  .rowline .m{font-family:var(--mono);font-size:11px;justify-self:end;opacity:.56}
+  .pipeline{display:grid;grid-template-columns:1fr .15fr 1fr .15fr 1fr .15fr 1fr;gap:.8vw;align-items:center;margin-top:2.6vh}
+  .box{border:1px solid var(--line);background:rgba(255,255,255,.58);border-radius:6px;padding:1.65vh 1vw;min-height:15.8vh}
+  .dark .box{border-color:rgba(247,250,252,.18);background:rgba(255,255,255,.055)}
+  .box h3{font-size:clamp(18px,1.25vw,25px);margin-bottom:.6vh}
+  .arrow{height:1px;background:currentColor;opacity:.32;position:relative}
+  .arrow::after{content:"";position:absolute;right:0;top:50%;width:8px;height:8px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:translateY(-50%) rotate(45deg)}
+  .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1vw;margin-top:2.2vh}
+  .metric{border-top:4px solid var(--blue);padding:1.25vh 1vw;background:rgba(255,255,255,.55);border-radius:5px}
+  .metric:nth-child(2){border-color:var(--cyan)}
+  .metric:nth-child(3){border-color:var(--green)}
+  .metric:nth-child(4){border-color:var(--orange)}
+  .dark .metric{background:rgba(255,255,255,.055)}
+  .metric .num{font-family:var(--serif);font-weight:800;font-size:clamp(30px,2.6vw,48px);line-height:1.05}
+  .metric .txt{font-size:clamp(12px,.92vw,16px);line-height:1.45;color:var(--muted);margin-top:.5vh}
+  .dark .metric .txt{color:rgba(247,250,252,.68)}
+  .compare{display:grid;grid-template-columns:.85fr 1.25fr 1.25fr;border:1px solid var(--line);background:rgba(255,255,255,.5);margin-top:2.5vh}
+  .dark .compare{border-color:rgba(247,250,252,.18);background:rgba(255,255,255,.045)}
+  .compare>div{padding:1.1vh 1vw;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:clamp(13px,.94vw,17px);line-height:1.45;color:rgba(16,32,51,.8)}
+  .dark .compare>div{border-color:rgba(247,250,252,.16);color:rgba(247,250,252,.78)}
+  .compare>div:nth-child(3n){border-right:0}
+  .compare>div:nth-last-child(-n+3){border-bottom:0}
+  .compare .head{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);background:rgba(16,32,51,.04)}
+  .dark .compare .head{color:rgba(247,250,252,.58);background:rgba(255,255,255,.055)}
+  .pillrow{display:flex;flex-wrap:wrap;gap:.7vw;margin-top:2.2vh}
+  .pill{border:1px solid var(--line);border-radius:999px;padding:.6vh .9vw;font-family:var(--mono);font-size:11px;color:rgba(16,32,51,.72);background:rgba(255,255,255,.52)}
+  .dark .pill{border-color:rgba(247,250,252,.22);color:rgba(247,250,252,.72);background:rgba(255,255,255,.055)}
+  .sources{display:grid;grid-template-columns:repeat(2,1fr);gap:1vh 1vw;margin-top:2.2vh}
+  .sources a{display:block;text-decoration:none;border:1px solid var(--line);background:#fff;border-radius:5px;padding:1.1vh 1vw;font-size:clamp(13px,.94vw,17px);line-height:1.4;color:rgba(16,32,51,.8)}
+  .dark .sources a{border-color:rgba(247,250,252,.2);background:rgba(255,255,255,.06);color:rgba(247,250,252,.82)}
+  #nav{position:fixed;left:50%;bottom:1.25vh;transform:translateX(-50%);display:flex;gap:8px;padding:6px 11px;border-radius:999px;background:rgba(16,32,51,.12);z-index:5;opacity:.52;transition:opacity .18s ease}
+  #nav:hover{opacity:1}
+  .dot{width:8px;height:8px;border:0;border-radius:99px;background:rgba(16,32,51,.28);padding:0;cursor:pointer}
+  .dot.active{width:24px;background:var(--blue)}
+  body.dark-nav #nav{background:rgba(255,255,255,.11)}
+  body.dark-nav .dot{background:rgba(255,255,255,.32)}
+  body.dark-nav .dot.active{background:#fff}
+  .hint{position:fixed;right:1.5vw;bottom:1.25vh;font-family:var(--mono);font-size:11px;color:rgba(16,32,51,.45);z-index:5}
+  body.dark-nav .hint{color:rgba(255,255,255,.5)}
+  @media(max-width:980px){
+    html,body{overflow:auto}
+    #deck{position:static;display:block;transform:none!important}
+    .slide{width:100%;height:auto;min-height:100vh;padding:4vh 5vw 8vh;overflow:auto}
+    .grid-2,.grid-3,.grid-4,.metric-grid,.sources{grid-template-columns:1fr}
+    .pipeline{grid-template-columns:1fr}
+    .arrow{height:3vh;width:1px;margin:auto}
+    .arrow::after{right:auto;top:auto;left:50%;bottom:0;transform:translateX(-50%) rotate(135deg)}
+    #nav,.hint{display:none}
+  }
+</style>
+</head>
+<body class="dark-nav">
+<main id="deck">
+
+<section class="slide dark">
+  <div class="chrome"><div>3D Reconstruction Survey</div><div>01 / 16</div></div>
+  <div class="frame center">
+    <div class="kicker">论文调研展示</div>
+    <h1 class="hero-title">AMB3R 与 ZipMap</h1>
+    <h2 class="subtitle">两个方向：一个强化前馈模型的显式 3D 几何后端，一个把长序列重建压到线性时间。</h2>
+    <div class="grid-3" style="margin-top:6vh">
+      <div class="card"><div class="label">AMB3R</div><h3>准确、度量尺度、带后端</h3><p class="body">VGGT 前端 + sparse voxel backend，在紧凑 3D 空间里融合多视角观测。</p></div>
+      <div class="card"><div class="label">ZipMap</div><h3>线性时间、状态化、TTT</h3><p class="body">用 test-time training fast weights 把图像集合压缩为可查询 scene state。</p></div>
+      <div class="card"><div class="label">讲解目标</div><h3>分别讲清问题与机制</h3><p class="body">不强行绑定两篇工作；只在最后用简短对照帮助定位。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>CVPR 2026 方向</div><div>Feed-forward 3D Reconstruction</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>背景 · 前馈 3D 模型的新瓶颈</div><div>02 / 16</div></div>
+  <div class="frame">
+    <div class="grid-2" style="align-items:end">
+      <div><div class="kicker">共同背景</div><h2 class="title">DUSt3R/VGGT 之后，问题从“能不能直接预测 3D”变成“如何更准、更大、更稳”。</h2></div>
+      <p class="lead">pointmap 范式已经把深度、位姿、匹配和重建统一到稠密 3D 回归中。但多视角融合、真实尺度、大规模图像集合和在线建图仍有明显缺口。</p>
+    </div>
+    <div class="grid-4" style="margin-top:4.2vh">
+      <div class="card"><div class="label">空间表示</div><h3>2D token 不等于 3D 融合</h3><p class="body">多个像素对应同一 3D 点时，纯 2D grid 推理缺少显式空间紧凑性。</p></div>
+      <div class="card"><div class="label">尺度</div><h3>pointmap 常有尺度歧义</h3><p class="body">很多重建结果需要 median-scale alignment，离真实 metric reconstruction 仍有距离。</p></div>
+      <div class="card"><div class="label">复杂度</div><h3>全局 attention 随 N² 增长</h3><p class="body">VGGT、pi^3 类强模型在几百帧场景下开销迅速变重。</p></div>
+      <div class="card"><div class="label">系统性</div><h3>VO/SfM 不只是单次预测</h3><p class="body">在线、长序列、无内参、无 BA 的完整流程仍需要额外设计。</p></div>
+    </div>
+    <div class="thesis">AMB3R 回答“如何让 pointmap 模型更像一个真正的 3D 几何系统”；ZipMap 回答“如何让强前馈 3D 模型处理几百帧而不爆炸”。</div>
+  </div>
+  <div class="foot"><div>定位</div><div>空间紧凑性 · 度量尺度 · 线性时间</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>AMB3R · 信息卡</div><div>03 / 16</div></div>
+  <div class="frame">
+    <div class="kicker">AMB3R</div>
+    <h2 class="title">Accurate Feed-forward Metric-scale 3D Reconstruction with Backend</h2>
+    <div class="grid-2" style="margin-top:3.5vh">
+      <div>
+        <div class="rowline"><div class="k">作者</div><div class="v">Hengyi Wang, Lourdes Agapito；University College London。</div><div class="m">UCL</div></div>
+        <div class="rowline"><div class="k">状态</div><div class="v">项目页标注 CVPR 2026 Highlight；arXiv v1 提交于 2025-11-25。</div><div class="m">2025</div></div>
+        <div class="rowline"><div class="k">一句话</div><div class="v">在冻结 VGGT 前端之上，训练稀疏体素后端和尺度头，让前馈 pointmap 模型具备更强几何融合和 metric-scale 能力。</div><div class="m">core</div></div>
+      </div>
+      <div>
+        <div class="metric-grid" style="grid-template-columns:repeat(2,1fr);margin-top:0">
+          <div class="metric"><div class="num">7 / 13</div><div class="txt">论文报告覆盖 7 类任务、13 个数据集。</div></div>
+          <div class="metric"><div class="num">50-80</div><div class="txt">约 50 H100 hours 后端训练；讨论按 add-on 成本约 80 H100 hours。</div></div>
+          <div class="metric"><div class="num">0</div><div class="txt">VO/SfM 不需要 task-specific finetuning 或 test-time optimization。</div></div>
+          <div class="metric"><div class="num">4.2 FPS</div><div class="txt">AMB3R-VO 在 RTX 4090 / TUM 上的平均运行速度。</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sources">
+      <a href="https://arxiv.org/abs/2511.20343">arXiv: AMB3R: Accurate Feed-forward Metric-scale 3D Reconstruction with Backend</a>
+      <a href="https://hengyiwang.github.io/projects/amber">Project Page: AMB3R</a>
+      <a href="https://github.com/HengyiWang/amb3r">Code: HengyiWang/amb3r</a>
+      <a href="https://github.com/facebookresearch/vggt">Backbone context: VGGT</a>
+    </div>
+  </div>
+  <div class="foot"><div>关键词</div><div>VGGT · sparse voxels · metric scale · feed-forward VO/SfM</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>AMB3R · 研究动机</div><div>04 / 16</div></div>
+  <div class="frame">
+    <div class="grid-2" style="align-items:end">
+      <div><div class="kicker">为什么需要 backend</div><h2 class="title">pointmap 输出有 3D 坐标，但网络内部未必在 3D 空间思考。</h2></div>
+      <p class="lead">AMB3R 的核心批评是：DUSt3R/VGGT 这类模型虽能让多个像素回归到相近 3D 点，但它们主要在 2D 特征网格上做 attention，缺少“同一个 3D 坐标只能有一个属性”的结构约束。</p>
+    </div>
+    <div class="pipeline">
+      <div class="box"><h3>多视角观测</h3><p class="body">同一个墙角、桌面边缘或地面点，会在多张图像中重复出现。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>pointmap 回归</h3><p class="body">每个像素预测 3D 坐标，但融合主要依赖网络隐式学习。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>稀疏体素后端</h3><p class="body">把对应点落入相同或相邻 voxel，显式合并多视角特征。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>空间紧凑性</h3><p class="body">同一空间位置共享一个 fused feature，减少跨视角不一致。</p></div>
+    </div>
+    <div class="thesis">这就是 AMB3R 名字里“Backend”的含义：不是传统 BA 优化器，而是可学习的 3D 空间融合后端。</div>
+  </div>
+  <div class="foot"><div>核心矛盾</div><div>2D grid inference vs. compact 3D representation</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>AMB3R · 模型结构</div><div>05 / 16</div></div>
+  <div class="frame">
+    <div class="kicker">Pipeline</div>
+    <h2 class="title">冻结 VGGT，把“3D 融合能力”作为轻量后端接进去。</h2>
+    <div class="pipeline">
+      <div class="box"><h3>VGGT front-end</h3><p class="body">预测 pointmaps、camera/depth、visual/geometric features；主干冻结。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>Sparse voxelization</h3><p class="body">把 pointmap 与几何特征投到 sparse voxel grid；voxel 内平均融合。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>3D transformer</h3><p class="body">space-filling curve 序列化 voxel；Point Transformer v3 风格 U-Net 推理。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>Zero-conv injection</h3><p class="body">KNN 插值回像素/点，再通过 zero convolution 注入 VGGT decoder。</p></div>
+    </div>
+    <div class="grid-3" style="margin-top:3vh">
+      <div class="card"><div class="label">为什么冻结</div><h3>保留 confidence 函数</h3><p class="body">论文指出 confidence 与训练分布/recipe 强相关，随意微调可能 catastrophic forgetting。</p></div>
+      <div class="card"><div class="label">为什么 zero-conv</div><h3>低风险接入新后端</h3><p class="body">类似 ControlNet 的注入方式，让新后端从近似零影响开始学习。</p></div>
+      <div class="card"><div class="label">为什么 sparse voxel</div><h3>复杂度跟 3D 内容相关</h3><p class="body">相比完整体素立方增长，稀疏结构更适合可见表面和室内外重建。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>结构</div><div>Frozen front-end · sparse voxel backend · KNN · zero-conv</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>AMB3R · 度量尺度</div><div>06 / 16</div></div>
+  <div class="frame">
+    <div class="grid-2">
+      <div>
+        <div class="kicker">Metric-scale Reconstruction</div>
+        <h2 class="title">尺度头不回归“整组图像的全局 scale”，而回归每帧可恢复的 metric log depth。</h2>
+      </div>
+      <div>
+        <div class="rowline"><div class="k">直接全局尺度</div><div class="v">依赖所有帧组合，受帧顺序和 frame set 变化影响，论文认为难训练且易过拟合。</div><div class="m">avoid</div></div>
+        <div class="rowline"><div class="k">AMB3R 选择</div><div class="v">每帧选预测深度中位数对应像素，回归其 metric log depth；推理时取多帧 scale 中位数。</div><div class="m">scale</div></div>
+        <div class="rowline"><div class="k">监督细节</div><div class="v">使用 encoder feature 加 depth DPT branch feature；缺失深度时用 ROE solver 获得相对尺度监督。</div><div class="m">ROE</div></div>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><div class="num">NYUv2</div><div class="txt">zero-shot monocular depth 表中 AMB3R rel 3.0，优于 VGGT 3.6。</div></div>
+      <div class="metric"><div class="num">RMVDB</div><div class="txt">multi-view depth 平均 rel 1.7，论文报告为新 SOTA。</div></div>
+      <div class="metric"><div class="num">DTU</div><div class="txt">玩具建筑/白桌背景会诱发尺度误判，论文专门提示此类 failure。</div></div>
+      <div class="metric"><div class="num">Metric</div><div class="txt">不只是对齐后好看，而是尝试恢复真实世界尺度。</div></div>
+    </div>
+  </div>
+  <div class="foot"><div>尺度</div><div>per-frame metric log depth · median scale</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>AMB3R · VO 与 SfM</div><div>07 / 16</div></div>
+  <div class="frame">
+    <div class="kicker">System Extension</div>
+    <h2 class="title">只按多视角重建训练，却扩展到无标定 VO 和大规模 SfM。</h2>
+    <div class="grid-2" style="margin-top:3vh">
+      <div class="card">
+        <div class="label">Uncalibrated Visual Odometry</div>
+        <h3>keyframes 作为 active memory</h3>
+        <p class="body">输入新帧和 active keyframes；利用 pointmap 输出在参考帧坐标系下、只差未知尺度的先验，先估计相对 scale，再通过 keyframes 的相对位姿加权平均对齐到全局。论文强调避免显式 Kabsch-Umeyama 刚体对齐，并在 confidence 足够时可跳过 backend。</p>
+      </div>
+      <div class="card">
+        <div class="label">Feed-forward SfM</div>
+        <h3>cluster -> register -> mapping</h3>
+        <p class="body">先用图像特征聚类成小簇，再从高置信簇初始化，全局 keyframe list 逐步扩张；之后做 keyframe refinement 和 non-keyframe refinement。整个流程不做传统 BA，因此是 feed-forward SfM，而非优化式 SfM。</p>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-top:2.5vh">
+      <div class="card"><div class="label">VO 速度</div><h3>4.2 FPS</h3><p class="body">RTX 4090、392x518、TUM，best 6.0 / worst 3.4 FPS；active keyframes 上限 10。</p></div>
+      <div class="card"><div class="label">TUM VO</div><h3>2.7 cm</h3><p class="body">AMB3R(KF) 平均 ATE RMSE；论文报告优于 MUSt3R 和多种 VO/SLAM 基线。</p></div>
+      <div class="card"><div class="label">ETH3D VO</div><h3>2.0 cm</h3><p class="body">ETH3D SLAM 上 AMB3R(KF) 平均 ATE RMSE，明显优于 MUSt3R 表中结果。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>系统</div><div>keyframe memory · coordinate alignment · no BA</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>AMB3R · 实验与局限</div><div>08 / 16</div></div>
+  <div class="frame">
+    <div class="grid-2" style="align-items:start">
+      <div>
+        <div class="kicker">Results</div>
+        <h2 class="title">强项在几何一致性、尺度和任务泛化。</h2>
+        <div class="metric-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="metric"><div class="num">86.3</div><div class="txt">Re10K camera pose AUC@30。</div></div>
+          <div class="metric"><div class="num">98.2 / 81.9</div><div class="txt">ETH3D SfM 平均 RRA@5 / RTA@5。</div></div>
+          <div class="metric"><div class="num">95.0 / 94.5</div><div class="txt">Tanks&Temples Training split RRA@5 / RTA@5。</div></div>
+          <div class="metric"><div class="num">3D backend</div><div class="txt">ablation 中 full backend 优于 w/o backend 与 2D backend。</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="kicker">Limitations</div>
+        <div class="rowline"><div class="k">局部后端</div><div class="v">backend 仍是 local scene representation，不能跨所有 chunks 做长期全局联合推理。</div><div class="m">scope</div></div>
+        <div class="rowline"><div class="k">二次复杂度</div><div class="v">基础 type-c/VGGT 结构仍有随输入图像数增长的二次复杂度限制。</div><div class="m">N²</div></div>
+        <div class="rowline"><div class="k">动态场景</div><div class="v">未针对动态场景训练；动态物体主导时容易失败。</div><div class="m">dynamic</div></div>
+        <div class="rowline"><div class="k">系统后处理</div><div class="v">无 loop closure/relocalization；feed-forward poses 可能不满足严格几何约束，NVS 可能仍需 BA。</div><div class="m">BA</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div>结论</div><div>AMB3R 是 pointmap 模型的 3D 几何后端增强路线</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>ZipMap · 信息卡</div><div>09 / 16</div></div>
+  <div class="frame">
+    <div class="kicker">ZipMap</div>
+    <h2 class="title">Linear-Time Stateful 3D Reconstruction via Test-Time Training</h2>
+    <div class="grid-2" style="margin-top:3.5vh">
+      <div>
+        <div class="rowline"><div class="k">作者</div><div class="v">Haian Jin, Rundi Wu, Tianyuan Zhang, Ruiqi Gao, Jonathan T. Barron, Noah Snavely, Aleksander Holynski。</div><div class="m">GDM</div></div>
+        <div class="rowline"><div class="k">状态</div><div class="v">CVPR 2026；arXiv v3 last revised 2026-04-08；代码和 checkpoints 已公开。</div><div class="m">2026</div></div>
+        <div class="rowline"><div class="k">一句话</div><div class="v">用 TTT layers 把整组图像压缩为 hidden scene state，实现线性时间、双向、单次前馈 3D 重建。</div><div class="m">core</div></div>
+      </div>
+      <div>
+        <div class="metric-grid" style="grid-template-columns:repeat(2,1fr);margin-top:0">
+          <div class="metric"><div class="num">750</div><div class="txt">单 H100 上 750 frames 低于 10 秒。</div></div>
+          <div class="metric"><div class="num">20x+</div><div class="txt">长序列下比 VGGT 快 20x+。</div></div>
+          <div class="metric"><div class="num">29</div><div class="txt">训练使用 29 个公开数据集。</div></div>
+          <div class="metric"><div class="num">100 FPS</div><div class="txt">scene state query 约 100 FPS。</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sources">
+      <a href="https://arxiv.org/abs/2603.04385">arXiv: ZipMap: Linear-Time Stateful 3D Reconstruction via Test-Time Training</a>
+      <a href="https://haian-jin.github.io/ZipMap/">Project Page: ZipMap</a>
+      <a href="https://github.com/Haian-Jin/ZipMap">Code: Haian-Jin/ZipMap</a>
+      <a href="https://huggingface.co/papers/2603.04385">Hugging Face paper page</a>
+    </div>
+  </div>
+  <div class="foot"><div>关键词</div><div>TTT layers · fast weights · scene state · O(N)</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>ZipMap · 研究动机</div><div>10 / 16</div></div>
+  <div class="frame">
+    <div class="grid-2" style="align-items:end">
+      <div><div class="kicker">为什么要线性时间</div><h2 class="title">全局 attention 很强，但几百张图像时成本过高。</h2></div>
+      <p class="lead">VGGT、pi^3 等模型通过全局交互建立跨视角一致性，质量高但复杂度随输入图像数二次增长。CUT3R、TTT3R 等顺序方法能线性扩展，但常因为局部/递归处理损失质量或累积误差。</p>
+    </div>
+    <div class="compare">
+      <div class="head">路线</div><div class="head">优势</div><div class="head">瓶颈</div>
+      <div>全局 attention</div><div>跨图像信息充分交互，重建质量强。</div><div>O(N²)，长序列 runtime 和显存压力迅速升高。</div>
+      <div>顺序/局部分块</div><div>O(N)，适合在线或长序列。</div><div>质量下降、错误累积、GPU 利用率可能低。</div>
+      <div>ZipMap</div><div>TTT fast weights 压缩全局上下文，线性时间且双向。</div><div>需要训练出能承载场景信息的状态表示。</div>
+    </div>
+    <div class="thesis">ZipMap 的关键不是“少看一些帧”，而是把所有帧的信息写入一个固定规模的可查询状态。</div>
+  </div>
+  <div class="foot"><div>复杂度</div><div>O(N²) global attention -> O(N) stateful feed-forward</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>ZipMap · TTT fast weights</div><div>11 / 16</div></div>
+  <div class="frame">
+    <div class="kicker">Method</div>
+    <h2 class="title">用 Test-Time Training layer，把图像集合“写入”MLP fast weights。</h2>
+    <div class="pipeline">
+      <div class="box"><h3>DINOv2 tokens</h3><p class="body">图像 resize/tokenize 后进入 DINOv2 encoder，得到 patch-level tokens。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>Local window attention</h3><p class="body">保留每帧局部空间建模，避免完全丢掉图像内结构。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>Large-chunk TTT</h3><p class="body">不存所有 token，而是用梯度更新把上下文写进 nonlinear fast-weight function。</p></div>
+      <div class="arrow"></div>
+      <div class="box"><h3>3D heads + state query</h3><p class="body">一次输出 pose/depth/pointmap；同一状态可用 ray map 查询新视角。</p></div>
+    </div>
+    <div class="grid-3" style="margin-top:3vh">
+      <div class="card"><div class="label">Backbone</div><h3>24 layers</h3><p class="body">每层交替 local window attention 和 TTT block。</p></div>
+      <div class="card"><div class="label">State size</div><h3>6d² per layer</h3><p class="body">d=1024，fast-weight MLP intermediate dimension=2048。</p></div>
+      <div class="card"><div class="label">Ablation</div><h3>gated unit + Newton-Schulz</h3><p class="body">去掉 gated unit、Newton-Schulz 或动态 token learning rate 都会降低 ETH3D point-map 指标。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>机制</div><div>local detail + global compressed state</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>ZipMap · 训练与输出</div><div>12 / 16</div></div>
+  <div class="frame">
+    <div class="grid-2">
+      <div>
+        <div class="kicker">Training</div>
+        <h2 class="title">不是小改模型：ZipMap 为长上下文重建进行了大规模多阶段训练。</h2>
+      </div>
+      <div>
+        <div class="rowline"><div class="k">Stage 1</div><div class="v">静态数据，指定 reference view，80K iterations；TTT block lr 1e-4，其他模块 1e-5。</div><div class="m">static</div></div>
+        <div class="rowline"><div class="k">Stage 2</div><div class="v">加入动态数据，fine-tune 40K iterations，约 2.5 天。</div><div class="m">dynamic</div></div>
+        <div class="rowline"><div class="k">Stage 3</div><div class="v">移除 reference view，继续训练 60K iterations，提升长序列泛化。</div><div class="m">no ref</div></div>
+        <div class="rowline"><div class="k">Fine-tune</div><div class="v">额外 fine-tune 支持 scene state query 和 streaming reconstruction。</div><div class="m">query</div></div>
+      </div>
+    </div>
+    <div class="pillrow">
+      <span class="pill">64 H100 GPUs</span><span class="pill">29 public datasets</span><span class="pill">23 static datasets</span><span class="pill">6 dynamic datasets</span><span class="pill">FSDP</span><span class="pill">torch.compile for TTT block</span>
+    </div>
+    <div class="thesis">输出不止点云：ZipMap 同时预测 camera pose、depth、point map，并让压缩 state 成为可查询的隐式场景表示。</div>
+  </div>
+  <div class="foot"><div>训练</div><div>static -> dynamic -> no-reference -> query/streaming</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>ZipMap · 性能</div><div>13 / 16</div></div>
+  <div class="frame">
+    <div class="grid-2" style="align-items:end">
+      <div><div class="kicker">Runtime + Accuracy</div><h2 class="title">长序列优势是 ZipMap 最有辨识度的结果。</h2></div>
+      <p class="lead">论文和项目页报告：在单张 H100 上，ZipMap 可用低于 10 秒处理 700+/750 帧，约 75 FPS；相较 VGGT 在长序列下快 20x+，相较 pi^3 快 15x+。</p>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><div class="num">&lt;10s</div><div class="txt">750 frames reconstruction runtime。</div></div>
+      <div class="metric"><div class="num">75 FPS</div><div class="txt">长序列重建吞吐量。</div></div>
+      <div class="metric"><div class="num">100 FPS</div><div class="txt">只 query scene state 时的速度。</div></div>
+      <div class="metric"><div class="num">O(N)</div><div class="txt">推理时间随输入图像数线性增长。</div></div>
+    </div>
+    <div class="grid-3" style="margin-top:3vh">
+      <div class="card"><div class="label">Camera pose</div><h3>接近强 O(N²) 基线</h3><p class="body">RealEstate10K、Co3Dv2、Sintel、TUM Dynamics、ScanNet 上与 VGGT/pi^3 同级，同时保持线性复杂度。</p></div>
+      <div class="card"><div class="label">Point map</div><h3>明显强于线性基线</h3><p class="body">7-Scenes、NRGBD、DTU、ETH3D 上优于 CUT3R/TTT3R 等线性方法，接近或超过 VGGT/pi^3。</p></div>
+      <div class="card"><div class="label">Video depth</div><h3>适合长视频</h3><p class="body">Sintel、Bonn、KITTI 上通常超过 VGGT，并明显优于多数 O(N) baselines。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>结果</div><div>long sequence · runtime · quality retention</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>ZipMap · Scene State 与 Streaming</div><div>14 / 16</div></div>
+  <div class="frame">
+    <div class="kicker">Stateful Representation</div>
+    <h2 class="title">ZipMap 的 state 不只是缓存，它是可查询的隐式场景表示。</h2>
+    <div class="grid-2" style="margin-top:3vh">
+      <div class="card">
+        <div class="label">Scene State Query</div>
+        <h3>给定 query camera / ray map，输出新视角点图</h3>
+        <p class="body">输入图像集合被压缩为 TTT fast weights 后，可以在 novel camera 条件下直接 query RGB、depth 和 colored point map。论文强调它主要用于生成 colored point clouds，不声称达到 unposed NVS SOTA。</p>
+      </div>
+      <div class="card">
+        <div class="label">Streaming Reconstruction</div>
+        <h3>逐帧更新 TTT state</h3>
+        <p class="body">streaming 版本替换 camera head 为轻量 MLP，并在 32 H100 GPUs 上 fine-tune。作者报告在 video depth、camera pose、point-map reconstruction 上通常优于 CUT3R 和 TTT3R。</p>
+      </div>
+    </div>
+    <div class="thesis">最值得记住的一点：ZipMap 把“长上下文重建”转成了“学习如何写入和读取场景状态”的问题。</div>
+  </div>
+  <div class="foot"><div>状态</div><div>queryable state · colored point map · streaming update</div></div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome"><div>ZipMap · 局限</div><div>15 / 16</div></div>
+  <div class="frame">
+    <div class="grid-2">
+      <div>
+        <div class="kicker">Limitations</div>
+        <h2 class="title">线性时间解决的是可扩展性，不自动解决所有几何系统问题。</h2>
+      </div>
+      <div>
+        <div class="rowline"><div class="k">超长分布外</div><div class="v">当场景规模远超训练分布，模型仍会明显退化；作者认为这是现有 feed-forward 方法共同问题。</div><div class="m">OOD</div></div>
+        <div class="rowline"><div class="k">NVS 不是主目标</div><div class="v">query RGB 在高频区域会模糊，当前更适合 colored point clouds，不是高保真 novel view synthesis。</div><div class="m">NVS</div></div>
+        <div class="rowline"><div class="k">短序列常数开销</div><div class="v">5 帧左右很短输入时，TTT block 和 Newton-Schulz 可能比高度优化的 FlashAttention 基线略慢。</div><div class="m">cost</div></div>
+        <div class="rowline"><div class="k">隐式状态可控性</div><div class="v">fast weights 是压缩状态，不等价于传统 SLAM map；可编辑性、约束注入、闭环修正仍是后续问题。</div><div class="m">map</div></div>
+      </div>
+    </div>
+    <div class="thesis">所以 ZipMap 的最佳定位：长图像集合/长视频前馈重建的高吞吐基础模型，而不是完整替代所有优化式 3D 系统。</div>
+  </div>
+  <div class="foot"><div>边界</div><div>scale beyond training · blurry query RGB · implicit state</div></div>
+</section>
+
+<section class="slide light">
+  <div class="chrome"><div>收束 · 简短对照</div><div>16 / 16</div></div>
+  <div class="frame">
+    <div class="kicker">Takeaways</div>
+    <h2 class="title">两篇文章各自回答一个关键问题。</h2>
+    <div class="compare">
+      <div class="head">维度</div><div class="head">AMB3R</div><div class="head">ZipMap</div>
+      <div>主问题</div><div>pointmap 模型如何获得更强 3D 空间推理和真实尺度。</div><div>前馈 3D 模型如何处理几百帧而保持高质量。</div>
+      <div>核心机制</div><div>冻结 VGGT + sparse voxel backend + zero-conv 注入。</div><div>local attention + large-chunk TTT fast weights。</div>
+      <div>代表能力</div><div>metric depth、3D reconstruction、uncalibrated VO、feed-forward SfM。</div><div>linear-time long sequence reconstruction、scene state query、streaming。</div>
+      <div>主要风险</div><div>局部后端、N² 输入复杂度、VO 漂移、动态主导场景。</div><div>分布外超长场景、query RGB 模糊、隐式状态可控性。</div>
+    </div>
+    <div class="grid-3" style="margin-top:3vh">
+      <div class="card"><div class="label">讲 AMB3R</div><h3>抓住“空间紧凑性”</h3><p class="body">它不是简单加模块，而是把多视角观测压进 sparse 3D representation。</p></div>
+      <div class="card"><div class="label">讲 ZipMap</div><h3>抓住“状态写入”</h3><p class="body">它不是少算 attention，而是训练模型把场景信息写入 fast weights。</p></div>
+      <div class="card"><div class="label">讲未来</div><h3>几何后端 + 长上下文状态</h3><p class="body">二者不必强行关联，但都指向更可扩展、更统一的前馈 3D perception。</p></div>
+    </div>
+  </div>
+  <div class="foot"><div>End</div><div>AMB3R · ZipMap</div></div>
+</section>
+
+</main>
+<nav id="nav" aria-label="Slide navigation"></nav>
+<div class="hint">← / → 翻页 · Home / End</div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+const deck=document.getElementById('deck');
+const nav=document.getElementById('nav');
+let idx=0;
+function go(n){
+  idx=Math.max(0,Math.min(slides.length-1,n));
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  document.body.classList.toggle('dark-nav',slides[idx].classList.contains('dark'));
+  [...nav.children].forEach((d,i)=>d.classList.toggle('active',i===idx));
+}
+slides.forEach((_,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';
+  b.type='button';
+  b.setAttribute('aria-label',`Go to slide ${i+1}`);
+  b.addEventListener('click',()=>go(i));
+  nav.appendChild(b);
+});
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(idx+1)}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(idx-1)}
+  if(e.key==='Home'){e.preventDefault();go(0)}
+  if(e.key==='End'){e.preventDefault();go(slides.length-1)}
+});
+go(0);
+</script>
+</body>
+</html>
