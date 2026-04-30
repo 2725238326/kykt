@@ -393,12 +393,20 @@ export type DeploymentStatusPayload = {
   };
 };
 
+export type PageInfo = {
+  total: number;
+  limit: number;
+  offset: number;
+  has_more: boolean;
+};
+
 export type JobsListPayload = {
   jobs: Array<{
     job: JobRecord;
     phase_display: PhaseDisplay;
   }>;
   summary: BootstrapPayload["summary"];
+  page_info?: PageInfo;
 };
 
 export type DevelopmentLaneItem = {
