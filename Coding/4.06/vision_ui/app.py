@@ -46,6 +46,7 @@ from job_store import (
     load_evaluation,
     load_result_summary,
     load_job,
+    query_jobs,
     save_inputs,
     save_evaluation,
     update_job,
@@ -190,6 +191,29 @@ def build_dashboard_stats(jobs) -> dict:
         if key:
             summary[key] += 1
     return summary
+
+
+def _split_query_list(value: str | None) -> list[str]:
+    if not value:
+        return []
+    items: list[str] = []
+    for part in value.split(","):
+        item = part.strip()
+        if item:
+            items.append(item)
+    return items
+
+
+def _job_list_payload(jobs) -> list[dict]:
+    payload = []
+    for job in jobs:
+        payload.append(
+            {
+                "job": job.to_dict(),
+                "phase_display": build_phase_display(job.phase, job.status, job.progress_message),
+            }
+        )
+    return payload
 
 
 def load_samples_manifest() -> dict:
@@ -888,17 +912,44 @@ async def open_output_file_api(job_id: str, relative_path: str = Form(...)):
 
 
 @app.get("/api/jobs")
-async def jobs_api():
-    jobs = list_jobs(limit=50)
-    payload = []
-    for job in jobs:
-        payload.append(
-            {
-                "job": job.to_dict(),
-                "phase_display": build_phase_display(job.phase, job.status, job.progress_message),
-            }
-        )
-    return JSONResponse({"jobs": payload, "summary": build_dashboard_stats(jobs)})
+async def jobs_api(
+    limit: int = 50,
+    offset: int = 0,
+    status: str | None = None,
+    model: str | None = None,
+    source_type: str | None = None,
+    sample_id: str | None = None,
+    search: str | None = None,
+    sort: str = "created_desc",
+):
+    result = query_jobs(
+        limit=limit,
+        offset=offset,
+        statuses=_split_query_list(status),
+        models=_split_query_list(model),
+        source_types=_split_query_list(source_type),
+        sample_id=sample_id,
+        search=search,
+        sort=sort,
+    )
+    jobs = result["jobs"]
+    page = result["page"]
+    filters = result["filters"]
+    return JSONResponse(
+        {
+            "jobs": _job_list_payload(jobs),
+            "summary": build_dashboard_stats(jobs),
+            "page": page,
+            "pageInfo": {
+                "limit": page["limit"],
+                "offset": page["offset"],
+                "total": page["total"],
+                "hasMore": page["has_more"],
+                "sort": page["sort"],
+            },
+            "filters": filters,
+        }
+    )
 
 
 @app.get("/api/jobs/{job_id}")
@@ -928,7 +979,9 @@ async def health_api():
 
 @app.get("/api/app/state")
 async def app_state_api():
-    jobs = list_jobs(limit=50)
+    job_query = query_jobs(limit=50)
+    jobs = job_query["jobs"]
+    job_page = job_query["page"]
     model_catalog = get_model_catalog_options()
     model_contracts = all_model_contracts()
     development_lanes = [item.to_dict() for item in development_store.list_items()]
@@ -936,6 +989,7 @@ async def app_state_api():
         {
             "health": {"ok": True, "service": "kykt-vision-ui", "version": app.version},
             "summary": build_dashboard_stats(jobs),
+            "job_page": job_page,
             "delivery_gaps": DELIVERY_GAPS,
             "server": {
                 "alias": ServerConfig.alias,
@@ -951,6 +1005,13 @@ async def app_state_api():
             "advisor": advisor_status(),
             "development_lanes": development_lanes,
             "deliveryGaps": DELIVERY_GAPS,
+            "jobPage": {
+                "limit": job_page["limit"],
+                "offset": job_page["offset"],
+                "total": job_page["total"],
+                "hasMore": job_page["has_more"],
+                "sort": job_page["sort"],
+            },
             "modelCatalog": model_catalog,
             "modelContracts": model_contracts,
             "sourceTypes": SOURCE_TYPE_OPTIONS,
@@ -1197,11 +1258,14 @@ def load_deployment_status(*, force_refresh: bool = False) -> dict:
 
 @app.get("/api/bootstrap")
 async def bootstrap_api():
-    jobs = list_jobs(limit=50)
+    job_query = query_jobs(limit=50)
+    jobs = job_query["jobs"]
+    job_page = job_query["page"]
     model_catalog = get_model_catalog_options()
     return JSONResponse(
         {
             "summary": build_dashboard_stats(jobs),
+            "job_page": job_page,
             "delivery_gaps": DELIVERY_GAPS,
             "server": {
                 "alias": ServerConfig.alias,
@@ -1214,6 +1278,13 @@ async def bootstrap_api():
             "model_catalog": model_catalog,
             "source_types": SOURCE_TYPE_OPTIONS,
             "advisor": advisor_status(),
+            "jobPage": {
+                "limit": job_page["limit"],
+                "offset": job_page["offset"],
+                "total": job_page["total"],
+                "hasMore": job_page["has_more"],
+                "sort": job_page["sort"],
+            },
         }
     )
 

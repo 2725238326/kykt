@@ -6,7 +6,7 @@ import threading
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Sequence
 
 from model_registry import default_runner_for
 
@@ -15,6 +15,8 @@ ROOT = Path(__file__).resolve().parent
 LOCAL_JOBS_DIR = ROOT / "local_jobs"
 _JOB_STORE_LOCK = threading.RLock()
 LOG_TAIL_READ_BYTES = 256 * 1024
+JOB_LIST_DEFAULT_LIMIT = 50
+JOB_LIST_MAX_LIMIT = 500
 EVALUATION_RUBRIC_VERSION = 1
 EVALUATION_SCORE_MIN = 1
 EVALUATION_SCORE_MAX = 5
@@ -180,26 +182,127 @@ def save_job(job: JobRecord) -> None:
 
 def load_job(job_id: str) -> JobRecord:
     with _JOB_STORE_LOCK:
-        payload = _read_json(get_job_dir(job_id) / "job.json")
-        payload.setdefault("sample_id", None)
-        payload.setdefault("params", {})
-        payload.setdefault("input_items", [])
-        return JobRecord(**payload)
+        return _load_job_record(get_job_dir(job_id) / "job.json")
 
 
 def list_jobs(limit: int = 20) -> list[JobRecord]:
+    return query_jobs(limit=limit)["jobs"]
+
+
+def query_jobs(
+    *,
+    limit: int = JOB_LIST_DEFAULT_LIMIT,
+    offset: int = 0,
+    statuses: Sequence[str] | None = None,
+    models: Sequence[str] | None = None,
+    source_types: Sequence[str] | None = None,
+    sample_id: str | None = None,
+    search: str | None = None,
+    sort: str = "created_desc",
+) -> dict:
     with _JOB_STORE_LOCK:
         ensure_local_jobs_dir()
+        normalized_limit = min(max(int(limit), 1), JOB_LIST_MAX_LIMIT)
+        normalized_offset = max(int(offset), 0)
+        status_filter = _filter_set(statuses)
+        model_filter = _filter_set(models)
+        source_filter = _filter_set(source_types)
+        normalized_sample_id = str(sample_id).strip() if sample_id is not None else ""
+        normalized_search = str(search).strip().lower() if search is not None else ""
+        reverse = sort != "created_asc"
+
         jobs: list[JobRecord] = []
-        for job_json in sorted(LOCAL_JOBS_DIR.glob("*/job.json"), reverse=True):
-            payload = _read_json(job_json)
-            payload.setdefault("sample_id", None)
-            payload.setdefault("params", {})
-            payload.setdefault("input_items", [])
-            jobs.append(JobRecord(**payload))
-            if len(jobs) >= limit:
-                break
-        return jobs
+        matched_total = 0
+        for job_json in sorted(LOCAL_JOBS_DIR.glob("*/job.json"), reverse=reverse):
+            job = _load_job_record(job_json)
+            if not _job_matches_filters(
+                job,
+                statuses=status_filter,
+                models=model_filter,
+                source_types=source_filter,
+                sample_id=normalized_sample_id,
+                search=normalized_search,
+            ):
+                continue
+            matched_total += 1
+            if matched_total <= normalized_offset:
+                continue
+            if len(jobs) < normalized_limit:
+                jobs.append(job)
+
+        return {
+            "jobs": jobs,
+            "page": {
+                "limit": normalized_limit,
+                "offset": normalized_offset,
+                "total": matched_total,
+                "has_more": normalized_offset + len(jobs) < matched_total,
+                "sort": "created_asc" if sort == "created_asc" else "created_desc",
+            },
+            "filters": {
+                "status": sorted(status_filter),
+                "model": sorted(model_filter),
+                "source_type": sorted(source_filter),
+                "sample_id": normalized_sample_id or None,
+                "search": normalized_search or None,
+            },
+        }
+
+
+def _load_job_record(job_json: Path) -> JobRecord:
+    payload = _read_json(job_json)
+    payload.setdefault("sample_id", None)
+    payload.setdefault("params", {})
+    payload.setdefault("input_items", [])
+    return JobRecord(**payload)
+
+
+def _filter_set(values: Sequence[str] | None) -> set[str]:
+    if not values:
+        return set()
+    normalized: set[str] = set()
+    for value in values:
+        for part in str(value).split(","):
+            item = part.strip()
+            if item:
+                normalized.add(item)
+    return normalized
+
+
+def _job_matches_filters(
+    job: JobRecord,
+    *,
+    statuses: set[str],
+    models: set[str],
+    source_types: set[str],
+    sample_id: str,
+    search: str,
+) -> bool:
+    if statuses and job.status not in statuses:
+        return False
+    if models and job.model not in models:
+        return False
+    if source_types and job.source_type not in source_types:
+        return False
+    if sample_id and (job.sample_id or "") != sample_id:
+        return False
+    if search:
+        haystack = " ".join(
+            [
+                job.job_id,
+                job.model,
+                job.source_type,
+                job.status,
+                job.phase,
+                job.notes or "",
+                job.sample_id or "",
+                job.progress_message or "",
+                job.error_message or "",
+            ]
+        ).lower()
+        if search not in haystack:
+            return False
+    return True
 
 
 def _normalized_suffix(filename: str) -> str:

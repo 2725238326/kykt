@@ -23,6 +23,9 @@ The app should remain a local desktop workbench. The server should run model job
 - Added mtime-based caching for `samples_manifest.json`.
 - Changed log tail reading in `job_store.get_log_snippets()` from full-file reads to tail-window reads, reducing cost when runner logs grow.
 - Updated delivery gaps to match the active 3R model route instead of stale DUSt3R multi-image wording.
+- Added a contract-driven model API layer (`/api/app/state`, `/api/models/catalog`, `/api/models/{model}/contract`, `/api/models/{model}/validate-create`, `/api/jobs/{job_id}/contract`) so the frontend can consume backend model capabilities instead of hard-coding runner rules.
+- Added paginated job listing support on `GET /api/jobs` with `limit`, `offset`, `status`, `model`, `source_type`, `sample_id`, `search`, and `sort` query parameters. Existing clients can keep reading `jobs` and `summary`; new clients should use `pageInfo`.
+- Added Advisor provider diagnostics and schema-oriented OpenAI-compatible integration endpoints (`/api/advisor/providers`, `/api/advisor/diagnostics`, `/api/advisor/test`) with camelCase response aliases for frontend consumption.
 
 ### Frontend
 
@@ -54,6 +57,7 @@ The app should remain a local desktop workbench. The server should run model job
 ## Next Architecture Tasks
 
 1. Extract the remaining Create/System workspace sections from `client/src/App.tsx`, then move shared polling/bootstrap state into focused data hooks.
-2. Add pagination or windowing for very large local job histories.
+2. Update the frontend Jobs workbench to consume `pageInfo` and query parameters from `GET /api/jobs`.
 3. Unify query / polling state so jobs, samples, and deployment views share more reusable loading/error logic.
 4. Continue tightening report/evaluation/Advisor evidence contracts.
+5. Move remaining model-specific UI decisions to backend model contracts.
