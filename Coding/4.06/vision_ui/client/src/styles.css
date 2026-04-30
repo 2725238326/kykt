@@ -1,4 +1,68 @@
 
+/* Inspect Workspace Panes */
+.inspect-pane {
+  background: var(--bg-app);
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-right: 1px solid var(--line-default);
+}
+
+.inspect-pane.center {
+  background: #ffffff;
+}
+
+.inspect-pane.analysis-pane {
+  border-right: none;
+}
+
+.primary-art-card {
+  flex-shrink: 0;
+  width: 140px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.primary-art-card:hover {
+  transform: translateY(-2px);
+}
+
+.primary-art-card img {
+  border: 1px solid var(--line-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.output-card {
+  padding: 12px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line-default);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.output-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.output-actions button {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: white;
+  border: 1px solid var(--line-default);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.output-actions button:hover {
+  background: var(--bg-hover);
+}
+
 /* Redesign: Overview Focus Strip */
 .overview-focus-strip {
   display: flex;

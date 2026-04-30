@@ -58,9 +58,11 @@ The app should remain a local desktop workbench. The server should run model job
 
 ## Next Architecture Tasks
 
-1. Extract the remaining Create/System workspace sections from `client/src/App.tsx`, then move shared polling/bootstrap state into focused data hooks.
-2. Update the frontend Jobs workbench to consume `pageInfo` and query parameters from `GET /api/jobs`.
-3. Unify query / polling state so jobs, samples, and deployment views share more reusable loading/error logic.
-4. Update result/detail UI to consume `GET /api/jobs/{job_id}/inspection` as the primary Job Detail data source.
-5. Continue tightening report/evaluation/Advisor evidence contracts.
-6. Move remaining model-specific UI decisions to backend model contracts.
+1. Split the current Advisor implementation into a real AI service layer: `ai_gateway.py`, `ai_schemas.py`, `ai_context.py`, and `ai_trace_store.py`.
+2. Add typed AI task endpoints, starting with job diagnosis and next-run recommendation, so AI output becomes evidence-backed workflow data instead of generic report text.
+3. Add a benchmark/research store for sample/model matrices, benchmark runs, and mixed human/heuristic/AI scores.
+4. Continue tightening report/evaluation/Advisor evidence contracts using `GET /api/jobs/{job_id}/inspection` and artifact indexes as the primary evidence source.
+5. Keep the frontend as a renderer of backend-owned contracts and AI task results; frontend implementation guidance lives in `APP_UI_OPTIMIZATION_AGENT_PROMPT.md`.
+6. Keep direct desktop executable rebuilds for meaningful app runtime updates; planning-only or documentation-only changes do not require rebuilding `client\src-tauri\target\release\kykt_vision_client.exe`.
+
+Detailed AI/research deployment plan: `AI_RESEARCH_ACCELERATION_DEPLOYMENT_PLAN.md`.

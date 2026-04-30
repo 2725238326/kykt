@@ -10,6 +10,7 @@ import type {
   DeploymentStatusPayload,
   DevelopmentLaneItem,
   EvaluationPayload,
+  InspectionPacket,
   JobPayload,
   JobsListPayload,
   ModelContract,
@@ -76,6 +77,7 @@ import { DynamicParamForm } from "./DynamicParamForm";
 import { Sidebar } from "./Sidebar";
 import { CommandBar } from "./CommandBar";
 import { QueueWorkspace } from "./QueueWorkspace";
+import { InspectWorkspace } from "./InspectWorkspace";
 
 export type ServiceState = "starting" | "ready" | "degraded";
 export type JobFilter = "all" | "running" | "attention" | "finished";
@@ -85,7 +87,7 @@ function App() {
   const [appState, setAppState] = useState<AppState | null>(null);
   const [jobs, setJobs] = useState<JobsListPayload["jobs"]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [selectedJob, setSelectedJob] = useState<JobPayload | null>(null);
+  const [selectedInspection, setSelectedInspection] = useState<InspectionPacket | null>(null);
   const [samplesPayload, setSamplesPayload] = useState<SamplesPayload | null>(null);
   const [samplesError, setSamplesError] = useState<string | null>(null);
   const [developmentLanes, setDevelopmentLanes] = useState<DevelopmentLaneItem[]>([]);
@@ -223,20 +225,6 @@ function App() {
     }
   }
 
-  async function loadJobDetail(jobId: string, showError = true) {
-    try {
-      const detail = await fetchJson<JobPayload>(`/api/jobs/${jobId}`);
-      if (!detail.contract) {
-        try {
-          detail.contract = await fetchJson<ResultContract>(`/api/jobs/${jobId}/contract`);
-        } catch(e) {}
-      }
-      setSelectedJob(detail);
-    } catch (error) {
-      if (showError) setErrorMessage(friendlyError(error, "加载任务详情失败。"));
-    }
-  }
-
   async function loadDesktopBackendStatus() {
     try {
       const status = await invoke<BackendStatusPayload>("backend_status");
@@ -260,7 +248,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (selectedJobId && activeWorkspace === "inspect") loadJobDetail(selectedJobId);
+    if (selectedJobId && activeWorkspace === "inspect") loadInspection(selectedJobId);
   }, [selectedJobId, activeWorkspace]);
 
   useEffect(() => {
@@ -286,9 +274,19 @@ function App() {
     setInfoMessage(null);
   }
 
-  function handleInspectJob(jobId: string) {
+  async function handleInspectJob(jobId: string) {
     setSelectedJobId(jobId);
     setActiveWorkspace("inspect");
+    await loadInspection(jobId);
+  }
+
+  async function loadInspection(jobId: string, showError = true) {
+    try {
+      const packet = await fetchJson<InspectionPacket>(`/api/jobs/${jobId}/inspection`);
+      setSelectedInspection(packet);
+    } catch (error) {
+      if (showError) setErrorMessage(friendlyError(error, "加载任务检视数据失败。"));
+    }
   }
 
   const workspaceTitle = useMemo(() => {
@@ -365,8 +363,10 @@ function App() {
     setActionKey(key);
     try {
       const payload = await fetchJson<JobPayload>(path, { method: "POST" });
-      setSelectedJob(payload);
       setInfoMessage(buildActionMessage(key, payload.job.job_id));
+      if (selectedJobId === payload.job.job_id) {
+        loadInspection(selectedJobId, false);
+      }
       loadJobs(false);
     } catch (e) {
       setErrorMessage("执行操作失败");
@@ -541,36 +541,29 @@ function App() {
             </section>
           )}
 
-          {activeWorkspace === "inspect" && selectedJob && (
-            <JobDetail
-              selectedJob={selectedJob}
+          {activeWorkspace === "inspect" && selectedInspection && (
+            <InspectWorkspace
+              inspection={selectedInspection}
               advisorState={advisorState}
-              actionKey={actionKey}
               savingEvaluation={savingEvaluation}
-              canDispatch={canDispatchJobStatus(selectedJob.job.status)}
-              running={selectedJob.job.status === "running"}
-              assetUrl={(p) => `${API_BASE}${p}`}
-              onAction={postJobAction}
               onSaveEvaluation={async (id, p) => { 
                 setSavingEvaluation(true); 
                 try { 
                   await fetchJson(`/api/jobs/${id}/evaluation`, { method: "POST", body: JSON.stringify(p) }); 
-                  loadJobDetail(id); 
+                  loadInspection(id); 
                 } finally { 
                   setSavingEvaluation(false); 
                 } 
               }}
               onConfigureAdvisor={openAdvisorSettings}
+              onAction={postJobAction}
+              onPreviewAsset={setPreviewAsset}
               onOpenOutput={async (p) => { 
                 const f = new FormData(); 
                 f.append("relative_path", p); 
-                await fetchJson(`/api/jobs/${selectedJob.job.job_id}/open-output`, { method: "POST", body: f }); 
+                await fetchJson(`/api/jobs/${selectedInspection.job.job_id}/open-output`, { method: "POST", body: f }); 
               }}
-              onPreviewAsset={setPreviewAsset}
-              onCopy={async (v, l) => { 
-                await navigator.clipboard.writeText(v); 
-                setInfoMessage(`${l}已复制`); 
-              }}
+              assetUrl={(p) => `${API_BASE}${p.startsWith("/") ? "" : "/"}${p}`}
               modelCatalog={modelCatalog}
             />
           )}

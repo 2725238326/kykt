@@ -36,9 +36,11 @@ The current page is hard to use because too many unrelated surfaces compete for 
    - `GET /api/jobs/{jobId}/inspection`
    - `GET /api/advisor/providers`
    - `GET /api/advisor/diagnostics`
+   - future AI task endpoints defined in `AI_RESEARCH_ACCELERATION_DEPLOYMENT_PLAN.md`
 4. Do not hard-code model-specific input rules, parameter schemas, result file roles, or provider capabilities in the frontend.
-5. Keep the app responsive at desktop sizes first. Mobile is not a priority.
-6. Keep UI density high but readable. Avoid nested cards and decorative sections.
+5. Do not hard-code AI prompts, AI scoring rules, evidence extraction rules, provider retry behavior, or model comparison logic in the frontend.
+6. Keep the app responsive at desktop sizes first. Mobile is not a priority.
+7. Keep UI density high but readable. Avoid nested cards and decorative sections.
 
 ## Target Information Architecture
 
@@ -76,6 +78,10 @@ Use a stable left sidebar with these primary workspaces:
    - Deployment readiness, Advisor provider config, diagnostics.
    - Keep it utilitarian and compact.
 
+7. Research
+   - Research loop workspace for benchmark sets, sample/model matrices, evidence-backed reports, and next-run recommendations.
+   - This workspace should be added only after the backend exposes benchmark and AI task endpoints.
+
 ## Interaction Model
 
 - Global search filters jobs and samples.
@@ -108,6 +114,49 @@ Use a stable left sidebar with these primary workspaces:
 - `InspectionPacket.inspection.recommendedActions` drives the next-action checklist.
 - `/api/jobs` `pageInfo` drives pagination.
 - Advisor provider UI must read `/api/advisor/providers` and `/api/advisor/diagnostics`.
+- AI task outputs must be rendered as backend-owned objects. The frontend should show `summary`, `evidence`, `recommendedActions`, `confidence`, `requiresHumanCheck`, and trace status exactly as returned by the backend.
+- If an AI task references missing evidence or assumptions, the UI should surface that as a warning state rather than presenting it as fact.
+
+## Planned AI / Research Endpoints
+
+Do not implement mock frontend behavior for these until the backend exposes them. When available, integrate them as operational actions, not as a generic chat surface.
+
+- `POST /api/ai/tasks/job-diagnosis`
+  - Action location: Inspect workspace, especially failed or suspicious jobs.
+  - UI result: root cause candidates, evidence references, recommended actions, confidence.
+
+- `POST /api/ai/tasks/next-run`
+  - Action location: Inspect and Samples/Research.
+  - UI result: next experiment checklist with parameter/sample changes.
+
+- `POST /api/ai/tasks/compare-models`
+  - Action location: Samples/Research comparison matrix.
+  - UI result: model tradeoff summary and missing evidence list.
+
+- `POST /api/ai/tasks/research-report`
+  - Action location: Research workspace.
+  - UI result: generated report with evidence index and export action.
+
+- `POST /api/ai/tasks/promotion-readiness`
+  - Action location: Development workspace.
+  - UI result: readiness, blocking issues, runner contract draft, test plan.
+
+- `GET /api/ai/tasks?jobId=&taskType=&limit=`
+  - Action location: Inspect side panel and System diagnostics.
+  - UI result: task history, validation failures, provider/model/latency.
+
+- `GET /api/ai/tasks/{traceId}`
+  - Action location: trace detail drawer.
+  - UI result: task output, evidence references, validation status, provider metadata.
+
+## AI UX Rules
+
+- AI should appear as scoped commands: Diagnose Job, Suggest Next Run, Compare Models, Draft Report, Check Promotion Readiness.
+- Do not create a free-form chat-first interface.
+- Every AI answer must show its evidence references or state that evidence is missing.
+- Use compact trace/status indicators: queued, running, validated, failed validation, provider error.
+- When confidence is low or `requiresHumanCheck` is true, make the next action manual review, not automatic execution.
+- Never send raw images or private file paths from frontend logic. The backend decides what context is sent to providers.
 
 ## Acceptance Criteria
 
@@ -117,4 +166,5 @@ Use a stable left sidebar with these primary workspaces:
 4. Job detail shows primary artifacts first and logs second.
 5. Large job history remains usable through backend pagination.
 6. Advisor configuration shows provider, structured output mode, key status, and test result.
-7. Existing backend endpoints continue working; no Python files are modified.
+7. AI task results are shown as evidence-backed operational recommendations, not chatbot prose.
+8. Existing backend endpoints continue working; no Python files are modified.
