@@ -432,6 +432,40 @@ export type BackendStatusPayload = {
   log_path: string | null;
 };
 
+export type InspectionPacket = {
+  job: JobRecord;
+  phaseDisplay: PhaseDisplay;
+  inspection: {
+    attention: Array<{
+      kind: "warning" | "error" | "missing_output";
+      label: string;
+      detail: string;
+    }>;
+    recommendedActions: Array<{
+      key: string;
+      label: string;
+      target: string;
+      primary: boolean;
+    }>;
+  };
+  artifactIndex: {
+    groups: Array<{
+      key: string;
+      label: string;
+      description?: string;
+      artifacts: ResultArtifact[];
+    }>;
+    primaryArtifacts: ResultArtifact[];
+  };
+  logs: Array<{
+    name: string;
+    relative_path: string;
+    tail: string;
+  }>;
+  evaluation?: EvaluationPayload | null;
+  advisorReport?: AdvisorReport | null;
+};
+
 export type ValidationCreateResponse = {
   ok: boolean;
   errors: string[];

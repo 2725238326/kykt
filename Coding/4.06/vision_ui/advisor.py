@@ -11,7 +11,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from job_store import ROOT, get_job_dir, get_log_snippets, iter_input_items, load_evaluation, load_job, load_result_summary
-from model_contracts import model_contract_for
+from model_contracts import artifact_index_for, model_contract_for
 
 
 SETTINGS_DIR = ROOT / "settings"
@@ -379,6 +379,7 @@ def build_advisor_context(job_id: str) -> dict[str, Any]:
         model_contract = model_contract_for(job.model)
     except KeyError:
         model_contract = None
+    artifact_index = artifact_index_for(job.model, job.output_files)
 
     return {
         "project": "KYKT Vision",
@@ -399,6 +400,7 @@ def build_advisor_context(job_id: str) -> dict[str, Any]:
             "output_files": job.output_files[:120],
         },
         "model_contract": model_contract,
+        "artifact_index": artifact_index,
         "result_summary": summary,
         "manual_evaluation": evaluation,
         "scene_meta": scene_meta,

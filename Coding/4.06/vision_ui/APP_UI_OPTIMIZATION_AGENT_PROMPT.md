@@ -33,6 +33,7 @@ The current page is hard to use because too many unrelated surfaces compete for 
    - `GET /api/models/{model}/contract`
    - `POST /api/models/{model}/validate-create`
    - `GET /api/jobs/{jobId}/artifacts`
+   - `GET /api/jobs/{jobId}/inspection`
    - `GET /api/advisor/providers`
    - `GET /api/advisor/diagnostics`
 4. Do not hard-code model-specific input rules, parameter schemas, result file roles, or provider capabilities in the frontend.
@@ -58,7 +59,8 @@ Use a stable left sidebar with these primary workspaces:
 
 3. Inspect
    - Deep detail for one selected job.
-   - Use `artifactIndex.groups` and `artifactIndex.primaryArtifacts`.
+   - Prefer `GET /api/jobs/{jobId}/inspection` as the primary data source.
+   - Use `inspection.attention`, `inspection.recommendedActions`, `artifactIndex.groups`, and `artifactIndex.primaryArtifacts`.
    - Layout: left job facts, center artifact groups/result preview, right logs/evaluation/advisor.
    - Do not infer file roles from filename in frontend.
 
@@ -102,6 +104,8 @@ Use a stable left sidebar with these primary workspaces:
 - `AppState.modelContracts` drives Create and artifact/result behavior.
 - `JobPayload.artifactIndex.groups` drives output grouping.
 - `JobPayload.artifactIndex.primaryArtifacts` drives the first inspection path.
+- `InspectionPacket.inspection.attention` drives warnings and missing-work callouts.
+- `InspectionPacket.inspection.recommendedActions` drives the next-action checklist.
 - `/api/jobs` `pageInfo` drives pagination.
 - Advisor provider UI must read `/api/advisor/providers` and `/api/advisor/diagnostics`.
 
@@ -114,4 +118,3 @@ Use a stable left sidebar with these primary workspaces:
 5. Large job history remains usable through backend pagination.
 6. Advisor configuration shows provider, structured output mode, key status, and test result.
 7. Existing backend endpoints continue working; no Python files are modified.
-

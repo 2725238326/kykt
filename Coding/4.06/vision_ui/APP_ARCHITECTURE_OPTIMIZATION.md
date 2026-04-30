@@ -26,6 +26,7 @@ The app should remain a local desktop workbench. The server should run model job
 - Added a contract-driven model API layer (`/api/app/state`, `/api/models/catalog`, `/api/models/{model}/contract`, `/api/models/{model}/validate-create`, `/api/jobs/{job_id}/contract`) so the frontend can consume backend model capabilities instead of hard-coding runner rules.
 - Added paginated job listing support on `GET /api/jobs` with `limit`, `offset`, `status`, `model`, `source_type`, `sample_id`, `search`, and `sort` query parameters. Existing clients can keep reading `jobs` and `summary`; new clients should use `pageInfo`.
 - Added contract-driven artifact indexing on job detail payloads and `GET /api/jobs/{job_id}/artifacts`, grouping returned files by role (`pointcloud`, `scene`, `trajectory`, `frame_preview`, `confidence`, `metadata`, `log`, etc.) and exposing `primaryArtifacts` for inspection-first result views.
+- Added `GET /api/jobs/{job_id}/inspection` as a detail-view packet that combines the job payload, model contract, artifact index, log digest, manual evaluation digest, Advisor report state, attention items, and recommended next actions.
 - Added Advisor provider diagnostics and schema-oriented OpenAI-compatible integration endpoints (`/api/advisor/providers`, `/api/advisor/diagnostics`, `/api/advisor/test`) with camelCase response aliases for frontend consumption.
 
 ### Frontend
@@ -60,6 +61,6 @@ The app should remain a local desktop workbench. The server should run model job
 1. Extract the remaining Create/System workspace sections from `client/src/App.tsx`, then move shared polling/bootstrap state into focused data hooks.
 2. Update the frontend Jobs workbench to consume `pageInfo` and query parameters from `GET /api/jobs`.
 3. Unify query / polling state so jobs, samples, and deployment views share more reusable loading/error logic.
-4. Update result/detail UI to consume `artifactIndex.groups` and `artifactIndex.primaryArtifacts` instead of inferring file roles in the frontend.
+4. Update result/detail UI to consume `GET /api/jobs/{job_id}/inspection` as the primary Job Detail data source.
 5. Continue tightening report/evaluation/Advisor evidence contracts.
 6. Move remaining model-specific UI decisions to backend model contracts.

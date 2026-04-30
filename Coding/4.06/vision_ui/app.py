@@ -459,6 +459,121 @@ def _job_payload(job) -> dict:
     }
 
 
+def build_job_inspection_packet(job) -> dict:
+    payload = _job_payload(job)
+    contract = None
+    try:
+        contract = model_contract_for(job.model)
+    except KeyError:
+        contract = None
+
+    attention = _inspection_attention_items(
+        job,
+        artifact_index=payload["artifactIndex"],
+        result_summary=payload["result_summary"],
+        evaluation=payload["evaluation"],
+        advisor_report=payload["advisor_report"],
+        logs=payload["logs"],
+    )
+    return {
+        **payload,
+        "contract": contract,
+        "inspection": {
+            "jobId": job.job_id,
+            "status": job.status,
+            "phase": job.phase,
+            "readyForReview": job.status == "finished" and bool(payload["artifactIndex"]["artifacts"]),
+            "primaryArtifacts": payload["artifactIndex"]["primaryArtifacts"],
+            "artifactGroups": payload["artifactIndex"]["groups"],
+            "attention": attention,
+            "recommendedActions": _inspection_recommended_actions(job, attention, payload["artifactIndex"]),
+            "logDigest": _log_digest(payload["logs"]),
+            "scoreDigest": _score_digest(payload["evaluation"]),
+        },
+    }
+
+
+def _inspection_attention_items(job, *, artifact_index: dict, result_summary: dict | None, evaluation: dict | None, advisor_report: dict | None, logs: list[dict]) -> list[dict]:
+    items: list[dict] = []
+    if job.status == "failed":
+        items.append({"level": "critical", "title": "任务失败", "detail": job.error_message or job.progress_message or "查看 runner 日志确认失败原因。"})
+    elif job.status in {"draft", "running"}:
+        items.append({"level": "info", "title": "任务未完成", "detail": job.progress_message or "等待任务完成后再检查产物。"})
+
+    if job.status == "finished" and not artifact_index["artifacts"]:
+        items.append({"level": "warning", "title": "没有产物索引", "detail": "任务完成但没有登记输出文件，需要检查远端回传或 result summary。"})
+    elif job.status == "finished" and not artifact_index["primaryArtifacts"]:
+        items.append({"level": "warning", "title": "缺少核心检查对象", "detail": "已回传文件，但没有匹配到模型合同中的 primaryRoles。"})
+
+    if not result_summary and job.status == "finished":
+        items.append({"level": "warning", "title": "缺少结果摘要", "detail": "本地没有 result_summary.json，Advisor 和报告可用信息会减少。"})
+
+    if evaluation and not evaluation.get("updated_at") and job.status == "finished":
+        items.append({"level": "info", "title": "尚未人工评分", "detail": "建议完成结构、轨迹、噪声、动态处理等人工评分。"})
+
+    if not advisor_report and job.status == "finished":
+        items.append({"level": "info", "title": "尚未生成 AI Advisor 报告", "detail": "配置 Advisor 后可生成结构化实验判断和下一步建议。"})
+
+    critical_log = _first_matching_log_line(logs, ("traceback", "error", "exception", "failed", "失败"))
+    if critical_log:
+        items.append({"level": "warning", "title": "日志包含异常线索", "detail": critical_log[:300]})
+    return items
+
+
+def _inspection_recommended_actions(job, attention: list[dict], artifact_index: dict) -> list[str]:
+    if job.status == "failed":
+        return ["先查看日志异常线索。", "确认远端环境、权重路径和 runner 参数。", "修复后使用 Retry 复跑。"]
+    if job.status in {"draft", "running"}:
+        return ["等待任务完成或继续调度运行。"]
+    actions = []
+    primary = artifact_index.get("primaryArtifacts") or []
+    if primary:
+        labels = "、".join(item["label"] for item in primary[:3])
+        actions.append(f"先检查核心产物：{labels}。")
+    else:
+        actions.append("先确认是否缺少核心产物或输出合同配置。")
+    actions.append("再查看日志和 result summary，确认参数、耗时和回传是否正常。")
+    if any(item["title"] == "尚未人工评分" for item in attention):
+        actions.append("完成人工评分，方便后续 Sample Matrix 横向比较。")
+    if any(item["title"] == "尚未生成 AI Advisor 报告" for item in attention):
+        actions.append("生成 AI Advisor 报告，沉淀问题、证据和下一步动作。")
+    return actions
+
+
+def _log_digest(logs: list[dict]) -> dict:
+    latest = ""
+    critical = ""
+    for log in logs:
+        lines = [line for line in str(log.get("tail") or "").splitlines() if line.strip()]
+        if lines:
+            latest = lines[-1]
+        if not critical:
+            critical = _first_matching_log_line([log], ("traceback", "error", "exception", "failed", "失败"))
+    return {"count": len(logs), "latestLine": latest, "criticalLine": critical}
+
+
+def _first_matching_log_line(logs: list[dict], patterns: tuple[str, ...]) -> str:
+    lowered_patterns = tuple(pattern.lower() for pattern in patterns)
+    for log in logs:
+        for line in str(log.get("tail") or "").splitlines():
+            lower_line = line.lower()
+            if any(pattern in lower_line for pattern in lowered_patterns):
+                return line.strip()
+    return ""
+
+
+def _score_digest(evaluation: dict | None) -> dict:
+    if not evaluation:
+        return {"rated": False, "average": None, "filled": 0}
+    values = []
+    for field_name in EVALUATION_SCORE_FIELDS:
+        value = evaluation.get(field_name)
+        if isinstance(value, int):
+            values.append(value)
+    average = round(sum(values) / len(values), 2) if values else None
+    return {"rated": bool(evaluation.get("updated_at")), "average": average, "filled": len(values)}
+
+
 def _parse_evaluation_score(field_name: str, raw_value) -> int | None:
     if raw_value is None:
         return None
@@ -1094,6 +1209,15 @@ async def job_artifacts_api(job_id: str):
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
     return JSONResponse({"jobId": job_id, "model": job.model, "artifactIndex": build_job_artifact_index(job)})
+
+
+@app.get("/api/jobs/{job_id}/inspection")
+async def job_inspection_api(job_id: str):
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    return JSONResponse(build_job_inspection_packet(job))
 
 
 @app.get("/api/development/lanes")
