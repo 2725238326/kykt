@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from model_registry import MODEL_OPTIONS, SOURCE_TYPE_OPTIONS, get_model_catalog_options, get_model_spec, param_family_for
@@ -170,7 +171,12 @@ RESULT_CONTRACTS: dict[str, dict] = {
             "frame_preview": {"label": "彩色帧预览", "description": "用于确认抽帧质量、曝光和运动模糊。"},
             "dynamic_mask": {"label": "动态区域", "description": "用于判断运动物体区域识别。"},
             "confidence": {"label": "置信数组", "description": "用于诊断深度/几何估计稳定性。"},
+            "initial_confidence": {"label": "初始置信数组", "description": "用于对比初始估计和优化后的置信变化。"},
+            "geometry_array": {"label": "几何数组", "description": "逐帧几何中间结果。"},
             "array": {"label": "其他数组", "description": "其他 NPY 中间产物。"},
+            "image": {"label": "其他图像", "description": "未归入帧预览或动态区域的图像产物。"},
+            "log": {"label": "运行日志", "description": "runner.log 和远端执行日志。"},
+            "metadata": {"label": "运行元数据", "description": "scene_meta.json、summary 和其他结构化记录。"},
             "other": {"label": "其他产物", "description": "未归入主检查路径的产物。"},
         },
     },
@@ -184,6 +190,8 @@ RESULT_CONTRACTS: dict[str, dict] = {
             "pointcloud": {"label": "点云结果", "description": "优先检查全局结构与噪声。"},
             "transform": {"label": "相机与变换", "description": "用于复查相机轨迹与导出兼容性。"},
             "array": {"label": "几何数组", "description": "用于诊断 pointmap 与置信过滤效果。"},
+            "metadata": {"label": "运行元数据", "description": "scene_meta.json、transforms 和参数记录。"},
+            "log": {"label": "运行日志", "description": "runner.log 和远端执行日志。"},
             "other": {"label": "其他产物", "description": "未归入主检查路径的产物。"},
         },
     },
@@ -198,6 +206,7 @@ RESULT_CONTRACTS: dict[str, dict] = {
             "camera": {"label": "相机信息", "description": "用于复查位姿和焦距估计。"},
             "confidence": {"label": "置信摘要", "description": "用于诊断低置信区域。"},
             "metadata": {"label": "运行元数据", "description": "用于复查 attention backend、profiling 与输入列表。"},
+            "log": {"label": "运行日志", "description": "runner.log 和远端执行日志。"},
             "other": {"label": "其他产物", "description": "未归入主检查路径的产物。"},
         },
     },
@@ -367,3 +376,169 @@ def model_contract_for(model: str) -> dict:
 
 def all_model_contracts() -> list[dict]:
     return [model_contract_for(item["value"]) for item in get_model_catalog_options()]
+
+
+def artifact_index_for(model: str, output_files: list[str]) -> dict:
+    contract = result_contract_for(model)
+    roles = contract.get("artifactRoles") or {}
+    primary_roles = list(contract.get("primaryRoles") or [])
+    artifacts = [artifact_record_for(model, rel_path) for rel_path in output_files]
+    counts: dict[str, int] = {}
+    for artifact in artifacts:
+        counts[artifact["role"]] = counts.get(artifact["role"], 0) + 1
+
+    groups = []
+    for role, count in sorted(counts.items(), key=lambda item: (_role_order(primary_roles, item[0]), item[0])):
+        role_meta = roles.get(role) or roles.get("other") or {}
+        groups.append(
+            {
+                "key": role,
+                "label": role_meta.get("label") or role.replace("_", " "),
+                "count": count,
+                "description": role_meta.get("description") or "",
+            }
+        )
+
+    primary_artifacts = []
+    for role in primary_roles:
+        primary_artifacts.extend([artifact for artifact in artifacts if artifact["role"] == role][:1])
+
+    return {
+        "model": model,
+        "contractKey": contract.get("key"),
+        "primaryRole": primary_roles[0] if primary_roles else None,
+        "groups": groups,
+        "artifacts": artifacts,
+        "primaryArtifacts": primary_artifacts,
+        "artifact_groups": groups,
+        "primary_artifacts": [
+            {
+                "role": item["role"],
+                "label": item["label"],
+                "name": item["name"],
+                "relative_path": item["relativePath"],
+                "note": item.get("description") or "",
+            }
+            for item in primary_artifacts
+        ],
+    }
+
+
+def artifact_record_for(model: str, relative_path: str) -> dict:
+    role = artifact_role_for(model, relative_path)
+    role_meta = (result_contract_for(model).get("artifactRoles") or {}).get(role) or {}
+    name = Path(relative_path).name
+    kind = artifact_kind_for(relative_path)
+    return {
+        "role": role,
+        "label": role_meta.get("label") or role.replace("_", " "),
+        "description": role_meta.get("description") or "",
+        "name": name,
+        "relativePath": relative_path,
+        "relative_path": relative_path,
+        "kind": kind,
+        "url": "/" + relative_path.replace("\\", "/"),
+    }
+
+
+def artifact_role_for(model: str, relative_path: str) -> str:
+    name = Path(relative_path).name
+    lower = name.lower()
+    suffix = Path(lower).suffix
+    normalized_path = relative_path.replace("\\", "/").lower()
+
+    if suffix == ".log" or "/logs/" in normalized_path:
+        return "log"
+    if lower in {"scene_meta.json", "metadata.json", "result_summary.json"}:
+        return "metadata"
+
+    if model in {"dust3r", "mast3r"}:
+        if lower == "matches.png":
+            return "matches"
+        if suffix == ".ply":
+            return "pointcloud"
+        return _generic_artifact_role(lower, suffix)
+
+    if model == "monst3r":
+        if suffix in {".glb", ".gltf"}:
+            return "scene"
+        if lower == "pred_traj.txt" or "traj" in lower:
+            return "trajectory"
+        if lower == "pred_intrinsics.txt" or "intrinsics" in lower:
+            return "intrinsics"
+        if lower.startswith("frame_") and suffix in IMAGE_SUFFIXES:
+            return "frame_preview"
+        if "dynamic_mask" in lower and suffix in IMAGE_SUFFIXES:
+            return "dynamic_mask"
+        if lower.startswith("conf_") and suffix == ".npy":
+            return "confidence"
+        if lower.startswith("init_conf_") and suffix == ".npy":
+            return "initial_confidence"
+        if lower.startswith("frame_") and suffix == ".npy":
+            return "geometry_array"
+        return _generic_artifact_role(lower, suffix)
+
+    if model == "spann3r":
+        if suffix == ".ply":
+            return "pointcloud"
+        if "transform" in lower or "pose" in lower or "camera" in lower:
+            return "transform"
+        if suffix == ".npy":
+            return "array"
+        return _generic_artifact_role(lower, suffix)
+
+    if model == "fast3r":
+        if suffix == ".ply":
+            return "pointcloud"
+        if "camera" in lower or "pose" in lower or "intrinsics" in lower:
+            return "camera"
+        if "confidence" in lower or "conf" in lower:
+            return "confidence"
+        return _generic_artifact_role(lower, suffix)
+
+    return _generic_artifact_role(lower, suffix)
+
+
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".webp"}
+VIDEO_SUFFIXES = {".mp4", ".mov", ".avi", ".mkv", ".webm"}
+POINTCLOUD_SUFFIXES = {".ply", ".pcd", ".xyz"}
+MODEL3D_SUFFIXES = {".glb", ".gltf", ".obj"}
+DATA_SUFFIXES = {".json", ".npy", ".npz", ".txt", ".csv", ".tsv", ".yaml", ".yml"}
+
+
+def artifact_kind_for(relative_path: str) -> str:
+    suffix = Path(relative_path).suffix.lower()
+    if suffix in IMAGE_SUFFIXES:
+        return "image"
+    if suffix in VIDEO_SUFFIXES:
+        return "video"
+    if suffix in POINTCLOUD_SUFFIXES:
+        return "pointcloud"
+    if suffix in MODEL3D_SUFFIXES:
+        return "model3d"
+    if suffix == ".log":
+        return "log"
+    return "data" if suffix in DATA_SUFFIXES else "other"
+
+
+def _generic_artifact_role(lower_name: str, suffix: str) -> str:
+    if suffix in POINTCLOUD_SUFFIXES:
+        return "pointcloud"
+    if suffix in MODEL3D_SUFFIXES:
+        return "scene"
+    if suffix in IMAGE_SUFFIXES:
+        return "image"
+    if suffix == ".npy":
+        return "array"
+    if suffix in {".json", ".yaml", ".yml"}:
+        return "metadata"
+    if suffix == ".log":
+        return "log"
+    return "other"
+
+
+def _role_order(primary_roles: list[str], role: str) -> int:
+    try:
+        return primary_roles.index(role)
+    except ValueError:
+        return len(primary_roles) + 1

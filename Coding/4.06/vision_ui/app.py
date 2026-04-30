@@ -53,6 +53,8 @@ from job_store import (
 )
 from model_contracts import (
     all_model_contracts,
+    artifact_index_for,
+    artifact_record_for,
     build_job_params as build_contract_job_params,
     minimum_input_count,
     model_contract_for,
@@ -332,22 +334,46 @@ def build_phase_display(phase: str, status: str, progress_message: str | None = 
 def serialize_outputs(job) -> list[dict]:
     outputs = []
     for rel_path in job.output_files:
-        suffix = Path(rel_path).suffix.lower()
-        if suffix in {".json", ".log"}:
+        artifact = artifact_record_for(job.model, rel_path)
+        if artifact["kind"] in {"data", "log"}:
             continue
         outputs.append(
             {
                 "relative_path": rel_path,
-                "display_name": Path(rel_path).name,
-                "url": "/" + rel_path.replace("\\", "/"),
-                "is_image": suffix in {".png", ".jpg", ".jpeg", ".bmp", ".webp"},
-                "is_pointcloud": suffix == ".ply",
-                "is_model3d": suffix in {".glb", ".gltf"},
-                "is_video": suffix in {".mp4", ".mov", ".avi", ".mkv", ".webm"},
-                "is_log": suffix == ".log",
+                "display_name": artifact["name"],
+                "url": artifact["url"],
+                "role": artifact["role"],
+                "label": artifact["label"],
+                "kind": artifact["kind"],
+                "is_image": artifact["kind"] == "image",
+                "is_pointcloud": artifact["kind"] == "pointcloud",
+                "is_model3d": artifact["kind"] == "model3d",
+                "is_video": artifact["kind"] == "video",
+                "is_log": artifact["kind"] == "log",
             }
         )
     return outputs
+
+
+def build_job_artifact_index(job) -> dict:
+    return artifact_index_for(job.model, job.output_files)
+
+
+def load_result_summary_with_artifacts(job) -> dict | None:
+    summary = load_result_summary(job.job_id)
+    if summary is None:
+        return None
+    artifact_index = build_job_artifact_index(job)
+    enriched = dict(summary)
+    enriched.setdefault("artifacts", [
+        {"name": item["name"], "relative_path": item["relativePath"], "role": item["role"], "label": item["label"], "kind": item["kind"]}
+        for item in artifact_index["artifacts"]
+    ])
+    enriched.setdefault("artifact_groups", artifact_index["artifact_groups"])
+    enriched.setdefault("primary_artifacts", artifact_index["primary_artifacts"])
+    enriched.setdefault("artifactIndex", artifact_index)
+    enriched.setdefault("artifact_index", artifact_index)
+    return enriched
 
 
 def resolve_local_output(job, relative_path: str) -> Path:
@@ -418,13 +444,16 @@ def serialize_previews(job) -> list[dict]:
 
 
 def _job_payload(job) -> dict:
+    artifact_index = build_job_artifact_index(job)
     return {
         "job": job.to_dict(),
         "phase_display": build_phase_display(job.phase, job.status, job.progress_message),
         "outputs": serialize_outputs(job),
         "previews": serialize_previews(job),
         "logs": get_log_snippets(job.job_id),
-        "result_summary": load_result_summary(job.job_id),
+        "result_summary": load_result_summary_with_artifacts(job),
+        "artifact_index": artifact_index,
+        "artifactIndex": artifact_index,
         "evaluation": load_evaluation(job.job_id),
         "advisor_report": load_advisor_report(job.job_id),
     }
@@ -1056,6 +1085,15 @@ async def job_contract_api(job_id: str):
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=f"未知模型：{job.model}") from exc
     return JSONResponse({"jobId": job_id, "model": job.model, "contract": contract})
+
+
+@app.get("/api/jobs/{job_id}/artifacts")
+async def job_artifacts_api(job_id: str):
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    return JSONResponse({"jobId": job_id, "model": job.model, "artifactIndex": build_job_artifact_index(job)})
 
 
 @app.get("/api/development/lanes")

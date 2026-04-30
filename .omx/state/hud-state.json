@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-04-30T08:58:57.881Z",
-  "turn_count": 153,
-  "last_progress_at": "2026-04-30T08:58:57.881Z",
-  "last_agent_output": "已按全面规划继续推进了一步，做的是后端优先级比较高的“任务历史分页/过滤”，没有动前端实现。\n\n这轮改了：\n\n- [job_store.py](<E:\\kykt\\Coding\\4.06\\vision_"
+  "last_turn_at": "2026-04-30T09:08:42.602Z",
+  "turn_count": 155,
+  "last_progress_at": "2026-04-30T09:08:42.602Z",
+  "last_agent_output": "对，安装包不用管。你直接打开这个已经编译好的 exe：\n\n[E:\\kykt\\Coding\\4.06\\vision_ui\\client\\src-tauri\\target\\release\\kykt_vis"
 }
