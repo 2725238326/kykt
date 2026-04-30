@@ -6,6 +6,7 @@ import type {
   BackendStatusPayload,
   BootstrapPayload,
   DeploymentStatusPayload,
+  DevelopmentLaneItem,
   EvaluationPayload,
   JobPayload,
   JobsListPayload,
@@ -101,10 +102,47 @@ import { AdvisorWorkbench } from "./AdvisorWorkbench";
 import { JobDetail } from "./JobDetail";
 import type { PreviewAsset } from "./JobDetail";
 import { currentStepLabel } from "./jobInspectorHelpers";
+import { DevelopmentCyclePanel } from "./DevelopmentCyclePanel";
+import { ResearchAccelerationPanel } from "./ResearchAccelerationPanel";
 
 type ServiceState = "starting" | "ready" | "degraded";
 type JobFilter = "all" | "running" | "attention" | "finished";
 type WorkspaceTab = "overview" | "create" | "jobs" | "advisor" | "system";
+
+const developmentLanes: DevelopmentLaneItem[] = [
+  {
+    id: "lane-1",
+    title: "MASt3R 视觉对齐优化",
+    category: "model_runner",
+    status: "reproducing",
+    priority: "P0",
+    targetModel: "mast3r",
+    nextAction: "验证新版 align3r 损失函数对大基线图组的稳定性。",
+    blockers: ["远端服务器 GPU 显存限制"],
+    mergeTarget: "runner"
+  },
+  {
+    id: "lane-2",
+    title: "Spann3R 增量重建原型",
+    category: "prototype",
+    status: "prototype",
+    priority: "P1",
+    targetModel: "spann3r",
+    nextAction: "定义流式输入契约，支持动态增长的帧序列。",
+    blockers: [],
+    mergeTarget: "runner"
+  },
+  {
+    id: "lane-3",
+    title: "自动评估 Rubric v2",
+    category: "evaluation",
+    status: "scoped",
+    priority: "P2",
+    nextAction: "对齐 Advisor 提示词与人工评分维度。",
+    blockers: [],
+    mergeTarget: "advisor"
+  }
+];
 
 const workspaceTabs: Array<{ key: WorkspaceTab; label: string; note: string }> = [
   { key: "overview", label: "工作台", note: "全局状态与焦点任务" },
@@ -1860,8 +1898,36 @@ function OverviewCommandCenter(props: {
   copyText: (value: string, label: string) => Promise<void>;
 }) {
   const focusJob = props.focusJob;
+  const runnableCount = props.activeModelCatalog.filter((item) => item.runnable).length;
+  const blockedModels = props.activeModelCatalog.filter((item) => !item.runnable);
+
   return (
     <>
+      <div className="overview-focus-strip">
+        <article className="focus-strip-item">
+          <span className="mini-label">活跃任务</span>
+          <strong>{props.runningJobs.length} Running</strong>
+        </article>
+        <article className="focus-strip-item">
+          <span className="mini-label">需要关注</span>
+          <strong className={props.attentionJobs.length > 0 ? "text-danger" : ""}>
+            {props.attentionJobs.length} Attention
+          </strong>
+        </article>
+        <article className="focus-strip-item">
+          <span className="mini-label">模型就绪</span>
+          <strong>{runnableCount} / {props.activeModelCatalog.length}</strong>
+        </article>
+        <article className="focus-strip-item">
+          <span className="mini-label">评估建议</span>
+          <strong>{props.advisorState.configured ? "Ready" : "Not Configured"}</strong>
+        </article>
+        <article className="focus-strip-item next-action-item">
+          <span className="mini-label">Next Action</span>
+          <strong>验证 MASt3R 新版损失函数</strong>
+        </article>
+      </div>
+
       <section className="overview-grid workbench-overview-grid">
         <article className="panel overview-hero-panel">
           <PanelTitle eyebrow="Focus" title={focusJob ? focusJob.job.job_id : "准备开始测试"} />
@@ -1902,79 +1968,40 @@ function OverviewCommandCenter(props: {
         </article>
 
         <aside className="panel overview-side-panel">
-          <PanelTitle eyebrow="Runtime" title="当前调度状态" />
+          <PanelTitle eyebrow="Runtime" title="调度状态" />
           <div className="kpi-grid">
             <MiniStat label="总任务" value={props.summary.total} />
             <MiniStat label="运行中" value={props.summary.running} />
             <MiniStat label="待处理" value={props.attentionJobs.length} />
             <MiniStat label="已完成" value={props.summary.finished} />
           </div>
-          <div className={`overview-callout ${focusJob?.job.status ?? "neutral"}`}>
-            <span className="mini-label">当前状态</span>
-            <strong>{buildOverviewHeadline(focusJob, props.runningJobs.length, props.attentionJobs.length)}</strong>
-            <p>{buildOverviewMessage(focusJob, props.runningJobs.length, props.attentionJobs.length)}</p>
-          </div>
-          <div className="overview-ops-dock" aria-label="工作台操作入口">
-            <button onClick={() => props.openWorkspace("jobs", focusJob?.job.job_id)} type="button">
+          {blockedModels.length > 0 && (
+            <div className="overview-callout danger">
+              <span className="mini-label">阻塞模型</span>
+              <strong>{blockedModels.length} 个模型由于环境缺失被阻塞</strong>
+              <p>{blockedModels.map(m => m.label).join(", ")}</p>
+            </div>
+          )}
+          <div className="overview-ops-dock">
+            <button onClick={() => props.openWorkspace("jobs")} type="button">
               <span>Jobs</span>
               <strong>{props.runningJobs.length}</strong>
               <small>运行中</small>
             </button>
-            <button onClick={() => props.openWorkspace("jobs")} type="button">
-              <span>Fix</span>
-              <strong>{props.attentionJobs.length}</strong>
-              <small>待处理</small>
-            </button>
             <button onClick={() => props.openWorkspace("create")} type="button">
               <span>New</span>
-              <strong>{props.summary.total}</strong>
-              <small>任务总数</small>
-            </button>
-            <button onClick={() => props.openWorkspace("system")} type="button">
-              <span>Ops</span>
-              <strong>{props.activeModelCatalog.filter((item) => item.runnable).length}</strong>
-              <small>可运行模型</small>
+              <small>发起任务</small>
             </button>
           </div>
         </aside>
       </section>
 
+      <section className="overview-development-grid">
+        <DevelopmentCyclePanel items={developmentLanes} />
+        <ResearchAccelerationPanel items={developmentLanes} />
+      </section>
+
       <section className="overview-support-grid workbench-overview-support-grid">
-        <article className="panel quick-actions-panel">
-          <PanelTitle eyebrow="Workflow" title="工作流" />
-          <div className="quick-action-grid">
-            <button className="quick-action-card" onClick={() => props.openWorkspace("create")} type="button">
-              <strong>新建任务</strong>
-              <p>模型、来源、文件。</p>
-            </button>
-            <button className="quick-action-card" onClick={() => props.openWorkspace("jobs")} type="button">
-              <strong>运行与结果</strong>
-              <p>任务、产物、日志。</p>
-            </button>
-            <button className="quick-action-card" onClick={() => props.openWorkspace("advisor")} type="button">
-              <strong>辅助评估</strong>
-              <p>自动评估草稿。</p>
-            </button>
-            <button className="quick-action-card" onClick={() => props.openWorkspace("system")} type="button">
-              <strong>系统与部署</strong>
-              <p>服务与远端状态。</p>
-            </button>
-          </div>
-        </article>
-
-        <article className="panel advisor-overview-panel">
-          <PanelTitle eyebrow="Evaluation" title="辅助评估" />
-          <AdvisorWorkbench
-            job={props.activeJob}
-            advisorState={props.advisorState}
-            actionKey={props.actionKey}
-            onEvaluate={(jobId) => void props.postJobAction(`/api/jobs/${jobId}/advisor/evaluate`, "advisor")}
-            onConfigure={() => void props.openAdvisorSettings()}
-            onCopy={props.copyText}
-            compact
-          />
-        </article>
-
         <ModelRoadmapPanel activeModels={props.activeModelCatalog} deferredModels={props.deferredModelCatalog} compact />
         <SampleMatrixPanel
           samplesPayload={props.samplesPayload}

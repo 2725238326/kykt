@@ -334,6 +334,18 @@ export type JobsListPayload = {
   summary: BootstrapPayload["summary"];
 };
 
+export type DevelopmentLaneItem = {
+  id: string;
+  title: string;
+  category: "paper_reproduction" | "model_runner" | "prototype" | "evaluation" | "ui_workflow";
+  status: "draft" | "scoped" | "reproducing" | "prototype" | "smoke_ready" | "validated" | "merged" | "deferred";
+  priority: "P0" | "P1" | "P2" | "P3";
+  targetModel?: string;
+  nextAction: string;
+  blockers: string[];
+  mergeTarget?: "runner" | "sample_matrix" | "advisor" | "report" | "deferred_research";
+};
+
 export type BackendStatusPayload = {
   running: boolean;
   managed_by_tauri: boolean;

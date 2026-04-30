@@ -331,3 +331,41 @@ export function formatDateTime(value: string) {
     minute: "2-digit"
   });
 }
+
+export function devLaneCategoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    paper_reproduction: "论文复现",
+    model_runner: "模型 Runner",
+    prototype: "原型开发",
+    evaluation: "评测框架",
+    ui_workflow: "UI 工作流"
+  };
+  return labels[category] ?? category.replace(/_/g, " ");
+}
+
+export function devLaneStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    draft: "草稿",
+    scoped: "已定义",
+    reproducing: "复现中",
+    prototype: "原型中",
+    smoke_ready: "Smoke 待过",
+    validated: "已验证",
+    merged: "已合入",
+    deferred: "推迟"
+  };
+  return labels[status] ?? status.replace(/_/g, " ");
+}
+
+export function devLanePriorityTone(priority: string) {
+  switch (priority) {
+    case "P0":
+      return "danger";
+    case "P1":
+      return "warning";
+    case "P2":
+      return "running";
+    default:
+      return "neutral";
+  }
+}
