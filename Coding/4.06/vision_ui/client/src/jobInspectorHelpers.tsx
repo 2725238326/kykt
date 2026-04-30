@@ -1,4 +1,4 @@
-import type { AdvisorReport, AdvisorStatus, JobPayload } from "./types";
+import type { AdvisorReport, AdvisorStatus, JobPayload, ResultContract } from "./types";
 
 type OutputItem = JobPayload["outputs"][number];
 
@@ -10,6 +10,126 @@ export type OutputSection = {
   defaultOpen: boolean;
   items: OutputItem[];
 };
+
+export function buildOutputSections(outputs: OutputItem[], model: string, contract?: ResultContract): OutputSection[] {
+  if (contract) {
+    const sections: OutputSection[] = contract.groups.map((g) => ({
+      key: g.key,
+      title: g.label,
+      description: g.description || "",
+      accent: "blue",
+      defaultOpen: true,
+      items: []
+    }));
+
+    const otherSection: OutputSection = {
+      key: "other",
+      title: "其他产物",
+      description: "契约之外的产物。",
+      accent: "slate",
+      defaultOpen: false,
+      items: []
+    };
+
+    outputs.forEach((out) => {
+      const artifact = contract.artifacts.find(
+        (a) => a.name === out.display_name || out.relative_path.endsWith(a.relativePath)
+      );
+      if (artifact) {
+        const section = sections.find((s) => s.key === artifact.role);
+        if (section) {
+          section.items.push(out);
+          return;
+        }
+      }
+      otherSection.items.push(out);
+    });
+
+    return [...sections, otherSection].filter((s) => s.items.length > 0);
+  }
+
+  const buckets: Record<string, OutputSection> = {
+    main: {
+      key: "main",
+      title: "核心成果",
+      description: model === "monst3r" ? "三维场景、点云、主要导出。" : "点云与主要可视化。",
+      accent: "blue",
+      defaultOpen: true,
+      items: []
+    },
+    camera: {
+      key: "camera",
+      title: "相机与轨迹",
+      description: "相机内参、位姿、轨迹等文本产物。",
+      accent: "slate",
+      defaultOpen: true,
+      items: []
+    },
+    masks: {
+      key: "masks",
+      title: "掩膜与动态区域",
+      description: "动态 mask 与扩张 mask。",
+      accent: "gold",
+      defaultOpen: false,
+      items: []
+    },
+    confidence: {
+      key: "confidence",
+      title: "置信度与数组",
+      description: "置信图、深度数组和中间数值文件。",
+      accent: "slate",
+      defaultOpen: false,
+      items: []
+    },
+    visuals: {
+      key: "visuals",
+      title: "图像可视化",
+      description: "可直接浏览的 PNG/JPG 结果图。",
+      accent: "green",
+      defaultOpen: true,
+      items: []
+    },
+    other: {
+      key: "other",
+      title: "其他产物",
+      description: "未归类文件。",
+      accent: "slate",
+      defaultOpen: false,
+      items: []
+    }
+  };
+
+  outputs.forEach((output) => {
+    const name = output.display_name.toLowerCase();
+    if (output.is_model3d || output.is_pointcloud || /scene\.glb|pointcloud|matches\./i.test(name)) {
+      buckets.main.items.push(output);
+      return;
+    }
+    if (/traj|intrinsics|poses?|focal|camera/i.test(name) || name.endsWith(".txt")) {
+      buckets.camera.items.push(output);
+      return;
+    }
+    if (/mask/i.test(name)) {
+      buckets.masks.items.push(output);
+      return;
+    }
+    if (/conf|depth|frame_.*\.npy|\.npy$/i.test(name)) {
+      buckets.confidence.items.push(output);
+      return;
+    }
+    if (output.is_image) {
+      buckets.visuals.items.push(output);
+      return;
+    }
+    buckets.other.items.push(output);
+  });
+
+  const orderedKeys = ["main", "visuals", "camera", "masks", "confidence", "other"];
+
+  return orderedKeys
+    .map((key) => buckets[key])
+    .filter((section) => section && section.items.length > 0);
+}
 
 export function buildInspectorRhythm(
   selectedJob: JobPayload,
@@ -174,88 +294,4 @@ export function getCriticalLogLine(logs: JobPayload["logs"]) {
     }
   }
   return "";
-}
-
-export function buildOutputSections(outputs: OutputItem[], model: string): OutputSection[] {
-  const buckets: Record<string, OutputSection> = {
-    main: {
-      key: "main",
-      title: "核心成果",
-      description: model === "monst3r" ? "三维场景、点云、主要导出。" : "点云与主要可视化。",
-      accent: "blue",
-      defaultOpen: true,
-      items: []
-    },
-    camera: {
-      key: "camera",
-      title: "相机与轨迹",
-      description: "相机内参、位姿、轨迹等文本产物。",
-      accent: "slate",
-      defaultOpen: true,
-      items: []
-    },
-    masks: {
-      key: "masks",
-      title: "掩膜与动态区域",
-      description: "动态 mask 与扩张 mask。",
-      accent: "gold",
-      defaultOpen: false,
-      items: []
-    },
-    confidence: {
-      key: "confidence",
-      title: "置信度与数组",
-      description: "置信图、深度数组和中间数值文件。",
-      accent: "slate",
-      defaultOpen: false,
-      items: []
-    },
-    visuals: {
-      key: "visuals",
-      title: "图像可视化",
-      description: "可直接浏览的 PNG/JPG 结果图。",
-      accent: "green",
-      defaultOpen: true,
-      items: []
-    },
-    other: {
-      key: "other",
-      title: "其他产物",
-      description: "未归类文件。",
-      accent: "slate",
-      defaultOpen: false,
-      items: []
-    }
-  };
-
-  outputs.forEach((output) => {
-    const name = output.display_name.toLowerCase();
-    if (output.is_model3d || output.is_pointcloud || /scene\.glb|pointcloud|matches\./i.test(name)) {
-      buckets.main.items.push(output);
-      return;
-    }
-    if (/traj|intrinsics|poses?|focal|camera/i.test(name) || name.endsWith(".txt")) {
-      buckets.camera.items.push(output);
-      return;
-    }
-    if (/mask/i.test(name)) {
-      buckets.masks.items.push(output);
-      return;
-    }
-    if (/conf|depth|frame_.*\.npy|\.npy$/i.test(name)) {
-      buckets.confidence.items.push(output);
-      return;
-    }
-    if (output.is_image) {
-      buckets.visuals.items.push(output);
-      return;
-    }
-    buckets.other.items.push(output);
-  });
-
-  const orderedKeys = ["main", "visuals", "camera", "masks", "confidence", "other"];
-
-  return orderedKeys
-    .map((key) => buckets[key])
-    .filter((section) => section && section.items.length > 0);
 }

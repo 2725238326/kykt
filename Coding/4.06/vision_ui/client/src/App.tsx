@@ -14,21 +14,11 @@ import type {
   JobPayload,
   JobsListPayload,
   ModelContract,
+  ResultContract,
   SamplesPayload,
   ValidationCreateResponse
 } from "./types";
-import {
-  API_BASE,
-  DEFAULT_BOOTSTRAP,
-  defaultDust3rParams,
-  defaultFast3rParams,
-  defaultMonst3rParams,
-  dust3rParamChoices,
-  fast3rParamChoices,
-  monst3rParamChoices,
-  presetDescriptors
-} from "./appConfig";
-import type { ParamChoice, PresetKey } from "./appConfig";
+import { API_BASE, DEFAULT_BOOTSTRAP } from "./appConfig";
 import {
   backendStatusText,
   delay,
@@ -58,40 +48,16 @@ import {
   pendingFileRoleLabel
 } from "./fileHelpers";
 import {
-  allowedSourceTypesForModel,
   batchActionLabel,
   buildActionMessage,
   buildAdvisorChecklist,
   buildCaptureChecklist,
-  buildCreateGuidance,
-  buildCreateLaunchHeadline,
-  buildCreateLaunchMessage,
-  buildCreateReadiness,
-  buildDust3rPreset,
-  buildFast3rPreset,
-  buildModelLaunchBlocker,
-  buildMonst3rPreset,
-  buildOverviewHeadline,
-  buildOverviewMessage,
-  buildParamPanelIntro,
   buildSystemChecklist,
   canDispatchJobStatus,
-  fallbackParamFamilyForModel,
-  fallbackSourceTypesForModel,
-  getCreateParamMode,
-  getParamDefaultsForMode,
-  inputHint,
   isAdvisorSuggested,
-  isParamFieldKey,
-  matchesJobQuery,
-  presetLabel
+  matchesJobQuery
 } from "./workflowHelpers";
-import type {
-  BatchJobAction,
-  CreateParamMode,
-  FormState,
-  JobListItem
-} from "./workflowHelpers";
+import type { BatchJobAction, JobListItem } from "./workflowHelpers";
 import {
   FilterPill,
   MessageBanner,
@@ -109,45 +75,11 @@ import type { PreviewAsset } from "./JobDetail";
 import { currentStepLabel } from "./jobInspectorHelpers";
 import { DevelopmentCyclePanel } from "./DevelopmentCyclePanel";
 import { ResearchAccelerationPanel } from "./ResearchAccelerationPanel";
+import { DynamicParamForm } from "./DynamicParamForm";
 
 type ServiceState = "starting" | "ready" | "degraded";
 type JobFilter = "all" | "running" | "attention" | "finished";
 type WorkspaceTab = "overview" | "create" | "jobs" | "advisor" | "system";
-
-const fallbackDevelopmentLanes: DevelopmentLaneItem[] = [
-  {
-    id: "lane-1",
-    title: "MASt3R 视觉对齐优化",
-    category: "model_runner",
-    status: "reproducing",
-    priority: "P0",
-    targetModel: "mast3r",
-    nextAction: "验证新版 align3r 损失函数对大基线图组的稳定性。",
-    blockers: ["远端服务器 GPU 显存限制"],
-    mergeTarget: "runner"
-  },
-  {
-    id: "lane-2",
-    title: "Spann3R 增量重建原型",
-    category: "prototype",
-    status: "prototype",
-    priority: "P1",
-    targetModel: "spann3r",
-    nextAction: "定义流式输入契约，支持动态增长的帧序列。",
-    blockers: [],
-    mergeTarget: "runner"
-  },
-  {
-    id: "lane-3",
-    title: "自动评估 Rubric v2",
-    category: "evaluation",
-    status: "scoped",
-    priority: "P2",
-    nextAction: "对齐 Advisor 提示词与人工评分维度。",
-    blockers: [],
-    mergeTarget: "advisor"
-  }
-];
 
 const workspaceTabs: Array<{ key: WorkspaceTab; label: string; note: string }> = [
   { key: "overview", label: "工作台", note: "全局状态与焦点任务" },
@@ -224,27 +156,14 @@ function App() {
     has_api_key: false,
     message: "辅助评估尚未配置。"
   }, [appState]);
+
   const serviceReady = serviceState === "ready";
   const advisorReady = advisorState.enabled && advisorState.configured;
-  const modelCatalog = useMemo<ModelCatalogItem[]>(
-    () =>
-      samplesPayload?.model_catalog ??
-      bootstrapData.model_catalog ??
-      bootstrapData.models.map((item) => ({
-        value: item.value,
-        label: item.label,
-        description: item.description,
-        family: item.family ?? "integrated",
-        param_family: item.param_family ?? fallbackParamFamilyForModel(item.value),
-        source_types: item.source_types ?? fallbackSourceTypesForModel(item.value),
-        runner_status: item.runner_status ?? "integrated",
-        research_priority: item.research_priority ?? 0,
-        active_track: item.active_track ?? true,
-        runnable: item.runnable ?? true,
-        launch_blocker: item.launch_blocker ?? null
-      })),
-    [bootstrapData.model_catalog, bootstrapData.models, samplesPayload?.model_catalog]
-  );
+
+  function openPreviewAsset(asset: PreviewAsset) {
+    setPreviewAsset(asset);
+  }
+
   const activeModelCatalog = useMemo(
     () => modelCatalog.filter((item) => item.active_track),
     [modelCatalog]
@@ -255,28 +174,27 @@ function App() {
   );
   const runnableModelCatalog = useMemo(() => modelCatalog.filter((item) => item.runnable), [modelCatalog]);
   const catalogOnlyModelCatalog = useMemo(() => modelCatalog.filter((item) => !item.runnable), [modelCatalog]);
+
   const selectedModelCatalog = useMemo(
     () => modelCatalog.find((item) => item.value === formState.model) ?? null,
     [formState.model, modelCatalog]
   );
-  const selectedModel = useMemo(
-    () => selectedModelCatalog ?? bootstrapData.models.find((item) => item.value === formState.model) ?? null,
-    [bootstrapData.models, formState.model, selectedModelCatalog]
+
+  const selectedModelContract = useMemo(
+    () => modelContracts[formState.model] ?? null,
+    [formState.model, modelContracts]
   );
-  const createParamMode = useMemo(
-    () => getCreateParamMode(formState.model, modelCatalog),
-    [formState.model, modelCatalog]
-  );
+
   const selectedModelSourceTypes = useMemo(
-    () => allowedSourceTypesForModel(formState.model, modelCatalog),
-    [formState.model, modelCatalog]
+    () => selectedModelContract?.allowedSourceTypes ?? selectedModelCatalog?.source_types ?? [],
+    [selectedModelCatalog, selectedModelContract]
   );
+
   const selectedModelLaunchBlocker = useMemo(
-    () => buildModelLaunchBlocker(selectedModelCatalog),
-    [selectedModelCatalog]
+    () => selectedModelContract?.launchBlocker ?? selectedModelCatalog?.launch_blocker ?? null,
+    [selectedModelCatalog, selectedModelContract]
   );
-  const activePreset = activePresets[formState.model] ?? null;
-  const supportsPresets = createParamMode !== "spann3r_sequence" && createParamMode !== "catalog";
+
   const selectedListJob = useMemo(
     () => (selectedJobId ? jobs.find((item) => item.job.job_id === selectedJobId) ?? null : null),
     [jobs, selectedJobId]
@@ -359,10 +277,7 @@ function App() {
     ],
     [attentionJobs, queuedJobs, runningJobs]
   );
-  const createGuidance = useMemo(
-    () => buildCreateGuidance(formState.model, formState.source_type, files.length),
-    [files.length, formState.model, formState.source_type]
-  );
+
   const pendingImageCount = useMemo(() => files.filter((file) => isImageLikeFile(file)).length, [files]);
   const pendingVideoCount = useMemo(() => files.filter((file) => isVideoLikeFile(file)).length, [files]);
   const pendingUnknownCount = files.length - pendingImageCount - pendingVideoCount;
@@ -378,27 +293,15 @@ function App() {
         .join(" / ") || "暂无",
     [pendingImageCount, pendingUnknownCount, pendingVideoCount]
   );
-  const createReadiness = useMemo(
-    () =>
-      buildCreateReadiness(
-        serviceReady,
-        selectedModelCatalog,
-        selectedModelSourceTypes,
-        formState.model,
-        formState.source_type,
-        files.length,
-        pendingImageCount,
-        pendingVideoCount
-      ),
-    [files.length, formState.model, formState.source_type, pendingImageCount, pendingVideoCount, selectedModelCatalog, selectedModelSourceTypes, serviceReady]
-  );
-  const summary = bootstrap?.summary ?? {
+
+  const summary = useMemo(() => appState?.summary ?? {
     total: jobs.length,
     running: jobs.filter((item) => item.job.status === "running").length,
     finished: jobs.filter((item) => item.job.status === "finished").length,
     failed: jobs.filter((item) => item.job.status === "failed").length,
     cancelled: jobs.filter((item) => item.job.status === "cancelled").length
-  };
+  }, [appState, jobs]);
+
   const workspaceTabMeta = useMemo(
     () =>
       workspaceTabs.map((tab) => ({
@@ -429,6 +332,102 @@ function App() {
     }
   }, [activeWorkspace, filteredJobs, selectedFilteredIndex, selectedJobId]);
 
+  async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE}${path}`, init);
+    } catch {
+      throw new Error("本地服务暂时不可用，请稍等几秒。");
+    }
+
+    if (!response.ok) {
+      let message = `请求失败：${response.status}`;
+      try {
+        const payload = (await response.json()) as { detail?: string };
+        if (payload.detail) {
+          message = payload.detail;
+        }
+      } catch {
+        const text = await response.text();
+        if (text) {
+          message = text;
+        }
+      }
+      throw new Error(message);
+    }
+    return (await response.json()) as T;
+  }
+
+  async function refreshAppState() {
+    const state = await fetchJson<AppState>("/api/app/state");
+    setAppState(state);
+    if (state.developmentLanes) {
+      setDevelopmentLanes(state.developmentLanes);
+    }
+    return state;
+  }
+
+  async function loadDesktopBackendStatus() {
+    try {
+      const status = await invoke<BackendStatusPayload>("backend_status");
+      setBackendStatus(status);
+      if (!status.running) {
+        setServiceState((current) => (current === "starting" ? current : "degraded"));
+        setServiceMessage(status.message || "本地服务暂时不可用。");
+      }
+    } catch {
+      setBackendStatus(null);
+    }
+  }
+
+  async function recoverBackend(mode: "ensure" | "restart", announce = false) {
+    if (recoveryInFlightRef.current) {
+      return;
+    }
+    recoveryInFlightRef.current = true;
+    setRecoveringService(true);
+    setServiceState("starting");
+    setServiceMessage(mode === "restart" ? "正在重启本地服务..." : "正在尝试恢复本地服务...");
+
+    try {
+      const command = mode === "restart" ? "restart_backend" : "ensure_backend_now";
+      const status = await invoke<BackendStatusPayload>(command);
+      setBackendStatus(status);
+
+      if (!status.running) {
+        setServiceState("degraded");
+        setServiceMessage(status.message || "本地服务恢复失败。");
+        if (announce) {
+          setErrorMessage(status.message || "本地服务恢复失败。");
+        }
+        return;
+      }
+
+      await refreshAppState();
+      setServiceState("ready");
+      setServiceMessage("本地服务已恢复并重新连通。");
+      setErrorMessage(null);
+      if (announce) {
+        setInfoMessage(mode === "restart" ? "本地服务已重启。" : "本地服务已恢复。");
+      }
+      await loadJobs(false);
+      await loadSamples(false);
+      if (selectedJobId) {
+        await loadJobDetail(selectedJobId, false);
+      }
+    } catch (error) {
+      const message = friendlyError(error, "本地服务恢复失败。");
+      setServiceState("degraded");
+      setServiceMessage(message);
+      if (announce) {
+        setErrorMessage(message);
+      }
+    } finally {
+      recoveryInFlightRef.current = false;
+      setRecoveringService(false);
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -441,12 +440,11 @@ function App() {
         }
 
         try {
-          await refreshBootstrap();
+          await refreshAppState();
           setServiceState("ready");
           setServiceMessage("本地服务已就绪");
           await loadJobs(false);
           await loadSamples(false);
-          await loadDevelopmentLanes(false);
           return;
         } catch {
           setServiceState("starting");
@@ -511,15 +509,6 @@ function App() {
   }, [serviceReady]);
 
   useEffect(() => {
-    if (!serviceReady) {
-      return;
-    }
-    void loadDevelopmentLanes(false);
-    const timer = window.setInterval(() => void loadDevelopmentLanes(false), 60000);
-    return () => window.clearInterval(timer);
-  }, [serviceReady]);
-
-  useEffect(() => {
     if (!selectedJobId && jobs[0]) {
       setSelectedJobId(jobs[0].job.job_id);
     }
@@ -542,107 +531,26 @@ function App() {
     void loadDeploymentStatus(false, false);
   }, [activeWorkspace, deploymentStatus, serviceReady]);
 
-  async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
-    let response: Response;
-    try {
-      response = await fetch(`${API_BASE}${path}`, init);
-    } catch {
-      throw new Error("本地服务暂时不可用，请稍等几秒。");
-    }
-
-    if (!response.ok) {
-      let message = `请求失败：${response.status}`;
-      try {
-        const payload = (await response.json()) as { detail?: string };
-        if (payload.detail) {
-          message = payload.detail;
-        }
-      } catch {
-        const text = await response.text();
-        if (text) {
-          message = text;
-        }
-      }
-      throw new Error(message);
-    }
-    return (await response.json()) as T;
-  }
-
-  function assetUrl(path: string) {
-    if (/^(https?:|data:|blob:)/.test(path)) {
-      return path;
-    }
-    return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
-  }
-
-  async function refreshAppState() {
-    const state = await fetchJson<AppState>("/api/app/state");
-    setAppState(state);
-    if (state.developmentLanes) {
-      setDevelopmentLanes(state.developmentLanes);
-    }
-    return state;
-  }
-
-  async function loadDesktopBackendStatus() {
-    try {
-      const status = await invoke<BackendStatusPayload>("backend_status");
-      setBackendStatus(status);
-      if (!status.running) {
-        setServiceState((current) => (current === "starting" ? current : "degraded"));
-        setServiceMessage(status.message || "本地服务暂时不可用。");
-      }
-    } catch {
-      setBackendStatus(null);
-    }
-  }
-
-  async function recoverBackend(mode: "ensure" | "restart", announce = false) {
-    if (recoveryInFlightRef.current) {
+  useEffect(() => {
+    if (activeWorkspace !== "create" || !formState.model || !serviceReady) {
       return;
     }
-    recoveryInFlightRef.current = true;
-    setRecoveringService(true);
-    setServiceState("starting");
-    setServiceMessage(mode === "restart" ? "正在重启本地服务..." : "正在尝试恢复本地服务...");
+    void validateLaunch();
+  }, [activeWorkspace, formState.model, formState.source_type, files.length, serviceReady]);
 
+  async function validateLaunch() {
     try {
-      const command = mode === "restart" ? "restart_backend" : "ensure_backend_now";
-      const status = await invoke<BackendStatusPayload>(command);
-      setBackendStatus(status);
-
-      if (!status.running) {
-        setServiceState("degraded");
-        setServiceMessage(status.message || "本地服务恢复失败。");
-        if (announce) {
-          setErrorMessage(status.message || "本地服务恢复失败。");
-        }
-        return;
-      }
-
-      await refreshBootstrap();
-      setServiceState("ready");
-      setServiceMessage("本地服务已恢复并重新连通。");
-      setErrorMessage(null);
-      if (announce) {
-        setInfoMessage(mode === "restart" ? "本地服务已重启。" : "本地服务已恢复。");
-      }
-      await loadJobs(false);
-      await loadSamples(false);
-      await loadDevelopmentLanes(false);
-      if (selectedJobId) {
-        await loadJobDetail(selectedJobId, false);
-      }
-    } catch (error) {
-      const message = friendlyError(error, "本地服务恢复失败。");
-      setServiceState("degraded");
-      setServiceMessage(message);
-      if (announce) {
-        setErrorMessage(message);
-      }
-    } finally {
-      recoveryInFlightRef.current = false;
-      setRecoveringService(false);
+      const res = await fetchJson<ValidationCreateResponse>(`/api/models/${formState.model}/validate-create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceType: formState.source_type,
+          fileCount: files.length
+        })
+      });
+      setValidationResponse(res);
+    } catch {
+      setValidationResponse(null);
     }
   }
 
@@ -671,7 +579,6 @@ function App() {
     try {
       const payload = await fetchJson<JobsListPayload>("/api/jobs");
       setJobs(payload.jobs);
-      setBootstrap((current) => (current ? { ...current, summary: payload.summary } : current));
       if (serviceState !== "ready") {
         setServiceState("ready");
         setServiceMessage("本地服务已就绪");
@@ -699,20 +606,6 @@ function App() {
     }
   }
 
-  async function loadDevelopmentLanes(showError = true) {
-    try {
-      const payload = await fetchJson<DevelopmentLaneItem[]>("/api/development/lanes");
-      setDevelopmentLanes(payload);
-      setDevelopmentLaneError(null);
-    } catch (error) {
-      const message = friendlyError(error, "研发车道接口暂不可用。");
-      setDevelopmentLaneError(message);
-      if (showError) {
-        setErrorMessage(message);
-      }
-    }
-  }
-
   async function loadDeploymentStatus(showError = true, refresh = false) {
     setDeploymentLoading(true);
     try {
@@ -734,14 +627,14 @@ function App() {
     setAdvisorConfigLoading(true);
     setErrorMessage(null);
     try {
-      const payload = await fetchJson<AdvisorConfig>("/api/advisor/config");
-      setAdvisorForm({
-        enabled: payload.enabled,
-        base_url: payload.base_url,
-        api_key: "",
-        model: payload.model || "gpt-4o-mini",
-        has_api_key: Boolean(payload.has_api_key),
-      });
+      const [config, providers, diagnostics] = await Promise.all([
+        fetchJson<AdvisorConfig>("/api/advisor/config"),
+        fetchJson<AdvisorProvider[]>("/api/advisor/providers"),
+        fetchJson<AdvisorDiagnostics>("/api/advisor/diagnostics")
+      ]);
+      setAdvisorForm(config);
+      setAdvisorProviders(providers);
+      setAdvisorDiagnostics(diagnostics);
       setAdvisorModalOpen(true);
     } catch (error) {
       setErrorMessage(friendlyError(error, "读取 AI 配置失败。"));
@@ -756,20 +649,14 @@ function App() {
     setErrorMessage(null);
     setInfoMessage(null);
     try {
-      const payload = await fetchJson<AdvisorConfig>("/api/advisor/config", {
-        method: "POST",
+      const payload = await fetchJson<AdvisorStatus>("/api/advisor/config", {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          enabled: advisorForm.enabled,
-          base_url: advisorForm.base_url,
-          api_key: advisorForm.api_key,
-          model: advisorForm.model,
-        }),
+        body: JSON.stringify(advisorForm),
       });
-      setBootstrap((current) => (current ? { ...current, advisor: payload } : current));
+      await refreshAppState();
       setAdvisorModalOpen(false);
-      setAdvisorForm((current) => ({ ...current, api_key: "", has_api_key: Boolean(payload.has_api_key) }));
-      setInfoMessage(payload.configured ? "辅助评估配置已保存。" : "评估配置已保存，但尚未可用。");
+      setInfoMessage(payload.configured ? "辅助评估配置已保存并就绪。" : "评估配置已保存，但尚未通过诊断。");
     } catch (error) {
       setErrorMessage(friendlyError(error, "保存 AI 配置失败。"));
     } finally {
@@ -777,9 +664,26 @@ function App() {
     }
   }
 
+  async function testAdvisorConnection() {
+    setAdvisorConfigSaving(true);
+    try {
+      await fetchJson("/api/advisor/test", { method: "POST" });
+      setInfoMessage("AI 助手连接测试成功。");
+    } catch (error) {
+      setErrorMessage(friendlyError(error, "连接测试失败。"));
+    } finally {
+      setAdvisorConfigSaving(false);
+    }
+  }
+
   async function loadJobDetail(jobId: string, showError = true) {
     try {
-      setSelectedJob(await fetchJson<JobPayload>(`/api/jobs/${jobId}`));
+      const detail = await fetchJson<JobPayload>(`/api/jobs/${jobId}`);
+      if (!detail.contract) {
+        const contract = await fetchJson<ResultContract>(`/api/jobs/${jobId}/contract`);
+        detail.contract = contract;
+      }
+      setSelectedJob(detail);
       if (serviceState !== "ready") {
         setServiceState("ready");
         setServiceMessage("本地服务已就绪");
@@ -809,50 +713,51 @@ function App() {
     }
   }
 
-  function updateFormField(key: keyof FormState, value: string) {
-    setFormState((current) => ({ ...current, [key]: value }));
-    if (isParamFieldKey(key)) {
-      setActivePresets((current) => ({ ...current, [formState.model]: null }));
+  function updateFormField(key: string, value: any) {
+    if (key === "model" || key === "source_type" || key === "notes") {
+      setFormState((current) => ({ ...current, [key]: value }));
+    } else {
+      setFormState((current) => ({
+        ...current,
+        params: { ...current.params, [key]: value }
+      }));
     }
   }
 
-  function updateModel(value: string) {
-    setFormState((current) => {
-      const nextSourceTypes = allowedSourceTypesForModel(value, modelCatalog);
-      const nextSourceType = nextSourceTypes.includes(current.source_type) ? current.source_type : nextSourceTypes[0] ?? "images";
-      const nextParamMode = getCreateParamMode(value, modelCatalog);
-      const baseState = {
-        ...current,
-        model: value,
-        source_type: nextSourceType
-      };
-      switch (nextParamMode) {
-        case "video_sequence":
-          return {
-            ...baseState,
-            ...defaultMonst3rParams
-          };
-        case "fast3r_collection":
-          return {
-            ...baseState,
-            ...defaultFast3rParams
-          };
-        case "spann3r_sequence":
-        case "catalog":
-          return baseState;
-        case "image_collection":
-        default:
-          return {
-            ...baseState,
-            ...defaultDust3rParams
-          };
-      }
-    });
-    const nextParamMode = getCreateParamMode(value, modelCatalog);
-    setActivePresets((current) => ({
+  async function updateModel(value: string) {
+    setFormState((current) => ({
       ...current,
-      [value]: nextParamMode === "spann3r_sequence" || nextParamMode === "catalog" ? null : "standard"
+      model: value,
+      params: {}
     }));
+
+    if (!modelContracts[value]) {
+      try {
+        const contract = await fetchJson<ModelContract>(`/api/models/${value}/contract`);
+        setAppState((current) => {
+          if (!current) return null;
+          return {
+            ...current,
+            modelContracts: { ...current.modelContracts, [value]: contract }
+          };
+        });
+        
+        const nextSourceType = contract.allowedSourceTypes.includes(formState.source_type) 
+          ? formState.source_type 
+          : contract.allowedSourceTypes[0] ?? "images";
+        
+        setFormState((current) => ({
+          ...current,
+          source_type: nextSourceType,
+          params: contract.paramSchema.fields.reduce((acc, field) => {
+            acc[field.key] = field.default;
+            return acc;
+          }, {} as Record<string, any>)
+        }));
+      } catch (error) {
+        setErrorMessage(`加载模型 ${value} 的配置合同失败。`);
+      }
+    }
   }
 
   function openWorkspace(tab: WorkspaceTab, jobId?: string) {
@@ -915,34 +820,17 @@ function App() {
     }
   }
 
-  function applyPreset(preset: PresetKey) {
-    setFormState((current) => {
-      switch (getCreateParamMode(current.model, modelCatalog)) {
-        case "video_sequence":
-          return {
-            ...current,
-            ...buildMonst3rPreset(preset)
-          };
-        case "fast3r_collection":
-          return {
-            ...current,
-            ...buildFast3rPreset(preset)
-          };
-        case "spann3r_sequence":
-        case "catalog":
-          return current;
-        case "image_collection":
-        default:
-          return {
-            ...current,
-            ...buildDust3rPreset(preset, files.length)
-          };
-      }
-    });
-    setActivePresets((current) => ({
-      ...current,
-      [formState.model]: preset
-    }));
+  function applyPreset(presetKey: string) {
+    const contract = modelContracts[formState.model];
+    if (!contract || !contract.paramSchema.presets) return;
+    
+    const presetValues = contract.paramSchema.presets[presetKey];
+    if (presetValues) {
+      setFormState((current) => ({
+        ...current,
+        params: { ...current.params, ...presetValues }
+      }));
+    }
   }
 
   function removePendingFile(targetName: string, targetSize: number) {
@@ -965,9 +853,8 @@ function App() {
       return;
     }
 
-    const validationError = validateFiles();
-    if (validationError) {
-      setErrorMessage(validationError);
+    if (validationResponse && !validationResponse.ok) {
+      setErrorMessage(validationResponse.errors.join("；"));
       return;
     }
 
@@ -976,11 +863,8 @@ function App() {
     formData.append("model", formState.model);
     formData.append("source_type", formState.source_type);
     formData.append("notes", formState.notes);
-
-    const paramDefaults = getParamDefaultsForMode(createParamMode);
-    Object.keys(paramDefaults).forEach((key) => {
-      formData.append(key, formState[key as keyof FormState]);
-    });
+    formData.append("params", JSON.stringify(formState.params));
+    
     files.forEach((file) => formData.append("files", file, file.name));
 
     try {
@@ -999,7 +883,7 @@ function App() {
   }
 
   async function createDevelopmentLaneSeed(category: DevelopmentLaneItem["category"]) {
-    const presets: Record<DevelopmentLaneItem["category"], Pick<DevelopmentLaneItem, "title" | "category" | "status" | "priority" | "nextAction" | "blockers" | "mergeTarget">> = {
+    const presets: Record<DevelopmentLaneItem["category"], Partial<DevelopmentLaneItem>> = {
       paper_reproduction: {
         title: "新论文复现计划",
         category: "paper_reproduction",
@@ -1048,45 +932,19 @@ function App() {
     };
 
     setCreatingDevelopmentLane(true);
-    setErrorMessage(null);
-    setInfoMessage(null);
     try {
       const created = await fetchJson<DevelopmentLaneItem>("/api/development/lanes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(presets[category])
       });
-      setDevelopmentLanes((current) => [created, ...current.filter((item) => item.id !== created.id)]);
+      setDevelopmentLanes((current) => [created, ...current]);
       setInfoMessage(`研发车道已创建：${created.title}`);
     } catch (error) {
       setErrorMessage(friendlyError(error, "创建研发车道失败。"));
     } finally {
       setCreatingDevelopmentLane(false);
     }
-  }
-
-  function validateFiles() {
-    if (files.length === 0) {
-      return "请先选择输入文件。";
-    }
-    if (!selectedModelSourceTypes.includes(formState.source_type)) {
-      return `${statusModelLabel(formState.model)} 当前不支持 ${sourceTypeLabel(formState.source_type)} 输入。`;
-    }
-    if (formState.source_type === "video") {
-      if (files.length !== 1 || !files.every((file) => isVideoLikeFile(file))) {
-        return `${statusModelLabel(formState.model)} 视频模式请上传 1 个视频文件。`;
-      }
-      return null;
-    }
-    if (!files.every((file) => isImageLikeFile(file))) {
-      return `${statusModelLabel(formState.model)} 当前输入类型需要图片或帧序列文件，不要混入视频。`;
-    }
-    if (files.length < 2) {
-      return formState.source_type === "frames"
-        ? `${statusModelLabel(formState.model)} 帧序列模式至少上传 2 张图片。`
-        : `${statusModelLabel(formState.model)} 至少需要两张输入图片。`;
-    }
-    return null;
   }
 
   async function postJobAction(path: string, key: string) {
@@ -1135,18 +993,14 @@ function App() {
         }
       }
 
-      const focusJobId = lastPayload?.job.job_id ?? selectedJobId;
       if (lastPayload) {
         setSelectedJob(lastPayload);
         setSelectedJobId(lastPayload.job.job_id);
       }
       await loadJobs(false);
-      if (focusJobId) {
-        await loadJobDetail(focusJobId, false);
-      }
 
       if (failures.length > 0) {
-        setErrorMessage(`批量${label}完成 ${completed}/${targetJobs.length} 个，失败 ${failures.length} 个。${failures.slice(0, 2).join("；")}`);
+        setErrorMessage(`批量${label}完成 ${completed}/${targetJobs.length} 个，失败 ${failures.length} 个。`);
       } else {
         setInfoMessage(`已批量${label} ${completed} 个任务。`);
       }
@@ -1161,9 +1015,6 @@ function App() {
     }
 
     setActionKey(`open:${relativePath}`);
-    setErrorMessage(null);
-    setInfoMessage(null);
-
     const formData = new FormData();
     formData.append("relative_path", relativePath);
 
@@ -1180,8 +1031,11 @@ function App() {
     }
   }
 
-  function openPreviewAsset(asset: PreviewAsset) {
-    setPreviewAsset(asset);
+  function assetUrl(path: string) {
+    if (/^(https?:|data:|blob:)/.test(path)) {
+      return path;
+    }
+    return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
   }
 
   return (
@@ -1318,261 +1172,156 @@ function App() {
         ) : null}
 
         {activeWorkspace === "create" ? (
-        <section className="layout-grid create-layout">
-          <article className="panel create-panel">
-            <PanelTitle eyebrow="新建任务" title="选择模型和输入" />
-            <div className="create-run-strip" aria-label="创建任务检查">
-              {createReadiness.map((item) => (
-                <article className={`create-run-item ${item.tone}`} key={item.label}>
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
+          <section className="layout-grid create-layout">
+            <article className="panel create-panel">
+              <PanelTitle eyebrow="新建任务" title="选择模型和输入" />
+              <div className="create-run-strip">
+                <article className={`create-run-item ${serviceReady ? "ready" : "starting"}`}>
+                  <span>服务状态</span>
+                  <strong>{serviceReady ? "已就绪" : "准备中"}</strong>
                 </article>
-              ))}
-            </div>
-            <form className="form-stack" onSubmit={handleCreateJob}>
-              <section className="create-workbench-grid">
-                <article className="create-block create-config-block">
-                  <div className="create-block-head">
-                    <div>
-                      <span className="mini-label">任务配置</span>
-                      <strong>模型与输入来源</strong>
-                    </div>
-                    <span className="section-pill">{selectedModel?.label ?? "未选择模型"}</span>
-                  </div>
+                <article className={`create-run-item ${selectedModelLaunchBlocker ? "danger" : "ready"}`}>
+                  <span>模型可用性</span>
+                  <strong>{selectedModelLaunchBlocker ? "不可用" : "就绪"}</strong>
+                </article>
+                <article className={`create-run-item ${validationResponse?.ok ? "ready" : "neutral"}`}>
+                  <span>输入校验</span>
+                  <strong>{validationResponse?.ok ? "通过" : "等待输入"}</strong>
+                </article>
+              </div>
 
-                  <div className="form-row">
-                    <label className="field">
-                      <span>模型</span>
-                      <select value={formState.model} onChange={(event) => updateModel(event.target.value)}>
-                        <optgroup label="可创建模型">
-                          {runnableModelCatalog.map((item) => (
-                            <option key={item.value} value={item.value}>
-                              {item.label}
-                            </option>
-                          ))}
-                        </optgroup>
-                        {catalogOnlyModelCatalog.length > 0 ? (
-                          <optgroup label="目录模型（暂不可创建）">
-                            {catalogOnlyModelCatalog.map((item) => (
-                              <option key={item.value} value={item.value} disabled>
-                                {item.label} · {runnerStatusLabel(item.runner_status)}
-                              </option>
-                            ))}
-                          </optgroup>
-                        ) : null}
-                      </select>
-                    </label>
-                    <label className="field">
-                      <span>输入类型</span>
-                      <select
-                        value={formState.source_type}
-                        onChange={(event) => updateFormField("source_type", event.target.value)}
-                      >
-                        {bootstrapData.source_types
-                          .filter((item) => selectedModelSourceTypes.includes(item.value))
-                          .map((item) => (
-                            <option key={item.value} value={item.value}>
-                              {item.label}
-                            </option>
-                          ))}
-                      </select>
-                    </label>
-                  </div>
-
-                  <div className="create-model-context">
-                    <div className="create-model-context-head">
-                      <strong>{selectedModel?.description ?? "模型说明"}</strong>
-                      {selectedModelCatalog ? (
-                        <span className={`create-model-badge ${selectedModelCatalog.runnable ? "runnable" : "catalog"}`}>
-                          {selectedModelCatalog.runnable ? "可创建" : "目录模型"}
-                        </span>
-                      ) : null}
-                    </div>
-                    <ModelSemanticChips
-                      catalog={modelCatalog}
-                      className="create-model-facts"
-                      model={formState.model}
-                      showParamFamily
-                    />
-                    {selectedModelLaunchBlocker ? (
-                      <p className="create-model-note blocked">{selectedModelLaunchBlocker}</p>
-                    ) : null}
-                    {catalogOnlyModelCatalog.length > 0 ? (
-                      <div className="create-model-blockers" aria-label="目录模型阻塞原因">
-                        {catalogOnlyModelCatalog.map((item) => (
-                          <article key={item.value}>
-                            <div>
-                              <strong>{item.label}</strong>
-                              <span>{runnerStatusLabel(item.runner_status)}</span>
-                            </div>
-                            <p>{buildModelLaunchBlocker(item)}</p>
-                          </article>
-                        ))}
+              <form className="form-stack" onSubmit={handleCreateJob}>
+                <section className="create-workbench-grid">
+                  <article className="create-block create-config-block">
+                    <div className="create-block-head">
+                      <div>
+                        <span className="mini-label">任务配置</span>
+                        <strong>模型与输入来源</strong>
                       </div>
-                    ) : null}
-                  </div>
+                    </div>
 
-                  <label className="field">
-                    <span>备注</span>
-                    <textarea
-                      rows={3}
-                      value={formState.notes}
-                      onChange={(event) => updateFormField("notes", event.target.value)}
-                      placeholder="比如：箱子双图测试 / 室内视频 / 想比较 MonST3R 和 DUSt3R"
-                    />
-                  </label>
-                </article>
+                    <div className="form-row">
+                      <label className="field">
+                        <span>模型</span>
+                        <select value={formState.model} onChange={(e) => updateModel(e.target.value)}>
+                          {runnableModelCatalog.map((m) => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                          ))}
+                          {catalogOnlyModelCatalog.map((m) => (
+                            <option key={m.value} value={m.value} disabled>{m.label} (未部署)</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="field">
+                        <span>输入类型</span>
+                        <select
+                          value={formState.source_type}
+                          onChange={(e) => updateFormField("source_type", e.target.value)}
+                        >
+                          {appState?.sourceTypes.filter(st => selectedModelSourceTypes.includes(st.value)).map((st) => (
+                            <option key={st.value} value={st.value}>{st.label}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
 
-                <article className="create-block create-staging-block">
-                  <div className="create-block-head">
-                    <div>
-                      <span className="mini-label">输入 Staging</span>
+                    <div className="create-model-context">
+                      <strong>{selectedModelCatalog?.description}</strong>
+                      <ModelSemanticChips catalog={modelCatalog} model={formState.model} className="create-model-facts" compact />
+                      {selectedModelLaunchBlocker && <p className="create-model-note blocked">{selectedModelLaunchBlocker}</p>}
+                    </div>
+
+                    <label className="field">
+                      <span>备注</span>
+                      <textarea
+                        rows={3}
+                        value={formState.notes}
+                        onChange={(e) => updateFormField("notes", e.target.value)}
+                        placeholder="任务备注..."
+                      />
+                    </label>
+                  </article>
+
+                  <article className="create-block create-staging-block">
+                    <div className="create-block-head">
                       <strong>本地待上传文件</strong>
+                      <span className="section-pill">{files.length} 个文件</span>
                     </div>
-                    <span className="section-pill">{files.length} 个文件</span>
-                  </div>
-
-                  <label className="dropzone">
-                    <input
-                      type="file"
-                      multiple
-                      onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
-                    />
-                    <span>点击选择文件</span>
-                    <small>{inputHint(formState.model, formState.source_type)}</small>
-                  </label>
-
-                  <div className="staging-stats">
-                    <SummaryStat label="文件数量" value={String(files.length)} />
-                    <SummaryStat label="总大小" value={formatFileSize(pendingTotalSize)} />
-                    <SummaryStat label="类型分布" value={pendingTypeSummary} />
-                  </div>
-
-                  {files.length > 0 ? (
-                    <div className="staging-table" role="table" aria-label="待上传文件矩阵">
-                      <div className="staging-table-head" role="row">
-                        <span role="columnheader">文件名</span>
-                        <span role="columnheader">类型</span>
-                        <span role="columnheader">大小</span>
-                        <span role="columnheader">操作</span>
-                      </div>
-                      <div className="staging-table-body">
+                    <label className="dropzone">
+                      <input type="file" multiple onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
+                      <span>点击或拖拽选择文件</span>
+                    </label>
+                    <div className="staging-stats">
+                      <SummaryStat label="总大小" value={formatFileSize(pendingTotalSize)} />
+                      <SummaryStat label="类型分布" value={pendingTypeSummary} />
+                    </div>
+                    {files.length > 0 && (
+                      <div className="staging-table">
                         {files.map((file) => (
-                          <div className="staging-row" key={`${file.name}-${file.size}`} role="row">
-                            <span className="staging-name" role="cell" title={file.name}>
-                              {file.name}
-                            </span>
-                            <span role="cell">{pendingFileRoleLabel(file)}</span>
-                            <span role="cell">{formatFileSize(file.size)}</span>
-                            <button
-                              className="ghost-button small staging-remove-button"
-                              type="button"
-                              onClick={() => removePendingFile(file.name, file.size)}
-                            >
-                              移除
-                            </button>
+                          <div className="staging-row" key={`${file.name}-${file.size}`}>
+                            <span className="staging-name">{file.name}</span>
+                            <span>{pendingFileRoleLabel(file)}</span>
+                            <button className="ghost-button small" type="button" onClick={() => removePendingFile(file.name, file.size)}>移除</button>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  ) : (
-                    <div className="empty-state">暂无待上传文件。</div>
-                  )}
-                </article>
-
-                <article className="create-block create-guidance-block">
-                  <div className="create-guidance">
-                    <div className="guide-head">
-                      <div>
-                        <strong>输入状态</strong>
-                        <p>{selectedModel?.description ?? "模型说明"}</p>
-                      </div>
-                      <span className="section-pill">{files.length} 个待上传</span>
-                    </div>
-                    <ul className="guide-list">
-                      {createGuidance.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </article>
-
-                <article className="create-block create-params-block">
-                  <details className="advanced-panel" open>
-                    <summary>高级参数</summary>
-                    <div className="advanced-panel-intro">
-                      {buildParamPanelIntro(createParamMode)}
-                    </div>
-                    {supportsPresets ? (
-                      <div className="preset-strip">
-                        <div className="preset-strip-head">
-                          <strong>一键预设</strong>
-                          <span>{activePreset ? `当前：${presetLabel(activePreset)}` : "当前：已手动调整"}</span>
-                        </div>
-                        <div className="preset-pills">
-                          {presetDescriptors.map((preset) => (
-                            <button
-                              key={preset.key}
-                              className={`preset-pill ${activePreset === preset.key ? "active" : ""}`}
-                              type="button"
-                              onClick={() => applyPreset(preset.key)}
-                            >
-                              <strong>{preset.label}</strong>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    {createParamMode === "image_collection" ? (
-                      <div className="param-grid">
-                        {Object.keys(defaultDust3rParams).map((key) => (
-                          <ParamField
-                            key={key}
-                            name={key}
-                            value={formState[key as keyof FormState]}
-                            choices={dust3rParamChoices[key as keyof typeof defaultDust3rParams]}
-                            onChange={(value) => updateFormField(key as keyof FormState, value)}
-                          />
-                        ))}
-                      </div>
-                    ) : createParamMode === "video_sequence" ? (
-                      <Monst3rParams formState={formState} updateFormField={updateFormField} />
-                    ) : createParamMode === "fast3r_collection" ? (
-                      <Fast3rParams formState={formState} updateFormField={updateFormField} />
-                    ) : createParamMode === "spann3r_sequence" ? (
-                      <Spann3rParams />
-                    ) : (
-                      <CatalogOnlyParams blocker={selectedModelLaunchBlocker} />
                     )}
-                  </details>
-                </article>
-              </section>
+                  </article>
 
-              <div className="create-submit-dock">
-                <div>
-                  <span className="mini-label">Launch</span>
-                  <strong>{buildCreateLaunchHeadline(serviceReady, files.length, selectedModelLaunchBlocker)}</strong>
-                  <p>{buildCreateLaunchMessage(serviceReady, formState.model, formState.source_type, files.length, selectedModelLaunchBlocker)}</p>
+                  <article className="create-block create-params-block">
+                    <details className="advanced-panel" open>
+                      <summary>高级参数</summary>
+                      {selectedModelContract?.paramSchema.presets && (
+                        <div className="preset-strip">
+                          <div className="preset-pills">
+                            {Object.entries(selectedModelContract.paramSchema.presets).map(([key, p]) => (
+                              <button key={key} className="preset-pill" type="button" onClick={() => applyPreset(key)}>
+                                <strong>{key}</strong>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {selectedModelContract ? (
+                        <DynamicParamForm
+                          fields={selectedModelContract.paramSchema.fields}
+                          values={formState.params}
+                          onChange={(k, v) => updateFormField(k, v)}
+                        />
+                      ) : (
+                        <div className="empty-state">加载参数契约中...</div>
+                      )}
+                    </details>
+                  </article>
+                </section>
+
+                <div className="create-submit-dock">
+                  <div className="create-validation-info">
+                    {validationResponse && !validationResponse.ok && (
+                      <div className="validation-errors">
+                        {validationResponse.errors.map(err => <p key={err} className="text-danger">{err}</p>)}
+                      </div>
+                    )}
+                  </div>
+                  <button className="primary-button" disabled={!serviceReady || submitting || !!selectedModelLaunchBlocker || !validationResponse?.ok} type="submit">
+                    {submitting ? "创建中..." : "启动任务"}
+                  </button>
                 </div>
-                <button className="primary-button" disabled={!serviceReady || submitting || Boolean(selectedModelLaunchBlocker)} type="submit">
-                  {submitting ? "创建中..." : `创建 ${selectedModel?.label ?? "模型"} 任务`}
-                </button>
-              </div>
-            </form>
-          </article>
+              </form>
+            </article>
 
-          <aside className="panel create-support-panel">
-            <PanelTitle eyebrow="输入规范" title="先把原料准备对" />
-            <div className="support-checklist">
-              {buildCaptureChecklist(formState.model, formState.source_type, files.length).map((item) => (
-                <article className="support-check-item" key={item.title}>
-                  <strong>{item.title}</strong>
-                  <p>{item.body}</p>
-                </article>
-              ))}
-            </div>
-          </aside>
-        </section>
+            <aside className="panel create-support-panel">
+              <PanelTitle eyebrow="输入规范" title="检查清单" />
+              <div className="support-checklist">
+                {buildCaptureChecklist(formState.model, formState.source_type, files.length).map((item) => (
+                  <article className="support-check-item" key={item.title}>
+                    <strong>{item.title}</strong>
+                    <p>{item.body}</p>
+                  </article>
+                ))}
+              </div>
+            </aside>
+          </section>
         ) : null}
 
         {activeWorkspace === "jobs" ? (
@@ -1693,14 +1442,6 @@ function App() {
                     >
                       复制ID
                     </button>
-                    <button
-                      className="ghost-button small"
-                      type="button"
-                      onClick={() => void copyText(filteredJobIds.join("\n"), "筛选任务ID")}
-                      disabled={filteredJobIds.length === 0}
-                    >
-                      复制筛选ID
-                    </button>
                   </div>
                 </div>
                 <div className="jobs-batch-strip" aria-label="筛选范围批量操作">
@@ -1806,7 +1547,7 @@ function App() {
                     {normalizedJobQuery
                       ? `没有匹配“${jobQuery.trim()}”的任务。`
                       : jobFilter === "all"
-                      ? "暂无任务。先在“文件与新建”里选择输入文件，创建第一条任务。"
+                      ? "暂无任务。"
                       : `当前筛选下没有${jobFilterLabel(jobFilter)}任务。`}
                   </div>
                 )}
@@ -1833,9 +1574,7 @@ function App() {
                   modelCatalog={modelCatalog}
                 />
               ) : (
-                <div className="empty-state large">
-                  这里会显示任务进度、输入预览、输出结果和日志。现在这些内容只会在“运行与结果”里集中展示，不再塞满首页。
-                </div>
+                <div className="empty-state large">选择一个任务查看详情。</div>
               )}
             </section>
           </section>
@@ -1871,7 +1610,7 @@ function App() {
 
         {activeWorkspace === "system" ? (
           <SystemWorkbench
-            bootstrapData={bootstrapData}
+            appState={appState}
             deploymentStatus={deploymentStatus}
             deploymentError={deploymentError}
             deploymentLoading={deploymentLoading}
@@ -1899,8 +1638,7 @@ function App() {
             <div className="preview-modal-head">
               <div>
                 <span className="mini-label">评估配置</span>
-                <strong>OpenAI 兼容接口</strong>
-                <p>API Key 留空则保持不变。</p>
+                <strong>AI Advisor 设置</strong>
               </div>
               <button className="ghost-button small" onClick={() => setAdvisorModalOpen(false)} type="button">
                 关闭
@@ -1910,52 +1648,42 @@ function App() {
             <form className="form-stack settings-form" onSubmit={saveAdvisorSettings}>
               <label className="field">
                 <span>启用辅助评估</span>
-                <select
-                  value={advisorForm.enabled ? "true" : "false"}
-                  onChange={(event) =>
-                    setAdvisorForm((current) => ({ ...current, enabled: event.target.value === "true" }))
-                  }
-                >
-                  <option value="true">开启</option>
-                  <option value="false">关闭</option>
+                <input type="checkbox" checked={advisorForm.enabled} onChange={e => setAdvisorForm(c => ({...c, enabled: e.target.checked}))} />
+              </label>
+
+              <label className="field">
+                <span>提供商 (Provider)</span>
+                <select value={advisorForm.model} onChange={e => setAdvisorForm(c => ({...c, model: e.target.value}))}>
+                  {advisorProviders.map(p => (
+                    <optgroup key={p.id} label={p.label}>
+                      {p.models.map(m => <option key={m} value={m}>{m}</option>)}
+                    </optgroup>
+                  ))}
                 </select>
               </label>
 
               <label className="field">
                 <span>Base URL</span>
-                <input
-                  value={advisorForm.base_url}
-                  onChange={(event) => setAdvisorForm((current) => ({ ...current, base_url: event.target.value }))}
-                  placeholder="例如：http://127.0.0.1:3000/v1"
-                />
+                <input value={advisorForm.baseUrl} onChange={e => setAdvisorForm(c => ({...c, baseUrl: e.target.value}))} />
               </label>
 
               <label className="field">
                 <span>API Key</span>
-                <input
-                  type="password"
-                  value={advisorForm.api_key}
-                  onChange={(event) => setAdvisorForm((current) => ({ ...current, api_key: event.target.value }))}
-                  placeholder={advisorForm.has_api_key ? "已保存，留空则保持不变" : "输入新的 API Key"}
-                />
+                <input type="password" value={advisorForm.apiKey} onChange={e => setAdvisorForm(c => ({...c, apiKey: e.target.value}))} placeholder={advisorForm.hasApiKey ? "已保存" : "输入 Key"} />
               </label>
 
-              <label className="field">
-                <span>Model</span>
-                <input
-                  value={advisorForm.model}
-                  onChange={(event) => setAdvisorForm((current) => ({ ...current, model: event.target.value }))}
-                  placeholder="例如：gpt-4o-mini"
-                />
-              </label>
+              <div className="diagnostics-summary">
+                {advisorDiagnostics?.checks.map(c => (
+                  <div key={c.name} className={`diag-item ${c.passed ? "ok" : "fail"}`}>
+                    <span>{c.name}</span>
+                    <small>{c.message}</small>
+                  </div>
+                ))}
+              </div>
 
               <div className="settings-modal-actions">
-                <button className="ghost-button" onClick={() => setAdvisorModalOpen(false)} type="button">
-                  取消
-                </button>
-                <button className="primary-button" disabled={advisorConfigSaving} type="submit">
-                  {advisorConfigSaving ? "保存中..." : "保存配置"}
-                </button>
+                <button className="ghost-button" type="button" onClick={testAdvisorConnection}>测试连接</button>
+                <button className="primary-button" disabled={advisorConfigSaving} type="submit">保存配置</button>
               </div>
             </form>
           </div>
@@ -1969,11 +1697,8 @@ function App() {
               <div>
                 <span className="mini-label">结果预览</span>
                 <strong>{previewAsset.name}</strong>
-                {previewAsset.note ? <p>{previewAsset.note}</p> : null}
               </div>
-              <button className="ghost-button small" onClick={() => setPreviewAsset(null)} type="button">
-                关闭
-              </button>
+              <button className="ghost-button small" onClick={() => setPreviewAsset(null)} type="button">关闭</button>
             </div>
             <div className="preview-modal-body">
               {previewAsset.kind === "image" ? (
@@ -2111,11 +1836,10 @@ function OverviewCommandCenter(props: {
       </section>
 
       <section className="overview-development-grid">
-        <DevelopmentCyclePanel items={props.developmentLanes} errorMessage={props.developmentLaneError} />
+        <DevelopmentCyclePanel items={props.developmentLanes} />
         <ResearchAccelerationPanel
           items={props.developmentLanes}
           creating={props.creatingDevelopmentLane}
-          errorMessage={props.developmentLaneError}
           onCreateSeed={props.onCreateDevelopmentLane}
         />
       </section>
@@ -2136,7 +1860,7 @@ function OverviewCommandCenter(props: {
 }
 
 function SystemWorkbench(props: {
-  bootstrapData: BootstrapPayload;
+  appState: AppState | null;
   deploymentStatus: DeploymentStatusPayload | null;
   deploymentError: string | null;
   deploymentLoading: boolean;
@@ -2177,14 +1901,14 @@ function SystemWorkbench(props: {
       <article className="panel">
         <PanelTitle eyebrow="Remote Target" title="服务器连接信息" />
         <div className="support-checklist compact-stack">
-          <article className="support-check-item">
-            <strong>SSH 目标</strong>
-            <p>{props.bootstrapData.server.user}@{props.bootstrapData.server.host}:{props.bootstrapData.server.port}</p>
-          </article>
-          <article className="support-check-item">
-            <strong>远端根目录</strong>
-            <p>{props.bootstrapData.server.remote_root}</p>
-          </article>
+          {props.appState?.summary && (
+            <>
+              <article className="support-check-item">
+                <strong>SSH 目标</strong>
+                <p>后端连接信息</p>
+              </article>
+            </>
+          )}
         </div>
       </article>
 
@@ -2247,24 +1971,6 @@ function SystemWorkbench(props: {
                 : props.deploymentError || "尚未读取远端部署状态。"}
             </p>
           </article>
-          <article className="support-check-item">
-            <strong>主线环境</strong>
-            <p>{props.deploymentStatus ? formatDeploymentEnvSummary(props.deploymentStatus) : "读取后会显示 mast3r / monst3r / spann3r / align3r / fast3r / cut3r。"}</p>
-          </article>
-          <article className="support-check-item">
-            <strong>目录与 README</strong>
-            <p>{formatDeploymentDirectoryStatus(props.deploymentStatus)}</p>
-          </article>
-          <article className="support-check-item">
-            <strong>缓存状态</strong>
-            <p>{formatDeploymentCacheStatus(props.deploymentStatus)}</p>
-          </article>
-          {props.deploymentStatus?.cache?.last_error ? (
-            <article className="support-check-item">
-              <strong>最近错误</strong>
-              <p>{props.deploymentStatus.cache.last_error}</p>
-            </article>
-          ) : null}
           <div className="service-card-actions">
             <button className="ghost-button small" onClick={() => void props.loadDeploymentStatus(true, true)} disabled={props.deploymentLoading} type="button">
               {props.deploymentLoading ? "检查中..." : "刷新远端部署状态"}
@@ -2279,10 +1985,6 @@ function SystemWorkbench(props: {
           <article className="support-check-item">
             <strong>状态</strong>
             <p>{props.advisorReady ? `已配置：${props.advisorState.model}` : props.advisorState.message}</p>
-          </article>
-          <article className="support-check-item">
-            <strong>用途</strong>
-            <p>生成任务评估草稿。</p>
           </article>
           <button className="ghost-button" onClick={() => void props.openAdvisorSettings()} disabled={props.advisorConfigLoading} type="button">
             {props.advisorConfigLoading ? "读取中..." : "打开配置"}
@@ -2311,97 +2013,6 @@ function SystemWorkbench(props: {
         </div>
       </article>
     </section>
-  );
-}
-function Monst3rParams(props: {
-  formState: FormState;
-  updateFormField: (key: keyof FormState, value: string) => void;
-}) {
-  return (
-    <div className="param-grid">
-      {Object.keys(defaultMonst3rParams)
-        .map((key) => (
-          <ParamField
-            key={key}
-            name={key}
-            value={props.formState[key as keyof FormState]}
-            choices={monst3rParamChoices[key as keyof typeof defaultMonst3rParams]}
-            onChange={(value) => props.updateFormField(key as keyof FormState, value)}
-          />
-        ))}
-    </div>
-  );
-}
-
-function Fast3rParams(props: {
-  formState: FormState;
-  updateFormField: (key: keyof FormState, value: string) => void;
-}) {
-  return (
-    <div className="param-grid">
-      {Object.keys(defaultFast3rParams).map((key) => (
-        <ParamField
-          key={key}
-          name={key}
-          value={props.formState[key as keyof FormState]}
-          choices={fast3rParamChoices[key as keyof typeof defaultFast3rParams]}
-          onChange={(value) => props.updateFormField(key as keyof FormState, value)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function Spann3rParams() {
-  return (
-    <div className="param-static-note">
-      <strong>当前 Runner 使用固定序列参数</strong>
-      <p>提交时使用后端默认序列配置。</p>
-      <div className="param-static-grid">
-        <span>resolution 224</span>
-        <span>kf_every 10</span>
-        <span>conf_thresh 0.001</span>
-        <span>offline false</span>
-      </div>
-    </div>
-  );
-}
-
-function CatalogOnlyParams(props: { blocker: string | null }) {
-  return (
-    <div className="param-static-note blocked">
-      <strong>当前模型暂不进入创建队列</strong>
-      <p>{props.blocker ?? "该目录模型还没有可派发 runner、部署合同或 smoke 结果。"}</p>
-    </div>
-  );
-}
-
-function ParamField(props: {
-  name: string;
-  value: string;
-  choices?: ParamChoice[];
-  onChange: (value: string) => void;
-}) {
-  if (props.choices && props.choices.length > 0) {
-    return (
-      <label className="field compact">
-        <span>{formatParamLabel(props.name)}</span>
-        <select value={props.value} onChange={(event) => props.onChange(event.target.value)}>
-          {props.choices.map((choice) => (
-            <option key={choice.value} value={choice.value}>
-              {choice.label}
-            </option>
-          ))}
-        </select>
-      </label>
-    );
-  }
-
-  return (
-    <label className="field compact">
-      <span>{formatParamLabel(props.name)}</span>
-      <input value={props.value} onChange={(event) => props.onChange(event.target.value)} />
-    </label>
   );
 }
 

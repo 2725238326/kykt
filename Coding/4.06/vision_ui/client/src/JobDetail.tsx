@@ -70,7 +70,10 @@ export function JobDetail(props: {
     () => countLogKeywordHits(props.selectedJob.logs, normalizedLogQuery),
     [normalizedLogQuery, props.selectedJob.logs]
   );
-  const outputSections = buildOutputSections(props.selectedJob.outputs, job.model);
+  const outputSections = useMemo(
+    () => buildOutputSections(props.selectedJob.outputs, job.model, props.selectedJob.contract),
+    [props.selectedJob.outputs, job.model, props.selectedJob.contract]
+  );
   const progress = props.selectedJob.phase_display;
   const advisorSuggested = isAdvisorSuggested(job.status);
   const advisorReport = props.selectedJob.advisor_report ?? null;
