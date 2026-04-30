@@ -34,6 +34,47 @@ export type PhaseDisplay = {
   }>;
 };
 
+export type ParamFieldSchema = {
+  key: string;
+  label: string;
+  type: "string" | "number" | "boolean" | "select";
+  default: any;
+  choices?: Array<{ value: string; label: string }>;
+  description?: string;
+  optional?: boolean;
+};
+
+export type ModelContract = {
+  model: string;
+  paramSchema: {
+    fields: ParamFieldSchema[];
+    presets?: Record<string, Record<string, any>>;
+  };
+  runner: string;
+  resultContract: ResultContract;
+  allowedSourceTypes: string[];
+  launchBlocker: string | null;
+};
+
+export type ResultArtifact = {
+  role: string;
+  label: string;
+  name: string;
+  relativePath: string;
+  kind: "image" | "video" | "pointcloud" | "model3d" | "log" | "data";
+  note?: string;
+};
+
+export type ResultContract = {
+  primaryRole?: string;
+  groups: Array<{
+    key: string;
+    label: string;
+    description?: string;
+  }>;
+  artifacts: ResultArtifact[];
+};
+
 export type ResultSummary = {
   job_id: string;
   model: string;
@@ -91,10 +132,35 @@ export type AdvisorStatus = {
   message: string;
 };
 
-export type AdvisorConfig = AdvisorStatus & {
-  temperature: number;
-  max_tokens: number;
-  system_prompt: string;
+export type AdvisorConfig = {
+  enabled: boolean;
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+  maxTokens: number;
+  systemPrompt: string;
+  structuredOutput: boolean;
+  timeoutSeconds: number;
+  hasApiKey?: boolean; // compatibility/info
+};
+
+export type AdvisorProvider = {
+  id: string;
+  label: string;
+  description: string;
+  models: string[];
+  supportsStructuredOutput: boolean;
+};
+
+export type AdvisorDiagnostics = {
+  state: "ready" | "unconfigured" | "error";
+  checks: Array<{
+    name: string;
+    passed: boolean;
+    message: string;
+    detail?: string;
+  }>;
+  latencyMs?: number;
 };
 
 export type JobPayload = {
@@ -125,6 +191,7 @@ export type JobPayload = {
   result_summary: ResultSummary | null;
   evaluation?: EvaluationPayload | null;
   advisor_report?: AdvisorReport | null;
+  contract?: ResultContract; // New
 };
 
 export type EvaluationPayload = {
@@ -142,6 +209,20 @@ export type EvaluationPayload = {
   noise_control?: number | null;
   depth_consistency?: number | null;
   notes?: string;
+};
+
+export type ModelCatalogItem = {
+  value: string;
+  label: string;
+  description: string;
+  family: string;
+  param_family: string;
+  source_types: string[];
+  runner_status: string;
+  research_priority: number;
+  active_track: boolean;
+  runnable: boolean;
+  launch_blocker?: string | null;
 };
 
 export type BootstrapPayload = {
@@ -163,37 +244,23 @@ export type BootstrapPayload = {
     port: number;
     remote_root: string;
   };
-  models: Array<{
-    value: string;
-    label: string;
-    description: string;
-    param_family?: string;
-    family?: string;
-    source_types?: string[];
-    runner_status?: string;
-    research_priority?: number;
-    active_track?: boolean;
-    runnable?: boolean;
-    launch_blocker?: string | null;
-  }>;
-  model_catalog?: Array<{
-    value: string;
-    label: string;
-    description: string;
-    family: string;
-    param_family: string;
-    source_types: string[];
-    runner_status: string;
-    research_priority: number;
-    active_track: boolean;
-    runnable: boolean;
-    launch_blocker?: string | null;
-  }>;
+  models: any[]; // legacy
+  model_catalog?: ModelCatalogItem[];
   source_types: Array<{
     value: string;
     label: string;
   }>;
   advisor?: AdvisorStatus;
+};
+
+export type AppState = {
+  modelCatalog: ModelCatalogItem[];
+  modelContracts: Record<string, ModelContract>;
+  sourceTypes: Array<{ value: string; label: string }>;
+  developmentLanes: DevelopmentLaneItem[];
+  deliveryGaps: Array<{ title: string; detail: string }>;
+  advisor: AdvisorStatus;
+  summary: BootstrapPayload["summary"];
 };
 
 export type SampleManifestItem = {
@@ -224,7 +291,7 @@ export type SamplesPayload = {
     source_counts: Record<string, number>;
     required_model_counts: Record<string, number>;
   };
-  model_catalog: NonNullable<BootstrapPayload["model_catalog"]>;
+  model_catalog: ModelCatalogItem[];
   job_matrix?: {
     rows: Array<{
       sample_id: string;
@@ -355,4 +422,9 @@ export type BackendStatusPayload = {
   message: string;
   backend_root: string | null;
   log_path: string | null;
+};
+
+export type ValidationCreateResponse = {
+  ok: boolean;
+  errors: string[];
 };

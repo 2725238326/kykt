@@ -2,7 +2,10 @@ import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, use
 import { invoke } from "@tauri-apps/api/core";
 import type {
   AdvisorConfig,
+  AdvisorDiagnostics,
+  AdvisorProvider,
   AdvisorStatus,
+  AppState,
   BackendStatusPayload,
   BootstrapPayload,
   DeploymentStatusPayload,
@@ -10,7 +13,9 @@ import type {
   EvaluationPayload,
   JobPayload,
   JobsListPayload,
-  SamplesPayload
+  ModelContract,
+  SamplesPayload,
+  ValidationCreateResponse
 } from "./types";
 import {
   API_BASE,
@@ -153,13 +158,13 @@ const workspaceTabs: Array<{ key: WorkspaceTab; label: string; note: string }> =
 ];
 
 function App() {
-  const [bootstrap, setBootstrap] = useState<BootstrapPayload | null>(null);
+  const [appState, setAppState] = useState<AppState | null>(null);
   const [jobs, setJobs] = useState<JobsListPayload["jobs"]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobPayload | null>(null);
   const [samplesPayload, setSamplesPayload] = useState<SamplesPayload | null>(null);
   const [samplesError, setSamplesError] = useState<string | null>(null);
-  const [developmentLanes, setDevelopmentLanes] = useState<DevelopmentLaneItem[]>(fallbackDevelopmentLanes);
+  const [developmentLanes, setDevelopmentLanes] = useState<DevelopmentLaneItem[]>([]);
   const [developmentLaneError, setDevelopmentLaneError] = useState<string | null>(null);
   const [creatingDevelopmentLane, setCreatingDevelopmentLane] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState<DeploymentStatusPayload | null>(null);
@@ -182,40 +187,43 @@ function App() {
   const [advisorModalOpen, setAdvisorModalOpen] = useState(false);
   const [advisorConfigLoading, setAdvisorConfigLoading] = useState(false);
   const [advisorConfigSaving, setAdvisorConfigSaving] = useState(false);
-  const [advisorForm, setAdvisorForm] = useState({
+  const [advisorProviders, setAdvisorProviders] = useState<AdvisorProvider[]>([]);
+  const [advisorDiagnostics, setAdvisorDiagnostics] = useState<AdvisorDiagnostics | null>(null);
+  const [advisorForm, setAdvisorForm] = useState<AdvisorConfig>({
     enabled: false,
-    base_url: "",
-    api_key: "",
+    baseUrl: "",
+    apiKey: "",
     model: "gpt-4o-mini",
-    has_api_key: false,
+    maxTokens: 2048,
+    systemPrompt: "",
+    structuredOutput: true,
+    timeoutSeconds: 60,
   });
-  const [activePresets, setActivePresets] = useState<Record<string, PresetKey | null>>({
-    dust3r: "standard",
-    mast3r: "standard",
-    monst3r: "standard",
-    spann3r: null,
-    fast3r: "standard"
-  });
+  const [validationResponse, setValidationResponse] = useState<ValidationCreateResponse | null>(null);
   const recoveryInFlightRef = useRef(false);
   const jobSearchInputRef = useRef<HTMLInputElement | null>(null);
-  const [formState, setFormState] = useState<FormState>({
+  const [formState, setFormState] = useState<{
+    model: string;
+    source_type: string;
+    notes: string;
+    params: Record<string, any>;
+  }>({
     model: "dust3r",
     source_type: "images",
     notes: "",
-    ...defaultDust3rParams,
-    ...defaultMonst3rParams,
-    ...defaultFast3rParams
+    params: {}
   });
 
-  const bootstrapData = bootstrap ?? DEFAULT_BOOTSTRAP;
-  const advisorState: AdvisorStatus = bootstrapData.advisor ?? {
+  const modelCatalog = useMemo(() => appState?.modelCatalog ?? [], [appState]);
+  const modelContracts = useMemo(() => appState?.modelContracts ?? {}, [appState]);
+  const advisorState = useMemo(() => appState?.advisor ?? {
     enabled: false,
     configured: false,
     base_url: "",
     model: "",
     has_api_key: false,
     message: "辅助评估尚未配置。"
-  };
+  }, [appState]);
   const serviceReady = serviceState === "ready";
   const advisorReady = advisorState.enabled && advisorState.configured;
   const modelCatalog = useMemo<ModelCatalogItem[]>(
@@ -567,10 +575,13 @@ function App() {
     return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
   }
 
-  async function refreshBootstrap() {
-    const payload = await fetchJson<BootstrapPayload>("/api/bootstrap");
-    setBootstrap(payload);
-    return payload;
+  async function refreshAppState() {
+    const state = await fetchJson<AppState>("/api/app/state");
+    setAppState(state);
+    if (state.developmentLanes) {
+      setDevelopmentLanes(state.developmentLanes);
+    }
+    return state;
   }
 
   async function loadDesktopBackendStatus() {
