@@ -4,9 +4,12 @@ import type { DevelopmentLaneItem } from "./types";
 
 interface ResearchAccelerationPanelProps {
   items: DevelopmentLaneItem[];
+  creating?: boolean;
+  errorMessage?: string | null;
+  onCreateSeed?: (category: DevelopmentLaneItem["category"]) => Promise<void> | void;
 }
 
-export function ResearchAccelerationPanel({ items }: ResearchAccelerationPanelProps) {
+export function ResearchAccelerationPanel({ items, creating = false, errorMessage, onCreateSeed }: ResearchAccelerationPanelProps) {
   const researchItems = items.filter(item => 
     item.category === "paper_reproduction" || 
     item.category === "prototype" || 
@@ -18,9 +21,10 @@ export function ResearchAccelerationPanel({ items }: ResearchAccelerationPanelPr
       <PanelTitle eyebrow="Acceleration" title="研究与原型加速" />
       <div className="research-acceleration-info">
         <p className="status-honest-note">
-          <strong>状态提示：</strong>当前研发车道处于“设计就绪”状态。正在定义输入/输出契约，以支持从论文复现到 KYKT 核心流的自动合入。
+          <strong>状态提示：</strong>研发车道已接入本地持久化。论文复现、原型和评测设计会写入后端 manifest。
         </p>
       </div>
+      {errorMessage ? <div className="empty-state">{errorMessage}</div> : null}
       <div className="research-lane-grid">
         {researchItems.map((item) => (
           <div key={item.id} className="research-lane-card">
@@ -42,10 +46,18 @@ export function ResearchAccelerationPanel({ items }: ResearchAccelerationPanelPr
       <div className="seed-categories-strip">
         <span className="mini-label">快速启动种子</span>
         <div className="seed-pills">
-          <button className="ghost-button small">论文复现</button>
-          <button className="ghost-button small">新 3R 模型 Runner</button>
-          <button className="ghost-button small">UI/评测流原型</button>
-          <button className="ghost-button small">研究报告/实验设计</button>
+          <button className="ghost-button small" disabled={creating} onClick={() => onCreateSeed?.("paper_reproduction")} type="button">
+            论文复现
+          </button>
+          <button className="ghost-button small" disabled={creating} onClick={() => onCreateSeed?.("model_runner")} type="button">
+            新 3R 模型 Runner
+          </button>
+          <button className="ghost-button small" disabled={creating} onClick={() => onCreateSeed?.("prototype")} type="button">
+            UI/评测流原型
+          </button>
+          <button className="ghost-button small" disabled={creating} onClick={() => onCreateSeed?.("evaluation")} type="button">
+            研究报告/实验设计
+          </button>
         </div>
       </div>
     </article>

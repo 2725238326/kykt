@@ -344,6 +344,9 @@ export type DevelopmentLaneItem = {
   nextAction: string;
   blockers: string[];
   mergeTarget?: "runner" | "sample_matrix" | "advisor" | "report" | "deferred_research";
+  createdAt?: string;
+  updatedAt?: string;
+  metadata?: Record<string, unknown>;
 };
 
 export type BackendStatusPayload = {

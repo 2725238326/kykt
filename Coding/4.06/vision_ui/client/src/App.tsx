@@ -109,7 +109,7 @@ type ServiceState = "starting" | "ready" | "degraded";
 type JobFilter = "all" | "running" | "attention" | "finished";
 type WorkspaceTab = "overview" | "create" | "jobs" | "advisor" | "system";
 
-const developmentLanes: DevelopmentLaneItem[] = [
+const fallbackDevelopmentLanes: DevelopmentLaneItem[] = [
   {
     id: "lane-1",
     title: "MASt3R 视觉对齐优化",
@@ -159,6 +159,9 @@ function App() {
   const [selectedJob, setSelectedJob] = useState<JobPayload | null>(null);
   const [samplesPayload, setSamplesPayload] = useState<SamplesPayload | null>(null);
   const [samplesError, setSamplesError] = useState<string | null>(null);
+  const [developmentLanes, setDevelopmentLanes] = useState<DevelopmentLaneItem[]>(fallbackDevelopmentLanes);
+  const [developmentLaneError, setDevelopmentLaneError] = useState<string | null>(null);
+  const [creatingDevelopmentLane, setCreatingDevelopmentLane] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState<DeploymentStatusPayload | null>(null);
   const [deploymentError, setDeploymentError] = useState<string | null>(null);
   const [deploymentLoading, setDeploymentLoading] = useState(false);
@@ -435,6 +438,7 @@ function App() {
           setServiceMessage("本地服务已就绪");
           await loadJobs(false);
           await loadSamples(false);
+          await loadDevelopmentLanes(false);
           return;
         } catch {
           setServiceState("starting");
@@ -495,6 +499,15 @@ function App() {
     }
     void loadSamples(false);
     const timer = window.setInterval(() => void loadSamples(false), 60000);
+    return () => window.clearInterval(timer);
+  }, [serviceReady]);
+
+  useEffect(() => {
+    if (!serviceReady) {
+      return;
+    }
+    void loadDevelopmentLanes(false);
+    const timer = window.setInterval(() => void loadDevelopmentLanes(false), 60000);
     return () => window.clearInterval(timer);
   }, [serviceReady]);
 
@@ -605,6 +618,7 @@ function App() {
       }
       await loadJobs(false);
       await loadSamples(false);
+      await loadDevelopmentLanes(false);
       if (selectedJobId) {
         await loadJobDetail(selectedJobId, false);
       }
@@ -668,6 +682,20 @@ function App() {
           ? "样例库接口暂未上线；后端提供 /api/samples 后这里会自动刷新。"
           : message
       );
+      if (showError) {
+        setErrorMessage(message);
+      }
+    }
+  }
+
+  async function loadDevelopmentLanes(showError = true) {
+    try {
+      const payload = await fetchJson<DevelopmentLaneItem[]>("/api/development/lanes");
+      setDevelopmentLanes(payload);
+      setDevelopmentLaneError(null);
+    } catch (error) {
+      const message = friendlyError(error, "研发车道接口暂不可用。");
+      setDevelopmentLaneError(message);
       if (showError) {
         setErrorMessage(message);
       }
@@ -959,6 +987,73 @@ function App() {
     }
   }
 
+  async function createDevelopmentLaneSeed(category: DevelopmentLaneItem["category"]) {
+    const presets: Record<DevelopmentLaneItem["category"], Pick<DevelopmentLaneItem, "title" | "category" | "status" | "priority" | "nextAction" | "blockers" | "mergeTarget">> = {
+      paper_reproduction: {
+        title: "新论文复现计划",
+        category: "paper_reproduction",
+        status: "draft",
+        priority: "P2",
+        nextAction: "补充论文链接、官方仓库、权重位置和首个 smoke 样例。",
+        blockers: [],
+        mergeTarget: "deferred_research"
+      },
+      model_runner: {
+        title: "新模型 Runner 接入",
+        category: "model_runner",
+        status: "draft",
+        priority: "P1",
+        nextAction: "记录 runnerPath、environmentPath 和标准输入输出契约。",
+        blockers: [],
+        mergeTarget: "runner"
+      },
+      prototype: {
+        title: "新原型验证",
+        category: "prototype",
+        status: "draft",
+        priority: "P2",
+        nextAction: "定义最小可运行样例和 smoke test 产物。",
+        blockers: [],
+        mergeTarget: "runner"
+      },
+      evaluation: {
+        title: "新评测流设计",
+        category: "evaluation",
+        status: "draft",
+        priority: "P2",
+        nextAction: "对齐评分维度、样例矩阵和 Advisor 输出格式。",
+        blockers: [],
+        mergeTarget: "advisor"
+      },
+      ui_workflow: {
+        title: "新 UI 工作流原型",
+        category: "ui_workflow",
+        status: "draft",
+        priority: "P3",
+        nextAction: "明确入口、状态流转和需要的后端 API。",
+        blockers: [],
+        mergeTarget: "report"
+      }
+    };
+
+    setCreatingDevelopmentLane(true);
+    setErrorMessage(null);
+    setInfoMessage(null);
+    try {
+      const created = await fetchJson<DevelopmentLaneItem>("/api/development/lanes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(presets[category])
+      });
+      setDevelopmentLanes((current) => [created, ...current.filter((item) => item.id !== created.id)]);
+      setInfoMessage(`研发车道已创建：${created.title}`);
+    } catch (error) {
+      setErrorMessage(friendlyError(error, "创建研发车道失败。"));
+    } finally {
+      setCreatingDevelopmentLane(false);
+    }
+  }
+
   function validateFiles() {
     if (files.length === 0) {
       return "请先选择输入文件。";
@@ -1196,6 +1291,8 @@ function App() {
             deferredModelCatalog={deferredModelCatalog}
             samplesPayload={samplesPayload}
             samplesError={samplesError}
+            developmentLanes={developmentLanes}
+            developmentLaneError={developmentLaneError}
             modelCatalog={modelCatalog}
             openWorkspace={openWorkspace}
             activeJob={activeJob}
@@ -1204,6 +1301,8 @@ function App() {
             postJobAction={postJobAction}
             openAdvisorSettings={openAdvisorSettings}
             copyText={copyText}
+            onCreateDevelopmentLane={createDevelopmentLaneSeed}
+            creatingDevelopmentLane={creatingDevelopmentLane}
           />
         ) : null}
 
@@ -1888,6 +1987,8 @@ function OverviewCommandCenter(props: {
   deferredModelCatalog: ModelCatalogItem[];
   samplesPayload: SamplesPayload | null;
   samplesError: string | null;
+  developmentLanes: DevelopmentLaneItem[];
+  developmentLaneError: string | null;
   modelCatalog: ModelCatalogItem[];
   openWorkspace: (workspace: WorkspaceTab, jobId?: string) => void;
   activeJob: JobPayload | null;
@@ -1896,6 +1997,8 @@ function OverviewCommandCenter(props: {
   postJobAction: (path: string, key: string) => Promise<void>;
   openAdvisorSettings: () => Promise<void> | void;
   copyText: (value: string, label: string) => Promise<void>;
+  onCreateDevelopmentLane: (category: DevelopmentLaneItem["category"]) => Promise<void>;
+  creatingDevelopmentLane: boolean;
 }) {
   const focusJob = props.focusJob;
   const runnableCount = props.activeModelCatalog.filter((item) => item.runnable).length;
@@ -1997,8 +2100,13 @@ function OverviewCommandCenter(props: {
       </section>
 
       <section className="overview-development-grid">
-        <DevelopmentCyclePanel items={developmentLanes} />
-        <ResearchAccelerationPanel items={developmentLanes} />
+        <DevelopmentCyclePanel items={props.developmentLanes} errorMessage={props.developmentLaneError} />
+        <ResearchAccelerationPanel
+          items={props.developmentLanes}
+          creating={props.creatingDevelopmentLane}
+          errorMessage={props.developmentLaneError}
+          onCreateSeed={props.onCreateDevelopmentLane}
+        />
       </section>
 
       <section className="overview-support-grid workbench-overview-support-grid">

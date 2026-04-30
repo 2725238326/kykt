@@ -1,6 +1,17 @@
 from __future__ import annotations
 
+import json
+import os
+import threading
+import uuid
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parent
+LOCAL_MODEL_REGISTRY_PATH = ROOT / "local_jobs" / "local_model_registry.json"
+_LOCAL_MODEL_REGISTRY_LOCK = threading.RLock()
 
 
 @dataclass(frozen=True)
@@ -252,3 +263,92 @@ def default_runner_for(model: str) -> str:
 
 def param_family_for(model: str) -> str:
     return get_model_spec(model).param_family
+
+
+def _model_catalog_entry_to_dict(spec: ModelCatalogEntry, *, runnable: bool) -> dict:
+    return {
+        "value": spec.value,
+        "label": spec.label,
+        "description": spec.description,
+        "family": spec.family,
+        "param_family": spec.param_family,
+        "source_types": list(spec.source_types),
+        "runner_status": spec.runner_status,
+        "research_priority": spec.research_priority,
+        "active_track": spec.active_track,
+        "runnable": runnable,
+        "launch_blocker": spec.launch_blocker,
+    }
+
+
+def _normalize_local_catalog_entry(payload: dict[str, Any]) -> dict:
+    value = str(payload.get("value") or "").strip()
+    if not value:
+        raise ValueError("Local model registry entry must include value.")
+    source_types = payload.get("source_types") or payload.get("sourceTypes") or ["images", "video", "frames"]
+    if isinstance(source_types, str):
+        source_types = [source_types]
+    if not isinstance(source_types, list):
+        raise ValueError(f"source_types for {value} must be a list.")
+    return {
+        "value": value,
+        "label": str(payload.get("label") or value),
+        "description": str(payload.get("description") or "Local development lane promotion draft."),
+        "family": str(payload.get("family") or "local_development"),
+        "param_family": str(payload.get("param_family") or payload.get("paramFamily") or "research_catalog"),
+        "source_types": [str(item) for item in source_types if str(item).strip()],
+        "runner_status": str(payload.get("runner_status") or payload.get("runnerStatus") or "promotion_draft"),
+        "research_priority": int(payload.get("research_priority") or payload.get("researchPriority") or 50),
+        "active_track": bool(payload.get("active_track", payload.get("activeTrack", True))),
+        "runnable": bool(payload.get("runnable", False)),
+        "launch_blocker": payload.get("launch_blocker") or payload.get("launchBlocker"),
+        "development_item_id": payload.get("development_item_id") or payload.get("developmentItemId"),
+        "metadata": payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {},
+    }
+
+
+def _read_local_model_registry() -> dict:
+    if not LOCAL_MODEL_REGISTRY_PATH.exists():
+        return {"version": 1, "models": []}
+    payload = json.loads(LOCAL_MODEL_REGISTRY_PATH.read_text(encoding="utf-8-sig"))
+    models = payload if isinstance(payload, list) else payload.get("models", [])
+    if not isinstance(models, list):
+        raise ValueError("local_model_registry.json must contain a models list.")
+    return {"version": 1, "models": [_normalize_local_catalog_entry(item) for item in models]}
+
+
+def _write_local_model_registry(payload: dict) -> None:
+    LOCAL_MODEL_REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = LOCAL_MODEL_REGISTRY_PATH.with_name(f"{LOCAL_MODEL_REGISTRY_PATH.name}.{uuid.uuid4().hex}.tmp")
+    temp_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    os.replace(temp_path, LOCAL_MODEL_REGISTRY_PATH)
+
+
+def list_local_model_catalog_options() -> list[dict]:
+    with _LOCAL_MODEL_REGISTRY_LOCK:
+        return _read_local_model_registry()["models"]
+
+
+def get_model_catalog_options() -> list[dict]:
+    static_entries = {
+        spec.value: _model_catalog_entry_to_dict(spec, runnable=spec.value in MODEL_REGISTRY)
+        for spec in MODEL_CATALOG.values()
+    }
+    try:
+        local_entries = list_local_model_catalog_options()
+    except (OSError, ValueError, json.JSONDecodeError):
+        local_entries = []
+    for entry in local_entries:
+        static_entries[entry["value"]] = entry
+    return sorted(static_entries.values(), key=lambda item: (-int(item.get("research_priority") or 0), item["value"]))
+
+
+def draft_local_model_entry(entry: dict[str, Any]) -> dict:
+    normalized = _normalize_local_catalog_entry(entry)
+    with _LOCAL_MODEL_REGISTRY_LOCK:
+        payload = _read_local_model_registry()
+        models = [item for item in payload["models"] if item["value"] != normalized["value"]]
+        models.append(normalized)
+        payload["models"] = sorted(models, key=lambda item: (-int(item.get("research_priority") or 0), item["value"]))
+        _write_local_model_registry(payload)
+    return normalized

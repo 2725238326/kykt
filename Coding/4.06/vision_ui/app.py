@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import json
+import logging
 import os
 import re
 import shutil
@@ -26,6 +27,7 @@ from advisor import (
     load_advisor_report,
     save_advisor_config,
 )
+from development_store import DevelopmentItem, DevelopmentStore, DevelopmentStoreError, item_priority_score
 from job_store import (
     EVALUATION_SCORE_FIELDS,
     EVALUATION_SCORE_MAX,
@@ -46,10 +48,11 @@ from job_store import (
     update_job,
 )
 from model_registry import (
-    MODEL_CATALOG_OPTIONS,
     MODEL_OPTIONS,
     SOURCE_TYPE_OPTIONS,
     allowed_source_types,
+    draft_local_model_entry,
+    get_model_catalog_options,
     get_model_spec,
     param_family_for,
 )
@@ -65,6 +68,8 @@ _DEPLOYMENT_STATUS_REFRESHING = False
 DEPLOYMENT_STATUS_TTL_SECONDS = 20.0
 DEPLOYMENT_STATUS_STALE_SECONDS = 300.0
 DEPLOYMENT_STATUS_TIMEOUT_SECONDS = 15.0
+LOGGER = logging.getLogger("kykt.development")
+development_store = DevelopmentStore()
 
 
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
@@ -579,7 +584,102 @@ def _build_job_params(
 
 
 def _catalog_entry_for(model: str) -> dict | None:
-    return next((item for item in MODEL_CATALOG_OPTIONS if item["value"] == model), None)
+    return next((item for item in get_model_catalog_options() if item["value"] == model), None)
+
+
+def _metadata_value(metadata: dict, *keys: str):
+    for key in keys:
+        if key in metadata and metadata[key] not in (None, ""):
+            return metadata[key]
+    return None
+
+
+def _slugify_model_id(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+    return slug or f"local_model_{int(time.time())}"
+
+
+def _resolve_metadata_path(raw_path: str | Path) -> Path:
+    path = Path(str(raw_path)).expanduser()
+    if not path.is_absolute():
+        path = ROOT / path
+    resolved = path.resolve()
+    root = ROOT.resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError:
+        pass
+    return resolved
+
+
+def _validate_existing_metadata_path(metadata: dict, key: str, errors: list[str]) -> None:
+    raw_path = _metadata_value(metadata, key)
+    if raw_path is None:
+        return
+    try:
+        path = _resolve_metadata_path(raw_path)
+    except OSError as exc:
+        errors.append(f"metadata.{key} 路径无法解析：{exc}")
+        return
+    if not path.exists():
+        errors.append(f"metadata.{key} 指向的路径不存在：{path}")
+
+
+def _validate_promotion_ready(item: DevelopmentItem) -> None:
+    if item.merge_target != "runner":
+        return
+
+    metadata = item.metadata or {}
+    errors: list[str] = []
+    prototype_path = _metadata_value(metadata, "runnerPath", "runner_path", "localPath", "local_path", "repoPath", "repo_path")
+    if prototype_path is None:
+        errors.append("runner 合入需要 metadata.runnerPath、metadata.localPath 或 metadata.repoPath。")
+    else:
+        path = _resolve_metadata_path(prototype_path)
+        if not path.exists():
+            errors.append(f"原型路径不存在：{path}")
+
+    env_hint = _metadata_value(metadata, "environmentPath", "environment_path", "envPath", "env_path", "condaEnv", "conda_env", "requirementsPath", "requirements_path")
+    if env_hint is None:
+        errors.append("runner 合入需要 metadata.environmentPath、metadata.condaEnv 或 metadata.requirementsPath 记录环境。")
+
+    for key in ("environmentPath", "environment_path", "envPath", "env_path", "requirementsPath", "requirements_path"):
+        _validate_existing_metadata_path(metadata, key, errors)
+
+    required_files = _metadata_value(metadata, "requiredFiles", "required_files")
+    if isinstance(required_files, list):
+        for index, raw_path in enumerate(required_files, start=1):
+            path = _resolve_metadata_path(raw_path)
+            if not path.exists():
+                errors.append(f"metadata.requiredFiles[{index}] 不存在：{path}")
+
+    if errors:
+        raise HTTPException(status_code=400, detail="Promotion 失败：" + "；".join(errors))
+
+
+def _draft_registry_entry_for(item: DevelopmentItem) -> dict:
+    metadata = item.metadata or {}
+    model_id = item.target_model or str(_metadata_value(metadata, "modelId", "model_id") or _slugify_model_id(item.title))
+    source_types = _metadata_value(metadata, "sourceTypes", "source_types") or ["images", "video", "frames"]
+    return {
+        "value": model_id,
+        "label": str(_metadata_value(metadata, "label") or item.title),
+        "description": str(_metadata_value(metadata, "description") or item.next_action or "Promotion draft from development lane."),
+        "family": str(_metadata_value(metadata, "family") or "local_development"),
+        "param_family": str(_metadata_value(metadata, "paramFamily", "param_family") or "research_catalog"),
+        "source_types": source_types,
+        "runner_status": "promotion_draft",
+        "research_priority": item_priority_score(item.priority),
+        "active_track": True,
+        "runnable": False,
+        "launch_blocker": "Promotion draft created from Development Acceleration Lane; formal runner dispatch still needs model_registry.py integration.",
+        "development_item_id": item.id,
+        "metadata": {
+            **metadata,
+            "developmentItemId": item.id,
+            "promotedAt": datetime.now().isoformat(timespec="seconds"),
+        },
+    }
 
 
 def _minimum_input_count(model: str, source_type: str) -> int:
@@ -961,6 +1061,85 @@ async def health_api():
     return JSONResponse({"ok": True, "service": "kykt-vision-ui", "version": app.version})
 
 
+@app.get("/api/development/lanes")
+async def development_lanes_api():
+    try:
+        items = development_store.list_items()
+    except DevelopmentStoreError as exc:
+        raise HTTPException(status_code=500, detail=f"研发车道读取失败：{exc}") from exc
+    return JSONResponse([item.to_dict() for item in items])
+
+
+@app.post("/api/development/lanes")
+async def create_development_lane_api(request: Request):
+    try:
+        payload = await request.json()
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f"研发车道 JSON 解析失败：{exc.msg}") from exc
+    try:
+        item = development_store.create_item(payload)
+    except DevelopmentStoreError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return JSONResponse(item.to_dict(), status_code=201)
+
+
+@app.patch("/api/development/lanes/{item_id}")
+async def update_development_lane_api(item_id: str, request: Request):
+    try:
+        payload = await request.json()
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f"研发车道 JSON 解析失败：{exc.msg}") from exc
+    try:
+        item = development_store.update_item(item_id, payload)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到研发车道条目 {item_id}。") from exc
+    except DevelopmentStoreError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    if item.status == "merged":
+        LOGGER.info("Development lane %s is marked merged and ready for formal model registry integration.", item.id)
+    return JSONResponse(item.to_dict())
+
+
+@app.delete("/api/development/lanes/{item_id}")
+async def delete_development_lane_api(item_id: str):
+    try:
+        development_store.delete_item(item_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到研发车道条目 {item_id}。") from exc
+    return JSONResponse({"ok": True, "id": item_id})
+
+
+@app.post("/api/development/lanes/{item_id}/promote")
+async def promote_development_lane_api(item_id: str):
+    try:
+        item = development_store.get_item(item_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到研发车道条目 {item_id}。") from exc
+
+    _validate_promotion_ready(item)
+    registry_entry = None
+    if item.merge_target == "runner":
+        try:
+            registry_entry = draft_local_model_entry(_draft_registry_entry_for(item))
+        except (OSError, ValueError) as exc:
+            raise HTTPException(status_code=500, detail=f"模型目录草稿写入失败：{exc}") from exc
+
+    metadata = dict(item.metadata)
+    metadata["promotion"] = {
+        "status": "drafted" if registry_entry else "not_required",
+        "promotedAt": datetime.now().isoformat(timespec="seconds"),
+        "registryEntry": registry_entry,
+    }
+    try:
+        updated = development_store.update_item(item_id, {"status": "merged", "metadata": metadata})
+    except DevelopmentStoreError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    LOGGER.info("Development lane %s promoted with merge target %s.", item.id, item.merge_target or "none")
+    return JSONResponse({"ok": True, "item": updated.to_dict(), "registryEntry": registry_entry})
+
+
 def load_deployment_status(*, force_refresh: bool = False) -> dict:
     global _DEPLOYMENT_STATUS_CACHE, _DEPLOYMENT_STATUS_REFRESHING
 
@@ -1083,6 +1262,7 @@ def load_deployment_status(*, force_refresh: bool = False) -> dict:
 @app.get("/api/bootstrap")
 async def bootstrap_api():
     jobs = list_jobs(limit=50)
+    model_catalog = get_model_catalog_options()
     return JSONResponse(
         {
             "summary": build_dashboard_stats(jobs),
@@ -1095,7 +1275,7 @@ async def bootstrap_api():
                 "remote_root": ServerConfig.remote_root,
             },
             "models": MODEL_OPTIONS,
-            "model_catalog": MODEL_CATALOG_OPTIONS,
+            "model_catalog": model_catalog,
             "source_types": SOURCE_TYPE_OPTIONS,
             "advisor": advisor_status(),
         }
@@ -1115,7 +1295,7 @@ async def samples_api():
         {
             "manifest": manifest,
             "summary": build_sample_status_summary(manifest),
-            "model_catalog": MODEL_CATALOG_OPTIONS,
+            "model_catalog": get_model_catalog_options(),
             "job_matrix": build_sample_job_matrix(manifest, jobs),
         }
     )
