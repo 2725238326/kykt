@@ -3,18 +3,22 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from job_store import ROOT, get_job_dir, get_log_snippets, iter_input_items, load_job, load_result_summary
+from job_store import ROOT, get_job_dir, get_log_snippets, iter_input_items, load_evaluation, load_job, load_result_summary
+from model_contracts import model_contract_for
 
 
 SETTINGS_DIR = ROOT / "settings"
 SETTINGS_PATH = SETTINGS_DIR / "advisor.json"
+ADVISOR_TRACE_PATH = ROOT / "local_jobs" / "_advisor" / "advisor_calls.jsonl"
 DEFAULT_MODEL = "gpt-4o-mini"
+REPORT_SCHEMA_VERSION = 2
 DEFAULT_SYSTEM_PROMPT = """你是 KYKT Vision 项目的实验评估助手。
 
 你的任务是根据任务模型、输入数量、关键参数、结果摘要、scene_meta、最近日志等信息，对三维重建任务做简洁而具体的判断。
@@ -35,12 +39,75 @@ DEFAULT_SYSTEM_PROMPT = """你是 KYKT Vision 项目的实验评估助手。
 
 DEFAULT_CONFIG = {
     "enabled": False,
+    "provider": "custom_openai_compatible",
     "base_url": "",
     "api_key": "",
     "model": DEFAULT_MODEL,
     "temperature": 0.2,
     "max_tokens": 1200,
     "system_prompt": DEFAULT_SYSTEM_PROMPT,
+    "structured_output": "auto",
+    "timeout_seconds": 90,
+}
+
+PROVIDER_PRESETS = {
+    "openai": {
+        "label": "OpenAI",
+        "base_url": "https://api.openai.com/v1",
+        "structured_output": "json_schema",
+        "notes": "Prefer Structured Outputs with strict JSON Schema when the selected model supports it.",
+    },
+    "gemini_openai": {
+        "label": "Gemini OpenAI compatibility",
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "structured_output": "prompt_only",
+        "notes": "Gemini exposes an OpenAI-compatible chat completions endpoint; keep schema validation local unless response_format support is confirmed for the chosen model.",
+    },
+    "openrouter": {
+        "label": "OpenRouter",
+        "base_url": "https://openrouter.ai/api/v1",
+        "structured_output": "json_object",
+        "notes": "Use an OpenAI-compatible gateway; capability depends on upstream model.",
+    },
+    "litellm": {
+        "label": "LiteLLM Proxy",
+        "base_url": "http://127.0.0.1:4000/v1",
+        "structured_output": "json_schema",
+        "notes": "Local or remote LiteLLM proxy can normalize many providers behind one OpenAI-compatible endpoint.",
+    },
+    "custom_openai_compatible": {
+        "label": "Custom OpenAI-compatible",
+        "base_url": "",
+        "structured_output": "auto",
+        "notes": "For local gateways or provider-compatible endpoints.",
+    },
+}
+
+ADVISOR_REPORT_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "overall_score": {"type": "integer"},
+        "readiness": {"type": "string", "enum": ["unusable", "exploratory", "usable", "strong"]},
+        "summary": {"type": "string"},
+        "issues": {"type": "array", "items": {"type": "string"}},
+        "next_actions": {"type": "array", "items": {"type": "string"}},
+        "teacher_talk": {"type": "string"},
+        "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "limitations": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": [
+        "overall_score",
+        "readiness",
+        "summary",
+        "issues",
+        "next_actions",
+        "teacher_talk",
+        "confidence",
+        "evidence",
+        "limitations",
+    ],
 }
 
 
@@ -57,12 +124,25 @@ def load_advisor_config() -> dict[str, Any]:
 def advisor_config_public() -> dict[str, Any]:
     config = load_advisor_config()
     status = advisor_status()
+    structured_output = _structured_output_mode(config)
+    timeout_seconds = int(config.get("timeout_seconds") or 90)
+    schema_version = REPORT_SCHEMA_VERSION
     return {
         **status,
         "has_api_key": bool(str(config.get("api_key") or "").strip()),
         "temperature": float(config.get("temperature") or 0.2),
         "max_tokens": int(config.get("max_tokens") or 1200),
         "system_prompt": str(config.get("system_prompt") or DEFAULT_SYSTEM_PROMPT),
+        "provider": str(config.get("provider") or "custom_openai_compatible"),
+        "structured_output": structured_output,
+        "timeout_seconds": timeout_seconds,
+        "schema_version": schema_version,
+        "hasApiKey": bool(str(config.get("api_key") or "").strip()),
+        "maxTokens": int(config.get("max_tokens") or 1200),
+        "systemPrompt": str(config.get("system_prompt") or DEFAULT_SYSTEM_PROMPT),
+        "structuredOutput": structured_output,
+        "timeoutSeconds": timeout_seconds,
+        "schemaVersion": schema_version,
     }
 
 
@@ -73,22 +153,30 @@ def save_advisor_config(payload: dict[str, Any]) -> dict[str, Any]:
 
     if "enabled" in payload:
         merged["enabled"] = bool(payload.get("enabled"))
-    if "base_url" in payload:
-        merged["base_url"] = str(payload.get("base_url") or "").strip()
+    if "provider" in payload:
+        provider = str(payload.get("provider") or "custom_openai_compatible").strip()
+        merged["provider"] = provider if provider in PROVIDER_PRESETS else "custom_openai_compatible"
+    if "base_url" in payload or "baseUrl" in payload:
+        merged["base_url"] = str(payload.get("base_url", payload.get("baseUrl")) or "").strip()
     if "model" in payload:
         merged["model"] = str(payload.get("model") or DEFAULT_MODEL).strip() or DEFAULT_MODEL
     if "temperature" in payload:
         merged["temperature"] = float(payload.get("temperature") or 0.2)
-    if "max_tokens" in payload:
-        merged["max_tokens"] = int(payload.get("max_tokens") or 1200)
-    if "system_prompt" in payload:
-        merged["system_prompt"] = str(payload.get("system_prompt") or DEFAULT_SYSTEM_PROMPT).strip() or DEFAULT_SYSTEM_PROMPT
+    if "max_tokens" in payload or "maxTokens" in payload:
+        merged["max_tokens"] = int(payload.get("max_tokens", payload.get("maxTokens")) or 1200)
+    if "system_prompt" in payload or "systemPrompt" in payload:
+        merged["system_prompt"] = str(payload.get("system_prompt", payload.get("systemPrompt")) or DEFAULT_SYSTEM_PROMPT).strip() or DEFAULT_SYSTEM_PROMPT
+    if "structured_output" in payload or "structuredOutput" in payload:
+        mode = str(payload.get("structured_output", payload.get("structuredOutput")) or "auto").strip()
+        merged["structured_output"] = mode if mode in {"auto", "json_schema", "json_object", "prompt_only"} else "auto"
+    if "timeout_seconds" in payload or "timeoutSeconds" in payload:
+        merged["timeout_seconds"] = min(max(int(payload.get("timeout_seconds", payload.get("timeoutSeconds")) or 90), 10), 300)
 
-    if "api_key" in payload:
-        api_key = str(payload.get("api_key") or "").strip()
+    if "api_key" in payload or "apiKey" in payload:
+        api_key = str(payload.get("api_key", payload.get("apiKey")) or "").strip()
         if api_key:
             merged["api_key"] = api_key
-        elif payload.get("clear_api_key"):
+        elif payload.get("clear_api_key") or payload.get("clearApiKey"):
             merged["api_key"] = ""
 
     SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
@@ -102,10 +190,12 @@ def _apply_advisor_env_overrides(config: dict[str, Any]) -> None:
         config["enabled"] = env_enabled.strip().lower() in {"1", "true", "yes", "on"}
 
     env_map = {
+        "provider": "KYKT_ADVISOR_PROVIDER",
         "base_url": "KYKT_ADVISOR_BASE_URL",
         "api_key": "KYKT_ADVISOR_API_KEY",
         "model": "KYKT_ADVISOR_MODEL",
         "system_prompt": "KYKT_ADVISOR_SYSTEM_PROMPT",
+        "structured_output": "KYKT_ADVISOR_STRUCTURED_OUTPUT",
     }
     for key, env_name in env_map.items():
         value = os.getenv(env_name)
@@ -120,20 +210,34 @@ def _apply_advisor_env_overrides(config: dict[str, Any]) -> None:
     if env_max_tokens is not None:
         config["max_tokens"] = int(env_max_tokens)
 
+    env_timeout = os.getenv("KYKT_ADVISOR_TIMEOUT_SECONDS")
+    if env_timeout is not None:
+        config["timeout_seconds"] = int(env_timeout)
+
 
 def advisor_status() -> dict[str, Any]:
     config = load_advisor_config()
     base_url = str(config.get("base_url") or "").strip()
     api_key = str(config.get("api_key") or "").strip()
     model = str(config.get("model") or "").strip()
+    provider = str(config.get("provider") or "custom_openai_compatible").strip()
     enabled = bool(config.get("enabled"))
     configured = bool(base_url and api_key and model)
+    provider_label = PROVIDER_PRESETS.get(provider, PROVIDER_PRESETS["custom_openai_compatible"])["label"]
+    structured_output = _structured_output_mode(config)
     return {
         "enabled": enabled,
         "configured": configured,
+        "provider": provider,
+        "provider_label": provider_label,
         "base_url": base_url,
         "model": model or DEFAULT_MODEL,
         "has_api_key": bool(api_key),
+        "structured_output": structured_output,
+        "providerLabel": provider_label,
+        "baseUrl": base_url,
+        "hasApiKey": bool(api_key),
+        "structuredOutput": structured_output,
         "message": _advisor_status_message(enabled, configured),
     }
 
@@ -151,6 +255,79 @@ def save_advisor_report(job_id: str, payload: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def advisor_provider_options() -> dict[str, Any]:
+    providers = []
+    for key, preset in PROVIDER_PRESETS.items():
+        providers.append(
+            {
+                "value": key,
+                **preset,
+                "baseUrl": preset["base_url"],
+                "structuredOutput": preset["structured_output"],
+            }
+        )
+    report_schema = {
+        "version": REPORT_SCHEMA_VERSION,
+        "json_schema": ADVISOR_REPORT_SCHEMA,
+        "jsonSchema": ADVISOR_REPORT_SCHEMA,
+    }
+    return {
+        "providers": providers,
+        "report_schema": report_schema,
+        "reportSchema": report_schema,
+    }
+
+
+def advisor_diagnostics() -> dict[str, Any]:
+    config = load_advisor_config()
+    status = advisor_status()
+    checks = []
+    checks.append({"key": "enabled", "ok": bool(status["enabled"]), "message": "AI 评估已启用。" if status["enabled"] else "AI 评估当前关闭。"})
+    checks.append({"key": "base_url", "ok": bool(status["base_url"]), "message": status["base_url"] or "缺少 base_url。"})
+    checks.append({"key": "api_key", "ok": bool(status["has_api_key"]), "message": "API key 已配置。" if status["has_api_key"] else "缺少 API key。"})
+    checks.append({"key": "model", "ok": bool(status["model"]), "message": status["model"] or "缺少 model。"})
+    structured_output = _structured_output_mode(config)
+    checks.append({"key": "structured_output", "ok": True, "message": f"结构化输出模式：{structured_output}"})
+    provider = PROVIDER_PRESETS.get(str(config.get("provider") or ""), PROVIDER_PRESETS["custom_openai_compatible"])
+    return {
+        "ok": all(item["ok"] for item in checks),
+        "status": status,
+        "checks": checks,
+        "provider": provider,
+        "providerLabel": provider["label"],
+        "structured_output_mode": structured_output,
+        "structuredOutputMode": structured_output,
+    }
+
+
+def test_advisor_connection() -> dict[str, Any]:
+    status = advisor_status()
+    if not status["enabled"]:
+        raise RuntimeError("AI 评估尚未启用。")
+    if not status["configured"]:
+        raise RuntimeError("AI 评估配置不完整，无法测试连接。")
+
+    config = load_advisor_config()
+    started = time.monotonic()
+    context = {
+        "project": "KYKT Vision",
+        "purpose": "connection_test",
+        "expected_output_format": ADVISOR_REPORT_SCHEMA,
+    }
+    raw_text = _call_openai_compatible_api(config, context, purpose="connection_test")
+    parsed = _validate_report_payload(_parse_model_json(raw_text))
+    return {
+        "ok": True,
+        "latency_ms": int((time.monotonic() - started) * 1000),
+        "latencyMs": int((time.monotonic() - started) * 1000),
+        "provider": status["provider"],
+        "model": status["model"],
+        "structured_output": _structured_output_mode(config),
+        "structuredOutput": _structured_output_mode(config),
+        "sample": parsed,
+    }
+
+
 def evaluate_job_with_advisor(job_id: str) -> dict[str, Any]:
     status = advisor_status()
     if not status["enabled"]:
@@ -160,8 +337,18 @@ def evaluate_job_with_advisor(job_id: str) -> dict[str, Any]:
 
     config = load_advisor_config()
     context = build_advisor_context(job_id)
-    raw_text = _call_openai_compatible_api(config, context)
-    parsed = _parse_model_json(raw_text)
+    raw_text = _call_openai_compatible_api(config, context, purpose="job_evaluation")
+    try:
+        parsed = _validate_report_payload(_parse_model_json(raw_text))
+    except RuntimeError:
+        repair_context = {
+            "repair_instruction": "上一轮输出没有通过 JSON schema 校验。请只返回符合 schema 的 JSON 对象。",
+            "schema": ADVISOR_REPORT_SCHEMA,
+            "invalid_output": raw_text[:2000],
+            "job_context": context,
+        }
+        raw_text = _call_openai_compatible_api(config, repair_context, purpose="job_evaluation_repair")
+        parsed = _validate_report_payload(_parse_model_json(raw_text))
 
     report = {
         "evaluated_at": datetime.now().isoformat(timespec="seconds"),
@@ -172,7 +359,12 @@ def evaluate_job_with_advisor(job_id: str) -> dict[str, Any]:
         "issues": _normalize_text_list(parsed.get("issues")),
         "next_actions": _normalize_text_list(parsed.get("next_actions")),
         "teacher_talk": str(parsed.get("teacher_talk") or "").strip(),
+        "confidence": str(parsed.get("confidence") or "medium"),
+        "evidence": _normalize_text_list(parsed.get("evidence")),
+        "limitations": _normalize_text_list(parsed.get("limitations")),
         "advisor_model": str(config.get("model") or DEFAULT_MODEL),
+        "provider": str(config.get("provider") or "custom_openai_compatible"),
+        "schema_version": REPORT_SCHEMA_VERSION,
     }
     return save_advisor_report(job_id, report)
 
@@ -180,11 +372,17 @@ def evaluate_job_with_advisor(job_id: str) -> dict[str, Any]:
 def build_advisor_context(job_id: str) -> dict[str, Any]:
     job = load_job(job_id)
     summary = load_result_summary(job_id)
+    evaluation = load_evaluation(job_id)
     scene_meta = summary.get("scene_meta") if summary else None
     logs = get_log_snippets(job_id, limit=80)
+    try:
+        model_contract = model_contract_for(job.model)
+    except KeyError:
+        model_contract = None
 
     return {
         "project": "KYKT Vision",
+        "advisor_schema_version": REPORT_SCHEMA_VERSION,
         "job": {
             "job_id": job.job_id,
             "model": job.model,
@@ -198,9 +396,11 @@ def build_advisor_context(job_id: str) -> dict[str, Any]:
             "error_message": job.error_message,
             "input_count": len(job.input_files),
             "input_names": [item["original_name"] for item in iter_input_items(job)],
-            "output_files": job.output_files,
+            "output_files": job.output_files[:120],
         },
+        "model_contract": model_contract,
         "result_summary": summary,
+        "manual_evaluation": evaluation,
         "scene_meta": scene_meta,
         "logs": [
             {
@@ -210,12 +410,16 @@ def build_advisor_context(job_id: str) -> dict[str, Any]:
             for item in logs
         ],
         "expected_output_format": {
+            "json_schema": ADVISOR_REPORT_SCHEMA,
             "overall_score": "1-10 integer",
             "readiness": "unusable | exploratory | usable | strong",
             "summary": "brief Chinese summary",
             "issues": "string array",
             "next_actions": "string array",
             "teacher_talk": "brief Chinese oral update",
+            "confidence": "low | medium | high",
+            "evidence": "string array with concrete file/log/metric evidence",
+            "limitations": "string array with missing evidence or uncertainty",
         },
     }
 
@@ -228,14 +432,35 @@ def _advisor_status_message(enabled: bool, configured: bool) -> str:
     return "AI 评估已就绪。"
 
 
-def _call_openai_compatible_api(config: dict[str, Any], context: dict[str, Any]) -> str:
+def _structured_output_mode(config: dict[str, Any]) -> str:
+    mode = str(config.get("structured_output") or "auto").strip()
+    if mode != "auto":
+        return mode
+    provider = str(config.get("provider") or "").strip()
+    if provider in PROVIDER_PRESETS:
+        preset_mode = str(PROVIDER_PRESETS[provider]["structured_output"])
+        if preset_mode != "auto":
+            return preset_mode
+    base_url = str(config.get("base_url") or "").lower()
+    if "generativelanguage.googleapis.com" in base_url:
+        return "prompt_only"
+    if "openai.com" in base_url:
+        return "json_schema"
+    return "json_object"
+
+
+def _chat_completions_url(config: dict[str, Any]) -> str:
     base_url = str(config.get("base_url") or "").rstrip("/")
     if base_url.endswith("/chat/completions"):
-        url = base_url
+        return base_url
     elif base_url.endswith("/v1"):
-        url = f"{base_url}/chat/completions"
-    else:
-        url = f"{base_url}/chat/completions"
+        return f"{base_url}/chat/completions"
+    return f"{base_url}/chat/completions"
+
+
+def _call_openai_compatible_api(config: dict[str, Any], context: dict[str, Any], *, purpose: str) -> str:
+    url = _chat_completions_url(config)
+    structured_mode = _structured_output_mode(config)
 
     payload = {
         "model": str(config.get("model") or DEFAULT_MODEL),
@@ -253,6 +478,17 @@ def _call_openai_compatible_api(config: dict[str, Any], context: dict[str, Any])
             },
         ],
     }
+    if structured_mode == "json_schema":
+        payload["response_format"] = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "kykt_advisor_report",
+                "strict": True,
+                "schema": ADVISOR_REPORT_SCHEMA,
+            },
+        }
+    elif structured_mode == "json_object":
+        payload["response_format"] = {"type": "json_object"}
 
     request = Request(
         url,
@@ -264,8 +500,9 @@ def _call_openai_compatible_api(config: dict[str, Any], context: dict[str, Any])
         method="POST",
     )
 
+    started = time.monotonic()
     try:
-        with urlopen(request, timeout=90) as response:
+        with urlopen(request, timeout=int(config.get("timeout_seconds") or 90)) as response:
             body = response.read().decode("utf-8", errors="replace")
     except HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace") if exc.fp else ""
@@ -273,7 +510,21 @@ def _call_openai_compatible_api(config: dict[str, Any], context: dict[str, Any])
     except URLError as exc:
         raise RuntimeError(f"AI 评估连接失败：{exc.reason}") from exc
 
+    latency_ms = int((time.monotonic() - started) * 1000)
     response_payload = json.loads(body)
+    _record_advisor_call(
+        {
+            "at": datetime.now().isoformat(timespec="seconds"),
+            "purpose": purpose,
+            "provider": str(config.get("provider") or "custom_openai_compatible"),
+            "model": str(config.get("model") or DEFAULT_MODEL),
+            "url_host": re.sub(r"^(https?://[^/]+).*$", r"\1", url),
+            "structured_output": structured_mode,
+            "latency_ms": latency_ms,
+            "response_id": response_payload.get("id"),
+            "finish_reason": ((response_payload.get("choices") or [{}])[0] or {}).get("finish_reason"),
+        }
+    )
     choice = (response_payload.get("choices") or [{}])[0]
     message = choice.get("message") or {}
     content = message.get("content")
@@ -284,6 +535,12 @@ def _call_openai_compatible_api(config: dict[str, Any], context: dict[str, Any])
                 pieces.append(str(item.get("text") or ""))
         return "\n".join(piece for piece in pieces if piece).strip()
     return str(content or "").strip()
+
+
+def _record_advisor_call(payload: dict[str, Any]) -> None:
+    ADVISOR_TRACE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with ADVISOR_TRACE_PATH.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
 def _parse_model_json(raw_text: str) -> dict[str, Any]:
@@ -302,6 +559,35 @@ def _parse_model_json(raw_text: str) -> dict[str, Any]:
         if match:
             return json.loads(match.group(0))
         raise RuntimeError(f"AI 评估返回的不是合法 JSON：{cleaned[:400]}")
+
+
+def _validate_report_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise RuntimeError("AI 评估返回的 JSON 不是对象。")
+    missing = [key for key in ADVISOR_REPORT_SCHEMA["required"] if key not in payload]
+    if missing:
+        raise RuntimeError(f"AI 评估 JSON 缺少字段：{', '.join(missing)}")
+    try:
+        score = int(payload["overall_score"])
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError("overall_score 必须是 1 到 10 的整数。") from exc
+    if score < 1 or score > 10:
+        raise RuntimeError("overall_score 必须在 1 到 10 之间。")
+    payload["overall_score"] = score
+
+    readiness = str(payload.get("readiness") or "")
+    if readiness not in {"unusable", "exploratory", "usable", "strong"}:
+        raise RuntimeError("readiness 必须是 unusable / exploratory / usable / strong。")
+    confidence = str(payload.get("confidence") or "")
+    if confidence not in {"low", "medium", "high"}:
+        raise RuntimeError("confidence 必须是 low / medium / high。")
+    for key in ("issues", "next_actions", "evidence", "limitations"):
+        if not isinstance(payload.get(key), list):
+            raise RuntimeError(f"{key} 必须是字符串数组。")
+        payload[key] = _normalize_text_list(payload[key])
+    for key in ("summary", "teacher_talk"):
+        payload[key] = str(payload.get(key) or "").strip()
+    return payload
 
 
 def _normalize_text_list(value: Any) -> list[str]:

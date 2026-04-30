@@ -13,10 +13,10 @@ from datetime import datetime
 from pathlib import Path
 
 from job_store import ROOT, get_job_dir, iter_input_items, load_job, update_job, write_result_summary
+from model_contracts import runner_spec_for
 
 
 ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
-MODEL_RESULT_BUNDLE_MODELS = {"monst3r", "spann3r", "fast3r"}
 
 
 @dataclass
@@ -178,7 +178,8 @@ def run_remote_job(job_id: str) -> None:
             "spann3r": _run_spann3r_v1,
             "fast3r": _run_fast3r_v1,
         }
-        dispatcher = dispatchers.get(job.model)
+        runner_spec = runner_spec_for(job.model)
+        dispatcher = dispatchers.get(runner_spec.dispatch_key or "")
         if dispatcher is None:
             raise RuntimeError(f"模型 '{job.model}' 还没有接入远端执行。")
         dispatcher(config, job.job_id, remote_job_dir)
@@ -263,14 +264,7 @@ def _upload_remote_job_json(config: ServerConfig, job_id: str, remote_job_dir: s
 
 
 def _upload_runner(config: ServerConfig, model: str) -> None:
-    runner_map = {
-        "dust3r": "dust3r_runner.py",
-        "mast3r": "mast3r_runner.py",
-        "monst3r": "monst3r_runner.py",
-        "spann3r": "spann3r_runner.py",
-        "fast3r": "fast3r_runner.py",
-    }
-    runner_file = runner_map.get(model)
+    runner_file = runner_spec_for(model).runner_file
     if not runner_file:
         return
     local_runner = LOCAL_RUNNERS_DIR / runner_file
@@ -454,20 +448,18 @@ PY
 
 def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) -> list[str]:
     job = load_job(job_id)
+    runner_spec = runner_spec_for(job.model)
     job_dir = get_job_dir(job_id)
     (job_dir / "output").mkdir(parents=True, exist_ok=True)
     (job_dir / "logs").mkdir(parents=True, exist_ok=True)
-    if job.model in MODEL_RESULT_BUNDLE_MODELS:
+    if runner_spec.download_mode == "remote_tree_bundle":
         return _download_remote_tree(config, remote_job_dir, job_dir)
 
-    required_downloads = [
-        ("output/matches.png", job_dir / "output" / "matches.png"),
-        ("output/pointcloud.ply", job_dir / "output" / "pointcloud.ply"),
-    ]
-    optional_downloads = [
-        ("logs/runner.log", job_dir / "logs" / "runner.log"),
-        ("output/scene_meta.json", job_dir / "output" / "scene_meta.json"),
-    ]
+    if runner_spec.download_mode != "required_files":
+        raise RuntimeError(f"模型 '{job.model}' 没有可下载结果合同。")
+
+    required_downloads = [(remote_suffix, job_dir / remote_suffix) for remote_suffix in runner_spec.required_files]
+    optional_downloads = [(remote_suffix, job_dir / remote_suffix) for remote_suffix in runner_spec.optional_files]
 
     output_files: list[str] = []
     for remote_suffix, local_path in required_downloads:

@@ -22,10 +22,13 @@ from fastapi.templating import Jinja2Templates
 
 from advisor import (
     advisor_config_public,
+    advisor_diagnostics,
+    advisor_provider_options,
     advisor_status,
     evaluate_job_with_advisor,
     load_advisor_report,
     save_advisor_config,
+    test_advisor_connection,
 )
 from development_store import DevelopmentItem, DevelopmentStore, DevelopmentStoreError, item_priority_score
 from job_store import (
@@ -47,14 +50,19 @@ from job_store import (
     save_evaluation,
     update_job,
 )
+from model_contracts import (
+    all_model_contracts,
+    build_job_params as build_contract_job_params,
+    minimum_input_count,
+    model_contract_for,
+    validate_create_request,
+)
 from model_registry import (
     MODEL_OPTIONS,
     SOURCE_TYPE_OPTIONS,
-    allowed_source_types,
     draft_local_model_entry,
     get_model_catalog_options,
     get_model_spec,
-    param_family_for,
 )
 from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
 
@@ -463,130 +471,6 @@ def _normalize_evaluation_payload(job_id: str, payload: dict) -> dict:
     return normalized
 
 
-def _dust3r_params(
-    image_size: int,
-    scene_graph: str,
-    niter: int,
-    lr: float,
-    batch_size: int,
-    max_points: int,
-    match_viz_count: int,
-) -> dict:
-    return {
-        "image_size": min(max(int(image_size), 224), 1024),
-        "scene_graph": scene_graph.strip() or "complete",
-        "niter": min(max(int(niter), 0), 1000),
-        "lr": max(float(lr), 0.0),
-        "batch_size": min(max(int(batch_size), 1), 8),
-        "max_points": min(max(int(max_points), 1000), 2_000_000),
-        "match_viz_count": min(max(int(match_viz_count), 0), 500),
-    }
-
-
-
-
-def _parse_bool(value: str | bool | None, default: bool = False) -> bool:
-    if value is None:
-        return default
-    if isinstance(value, bool):
-        return value
-    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
-
-
-def _monst3r_params(
-    image_size: int,
-    batch_size: int,
-    fps: int,
-    num_frames: int,
-    not_batchify: str | bool,
-    real_time: str | bool,
-    window_wise: str | bool,
-    window_size: int,
-    window_overlap_ratio: float,
-) -> dict:
-    normalized_image_size = int(image_size)
-    if normalized_image_size not in {224, 512}:
-        normalized_image_size = 512
-    return {
-        "image_size": normalized_image_size,
-        "batch_size": min(max(int(batch_size), 1), 16),
-        "fps": min(max(int(fps), 0), 120),
-        "num_frames": min(max(int(num_frames), 1), 2000),
-        "not_batchify": _parse_bool(not_batchify, True),
-        "real_time": _parse_bool(real_time, False),
-        "window_wise": _parse_bool(window_wise, False),
-        "window_size": min(max(int(window_size), 2), 500),
-        "window_overlap_ratio": min(max(float(window_overlap_ratio), 0.0), 0.95),
-    }
-
-
-def _spann3r_params() -> dict:
-    return {
-        "resolution": 224,
-        "kf_every": 10,
-        "conf_thresh": 0.001,
-        "save_ori": True,
-        "offline": False,
-    }
-
-
-def _fast3r_params(image_size: int, max_points: int) -> dict:
-    normalized_image_size = int(image_size)
-    if normalized_image_size not in {224, 512}:
-        normalized_image_size = 512
-    return {
-        "image_size": normalized_image_size,
-        "max_points": min(max(int(max_points), 1000), 2_000_000),
-        "attention_backend": "pytorch_naive",
-        "pose_iterations": 100,
-        "focal_estimation_method": "first_view_from_global_head",
-    }
-
-
-def _build_job_params(
-    model: str,
-    *,
-    image_size: int,
-    scene_graph: str,
-    niter: int,
-    lr: float,
-    batch_size: int,
-    max_points: int,
-    match_viz_count: int,
-    fps: int,
-    num_frames: int,
-    not_batchify: str | bool,
-    real_time: str | bool,
-    window_wise: str | bool,
-    window_size: int,
-    window_overlap_ratio: float,
-) -> dict:
-    family = param_family_for(model)
-    if family == "image_collection":
-        return _dust3r_params(image_size, scene_graph, niter, lr, batch_size, max_points, match_viz_count)
-    if family == "video_sequence":
-        return _monst3r_params(
-            image_size,
-            batch_size,
-            fps,
-            num_frames,
-            not_batchify,
-            real_time,
-            window_wise,
-            window_size,
-            window_overlap_ratio,
-        )
-    if family == "spann3r_sequence":
-        return _spann3r_params()
-    if family == "fast3r_collection":
-        return _fast3r_params(image_size, max_points)
-    return {}
-
-
-def _catalog_entry_for(model: str) -> dict | None:
-    return next((item for item in get_model_catalog_options() if item["value"] == model), None)
-
-
 def _metadata_value(metadata: dict, *keys: str):
     for key in keys:
         if key in metadata and metadata[key] not in (None, ""):
@@ -683,34 +567,13 @@ def _draft_registry_entry_for(item: DevelopmentItem) -> dict:
 
 
 def _minimum_input_count(model: str, source_type: str) -> int:
-    family = param_family_for(model)
-    if family == "video_sequence" and source_type == "video":
-        return 1
-    return 2
+    return minimum_input_count(model, source_type)
 
 
 def _validate_new_job(model: str, source_type: str, files: list[UploadFile]) -> None:
-    model_values = {item["value"] for item in MODEL_OPTIONS}
-    source_values = {item["value"] for item in SOURCE_TYPE_OPTIONS}
-    if model not in model_values:
-        catalog_entry = _catalog_entry_for(model)
-        if catalog_entry:
-            blocker = catalog_entry.get("launch_blocker") or "该模型还没有接入可派发 runner。"
-            raise HTTPException(status_code=400, detail=f"{catalog_entry['label']} 当前是目录模型，暂不可创建：{blocker}")
-        raise HTTPException(status_code=400, detail=f"不支持的模型：{model}")
-    if source_type not in source_values:
-        raise HTTPException(status_code=400, detail=f"不支持的输入类型：{source_type}")
-    if source_type not in set(allowed_source_types(model)):
-        allowed = " / ".join(allowed_source_types(model))
-        raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 仅支持这些输入类型：{allowed}")
-    if not files:
-        raise HTTPException(status_code=400, detail="没有上传输入文件。")
-    if source_type == "video" and len(files) != 1:
-        raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 视频模式请上传 1 个视频文件；多张图片请改选“帧序列”。")
-    minimum = _minimum_input_count(model, source_type)
-    if len(files) < minimum:
-        unit = "个视频文件" if source_type == "video" else "张图片或帧"
-        raise HTTPException(status_code=400, detail=f"{get_model_spec(model).label} 至少需要 {minimum} {unit}。")
+    errors = validate_create_request(model, source_type, len(files))
+    if errors:
+        raise HTTPException(status_code=400, detail="；".join(errors))
 
 
 def _validate_dispatchable(job) -> None:
@@ -743,22 +606,24 @@ async def _create_job_from_request(
     files: list[UploadFile],
 ):
     _validate_new_job(model, source_type, files)
-    params = _build_job_params(
+    params = build_contract_job_params(
         model,
-        image_size=image_size,
-        scene_graph=scene_graph,
-        niter=niter,
-        lr=lr,
-        batch_size=batch_size,
-        max_points=max_points,
-        match_viz_count=match_viz_count,
-        fps=fps,
-        num_frames=num_frames,
-        not_batchify=not_batchify,
-        real_time=real_time,
-        window_wise=window_wise,
-        window_size=window_size,
-        window_overlap_ratio=window_overlap_ratio,
+        {
+            "image_size": image_size,
+            "scene_graph": scene_graph,
+            "niter": niter,
+            "lr": lr,
+            "batch_size": batch_size,
+            "max_points": max_points,
+            "match_viz_count": match_viz_count,
+            "fps": fps,
+            "num_frames": num_frames,
+            "not_batchify": not_batchify,
+            "real_time": real_time,
+            "window_wise": window_wise,
+            "window_size": window_size,
+            "window_overlap_ratio": window_overlap_ratio,
+        },
     )
     job = create_job(model=model, source_type=source_type, notes=notes, params=params, sample_id=sample_id)
     uploaded = []
@@ -1059,6 +924,77 @@ async def job_bundle_api(job_id: str):
 @app.get("/api/health")
 async def health_api():
     return JSONResponse({"ok": True, "service": "kykt-vision-ui", "version": app.version})
+
+
+@app.get("/api/app/state")
+async def app_state_api():
+    jobs = list_jobs(limit=50)
+    model_catalog = get_model_catalog_options()
+    model_contracts = all_model_contracts()
+    development_lanes = [item.to_dict() for item in development_store.list_items()]
+    return JSONResponse(
+        {
+            "health": {"ok": True, "service": "kykt-vision-ui", "version": app.version},
+            "summary": build_dashboard_stats(jobs),
+            "delivery_gaps": DELIVERY_GAPS,
+            "server": {
+                "alias": ServerConfig.alias,
+                "host": ServerConfig.host,
+                "user": ServerConfig.user,
+                "port": ServerConfig.port,
+                "remote_root": ServerConfig.remote_root,
+            },
+            "models": MODEL_OPTIONS,
+            "model_catalog": model_catalog,
+            "model_contracts": model_contracts,
+            "source_types": SOURCE_TYPE_OPTIONS,
+            "advisor": advisor_status(),
+            "development_lanes": development_lanes,
+            "deliveryGaps": DELIVERY_GAPS,
+            "modelCatalog": model_catalog,
+            "modelContracts": model_contracts,
+            "sourceTypes": SOURCE_TYPE_OPTIONS,
+            "developmentLanes": development_lanes,
+        }
+    )
+
+
+@app.get("/api/models/catalog")
+async def models_catalog_api():
+    return JSONResponse({"models": get_model_catalog_options(), "contracts": all_model_contracts()})
+
+
+@app.get("/api/models/{model}/contract")
+async def model_contract_api(model: str):
+    try:
+        return JSONResponse(model_contract_for(model))
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"未知模型：{model}") from exc
+
+
+@app.post("/api/models/{model}/validate-create")
+async def validate_model_create_api(model: str, request: Request):
+    try:
+        payload = await request.json()
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f"模型验证 JSON 解析失败：{exc.msg}") from exc
+    source_type = str(payload.get("sourceType") or payload.get("source_type") or "")
+    file_count = int(payload.get("fileCount") or payload.get("file_count") or 0)
+    errors = validate_create_request(model, source_type, file_count)
+    return JSONResponse({"ok": not errors, "model": model, "sourceType": source_type, "fileCount": file_count, "errors": errors})
+
+
+@app.get("/api/jobs/{job_id}/contract")
+async def job_contract_api(job_id: str):
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    try:
+        contract = model_contract_for(job.model)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"未知模型：{job.model}") from exc
+    return JSONResponse({"jobId": job_id, "model": job.model, "contract": contract})
 
 
 @app.get("/api/development/lanes")
@@ -1377,6 +1313,16 @@ async def advisor_status_api():
     return JSONResponse(advisor_status())
 
 
+@app.get("/api/advisor/providers")
+async def advisor_providers_api():
+    return JSONResponse(advisor_provider_options())
+
+
+@app.get("/api/advisor/diagnostics")
+async def advisor_diagnostics_api():
+    return JSONResponse(advisor_diagnostics())
+
+
 @app.get("/api/advisor/config")
 async def advisor_config_api():
     return JSONResponse(advisor_config_public())
@@ -1390,6 +1336,15 @@ async def advisor_config_save_api(request: Request):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=f"AI 配置保存失败：{exc}") from exc
     return JSONResponse(config)
+
+
+@app.post("/api/advisor/test")
+async def advisor_test_api():
+    try:
+        payload = test_advisor_connection()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return JSONResponse(payload)
 
 
 @app.post("/api/jobs/{job_id}/dispatch")
