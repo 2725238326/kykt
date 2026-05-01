@@ -156,6 +156,39 @@ The most feasible first teacher demo axis is:
 
 This is not a final thesis. It is a stronger first-pass hypothesis pending reproducibility checks and user discussion.
 
+## Phase 1.5 Workflow Deployment
+
+User direction:
+
+```text
+先不急着复现吧，我们要先部署一下研究流程
+```
+
+Decision:
+
+```text
+Pause model reproduction and deploy the research operating system first.
+```
+
+New workflow assets:
+
+- `RESEARCH_WORKFLOW.md`
+- `RESEARCH_DATA_MODEL.md`
+- `WORKFLOW_STATUS.md`
+- `registry/source_registry.md`
+- `registry/research_unit_registry.md`
+- `registry/decision_registry.md`
+- `cycles/CYCLE-20260501-001.md`
+- `experiments/EXP-20260501-001-dust3r-splatt3r-smoke-plan.md`
+- templates under `templates/`
+
+Current rule:
+
+```text
+Planned experiments are allowed.
+Actual reproduction, heavy downloads, and app navigation changes require user confirmation.
+```
+
 ## Current Strongest Candidate
 
 Working title:
@@ -191,4 +224,15 @@ Current thesis name candidate:
 
 ```text
 Dream3R
+```
+
+## Next Workflow Choice
+
+The next useful decision is not "which model to install." It is which workflow lane to deepen first:
+
+```text
+A. KYKT research-lane data model
+B. Master prompt and agent rule refinement
+C. Phase 2 smoke-test plan refinement without running it
+D. Second research cycle focused on the Dream3R thesis branch
 ```

@@ -44,6 +44,9 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `RESEARCH_STATE.md`: current decisions, assumptions, and open questions.
 - `QUESTION_LOG.md`: interview history and next questions.
 - `RESEARCH_PARADIGM.md`: the operating paradigm, research loop, evidence ladder, and user-discussion gates.
+- `RESEARCH_WORKFLOW.md`: operational workflow from source intake to implementation decision.
+- `RESEARCH_DATA_MODEL.md`: schema for sources, mechanisms, research units, decisions, and experiment plans.
+- `WORKFLOW_STATUS.md`: current workflow phase, active workstreams, and blocked decisions.
 - `PHASE1_RESEARCH_PLAN.md`: concrete plan for the first comprehensive research route survey.
 - `PHASE1_EXECUTION_LOG.md`: running log for actual Phase 1 research execution.
 - `FRONTIER_SOURCE_MAP.md`: verified and pending source map for papers/projects.
@@ -54,6 +57,14 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `PHASE1_DECISION_MEMO.md`: preliminary synthesis and Phase 2 decision gates.
 - `MASTER_RESEARCH_PROMPT_DRAFT.md`: evolving master prompt for research agents.
 - `RESEARCH_SKILL_RULES_DRAFT.md`: evolving rules for a project skill and future Codex skill.
+
+## Directory Map
+
+- `registry/`: lightweight indexes for sources, research units, and decisions.
+- `cycles/`: per-cycle research logs.
+- `decisions/`: decision memos that require commitment or deferral.
+- `experiments/`: experiment plans; a file here does not mean the experiment has been run.
+- `templates/`: reusable forms for sources, research units, decisions, cycles, and experiments.
 
 ## Working Loop
 
@@ -78,6 +89,19 @@ Breadth Map + Minimal Demo
 
 The breadth track discovers and scores architecture mechanisms. The demo track keeps one small teacher-facing proof path alive so the work stays concrete.
 
+Current operational phase:
+
+```text
+Phase 1.5: Research Workflow Deployment
+```
+
+This means:
+
+- no model reproduction yet
+- no heavy checkpoint downloads yet
+- no KYKT app navigation changes yet
+- deploy the research process first
+
 Current preliminary thesis candidate:
 
 ```text
@@ -95,3 +119,4 @@ This is not a final commitment. It is the best current umbrella for comparing me
 - Keep engineering cost controlled unless a specific experiment justifies going heavier.
 - Separate evidence from speculation.
 - Avoid claiming a method works before a minimal experiment or defensible proxy exists.
+- Do not move from planned experiment to actual reproduction without a user decision.

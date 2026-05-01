@@ -1,0 +1,16 @@
+# Decision Registry
+
+Last updated: 2026-05-01
+
+Status: seeded.
+
+## Decisions
+
+| ID | Date | Scope | Decision | Status | User approval needed | Linked file |
+|---|---|---|---|---|---|---|
+| DEC-20260501-001 | 2026-05-01 | workspace | Create Dream as KYKT research workspace | accepted | no | `README.md` |
+| DEC-20260501-002 | 2026-05-01 | operating mode | Use Breadth Map + Minimal Demo | accepted | no | `RESEARCH_PARADIGM.md` |
+| DEC-20260501-003 | 2026-05-01 | Phase 1 | Run broad source-map research before implementation | accepted | no | `PHASE1_RESEARCH_PLAN.md` |
+| DEC-20260501-004 | 2026-05-01 | thesis | Treat Dream3R as candidate, not final thesis | active candidate | yes before final | `PHASE1_DECISION_MEMO.md` |
+| DEC-20260501-005 | 2026-05-01 | reproduction | Do not reproduce yet; deploy research workflow first | accepted | no | `WORKFLOW_STATUS.md` |
+

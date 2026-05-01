@@ -28,6 +28,11 @@ When this skill is active, the agent should:
 5. always propose a minimal experiment or demo path
 6. maintain a connection to KYKT app integration
 7. run Dream as a two-track process: Breadth Map + Minimal Demo
+8. follow the Dream workflow before implementation:
+
+```text
+Source -> Mechanism -> 3R Translation -> Research Unit -> Score -> Decision -> Plan -> Implementation
+```
 
 ## User-Discussion Gates
 
@@ -40,6 +45,9 @@ Discuss with the user before:
 - packaging the draft rules as a reusable Codex skill
 - declaring a teacher demo ready
 - discarding a major candidate track
+- moving an experiment from `planned` to `running`
+- cloning/installing heavy model repositories
+- downloading large checkpoints
 
 Proceed without interruption for lightweight note updates, small prompt refinements, source triage, and mock artifacts.
 
@@ -155,6 +163,30 @@ Every batch of research should end with:
 - one rejected/deferred category with reasons
 
 Do not keep expanding the idea pool without pruning.
+
+## Registry Rules
+
+When a research cycle adds durable information, update the registries:
+
+- new paper/repo/project: `registry/source_registry.md`
+- new or changed idea: `registry/research_unit_registry.md`
+- commitment/defer/reject decision: `registry/decision_registry.md`
+
+If the change is only exploratory, log it in `cycles/` first.
+
+## Experiment Planning Rules
+
+An experiment plan can be drafted without approval.
+
+Actual execution requires approval when it includes:
+
+- heavy repo clone/install
+- large checkpoint download
+- training or fine-tuning
+- external paid service
+- KYKT app navigation or information-architecture changes
+
+Experiment plans should live in `experiments/` and include success criteria and stop conditions.
 
 ## Future Skill Packaging
 
