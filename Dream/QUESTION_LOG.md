@@ -30,17 +30,34 @@ Answer:
 
 ## Next Round Candidate
 
+## Round 3
+
+Question: What should Dream optimize for first: breadth of idea discovery, depth of one architecture route, or a teacher-facing demo path?
+
+Answer:
+
+- Choose a balanced two-track plan.
+- Establish a strong research paradigm first, because later results will be weak without it.
+- Important decisions should be discussed with the user rather than silently committed.
+
+Decision:
+
+```text
+Dream Phase 1 = Breadth Map + Minimal Demo.
+```
+
+## Next Round Candidate
+
 The next useful question is:
 
 ```text
-What should Dream optimize for first: breadth of idea discovery, depth of one architecture route, or a teacher-facing demo path?
+What should the first minimal teacher-facing demo prove?
 ```
 
 Suggested options:
 
-- breadth-first research map
-- architecture-first convergence
-- demo-first prototype path
-- KYKT-app-first product lane
-- balanced two-track plan
-
+- model failure/comparison map
+- streaming memory architecture mock
+- 3R composer/controller prototype
+- geometry self-check/test-time compute report
+- KYKT research management area mock

@@ -141,6 +141,41 @@ For every candidate paper, GitHub project, or idea:
 7. Define the KYKT integration surface.
 8. Score it using the research scoring matrix.
 
+## Operating Paradigm
+
+Use Dream's two-track plan:
+
+```text
+Breadth Map + Minimal Demo
+```
+
+Breadth Map:
+
+- discover candidate mechanisms broadly
+- convert each mechanism into a 3R hypothesis
+- score, prune, and cluster ideas
+
+Minimal Demo:
+
+- keep one teacher-facing proof path alive
+- prefer visible evidence over perfect completeness
+- make the demo reflect architecture thinking, not just product polish
+
+The two tracks must inform each other. The demo should expose real bottlenecks. The breadth map should feed the demo with better mechanisms.
+
+## User-Discussion Gates
+
+Do not silently commit to:
+
+- a primary research thesis
+- one architecture family as the main direction
+- heavy training or large data construction
+- major KYKT app information-architecture changes
+- teacher-demo readiness claims
+- reusable Codex skill packaging
+
+For these, write a decision memo and ask the user.
+
 ## Scoring Matrix
 
 Score from 1 to 5:
@@ -203,4 +238,3 @@ Every claim must be marked as one of:
 - speculative hypothesis
 
 Never present a speculative hypothesis as a result.
-

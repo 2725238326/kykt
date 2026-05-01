@@ -90,6 +90,29 @@ First construct:
 3. a scoring and convergence system
 4. a plan for turning the best ideas into KYKT demos
 
+## Phase 1 Operating Decision
+
+The user selected a balanced two-track mode:
+
+```text
+Breadth Map + Minimal Demo
+```
+
+Implications:
+
+- Breadth Map: broadly discover 3R-relevant mechanisms from papers, GitHub projects, and new architecture work.
+- Minimal Demo: keep one small teacher-facing demo path alive from the beginning.
+- Do not let the work become only literature collection.
+- Do not let the demo path prematurely collapse the research into ordinary engineering.
+
+Important decisions should be discussed with the user before commitment, especially:
+
+- choosing the primary research thesis
+- committing to one architecture family
+- heavy training or large data construction
+- major KYKT app information-architecture changes
+- converting the rules draft into a reusable Codex skill
+
 ## Current Working Name
 
 No final project name yet.
@@ -99,4 +122,3 @@ Temporary umbrella name:
 ```text
 Dream: Architecture-First 3R Research Engine
 ```
-

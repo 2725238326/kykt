@@ -43,6 +43,7 @@ Instead, Dream should first build a systematic research engine that can compare 
 
 - `RESEARCH_STATE.md`: current decisions, assumptions, and open questions.
 - `QUESTION_LOG.md`: interview history and next questions.
+- `RESEARCH_PARADIGM.md`: the operating paradigm, research loop, evidence ladder, and user-discussion gates.
 - `MASTER_RESEARCH_PROMPT_DRAFT.md`: evolving master prompt for research agents.
 - `RESEARCH_SKILL_RULES_DRAFT.md`: evolving rules for a project skill and future Codex skill.
 
@@ -52,11 +53,22 @@ Use this loop after each discussion:
 
 1. Update `RESEARCH_STATE.md` with decisions.
 2. Update `QUESTION_LOG.md` with the question/answer trail.
-3. Refine `MASTER_RESEARCH_PROMPT_DRAFT.md` when the research scope changes.
-4. Refine `RESEARCH_SKILL_RULES_DRAFT.md` when we learn a reusable rule.
-5. Later, split stable rules into:
+3. Update `RESEARCH_PARADIGM.md` when the operating model or decision gates change.
+4. Refine `MASTER_RESEARCH_PROMPT_DRAFT.md` when the research scope changes.
+5. Refine `RESEARCH_SKILL_RULES_DRAFT.md` when we learn a reusable rule.
+6. Later, split stable rules into:
    - a project-local version under `E:\kykt\Dream`
    - a reusable Codex skill
+
+## Current Operating Mode
+
+Dream starts with a balanced two-track plan:
+
+```text
+Breadth Map + Minimal Demo
+```
+
+The breadth track discovers and scores architecture mechanisms. The demo track keeps one small teacher-facing proof path alive so the work stays concrete.
 
 ## Non-Negotiables
 
@@ -67,4 +79,3 @@ Use this loop after each discussion:
 - Keep engineering cost controlled unless a specific experiment justifies going heavier.
 - Separate evidence from speculation.
 - Avoid claiming a method works before a minimal experiment or defensible proxy exists.
-

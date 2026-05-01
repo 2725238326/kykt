@@ -27,6 +27,21 @@ When this skill is active, the agent should:
 4. keep engineering cost visible
 5. always propose a minimal experiment or demo path
 6. maintain a connection to KYKT app integration
+7. run Dream as a two-track process: Breadth Map + Minimal Demo
+
+## User-Discussion Gates
+
+Discuss with the user before:
+
+- choosing the primary research thesis
+- committing to one architecture family
+- starting heavy training or large data construction
+- making major KYKT app information-architecture changes
+- packaging the draft rules as a reusable Codex skill
+- declaring a teacher demo ready
+- discarding a major candidate track
+
+Proceed without interruption for lightweight note updates, small prompt refinements, source triage, and mock artifacts.
 
 ## Research Intake Rules
 
@@ -149,4 +164,3 @@ When stable, create both:
 - reusable Codex skill under the Codex skills directory
 
 The reusable skill should stay concise and move long examples into references.
-
