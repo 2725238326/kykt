@@ -120,10 +120,10 @@ The next useful question is:
 Should the next workflow lane be backend research pipeline contract, deeper prompt/rules refinement, planned-only smoke-test details, or a second Dream3R thesis research cycle?
 ```
 
-Correction after user feedback:
+Historical correction after user feedback, later superseded by Round 8:
 
 ```text
-Backend/research pipeline is the priority. Frontend is downstream only.
+Backend/research pipeline is prioritized over frontend when system integration is needed. Frontend is downstream only.
 ```
 
 ## Round 7

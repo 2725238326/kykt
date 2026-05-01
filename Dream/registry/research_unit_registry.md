@@ -22,4 +22,4 @@ Status: seeded from `RESEARCH_UNIT_BANK.md`.
 | RU-012 | Self-Adapt Adapter for 3R | Continual | second-wave research | defer until critic signals exist |
 | RU-013 | Dynamic 4D Pointmap Branch | Dynamic/4D | required comparator branch | collect dynamic failure cases |
 | RU-014 | Long-Context Hybrid Memory Benchmark | Benchmark/System | evidence infrastructure | design benchmark schema |
-
+| RU-015 | Geometry-Governed Executive Memory for 3R | Architecture thesis | strong branch candidate, not final | compare against other branches first |

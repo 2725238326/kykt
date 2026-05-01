@@ -20,6 +20,7 @@ Scores are first-pass estimates. Scale: 1 low, 5 high. `shallow risk` is inverte
 | RU-012 Self-Adapt Adapter for 3R | Continual | 4 | 4 | 4 | 3 | 2 | 3 | 4 | 3 | 3 | Second-wave research |
 | RU-013 Dynamic 4D Pointmap Branch | Dynamic/4D | 4 | 5 | 5 | 4 | 3 | 4 | 4 | 3 | 2 | Required comparator branch |
 | RU-014 Long-Context Hybrid Memory Benchmark | Benchmark/System | 3 | 5 | 5 | 4 | 4 | 5 | 4 | 4 | 1 | Evidence infrastructure |
+| RU-015 Geometry-Governed Executive Memory for 3R | Architecture thesis | 5 | 5 | 5 | 5 | 3 | 5 | 5 | 3 | 2 | Strong candidate branch, not sole bet |
 
 ## Initial Ranking
 
@@ -31,13 +32,18 @@ Scores are first-pass estimates. Scale: 1 low, 5 high. `shallow risk` is inverte
 4. RU-014 Long-Context Hybrid Memory Benchmark
 5. RU-005 3R-to-4DGS Bridge
 
-### Architecture Thesis
+### Architecture Candidate Branches
 
-1. RU-010 Hybrid Context Router
-2. RU-001 Geometry-Gated State-Space 3R
-3. RU-004 External Sparse Spatial Memory
-4. RU-009 Route-Scan Policy Bank
-5. RU-011 Geometry Critic-Revision Loop
+Do not treat this as a final ranking. Use it as a branch pool.
+
+1. RU-015 Geometry-Governed Executive Memory for 3R
+2. RU-011 Geometry Critic-Revision Loop
+3. RU-013 Dynamic 4D Pointmap Branch
+4. RU-010 Hybrid Context Router
+5. RU-004 External Sparse Spatial Memory
+6. RU-001 Geometry-Gated State-Space 3R
+7. RU-009 Route-Scan Policy Bank
+8. RU-006 Event-Augmented Pointmap 3R
 
 ### Speculative Watchlist
 
@@ -68,3 +74,32 @@ Dream studies how 3R systems route, store, compress, verify, and adapt spatial s
 ```
 
 This is stronger than a direct "Mamba-3R" title because it absorbs SSM, causal transformer, explicit spatial memory, test-time training, and dynamic 4D pointmaps under one falsifiable research program.
+
+## Third-Pass Interpretation
+
+After the Dream3R thesis stress test, one strong framing is:
+
+```text
+Dream should study geometry-governed executive memory:
+the policy that decides when 3R should write, preserve, compress, evict, verify, revise, or adapt spatial state.
+```
+
+This can reframe RU-001, RU-004, RU-010, RU-011, RU-012, RU-013, and RU-014 as components or evidence lanes under RU-015, but that should not be accepted until compared against other branches.
+
+It is not a final thesis decision.
+
+## Fourth-Pass Process Correction
+
+User correction on 2026-05-02:
+
+```text
+Do not bet on one small direction too early.
+```
+
+Next scoring step:
+
+```text
+Compare branches, not only Research Units:
+executive memory, System-2 geometry critic, dynamic object permanence,
+cross-modal/event 3R, 3R composer, and active perception.
+```

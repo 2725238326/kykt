@@ -69,6 +69,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Experiment planning | seeded | `experiments/EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | Research content roadmap | active | `RESEARCH_CONTENT_ROADMAP.md` |
+| Multi-track research canvas | active | `MULTI_TRACK_RESEARCH_CANVAS.md` |
 | Frontend handoff prompt | active | `FRONTEND_DESIGN_HANDOFF_PROMPT.md` |
 | KYKT backend integration | support only | no backend service changes yet |
 | KYKT frontend integration | downstream only | no UI work unless research content and support contract exist |
@@ -98,5 +99,5 @@ E. Prepare a Gemini CLI frontend handoff only after the research content and sup
 Current recommendation:
 
 ```text
-Start with A: research content cycle first; keep backend/app/frontend as supporting layers.
+Do a multi-track branch comparison before deepening GEM-3R or any single mechanism.
 ```

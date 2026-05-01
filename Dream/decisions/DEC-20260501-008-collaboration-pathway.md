@@ -2,7 +2,7 @@
 
 Date: 2026-05-01
 
-Status: proposed
+Status: superseded by DEC-20260501-010.
 
 ## Context
 
@@ -32,8 +32,10 @@ Codex should maintain the process and documents. The user should make high-lever
 
 ## Recommended Near-Term Sequence
 
+This sequence is historical and has been superseded by DEC-20260501-010.
+
 1. Collaboration protocol
-2. Dream backend research pipeline contract
+2. Backend research pipeline contract
 3. Dream3R thesis validation cycle
 4. Teacher-facing storyboard
 5. Planned experiment selection
@@ -59,8 +61,8 @@ Approval is required before:
 
 ## Next Action
 
-If accepted, start:
+Superseded. The current next action is:
 
 ```text
-Dream backend research pipeline contract, no UI implementation.
+Research content / Dream3R thesis validation cycle.
 ```

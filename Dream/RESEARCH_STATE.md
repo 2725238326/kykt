@@ -334,7 +334,6 @@ Interpretation:
 The next useful decision is not "which model to install." It is which workflow lane to deepen first:
 
 ```text
-A. Dream backend research pipeline contract
 A. Research content cycle: Dream3R thesis validation and new mechanism discovery
 B. Frontier source/mechanism mining for 3R-translatable ideas
 C. Backend research pipeline contract as support infrastructure
@@ -363,4 +362,76 @@ Current recommendation:
 
 ```text
 Start next with a research content cycle; keep backend, app, and frontend downstream.
+```
+
+## Cycle 003 Research Signal
+
+Started:
+
+```text
+CYCLE-20260501-003: Dream3R Thesis Stress Test
+```
+
+New artifact:
+
+```text
+E:\kykt\Dream\DREAM3R_THESIS_STRESS_TEST.md
+```
+
+Main finding:
+
+```text
+The original Dream3R framing is directionally right but too broad and too close to 2026 long-context 3R memory work.
+The stronger candidate is GEM-3R: Geometry-Governed Executive Memory for 3R.
+```
+
+Interpretation:
+
+- Mamba/SSM is only one possible state-update mechanism, not the thesis.
+- Geometry-gated update alone overlaps with PAS3R and FILT3R.
+- Hybrid memory alone overlaps with LoGeR and Mem3R.
+- Constant-budget cache alone overlaps with OVGGT and LongStream-style cache work.
+- The potential new direction is an executive policy that chooses among memory, cache, anchor, critic, dynamic, and adaptation actions based on geometry evidence.
+- Subagent synthesis reinforces that the safest novelty spaces are explicit memory control, cross-session revisitable scene memory, dynamic object permanence, and unified executive contracts across reconstruction / matching / localization / SLAM.
+
+Status:
+
+```text
+proposed research branch, not final thesis
+```
+
+## Multi-Track Correction
+
+User correction on 2026-05-02:
+
+```text
+我不喜欢一上来就押宝单单一个小方向，建议多思考一些再做
+```
+
+Decision:
+
+```text
+Do not deepen GEM-3R as the single next thesis yet.
+Run a multi-track comparison first.
+```
+
+Current branch pool:
+
+- executive memory / state governance
+- geometry critic / System-2 3R
+- dynamic object permanence / 4D memory
+- cross-modal / event-augmented 3R
+- 3R composer / unified model ecology
+- active spatial perception / RL-3R
+
+New artifact:
+
+```text
+E:\kykt\Dream\MULTI_TRACK_RESEARCH_CANVAS.md
+```
+
+Current recommendation:
+
+```text
+Create a branch comparison matrix before drafting any one mechanism spec.
 ```

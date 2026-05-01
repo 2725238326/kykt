@@ -2,7 +2,7 @@
 
 Date: 2026-05-01
 
-Status: accepted
+Status: superseded by DEC-20260501-010.
 
 ## Context
 
@@ -16,7 +16,18 @@ The previous roadmap correctly delegated frontend implementation to Gemini CLI, 
 
 ## Decision
 
-Dream should be backend/research-pipeline first.
+Historical decision:
+
+```text
+Place backend/research-pipeline work before frontend work when integration becomes necessary.
+```
+
+Superseding clarification:
+
+```text
+Dream is research-content-first.
+Backend/research-pipeline work is support infrastructure when integration becomes necessary.
+```
 
 Frontend remains a downstream presentation layer and is not the current core.
 
@@ -42,6 +53,8 @@ Deprioritize for now:
 
 ## Corrected Next Action
 
+Historical corrected action, now superseded by DEC-20260501-010:
+
 Replace:
 
 ```text
@@ -51,7 +64,13 @@ KYKT research-lane data model
 with:
 
 ```text
-Dream backend research pipeline contract, no UI.
+Backend research pipeline contract, no UI.
+```
+
+Current action after DEC-20260501-010:
+
+```text
+Research content / Dream3R thesis validation cycle.
 ```
 
 ## User Approval Required
@@ -65,4 +84,3 @@ Approval remains required before:
 - model reproduction
 - heavy downloads
 - frontend implementation
-

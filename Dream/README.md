@@ -20,6 +20,13 @@ The workspace should eventually produce:
 3. a teacher-facing demo and proposal blueprint
 4. candidate model/app integration plans for KYKT
 
+Mainline priority:
+
+```text
+new 3R / spatial-intelligence research content first;
+backend, KYKT app, and frontend are supporting layers.
+```
+
 Canonical agent entry prompt:
 
 ```text
@@ -59,12 +66,15 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `QUESTION_LOG.md`: interview history and next questions.
 - `RESEARCH_PARADIGM.md`: the operating paradigm, research loop, evidence ladder, and user-discussion gates.
 - `RESEARCH_WORKFLOW.md`: operational workflow from source intake to implementation decision.
+- `RESEARCH_CONTENT_ROADMAP.md`: research-content-first roadmap for thesis validation and mechanism discovery.
+- `MULTI_TRACK_RESEARCH_CANVAS.md`: branch pool for comparing multiple research directions before selecting one.
 - `COLLABORATION_ROADMAP.md`: human-agent collaboration path and near-term deployment sequence.
 - `RESEARCH_DATA_MODEL.md`: schema for sources, mechanisms, research units, decisions, and experiment plans.
 - `WORKFLOW_STATUS.md`: current workflow phase, active workstreams, and blocked decisions.
 - `PHASE1_RESEARCH_PLAN.md`: concrete plan for the first comprehensive research route survey.
 - `PHASE1_EXECUTION_LOG.md`: running log for actual Phase 1 research execution.
 - `FRONTIER_SOURCE_MAP.md`: verified and pending source map for papers/projects.
+- `DREAM3R_THESIS_STRESS_TEST.md`: active stress test and reframe for the Dream3R / GEM-3R candidate.
 - `RESEARCH_UNIT_BANK.md`: structured Dream Research Units.
 - `IDEA_SCOREBOARD.md`: score table for candidate ideas.
 - `MINIMAL_DEMO_CANDIDATES.md`: teacher-demo candidate analysis.
@@ -116,7 +126,8 @@ This means:
 - no model reproduction yet
 - no heavy checkpoint downloads yet
 - no KYKT app navigation changes yet
-- deploy the research process first
+- run research-content and thesis-validation cycles first
+- use backend/app/frontend work only as support for the research
 
 Current preliminary thesis candidate:
 
@@ -124,7 +135,13 @@ Current preliminary thesis candidate:
 Dream3R: Geometry-Governed State and Test-Time Reasoning for Long-Context 3R
 ```
 
-This is not a final commitment. It is the best current umbrella for comparing memory/state, routing, geometry critics, dynamic 4D pointmaps, and reproducible demo paths.
+This is not a final commitment. The current stress-test reframe is:
+
+```text
+GEM-3R: Geometry-Governed Executive Memory for 3R
+```
+
+GEM-3R is a proposed branch inside Dream, not a selected final thesis. The current process is to compare multiple branches before deepening any one direction.
 
 ## Non-Negotiables
 

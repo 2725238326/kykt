@@ -661,6 +661,10 @@ Source:
 - [MonST3R](https://arxiv.org/abs/2410.03825)
 - [POMATO](https://arxiv.org/abs/2504.05692)
 - [D^2USt3R](https://arxiv.org/abs/2504.06264)
+- [MASt3R-SfM](https://arxiv.org/abs/2409.19152)
+- [SLAM3R](https://arxiv.org/abs/2412.09401)
+- [Easi3R](https://arxiv.org/abs/2503.24391)
+- [G-CUT3R](https://arxiv.org/abs/2508.11379)
 - [RayMap3R](https://raymap3r.github.io/)
 
 Borrowed mechanism:
@@ -759,3 +763,90 @@ Risks:
 Decision:
 
 - High priority for Phase 2 planning.
+
+## RU-015: Geometry-Governed Executive Memory for 3R
+
+Idea name: Geometry-Governed Executive Memory for 3R
+
+Working title:
+
+```text
+GEM-3R: Geometry-Governed Executive Memory for 3R
+```
+
+Source:
+
+- [CUT3R](https://arxiv.org/abs/2501.12387)
+- [STream3R](https://arxiv.org/abs/2508.10893)
+- [LONG3R](https://arxiv.org/abs/2507.18255)
+- [LoGeR](https://arxiv.org/abs/2603.03269)
+- [Mem3R](https://arxiv.org/abs/2604.07279)
+- [PAS3R](https://arxiv.org/abs/2603.21436)
+- [FILT3R](https://arxiv.org/abs/2603.18493)
+- [LongStream](https://arxiv.org/abs/2602.13172)
+- [OVGGT](https://arxiv.org/abs/2603.05959)
+- [Point3R](https://arxiv.org/abs/2507.02863)
+- [POMATO](https://arxiv.org/abs/2504.05692)
+- [D^2USt3R](https://arxiv.org/abs/2504.06264)
+
+Borrowed mechanism:
+
+- Persistent latent state from CUT3R.
+- Causal streaming geometry from STream3R / LongStream.
+- Hybrid memory from LONG3R / LoGeR / Mem3R.
+- Pose-adaptive and Kalman-style update rules from PAS3R / FILT3R.
+- Constant-budget cache and anchor protection from OVGGT.
+- External spatial pointer memory from Point3R.
+- Dynamic/static separation from POMATO / D^2USt3R.
+- Matching/SfM and SLAM boundary awareness from MASt3R-SfM / SLAM3R.
+- Training-free dynamic correction from Easi3R-style work.
+- Guided reconstruction priors from G-CUT3R.
+
+3R bottleneck:
+
+- Long-context 3R now has too many partial memory solutions. The unsolved problem is deciding which state, memory, cache, dynamic, or reasoning action to take under changing geometry.
+
+Architecture hypothesis:
+
+```text
+Treat long-context 3R as geometry-governed executive control:
+observe -> score geometry evidence -> choose update / memory / cache / critic / dynamic actions -> verify.
+```
+
+Smallest experiment:
+
+- No training first.
+- Build a mechanism spec and proxy benchmark that simulates actions over existing model outputs or public sample metadata.
+- Compare policies: uniform update, pose-adaptive update, Kalman update, anchor-protected cache, external memory write, critic-triggered revision.
+
+Teacher demo form:
+
+- "The 3R model explains what it remembers, forgets, verifies, and repairs" over a long/dynamic video timeline.
+
+KYKT integration surface:
+
+- Dream research lane, future management area, Advisor/report, Sample Matrix, and later backend research contract.
+
+Evidence level:
+
+- Source mechanisms are paper-proven.
+- The executive-memory synthesis is inferred.
+- Performance benefit is unknown until proxy or reproduction.
+
+Engineering cost:
+
+- Low to medium for mechanism spec and proxy benchmark.
+- Medium for non-learned controller report.
+- High for learned controller / model integration.
+
+Risks:
+
+- Could be too broad unless the action set and evaluation are precise.
+- Must differentiate from LoGeR / Mem3R / OVGGT, which already cover strong memory and cache designs.
+- Must differentiate from MASt3R-SfM / SLAM3R by focusing on long-term executive memory rather than ordinary reconstruction pipelines.
+- Dynamic-scene claims must target object permanence and memory policy, not merely motion handling.
+- Must avoid becoming only an app-level controller.
+
+Decision:
+
+- New top architecture thesis candidate, not final.

@@ -18,3 +18,5 @@ Status: seeded.
 | DEC-20260501-008 | 2026-05-01 | collaboration | Use staged human-agent collaboration; corrected to backend pipeline contract first | superseded by DEC-009 | no | `decisions/DEC-20260501-008-collaboration-pathway.md` |
 | DEC-20260501-009 | 2026-05-01 | priority correction | Backend before frontend when integration is needed; frontend is downstream only | superseded by DEC-010 | no | `decisions/DEC-20260501-009-backend-first-correction.md` |
 | DEC-20260501-010 | 2026-05-01 | mainline correction | Research content and new mechanisms are the mainline; backend/app/frontend are support layers | accepted | no | `decisions/DEC-20260501-010-research-mainline-correction.md` |
+| DEC-20260501-011 | 2026-05-01 | thesis candidate | Reframe Dream3R toward GEM-3R executive memory as one candidate branch | proposed branch, not final | yes before final thesis | `decisions/DEC-20260501-011-dream3r-thesis-reframe.md` |
+| DEC-20260502-001 | 2026-05-02 | research process | Compare multiple research branches before betting on one direction | accepted | no | `decisions/DEC-20260502-001-multi-track-before-bet.md` |

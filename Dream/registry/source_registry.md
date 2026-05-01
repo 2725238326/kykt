@@ -43,4 +43,14 @@ linked_units:
 | SRC-2025-009 | SEAL | https://arxiv.org/abs/2506.10943 | 2025 | architecture_transfer | paper, code | self-edit driven adaptation | mechanism | RU-012 |
 | SRC-2025-010 | POMATO | https://arxiv.org/abs/2504.05692 | 2025 | direct_3r | paper | pointmap matching plus temporal motion | comparator | RU-013 |
 | SRC-2025-011 | D^2USt3R | https://arxiv.org/abs/2504.06264 | 2025 | direct_3r | paper | 4D pointmaps for dynamic scenes | comparator | RU-013 |
-
+| SRC-2025-012 | LONG3R | https://arxiv.org/abs/2507.18255 | 2025 | direct_3r | paper, project | memory gating and 3D spatio-temporal memory for long sequences | core comparator | RU-001, RU-014, RU-015 |
+| SRC-2026-002 | LoGeR | https://arxiv.org/abs/2603.03269 | 2026 | direct_3r | paper, project | chunked long-context reconstruction with TTT global memory and SWA local memory | core comparator | RU-010, RU-014, RU-015 |
+| SRC-2026-003 | Mem3R | https://arxiv.org/abs/2604.07279 | 2026 | direct_3r | paper, project | hybrid memory decoupling camera tracking from geometric mapping | core comparator | RU-004, RU-012, RU-015 |
+| SRC-2026-004 | PAS3R | https://arxiv.org/abs/2603.21436 | 2026 | direct_3r | paper | pose-adaptive streaming state update | core comparator | RU-001, RU-015 |
+| SRC-2026-005 | FILT3R | https://arxiv.org/abs/2603.18493 | 2026 | direct_3r | paper, code promised | Kalman-style latent filtering for streaming 3R | mechanism | RU-001, RU-015 |
+| SRC-2026-006 | LongStream | https://arxiv.org/abs/2602.13172 | 2026 | direct_3r | paper, project | gauge-decoupled streaming visual geometry and cache refresh | comparator | RU-010, RU-014, RU-015 |
+| SRC-2026-007 | OVGGT | https://arxiv.org/abs/2603.05959 | 2026 | visual_geometry | paper, project, code | constant-budget cache compression and dynamic anchor protection | mechanism | RU-010, RU-014, RU-015 |
+| SRC-2024-009 | MASt3R-SfM | https://arxiv.org/abs/2409.19152 | 2024 | direct_3r | paper, code via MASt3R ecosystem | matching, retrieval, and global SfM alignment | comparator | RU-002, RU-015 |
+| SRC-2024-010 | SLAM3R | https://arxiv.org/abs/2412.09401 | 2024 | direct_3r | paper, code | sliding-window dense SLAM using pointmap prediction and registration | comparator | RU-014, RU-015 |
+| SRC-2025-013 | Easi3R | https://arxiv.org/abs/2503.24391 | 2025 | dynamic_3r | paper, project | training-free dynamic adaptation / motion separation | comparator | RU-013, RU-015 |
+| SRC-2025-014 | G-CUT3R | https://arxiv.org/abs/2508.11379 | 2025 | guided_3r | paper | guided CUT3R with depth / calibration / pose priors | comparator | RU-002, RU-015 |

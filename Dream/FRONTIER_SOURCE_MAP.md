@@ -107,3 +107,43 @@ Use this vocabulary when converting papers into Dream units:
 | global-local hybrid | local geometry alignment plus sparse/global correction | full attention is still used everywhere |
 | critic-revision | detect inconsistency, then locally revise output | it only reruns the same model without a critic |
 | self-adapt update | constrained adapter/state update at test time | it is offline fine-tuning renamed as online adaptation |
+
+## Cycle 003 Research-Content Update
+
+New direct comparator signal:
+
+| Source | Year | Mechanism | Dream implication |
+|---|---:|---|---|
+| [LoGeR](https://arxiv.org/abs/2603.03269) | 2026 | Chunked long-context reconstruction with hybrid memory: TTT global memory and sliding-window local memory | Dream must not claim generic hybrid memory as new; novelty must be executive policy over memory actions |
+| [Mem3R](https://arxiv.org/abs/2604.07279) | 2026 | Decouples camera tracking from geometric mapping; uses TTT fast-weight memory and explicit fixed-size state | Tracking/mapping memory split should become a baseline assumption |
+| [PAS3R](https://arxiv.org/abs/2603.21436) | 2026 | Pose-adaptive state update based on camera motion and scene structure | Geometry-gated update is already a direct competitor; Dream needs richer evidence and action space |
+| [FILT3R](https://arxiv.org/abs/2603.18493) | 2026 | Training-free Kalman-style latent filtering with uncertainty and adaptive gain | Strong theoretical prior for belief-state 3R update |
+| [LongStream](https://arxiv.org/abs/2602.13172) | 2026 | Gauge-decoupled streaming visual geometry, keyframe-relative poses, cache-consistent training and refresh | Coordinate-frame anchoring and cache contamination must be explicit failure modes |
+| [OVGGT](https://arxiv.org/abs/2603.05959) | 2026 | O(1) constant-cost cache compression and dynamic anchor protection | Constant VRAM is no longer enough as novelty; Dream must govern what is protected and why |
+| [MASt3R-SfM](https://arxiv.org/abs/2409.19152) | 2024/2025 | MASt3R matching, retrieval, and global SfM alignment | Matching/SfM integration is a comparator, not a thesis |
+| [SLAM3R](https://arxiv.org/abs/2412.09401) | 2024/2025 | Sliding-window dense SLAM from pointmap predictions plus global registration | Real-time dense SLAM is already occupied; Dream should target long-term memory governance |
+| [Easi3R](https://arxiv.org/abs/2503.24391) | 2025 | Training-free dynamic adaptation for 4D reconstruction | Dynamic training-free correction is occupied; Dream needs object permanence or controller-level action selection |
+| [G-CUT3R](https://arxiv.org/abs/2508.11379) | 2025 | Guided CUT3R with depth / pose / calibration priors | Guidance is a useful branch, not enough as a thesis |
+
+Updated thesis pressure:
+
+```text
+Dream3R should be reframed away from a single state update mechanism.
+The stronger candidate is an executive-memory policy that arbitrates between latent update,
+external memory, cache/anchor protection, geometry critic, dynamic branch, and adapter update.
+```
+
+New artifact:
+
+```text
+DREAM3R_THESIS_STRESS_TEST.md
+```
+
+Subagent boundary update:
+
+```text
+Stable empty spaces are likely explicit memory control,
+cross-session revisitable scene memory,
+dynamic object permanence,
+and a unified executive contract across reconstruction / matching / localization / SLAM.
+```
