@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-05-01T20:20:53.104Z",
-  "turn_count": 189,
-  "last_progress_at": "2026-05-01T20:20:53.104Z",
-  "last_agent_output": "不会太干扰。现在已经有 [AGENT_MASTER_PROMPT.md](E:/kykt/Dream/AGENT_MASTER_PROMPT.md) 做入口，新对话只要先贴那句 Short Invoc"
+  "last_turn_at": "2026-05-01T20:34:30.122Z",
+  "turn_count": 193,
+  "last_progress_at": "2026-05-01T20:34:30.122Z",
+  "last_agent_output": "我们的科研规范对“前期准备工作”的要求，核心不是先复现、先写代码、先押一个模型，而是先把研究问题变成可比较、可追踪、可验证的结构。\n\n可以概括成这几条。\n\n**1. 先读全局状态，再做判断**\n\n每次"
 }

@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-01
+Last updated: 2026-05-02
 
 ## Current Phase
 
@@ -71,7 +71,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Research content roadmap | active | `RESEARCH_CONTENT_ROADMAP.md` |
 | Multi-track research canvas | active | `MULTI_TRACK_RESEARCH_CANVAS.md` |
 | Research graph / paper start | active | `RESEARCH_GRAPH_AND_PAPER_START.md` |
-| Branch comparison matrix | scaffolded | `BRANCH_COMPARISON_MATRIX.md` |
+| Branch comparison matrix | filled first comparative pass | `BRANCH_COMPARISON_MATRIX.md` |
 | Frontend handoff prompt | active | `FRONTEND_DESIGN_HANDOFF_PROMPT.md` |
 | KYKT backend integration | support only | no backend service changes yet |
 | KYKT frontend integration | downstream only | no UI work unless research content and support contract exist |
@@ -84,22 +84,22 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 - Codex direct frontend implementation
 - major Gemini CLI frontend redesign instruction
 - final thesis selection
+- deepening any single thesis branch as the default path
 - reusable Codex skill packaging
 
 ## Recommended Next User Decision
 
-Choose the next workflow lane:
+Choose the next research-content lane:
 
 ```text
-A. Start a research content cycle: Dream3R thesis validation plus new mechanism discovery.
-B. Mine frontier sources and GitHub projects for mechanisms that can become 3R hypotheses.
-C. Build a backend research pipeline contract only as support for selected research content.
-D. Prepare Phase 2 smoke-test plan in more detail, still no install.
-E. Prepare a Gemini CLI frontend handoff only after the research content and support contract are clear.
+A. Review the filled branch comparison matrix and choose 2-3 branches for mechanism-spec drafting.
+B. Extend the failure-mode graph with more sources and composition edges before choosing branches.
+C. Define branch-neutral proxy metrics and action taxonomy, still with no reproduction.
+D. Mine frontier sources for weakly evidenced branches, especially event/cross-modal and active perception.
 ```
 
 Current recommendation:
 
 ```text
-Fill BRANCH_COMPARISON_MATRIX.md from the failure-mode graph before deepening any single mechanism.
+Define branch-neutral proxy metrics and ask the user before deepening any single branch.
 ```

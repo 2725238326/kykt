@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-01
+Last updated: 2026-05-02
 
 ## User Intent
 
@@ -461,4 +461,46 @@ Paper-start principle:
 ```text
 Do not start with "we use module X."
 Start with the field-level fragmentation problem and a unifying 3R spatial-intelligence control formulation.
+```
+
+## Cycle 004 Graph And Matrix Pass
+
+Started:
+
+```text
+CYCLE-20260502-001: Failure-Mode Graph And Branch Matrix Fill
+```
+
+User direction:
+
+```text
+Continue Dream in research-content-first mode.
+Build the failure-mode / mechanism / composition graph and fill BRANCH_COMPARISON_MATRIX.md before deepening any single thesis branch.
+```
+
+Artifacts updated:
+
+- `RESEARCH_GRAPH_AND_PAPER_START.md`
+- `BRANCH_COMPARISON_MATRIX.md`
+
+Current interpretation:
+
+- Executive Memory / State Governance remains a strong architecture umbrella, but is not selected.
+- Geometry Critic / System-2 3R has the cheapest credible evidence path and strong demo clarity, but still needs a real action beyond diagnostics.
+- Dynamic Object Permanence / 4D Memory remains a major branch if it targets object identity and memory policy rather than only 4D visualization.
+- 3R Composer / Unified Model Ecology is the best KYKT support and evidence infrastructure, but likely needs pairing with a stronger architecture claim.
+- Cross-Modal / Event-Augmented 3R and Active Spatial Perception stay alive as robustness / future branches, with higher evidence and engineering burden.
+
+Current rule:
+
+```text
+No branch is discarded, no finalist set is approved, and no mechanism spec should be drafted until the user chooses which branches to deepen.
+```
+
+Recommended next research action:
+
+```text
+Define a branch-neutral action taxonomy and proxy metrics:
+conflict detection, action entropy, anchor retention, memory growth, dynamic pollution,
+route regret, and teacher-demo clarity.
 ```
