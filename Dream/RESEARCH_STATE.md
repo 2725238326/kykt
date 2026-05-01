@@ -113,6 +113,70 @@ Important decisions should be discussed with the user before commitment, especia
 - major KYKT app information-architecture changes
 - converting the rules draft into a reusable Codex skill
 
+## Phase 1 Planning Decision
+
+The next critical step is a comprehensive research route survey that prepares future implementation.
+
+The plan is documented in:
+
+```text
+E:\kykt\Dream\PHASE1_RESEARCH_PLAN.md
+```
+
+This phase should produce:
+
+- a frontier source map
+- a research unit bank
+- an idea scoreboard
+- minimal demo candidates
+- a decision memo before deeper implementation
+
+## Phase 1 Execution Status
+
+Started on 2026-05-01.
+
+Current artifacts:
+
+- `PHASE1_EXECUTION_LOG.md`
+- `FRONTIER_SOURCE_MAP.md`
+- `RESEARCH_UNIT_BANK.md`
+- `IDEA_SCOREBOARD.md`
+- `MINIMAL_DEMO_CANDIDATES.md`
+- `PHASE1_DECISION_MEMO.md`
+
+Updated signal after subagent-assisted survey:
+
+```text
+The most promising architecture axis is not a bare Mamba-3R replacement.
+It is a geometry-governed control graph for routing, writing, compressing, verifying, and adapting spatial state.
+
+The most feasible first teacher demo axis is:
+  Dream research lane + 3R Composer + Geometry Critic-Revision + one pose-free Gaussian visual path.
+```
+
+This is not a final thesis. It is a stronger first-pass hypothesis pending reproducibility checks and user discussion.
+
+## Current Strongest Candidate
+
+Working title:
+
+```text
+Dream3R: Geometry-Governed State and Test-Time Reasoning for Long-Context 3R
+```
+
+Core computation graph:
+
+```text
+route policy -> state write -> external spatial memory -> sparse global context -> geometry critic -> local revision / adaptation
+```
+
+Reasoning:
+
+- Direct 3R frontier sources show memory/state/test-time update is now central.
+- Architecture-transfer sources show SSM/linear attention is useful only when attached to an explicit route/state policy.
+- Dynamic 4D sources show that persistent state must separate static map updates from dynamic or uncertain regions.
+- Demo-enabler sources show that KYKT needs a visible asset path in parallel with the deeper architecture narrative.
+
 ## Current Working Name
 
 No final project name yet.
@@ -121,4 +185,10 @@ Temporary umbrella name:
 
 ```text
 Dream: Architecture-First 3R Research Engine
+```
+
+Current thesis name candidate:
+
+```text
+Dream3R
 ```

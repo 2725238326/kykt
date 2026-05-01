@@ -44,6 +44,14 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `RESEARCH_STATE.md`: current decisions, assumptions, and open questions.
 - `QUESTION_LOG.md`: interview history and next questions.
 - `RESEARCH_PARADIGM.md`: the operating paradigm, research loop, evidence ladder, and user-discussion gates.
+- `PHASE1_RESEARCH_PLAN.md`: concrete plan for the first comprehensive research route survey.
+- `PHASE1_EXECUTION_LOG.md`: running log for actual Phase 1 research execution.
+- `FRONTIER_SOURCE_MAP.md`: verified and pending source map for papers/projects.
+- `RESEARCH_UNIT_BANK.md`: structured Dream Research Units.
+- `IDEA_SCOREBOARD.md`: score table for candidate ideas.
+- `MINIMAL_DEMO_CANDIDATES.md`: teacher-demo candidate analysis.
+- `REPRODUCTION_READINESS_MATRIX.md`: repo-level smoke-test and KYKT integration readiness notes.
+- `PHASE1_DECISION_MEMO.md`: preliminary synthesis and Phase 2 decision gates.
 - `MASTER_RESEARCH_PROMPT_DRAFT.md`: evolving master prompt for research agents.
 - `RESEARCH_SKILL_RULES_DRAFT.md`: evolving rules for a project skill and future Codex skill.
 
@@ -69,6 +77,14 @@ Breadth Map + Minimal Demo
 ```
 
 The breadth track discovers and scores architecture mechanisms. The demo track keeps one small teacher-facing proof path alive so the work stays concrete.
+
+Current preliminary thesis candidate:
+
+```text
+Dream3R: Geometry-Governed State and Test-Time Reasoning for Long-Context 3R
+```
+
+This is not a final commitment. It is the best current umbrella for comparing memory/state, routing, geometry critics, dynamic 4D pointmaps, and reproducible demo paths.
 
 ## Non-Negotiables
 

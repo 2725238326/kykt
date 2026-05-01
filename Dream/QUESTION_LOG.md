@@ -48,16 +48,37 @@ Dream Phase 1 = Breadth Map + Minimal Demo.
 
 ## Next Round Candidate
 
+## Round 4
+
+Question: Should Dream now arrange a comprehensive research route survey and planning step for the discussed content?
+
+Answer:
+
+- Yes. This step is critical.
+- Build the research paradigm and planning scheme first.
+- Continue to discuss important decision points with the user.
+
+Decision:
+
+```text
+Create Phase 1 research route survey plan.
+```
+
+Output:
+
+- `PHASE1_RESEARCH_PLAN.md`
+
+## Next Round Candidate
+
 The next useful question is:
 
 ```text
-What should the first minimal teacher-facing demo prove?
+Should Phase 1 execution start with direct 3R frontier mapping, architecture-transfer mapping, or demo-candidate mapping?
 ```
 
 Suggested options:
 
-- model failure/comparison map
-- streaming memory architecture mock
-- 3R composer/controller prototype
-- geometry self-check/test-time compute report
-- KYKT research management area mock
+- Direct 3R frontier first
+- Architecture-transfer first
+- Demo-candidate first
+- Run all three as a structured first pass
