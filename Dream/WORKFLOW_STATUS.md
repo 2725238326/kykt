@@ -70,6 +70,8 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | Research content roadmap | active | `RESEARCH_CONTENT_ROADMAP.md` |
 | Multi-track research canvas | active | `MULTI_TRACK_RESEARCH_CANVAS.md` |
+| Research graph / paper start | active | `RESEARCH_GRAPH_AND_PAPER_START.md` |
+| Branch comparison matrix | scaffolded | `BRANCH_COMPARISON_MATRIX.md` |
 | Frontend handoff prompt | active | `FRONTEND_DESIGN_HANDOFF_PROMPT.md` |
 | KYKT backend integration | support only | no backend service changes yet |
 | KYKT frontend integration | downstream only | no UI work unless research content and support contract exist |
@@ -99,5 +101,5 @@ E. Prepare a Gemini CLI frontend handoff only after the research content and sup
 Current recommendation:
 
 ```text
-Do a multi-track branch comparison before deepening GEM-3R or any single mechanism.
+Fill BRANCH_COMPARISON_MATRIX.md from the failure-mode graph before deepening any single mechanism.
 ```

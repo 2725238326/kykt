@@ -435,3 +435,30 @@ Current recommendation:
 ```text
 Create a branch comparison matrix before drafting any one mechanism spec.
 ```
+
+## Graph-Based Research Method
+
+User synthesis:
+
+```text
+Many mentioned, unmentioned, or undiscovered innovation points, modules, techniques, papers, and compositions may become useful at different stages.
+A nonlinear, complex graph-like or higher-dimensional structure is more suitable for the research.
+```
+
+Decision:
+
+```text
+Start from a failure-mode / mechanism / evidence research graph, not from a single branch.
+```
+
+New artifacts:
+
+- `RESEARCH_GRAPH_AND_PAPER_START.md`
+- `BRANCH_COMPARISON_MATRIX.md`
+
+Paper-start principle:
+
+```text
+Do not start with "we use module X."
+Start with the field-level fragmentation problem and a unifying 3R spatial-intelligence control formulation.
+```
