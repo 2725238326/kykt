@@ -12,7 +12,7 @@ The goal is not to produce one large brainstorm and stop. The goal is to run a r
 
 - a credible research direction
 - a teacher-facing demo plan
-- a KYKT backend integration plan
+- a supportable KYKT backend integration plan
 - future reproduction / prototype work
 - eventually a paper/proposal base
 
@@ -44,7 +44,8 @@ Owns:
 - source-to-mechanism translation
 - Research Unit creation
 - scoring, pruning, and decision memo drafting
-- backend/research pipeline contracts
+- research-content roadmap and thesis validation cycles
+- backend/research pipeline contracts only as support infrastructure
 - frontend handoff prompts for Gemini CLI only when a UI task is actually needed
 - planned-only experiment briefs
 
@@ -135,6 +136,10 @@ Outputs:
 - frontend handoff prompt for Gemini CLI if UI is needed
 - no frontend implementation by Codex unless explicitly requested
 
+Rule:
+
+- this cycle is downstream of the research question; it must not replace source mining, mechanism synthesis, or thesis validation.
+
 ### Type D: Experiment Planning Cycle
 
 Use when:
@@ -218,13 +223,36 @@ Outputs:
 - cycle log
 - decision registry update
 
-### Step 2: Dream Backend Research Pipeline Contract
+### Step 2: Research Content / Thesis Validation Cycle
 
 Goal:
 
-- define what Dream should expose to KYKT backend/services before any UI implementation
+- stress-test and expand the research content itself before system work dominates the project
+
+Questions:
+
+- What is genuinely new against CUT3R / Point3R / STream3R / TTT3R / LoGeR / Mem3R and adjacent 3R work?
+- Which new non-3R mechanisms can become credible 3R hypotheses?
+- Which part is paper-grade, demo-grade, or only speculative?
+- What would surprise the teacher because it opens a direction rather than merely integrates tools?
 
 Likely outputs:
+
+- thesis comparison matrix
+- updated Research Units and scores
+- novelty/risk/evidence table
+- decision memo for the next research branch
+
+No reproduction yet.
+No app code changes yet.
+
+### Step 3: Backend Research Pipeline Contract
+
+Goal:
+
+- define what Dream should expose to KYKT backend/services after the research content needs a durable system layer
+
+Outputs:
 
 - backend-owned schemas for source / mechanism / RU / score / decision / experiment
 - status transitions and lifecycle rules
@@ -232,31 +260,7 @@ Likely outputs:
 - API/task boundary draft for future KYKT integration
 - artifact and evidence reference rules
 
-No app code changes yet.
 No frontend work yet.
-
-### Step 3: Dream3R Thesis Validation Cycle
-
-Goal:
-
-- stress-test the candidate thesis:
-
-```text
-Geometry-governed state and test-time reasoning for long-context 3R.
-```
-
-Questions:
-
-- What exactly is new against CUT3R / Point3R / STream3R / TTT3R / LoGeR / Mem3R?
-- What is the smallest evidence path?
-- What can be shown without training?
-- Which part is paper-grade vs demo-grade?
-
-Outputs:
-
-- thesis comparison matrix
-- updated RU scores
-- decision memo
 
 ### Step 4: Teacher-Facing Storyboard
 
@@ -294,15 +298,15 @@ Output:
 Start with:
 
 ```text
-Step 2: Dream Backend Research Pipeline Contract
+Step 2: Research Content / Thesis Validation Cycle
 ```
 
 Reason:
 
-- it keeps the work backend/research-pipeline first
-- it connects Dream to KYKT without frontend implementation
-- it makes research units, sources, decisions, experiments, and evidence machine-readable
-- it prepares stable backend contracts before any Gemini CLI frontend handoff
+- research novelty is the mainline; KYKT app and backend are carriers
+- it directly addresses the user's teacher-facing surprise goal
+- it prevents the workflow from becoming ordinary app engineering
+- it still preserves a later path to backend contracts, demos, and Gemini CLI frontend handoff
 - it does not require model reproduction
 
 ## Current Non-Commitments

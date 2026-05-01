@@ -147,3 +147,25 @@ Output:
 - `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 - `templates/frontend_design_handoff.md`
 - `decisions/DEC-20260501-007-frontend-agent-boundary.md`
+
+## Round 8
+
+Question: Is the app/backend track the mainline, or only a support layer?
+
+Answer:
+
+- The app is only one part.
+- The mainline is still researching new content, new mechanisms, and new directions.
+- Backend-first should only mean backend before frontend when app integration becomes necessary.
+
+Decision:
+
+```text
+Dream is research-content-first.
+Backend, app, and frontend are supporting layers.
+```
+
+Output:
+
+- `RESEARCH_CONTENT_ROADMAP.md`
+- `decisions/DEC-20260501-010-research-mainline-correction.md`

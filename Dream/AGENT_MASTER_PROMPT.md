@@ -59,8 +59,8 @@ Current operating mode:
 No reproduction yet.
 No heavy installs.
 No KYKT app redesign.
-Build and refine the research operating system first.
-Backend/research pipeline contracts are the current priority.
+Research content discovery and thesis validation are the current priority.
+Backend/research pipeline contracts are support infrastructure, not the mainline.
 ```
 
 Frontend ownership:
@@ -83,15 +83,15 @@ Important:
 
 ### 2. Mission
 
-Advance Dream as a systematic research engine for the post-DUSt3R 3R frontier.
+Advance Dream as a systematic research engine for discovering new post-DUSt3R 3R / spatial-intelligence content.
 
 The long-term goal is:
 
 ```text
-architecture novelty + concrete 3R bottleneck + feasible evidence + teacher-facing demo + KYKT integration
+new research mechanism + architecture novelty + concrete 3R bottleneck + feasible evidence + teacher-facing demo + KYKT integration
 ```
 
-The research should be strong enough to support a future paper/proposal and concrete enough to become a visible KYKT workflow.
+The research content is the mainline. Backend contracts, KYKT app integration, and frontend handoff are downstream supports for preserving, validating, and presenting the research.
 
 ### 3. Core Workflow
 
@@ -290,7 +290,8 @@ If the user asks for prompt/rule work:
 If the user asks for KYKT app integration planning:
 
 - do not edit app code unless explicitly requested
-- define data contracts first
+- keep the research question and mechanism as the center
+- define data contracts only as a support layer
 - map to KYKT surfaces: research lane, runner, Sample Matrix, Advisor/report, system readiness, management area
 - if frontend design work is needed, prepare a Gemini CLI handoff prompt rather than implementing frontend code by default
 - update `FRONTEND_DESIGN_HANDOFF_PROMPT.md` or a task-specific frontend prompt under `Coding\4.06\vision_ui`
@@ -312,21 +313,23 @@ If the user asks for audit/review:
 Unless the user gives a different priority, the next workflow lanes are:
 
 ```text
-A. Dream backend research pipeline contract, no UI.
-B. Master prompt and agent rule refinement.
-C. Phase 2 smoke-test plan refinement, still no install.
-D. Second research cycle focused on Dream3R thesis validation.
+A. Research content cycle: Dream3R thesis validation and new mechanism discovery.
+B. Source/mechanism mining from 3R, architecture, RL, continual learning, and vision frontier work.
+C. Backend research pipeline contract as support infrastructure for the selected research content.
+D. Phase 2 smoke-test plan refinement, still no install.
+E. Master prompt and agent rule refinement when drift is found.
 ```
 
-Prefer B if prompt/rule consistency is weak.
-Prefer A if the user wants to deploy the research process into KYKT infrastructure.
-Prefer C only when preparing for reproduction.
-Prefer D when the user wants deeper research direction discovery.
+Prefer A by default.
+Prefer B when the idea bank is stale or too narrow.
+Prefer C only after the research content needs machine-readable persistence or KYKT service integration.
+Prefer D only when preparing for reproduction.
+Prefer E when prompt/rule consistency is weak.
 
 Frontend note:
 
 - Do not make frontend the center of the next phase.
-- If a lane eventually requires KYKT UI implementation, prepare or update the Gemini CLI handoff after backend contracts are clear.
+- If a lane eventually requires KYKT UI implementation, prepare or update the Gemini CLI handoff after the research content and support contract are clear.
 - Do not implement the frontend directly unless the user explicitly changes the ownership rule.
 
 ### 11. Tone And Final Response

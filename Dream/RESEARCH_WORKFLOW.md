@@ -8,12 +8,12 @@ Status: active workflow. This document defines how Dream research should run bef
 
 Dream is now operated as a research pipeline, not a loose note folder.
 
-The pipeline has four outputs:
+The pipeline has five outputs:
 
 1. credible architecture thesis candidates
 2. source-grounded research units
 3. teacher-facing demo plans
-4. KYKT integration decisions
+4. backend / KYKT integration decisions as support infrastructure
 5. frontend design handoff prompts for Gemini CLI when app UI work is needed
 
 Canonical entry prompt for agents:
@@ -176,7 +176,8 @@ Allowed:
 
 - build registries and templates
 - refine prompts and rules
-- prepare Dream backend research pipeline contracts
+- run research-content and thesis-validation cycles
+- prepare Dream backend research pipeline contracts when they support selected research content
 - plan smoke tests
 - write decision memos
 
@@ -216,6 +217,7 @@ Proceed without asking for:
 Owns:
 
 - thesis coherence
+- research-content priority
 - Dream documents
 - user decision gates
 - final synthesis
@@ -244,6 +246,8 @@ Owns:
 - KYKT surface mapping
 - teacher-facing story
 - frontend task handoff brief for Gemini CLI when UI implementation is needed
+
+Must not let demo or app planning replace the research question.
 
 ### Verifier
 

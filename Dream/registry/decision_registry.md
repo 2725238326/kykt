@@ -16,4 +16,5 @@ Status: seeded.
 | DEC-20260501-006 | 2026-05-01 | agent workflow | Create canonical agent master prompt and audit prior judgments | accepted | no | `decisions/DEC-20260501-006-task-audit-and-master-prompt.md` |
 | DEC-20260501-007 | 2026-05-01 | frontend ownership | Delegate KYKT frontend implementation to Gemini CLI; Codex maintains handoff prompts | accepted | no | `decisions/DEC-20260501-007-frontend-agent-boundary.md` |
 | DEC-20260501-008 | 2026-05-01 | collaboration | Use staged human-agent collaboration; corrected to backend pipeline contract first | superseded by DEC-009 | no | `decisions/DEC-20260501-008-collaboration-pathway.md` |
-| DEC-20260501-009 | 2026-05-01 | priority correction | Backend/research pipeline first; frontend is downstream only | accepted | no | `decisions/DEC-20260501-009-backend-first-correction.md` |
+| DEC-20260501-009 | 2026-05-01 | priority correction | Backend before frontend when integration is needed; frontend is downstream only | superseded by DEC-010 | no | `decisions/DEC-20260501-009-backend-first-correction.md` |
+| DEC-20260501-010 | 2026-05-01 | mainline correction | Research content and new mechanisms are the mainline; backend/app/frontend are support layers | accepted | no | `decisions/DEC-20260501-010-research-mainline-correction.md` |

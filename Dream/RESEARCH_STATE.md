@@ -307,15 +307,38 @@ Current non-priority:
 - KYKT navigation changes
 - Gemini CLI work unless backend contracts are ready
 
+## Research-Mainline Correction
+
+User correction:
+
+```text
+app只是一部分呀，我们的主线还是研究新的内容
+```
+
+Decision:
+
+```text
+Dream's mainline is research-content discovery, mechanism synthesis, and thesis validation.
+The KYKT app, backend contracts, and frontend handoffs are supporting layers for preserving, testing, and presenting that research.
+```
+
+Interpretation:
+
+- "backend first" only means backend before frontend when system integration becomes necessary.
+- It does not mean backend engineering is the core research priority.
+- The next default cycle should deepen new 3R mechanisms, not app or backend implementation.
+- KYKT integration remains required, but it should follow the shape of the research content.
+
 ## Next Workflow Choice
 
 The next useful decision is not "which model to install." It is which workflow lane to deepen first:
 
 ```text
 A. Dream backend research pipeline contract
-B. Master prompt and agent rule refinement
-C. Phase 2 smoke-test plan refinement without running it
-D. Second research cycle focused on the Dream3R thesis branch
+A. Research content cycle: Dream3R thesis validation and new mechanism discovery
+B. Frontier source/mechanism mining for 3R-translatable ideas
+C. Backend research pipeline contract as support infrastructure
+D. Phase 2 smoke-test plan refinement without running it
 ```
 
 ## Collaboration Pathway
@@ -330,8 +353,8 @@ Recommended near-term sequence:
 
 ```text
 1. Collaboration protocol
-2. Dream backend research pipeline contract
-3. Dream3R thesis validation cycle
+2. Research content / Dream3R thesis validation cycle
+3. Backend research pipeline contract as support infrastructure
 4. Teacher-facing storyboard
 5. Planned experiment selection
 ```
@@ -339,5 +362,5 @@ Recommended near-term sequence:
 Current recommendation:
 
 ```text
-Start next with Dream backend research pipeline contract, no UI implementation.
+Start next with a research content cycle; keep backend, app, and frontend downstream.
 ```
