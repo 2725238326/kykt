@@ -20,6 +20,12 @@ The workspace should eventually produce:
 3. a teacher-facing demo and proposal blueprint
 4. candidate model/app integration plans for KYKT
 
+Canonical agent entry prompt:
+
+```text
+E:\kykt\Dream\AGENT_MASTER_PROMPT.md
+```
+
 ## Current Direction
 
 Primary direction:
@@ -42,6 +48,7 @@ Instead, Dream should first build a systematic research engine that can compare 
 ## File Map
 
 - `RESEARCH_STATE.md`: current decisions, assumptions, and open questions.
+- `AGENT_MASTER_PROMPT.md`: canonical operating prompt for future Dream agents.
 - `QUESTION_LOG.md`: interview history and next questions.
 - `RESEARCH_PARADIGM.md`: the operating paradigm, research loop, evidence ladder, and user-discussion gates.
 - `RESEARCH_WORKFLOW.md`: operational workflow from source intake to implementation decision.
@@ -55,7 +62,7 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `MINIMAL_DEMO_CANDIDATES.md`: teacher-demo candidate analysis.
 - `REPRODUCTION_READINESS_MATRIX.md`: repo-level smoke-test and KYKT integration readiness notes.
 - `PHASE1_DECISION_MEMO.md`: preliminary synthesis and Phase 2 decision gates.
-- `MASTER_RESEARCH_PROMPT_DRAFT.md`: evolving master prompt for research agents.
+- `MASTER_RESEARCH_PROMPT_DRAFT.md`: historical early draft; do not use as the operating prompt.
 - `RESEARCH_SKILL_RULES_DRAFT.md`: evolving rules for a project skill and future Codex skill.
 
 ## Directory Map
@@ -73,7 +80,7 @@ Use this loop after each discussion:
 1. Update `RESEARCH_STATE.md` with decisions.
 2. Update `QUESTION_LOG.md` with the question/answer trail.
 3. Update `RESEARCH_PARADIGM.md` when the operating model or decision gates change.
-4. Refine `MASTER_RESEARCH_PROMPT_DRAFT.md` when the research scope changes.
+4. Refine `AGENT_MASTER_PROMPT.md` when the operating prompt, load protocol, phase, or decision gates change.
 5. Refine `RESEARCH_SKILL_RULES_DRAFT.md` when we learn a reusable rule.
 6. Later, split stable rules into:
    - a project-local version under `E:\kykt\Dream`

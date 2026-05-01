@@ -2,7 +2,15 @@
 
 Last updated: 2026-05-01
 
-This is a working draft. It is not final.
+Status: historical draft.
+
+Canonical prompt:
+
+```text
+E:\kykt\Dream\AGENT_MASTER_PROMPT.md
+```
+
+Use `AGENT_MASTER_PROMPT.md` for new agents. This file is kept as the earlier broad draft and should not be treated as the operating prompt unless explicitly revived.
 
 ## Role
 

@@ -172,6 +172,7 @@ Pause model reproduction and deploy the research operating system first.
 
 New workflow assets:
 
+- `AGENT_MASTER_PROMPT.md`
 - `RESEARCH_WORKFLOW.md`
 - `RESEARCH_DATA_MODEL.md`
 - `WORKFLOW_STATUS.md`
@@ -188,6 +189,30 @@ Current rule:
 Planned experiments are allowed.
 Actual reproduction, heavy downloads, and app navigation changes require user confirmation.
 ```
+
+## Agent Master Prompt Decision
+
+Canonical prompt:
+
+```text
+E:\kykt\Dream\AGENT_MASTER_PROMPT.md
+```
+
+Decision:
+
+```text
+Use AGENT_MASTER_PROMPT.md as the required entry point for future Dream agents.
+MASTER_RESEARCH_PROMPT_DRAFT.md is now historical only.
+```
+
+The master prompt must be updated when:
+
+- current phase changes
+- thesis candidate changes
+- canonical files change
+- decision gates change
+- reusable skill packaging happens
+- major workflow lanes are activated or blocked
 
 ## Current Strongest Candidate
 

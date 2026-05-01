@@ -68,17 +68,54 @@ Output:
 
 - `PHASE1_RESEARCH_PLAN.md`
 
+## Round 5
+
+Question: Should Dream start model reproduction now?
+
+Answer:
+
+- No.
+- Deploy the research process first.
+
+Decision:
+
+```text
+Phase 1.5 = Research Workflow Deployment.
+```
+
+Output:
+
+- `RESEARCH_WORKFLOW.md`
+- `RESEARCH_DATA_MODEL.md`
+- `WORKFLOW_STATUS.md`
+- registries, templates, cycle log, and planned-only experiment file
+
+## Round 6
+
+Question: Did the prior work miss anything or make weak judgments, and should we create a reusable master prompt for agents?
+
+Answer:
+
+- Yes, audit the prior work.
+- Create a master prompt that is updated as the project progresses.
+- The prompt should force agents to use the Dream markdown files, future skills, and workflow rather than proceeding ad hoc.
+
+Decision:
+
+```text
+Create AGENT_MASTER_PROMPT.md as the canonical entry prompt.
+Keep MASTER_RESEARCH_PROMPT_DRAFT.md as historical only.
+```
+
+Output:
+
+- `AGENT_MASTER_PROMPT.md`
+- `decisions/DEC-20260501-006-task-audit-and-master-prompt.md`
+
 ## Next Round Candidate
 
 The next useful question is:
 
 ```text
-Should Phase 1 execution start with direct 3R frontier mapping, architecture-transfer mapping, or demo-candidate mapping?
+Should the next workflow lane be KYKT research-lane data model, deeper prompt/rules refinement, planned-only smoke-test details, or a second Dream3R thesis research cycle?
 ```
-
-Suggested options:
-
-- Direct 3R frontier first
-- Architecture-transfer first
-- Demo-candidate first
-- Run all three as a structured first pass

@@ -37,6 +37,14 @@ Deploy Dream as a markdown-first research pipeline:
 Source -> Mechanism -> 3R Translation -> Research Unit -> Score -> Decision -> Plan -> Implementation
 ```
 
+## Canonical Agent Prompt
+
+```text
+E:\kykt\Dream\AGENT_MASTER_PROMPT.md
+```
+
+Use this prompt when handing Dream work to Codex, another agent, or a subagent.
+
 ## Active Workstreams
 
 | Workstream | Status | Next artifact |
@@ -48,6 +56,7 @@ Source -> Mechanism -> 3R Translation -> Research Unit -> Score -> Decision -> P
 | Decision registry | seeded | `registry/decision_registry.md` |
 | Cycle logs | seeded | `cycles/CYCLE-20260501-001.md` |
 | Experiment planning | seeded | `experiments/EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` |
+| Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | KYKT app integration | planned only | no app code changes yet |
 
 ## Blocked Until User Decision
@@ -68,4 +77,3 @@ B. Refine the master research prompt and agent rules.
 C. Prepare Phase 2 smoke-test plan in more detail, still no install.
 D. Start a second research cycle focused on one thesis branch.
 ```
-

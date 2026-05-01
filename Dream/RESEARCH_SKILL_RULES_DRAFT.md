@@ -13,6 +13,16 @@ This draft will later become:
 dream-3r-research
 ```
 
+## Canonical Prompt Dependency
+
+This rules draft depends on:
+
+```text
+E:\kykt\Dream\AGENT_MASTER_PROMPT.md
+```
+
+Agents should use `AGENT_MASTER_PROMPT.md` as the entry prompt, then use this file as the rulebook that can later become a reusable Codex skill.
+
 ## Candidate Skill Description
 
 Use when working on Dream / KYKT 3R research: frontier 3R model architecture ideation, paper and GitHub mining, architecture synthesis, demo planning, KYKT app integration planning, and teacher-facing research proposal construction.

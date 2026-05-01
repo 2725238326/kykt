@@ -15,6 +15,12 @@ The pipeline has four outputs:
 3. teacher-facing demo plans
 4. KYKT integration decisions
 
+Canonical entry prompt for agents:
+
+```text
+E:\kykt\Dream\AGENT_MASTER_PROMPT.md
+```
+
 ## Operating Principle
 
 Do not jump from paper discovery directly to model reproduction.
@@ -251,4 +257,3 @@ These roles can be handled by one agent or delegated to subagents when explicitl
 - `decisions/`: decision memos
 - `experiments/`: experiment and smoke-test plans
 - `templates/`: reusable forms
-

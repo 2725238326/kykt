@@ -42,12 +42,12 @@ Implication:
 - Composer and Test-Time Compute are likely the best near-term demo axes.
 - Cross-modal/event/4DGS should remain as demo and robustness enablers, not yet the core thesis.
 
-Pending:
+Resolved / pending:
 
-- reproduction-readiness subagent result
-- deeper licensing/checkpoint/demo readiness table
-- user discussion before Phase 2 implementation commitment
-- optional refinement of master research prompt after Phase 1 stabilizes
+- reproduction-readiness subagent result: completed and merged
+- first readiness table: completed in `REPRODUCTION_READINESS_MATRIX.md`
+- master prompt: completed in `AGENT_MASTER_PROMPT.md`
+- still pending: user discussion before Phase 2 implementation commitment
 
 ## Subagent Merge 1: Demo / KYKT Integration
 
