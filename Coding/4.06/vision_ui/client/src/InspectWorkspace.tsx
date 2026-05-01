@@ -65,28 +65,41 @@ export function InspectWorkspace({
           {details.attention.length > 0 && (
             <section className="attention-list" style={{ marginTop: '24px' }}>
               <span className="mini-label">需要关注</span>
-              {details.attention.map((item, i) => (
-                <div key={i} className={`overview-callout ${item.kind === 'error' ? 'danger' : 'warning'}`} style={{ marginTop: '8px' }}>
-                  <strong>{item.label}</strong>
-                  <p className="dense-text">{item.detail}</p>
-                </div>
-              ))}
+              {details.attention.map((item, i) => {
+                const kind = item.kind || (item.level === 'error' ? 'error' : 'warning');
+                const label = item.label || item.title || (kind === 'error' ? '错误' : '警告');
+                return (
+                  <div key={i} className={`overview-callout ${kind === 'error' ? 'danger' : 'warning'}`} style={{ marginTop: '8px' }}>
+                    <strong>{label}</strong>
+                    <p className="dense-text">{item.detail}</p>
+                  </div>
+                );
+              })}
             </section>
           )}
 
           <section className="actions-list" style={{ marginTop: '24px' }}>
             <span className="mini-label">推荐行动</span>
             <div className="support-checklist" style={{ marginTop: '8px' }}>
-              {details.recommendedActions.map((action) => (
-                <button 
-                  key={action.key} 
-                  className={action.primary ? "primary-button small" : "ghost-button small"}
-                  onClick={() => onAction(action.target, action.key)}
-                  style={{ width: '100%', justifyContent: 'center', marginBottom: '8px' }}
-                >
-                  {action.label}
-                </button>
-              ))}
+              {details.recommendedActions.map((action, i) => {
+                if (typeof action === 'string') {
+                  return (
+                    <div key={i} className="overview-callout info" style={{ marginBottom: '8px', padding: '8px', borderLeft: '3px solid var(--brand-accent)' }}>
+                      <p className="dense-text">{action}</p>
+                    </div>
+                  );
+                }
+                return (
+                  <button 
+                    key={action.key} 
+                    className={action.primary ? "primary-button small" : "ghost-button small"}
+                    onClick={() => onAction(action.target, action.key)}
+                    style={{ width: '100%', justifyContent: 'center', marginBottom: '8px' }}
+                  >
+                    {action.label}
+                  </button>
+                );
+              })}
             </div>
           </section>
         </div>
@@ -97,12 +110,30 @@ export function InspectWorkspace({
         <PanelTitle eyebrow="Artifacts" title="产物与分组" />
         
         <div className="primary-artifacts-strip" style={{ display: 'flex', gap: '12px', overflowX: 'auto', padding: '12px 0' }}>
-          {artifactIndex.primaryArtifacts.map((art) => (
-            <div key={art.relativePath} className="primary-art-card" onClick={() => onPreviewAsset({ url: assetUrl(art.relativePath), name: art.label, kind: art.kind === 'video' ? 'video' : 'image' })}>
-              {art.kind === 'image' && <img src={assetUrl(art.relativePath)} alt={art.label} style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />}
-              <div className="dense-text"><strong>{art.label}</strong></div>
-            </div>
-          ))}
+          {artifactIndex.primaryArtifacts.map((art) => {
+            const isImageOrVideo = art.kind === 'image' || art.kind === 'video';
+            return (
+              <div 
+                key={art.relativePath} 
+                className={`primary-art-card ${isImageOrVideo ? 'clickable' : ''}`} 
+                onClick={() => {
+                  if (art.kind === 'image' || art.kind === 'video') {
+                    onPreviewAsset({ url: assetUrl(art.relativePath), name: art.label, kind: art.kind });
+                  }
+                }}
+              >
+                {art.kind === 'image' && <img src={assetUrl(art.relativePath)} alt={art.label} style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />}
+                <div className="dense-text">
+                  <strong>{art.label}</strong>
+                  {!isImageOrVideo && (
+                    <div style={{ marginTop: '4px' }}>
+                      <button className="ghost-button small" onClick={(e) => { e.stopPropagation(); onOpenOutput(art.relativePath); }}>打开</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className="artifact-groups" style={{ marginTop: '24px' }}>
@@ -123,7 +154,11 @@ export function InspectWorkspace({
                       <p>{art.note || art.role}</p>
                       <div className="output-actions">
                         {(art.kind === 'image' || art.kind === 'video') && (
-                          <button onClick={() => onPreviewAsset({ url: assetUrl(art.relativePath), name: art.name, kind: art.kind === 'video' ? 'video' : 'image' })}>预览</button>
+                          <button onClick={() => {
+                            if (art.kind === 'image' || art.kind === 'video') {
+                              onPreviewAsset({ url: assetUrl(art.relativePath), name: art.name, kind: art.kind });
+                            }
+                          }}>预览</button>
                         )}
                         <button onClick={() => onOpenOutput(art.relativePath)}>打开</button>
                       </div>

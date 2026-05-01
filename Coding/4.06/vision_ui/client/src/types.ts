@@ -437,11 +437,13 @@ export type InspectionPacket = {
   phaseDisplay: PhaseDisplay;
   inspection: {
     attention: Array<{
-      kind: "warning" | "error" | "missing_output";
-      label: string;
+      kind?: "warning" | "error" | "missing_output";
+      level?: string;
+      label?: string;
+      title?: string;
       detail: string;
     }>;
-    recommendedActions: Array<{
+    recommendedActions: Array<string | {
       key: string;
       label: string;
       target: string;
