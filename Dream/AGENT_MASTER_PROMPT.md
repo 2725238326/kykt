@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-01
+Last updated: 2026-05-02
 
 Status: canonical entry prompt for Dream research agents.
 
@@ -25,14 +25,21 @@ Before proposing or doing work, read these files in order:
 5. `E:\kykt\Dream\RESEARCH_DATA_MODEL.md`
 6. `E:\kykt\Dream\RESEARCH_PARADIGM.md`
 7. `E:\kykt\Dream\RESEARCH_SKILL_RULES_DRAFT.md`
-8. `E:\kykt\Dream\registry\decision_registry.md`
-9. `E:\kykt\Dream\registry\research_unit_registry.md`
-10. `E:\kykt\Dream\registry\source_registry.md`
-11. `E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+8. `E:\kykt\Dream\RESEARCH_CONTENT_ROADMAP.md`
+9. `E:\kykt\Dream\MULTI_TRACK_RESEARCH_CANVAS.md`
+10. `E:\kykt\Dream\RESEARCH_GRAPH_AND_PAPER_START.md`
+11. `E:\kykt\Dream\BRANCH_COMPARISON_MATRIX.md`
+12. `E:\kykt\Dream\registry\decision_registry.md`
+13. `E:\kykt\Dream\registry\research_unit_registry.md`
+14. `E:\kykt\Dream\registry\source_registry.md`
+15. `E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 
 Then inspect the most relevant active file for the requested task:
 
 - research source work: `FRONTIER_SOURCE_MAP.md`
+- graph-based research planning: `RESEARCH_GRAPH_AND_PAPER_START.md`
+- branch comparison: `BRANCH_COMPARISON_MATRIX.md`
+- multi-track direction control: `MULTI_TRACK_RESEARCH_CANVAS.md`
 - idea synthesis: `RESEARCH_UNIT_BANK.md`
 - scoring: `IDEA_SCOREBOARD.md`
 - demo planning: `MINIMAL_DEMO_CANDIDATES.md`
@@ -61,6 +68,7 @@ No heavy installs.
 No KYKT app redesign.
 Research content discovery and thesis validation are the current priority.
 Backend/research pipeline contracts are support infrastructure, not the mainline.
+Current method: graph-based, multi-track research before betting on one branch.
 ```
 
 Frontend ownership:
@@ -73,13 +81,16 @@ Frontend is downstream only. Dream/Codex prepares frontend prompts only after ba
 Current thesis candidate:
 
 ```text
-Dream3R: Geometry-Governed State and Test-Time Reasoning for Long-Context 3R
+No final thesis.
+Dream3R remains an umbrella candidate.
+GEM-3R is only one strong candidate branch, not the default bet.
 ```
 
 Important:
 
 - `Dream3R` is a candidate thesis, not a final commitment.
-- Do not silently collapse the project into Mamba-3R, Event-DUSt3R, 4DGS, or a single model reproduction.
+- `GEM-3R` / executive memory is a candidate branch, not the selected thesis.
+- Do not silently collapse the project into Mamba-3R, GEM-3R, Event-DUSt3R, 4DGS, active perception, or a single model reproduction.
 
 ### 2. Mission
 
@@ -102,6 +113,14 @@ Source -> Mechanism -> 3R Translation -> Research Unit -> Score -> Decision -> P
 ```
 
 Do not skip directly from an exciting paper to implementation.
+
+For the current phase, also use the graph pipeline:
+
+```text
+Failure mode -> Mechanism node -> Composition edge -> Evidence path -> Paper claim
+```
+
+Start from failure modes rather than fashionable modules.
 
 For each source, extract:
 
@@ -132,6 +151,15 @@ Decision:
 ### 4. Research Tracks
 
 Keep all major tracks alive unless the user approves discarding one.
+
+Current branch comparison pool:
+
+- Executive Memory / State Governance
+- Geometry Critic / System-2 3R
+- Dynamic Object Permanence / 4D Memory
+- Cross-Modal / Event-Augmented 3R
+- 3R Composer / Unified Model Ecology
+- Active Spatial Perception / RL-3R
 
 Track A: Memory / State 3R
 
@@ -198,6 +226,7 @@ The source registry is seeded, not legally or engineering-final.
 Ask the user before:
 
 - final thesis selection
+- deepening any single branch as the default thesis
 - discarding a major track
 - cloning/installing heavy model repos
 - downloading large checkpoints
@@ -220,6 +249,8 @@ You may proceed without asking for:
 - scoring refinement
 - planned-only experiment files
 - frontend design prompt / handoff brief updates
+- filling branch comparison matrices
+- graph/node/edge note updates
 
 ### 7. Output Artifacts
 
@@ -230,6 +261,9 @@ When you make durable progress, update the relevant files:
 - source list: `registry/source_registry.md`
 - research units: `RESEARCH_UNIT_BANK.md` and `registry/research_unit_registry.md`
 - scoring: `IDEA_SCOREBOARD.md`
+- research graph and paper scaffold: `RESEARCH_GRAPH_AND_PAPER_START.md`
+- branch comparison: `BRANCH_COMPARISON_MATRIX.md`
+- multi-track canvas: `MULTI_TRACK_RESEARCH_CANVAS.md`
 - decisions: `decisions/` and `registry/decision_registry.md`
 - cycle log: `cycles/`
 - experiment plan: `experiments/`
@@ -270,6 +304,7 @@ If the user asks for broad research:
 - update source registry and source map
 - extract mechanisms
 - create/update Research Units
+- update the failure-mode graph and branch comparison matrix when relevant
 - update scoreboard
 - finish with a decision memo or next action
 
@@ -277,8 +312,9 @@ If the user asks for idea synthesis:
 
 - read current Research Units and scoreboard
 - cluster mechanisms
+- reason over failure modes, mechanism compositions, and evidence paths
 - separate evidence from speculation
-- propose a small number of thesis candidates
+- propose a small number of branch candidates or graph compositions
 - do not discard major tracks without approval
 
 If the user asks for prompt/rule work:
@@ -313,18 +349,18 @@ If the user asks for audit/review:
 Unless the user gives a different priority, the next workflow lanes are:
 
 ```text
-A. Research content cycle: Dream3R thesis validation and new mechanism discovery.
-B. Source/mechanism mining from 3R, architecture, RL, continual learning, and vision frontier work.
-C. Backend research pipeline contract as support infrastructure for the selected research content.
-D. Phase 2 smoke-test plan refinement, still no install.
-E. Master prompt and agent rule refinement when drift is found.
+A. Fill BRANCH_COMPARISON_MATRIX.md from the failure-mode graph.
+B. Expand RESEARCH_GRAPH_AND_PAPER_START.md with new nodes/edges/compositions.
+C. Mine frontier sources for missing mechanisms and update the source map.
+D. Select 2-3 finalist branches only after comparison, with user approval.
+E. Draft a mechanism spec only for an approved finalist branch.
 ```
 
 Prefer A by default.
-Prefer B when the idea bank is stale or too narrow.
-Prefer C only after the research content needs machine-readable persistence or KYKT service integration.
-Prefer D only when preparing for reproduction.
-Prefer E when prompt/rule consistency is weak.
+Prefer B when the graph is too sparse or linear.
+Prefer C when a branch lacks comparator evidence.
+Prefer D only after the comparison matrix is filled.
+Prefer E only after the user agrees to deepen a finalist.
 
 Frontend note:
 
@@ -351,5 +387,5 @@ In final responses:
 For a shorter handoff, give an agent this:
 
 ```text
-Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then follow Dream's workflow. Do not reproduce models, download checkpoints, change KYKT app navigation, or finalize the thesis unless I explicitly approve it in this conversation.
+Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode: build the failure-mode/mechanism/composition graph and fill BRANCH_COMPARISON_MATRIX.md before deepening any single thesis branch. Do not reproduce models, download checkpoints, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation.
 ```

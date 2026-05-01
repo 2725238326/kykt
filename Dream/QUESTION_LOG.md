@@ -169,3 +169,26 @@ Output:
 
 - `RESEARCH_CONTENT_ROADMAP.md`
 - `decisions/DEC-20260501-010-research-mainline-correction.md`
+
+## Round 9
+
+Question: Should Dream continue as a linear branch-selection process, or as a nonlinear graph-like research structure?
+
+Answer:
+
+- Many mentioned, unmentioned, or undiscovered modules, papers, techniques, and compositions may become useful at different stages.
+- A nonlinear graph or higher-dimensional structure is more suitable than prematurely betting on one branch.
+- If writing a top-conference paper, start from field-level problem formulation and mechanism graph, not a single model name.
+
+Decision:
+
+```text
+Dream should use a failure-mode / mechanism / composition / evidence graph.
+Fill branch comparison before deepening any single thesis branch.
+```
+
+Output:
+
+- `RESEARCH_GRAPH_AND_PAPER_START.md`
+- `BRANCH_COMPARISON_MATRIX.md`
+- updated `AGENT_MASTER_PROMPT.md` short invocation
