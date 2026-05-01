@@ -1,0 +1,10 @@
+{
+  "directives": [
+    {
+      "directive": "For KYKT app frontend design/implementation tasks, Codex should not implement the frontend by default. Gemini CLI or another designated frontend agent owns frontend design execution. Codex should define and maintain the frontend design prompt, constraints, handoff brief, acceptance criteria, and task sequencing only, unless the user explicitly asks Codex to edit frontend code.",
+      "priority": "high",
+      "context": "Dream/KYKT frontend responsibility boundary",
+      "timestamp": "2026-05-01T14:58:18.508Z"
+    }
+  ]
+}

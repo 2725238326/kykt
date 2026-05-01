@@ -23,6 +23,14 @@ E:\kykt\Dream\AGENT_MASTER_PROMPT.md
 
 Agents should use `AGENT_MASTER_PROMPT.md` as the entry prompt, then use this file as the rulebook that can later become a reusable Codex skill.
 
+Frontend handoff prompt:
+
+```text
+E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+```
+
+Use this when KYKT app frontend design tasks must be handed to Gemini CLI or another frontend implementation agent.
+
 ## Candidate Skill Description
 
 Use when working on Dream / KYKT 3R research: frontier 3R model architecture ideation, paper and GitHub mining, architecture synthesis, demo planning, KYKT app integration planning, and teacher-facing research proposal construction.
@@ -58,6 +66,8 @@ Discuss with the user before:
 - moving an experiment from `planned` to `running`
 - cloning/installing heavy model repositories
 - downloading large checkpoints
+- Codex directly editing KYKT frontend code
+- instructing Gemini CLI to perform a major frontend redesign
 
 Proceed without interruption for lightweight note updates, small prompt refinements, source triage, and mock artifacts.
 
@@ -146,6 +156,21 @@ Every candidate should map to at least one:
 - System/deployment readiness view
 
 If no integration path exists, classify as background research.
+
+## Frontend Delegation Rules
+
+KYKT frontend design and implementation are delegated to Gemini CLI / a designated frontend implementation agent by default.
+
+Codex / Dream should:
+
+- write the frontend task prompt
+- specify required reading
+- define target surfaces and constraints
+- define functional vs placeholder boundaries
+- define acceptance criteria and build/test commands
+- update `FRONTEND_DESIGN_HANDOFF_PROMPT.md` or a task-specific prompt under `Coding\4.06\vision_ui`
+
+Codex / Dream should not edit frontend code unless the user explicitly asks for direct frontend implementation.
 
 ## Anti-Slop Rules
 

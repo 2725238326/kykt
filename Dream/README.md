@@ -26,6 +26,12 @@ Canonical agent entry prompt:
 E:\kykt\Dream\AGENT_MASTER_PROMPT.md
 ```
 
+Canonical frontend design handoff prompt:
+
+```text
+E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+```
+
 ## Current Direction
 
 Primary direction:
@@ -49,6 +55,7 @@ Instead, Dream should first build a systematic research engine that can compare 
 
 - `RESEARCH_STATE.md`: current decisions, assumptions, and open questions.
 - `AGENT_MASTER_PROMPT.md`: canonical operating prompt for future Dream agents.
+- `FRONTEND_DESIGN_HANDOFF_PROMPT.md`: canonical prompt and boundary for Gemini CLI / frontend implementation agents.
 - `QUESTION_LOG.md`: interview history and next questions.
 - `RESEARCH_PARADIGM.md`: the operating paradigm, research loop, evidence ladder, and user-discussion gates.
 - `RESEARCH_WORKFLOW.md`: operational workflow from source intake to implementation decision.
@@ -72,6 +79,7 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `decisions/`: decision memos that require commitment or deferral.
 - `experiments/`: experiment plans; a file here does not mean the experiment has been run.
 - `templates/`: reusable forms for sources, research units, decisions, cycles, and experiments.
+- `templates/frontend_design_handoff.md`: reusable frontend task brief template for Gemini CLI.
 
 ## Working Loop
 
@@ -127,3 +135,4 @@ This is not a final commitment. It is the best current umbrella for comparing me
 - Separate evidence from speculation.
 - Avoid claiming a method works before a minimal experiment or defensible proxy exists.
 - Do not move from planned experiment to actual reproduction without a user decision.
+- Do not implement KYKT frontend design work in Codex by default; prepare a Gemini CLI handoff prompt unless the user explicitly asks Codex to edit frontend code.

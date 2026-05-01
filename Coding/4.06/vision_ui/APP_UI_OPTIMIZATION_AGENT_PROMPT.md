@@ -1,5 +1,24 @@
 # KYKT Vision App UI Optimization Prompt
 
+Owner:
+
+```text
+Gemini CLI / designated frontend implementation agent
+```
+
+Codex / Dream role:
+
+```text
+Maintain this prompt, research/product context, constraints, and acceptance criteria.
+Codex should not implement this frontend task by default unless the user explicitly asks.
+```
+
+Before implementation, also read:
+
+```text
+E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+```
+
 You are the frontend agent for KYKT Vision. Do not change Python backend files. Your task is to redesign the desktop app UI for actual daily use, not to make a landing page or visual demo.
 
 ## Context

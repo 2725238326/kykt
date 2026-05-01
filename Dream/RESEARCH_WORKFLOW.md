@@ -14,11 +14,18 @@ The pipeline has four outputs:
 2. source-grounded research units
 3. teacher-facing demo plans
 4. KYKT integration decisions
+5. frontend design handoff prompts for Gemini CLI when app UI work is needed
 
 Canonical entry prompt for agents:
 
 ```text
 E:\kykt\Dream\AGENT_MASTER_PROMPT.md
+```
+
+Canonical frontend handoff prompt:
+
+```text
+E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
 ```
 
 ## Operating Principle
@@ -178,6 +185,7 @@ Not allowed without user confirmation:
 - cloning or installing heavy model repos
 - downloading large checkpoints
 - changing KYKT navigation or app architecture
+- Codex directly implementing KYKT frontend code
 - declaring a final thesis
 - discarding major research tracks
 
@@ -191,6 +199,7 @@ Ask the user before:
 4. reusable Codex skill packaging
 5. any model training or fine-tuning
 6. teacher-demo readiness claim
+7. Codex directly editing KYKT frontend code
 
 Proceed without asking for:
 
@@ -234,6 +243,7 @@ Owns:
 - smallest visible proof
 - KYKT surface mapping
 - teacher-facing story
+- frontend task handoff brief for Gemini CLI when UI implementation is needed
 
 ### Verifier
 
@@ -257,3 +267,4 @@ These roles can be handled by one agent or delegated to subagents when explicitl
 - `decisions/`: decision memos
 - `experiments/`: experiment and smoke-test plans
 - `templates/`: reusable forms
+- `FRONTEND_DESIGN_HANDOFF_PROMPT.md`: Gemini CLI / frontend agent handoff prompt

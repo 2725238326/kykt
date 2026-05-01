@@ -28,6 +28,7 @@ Before proposing or doing work, read these files in order:
 8. `E:\kykt\Dream\registry\decision_registry.md`
 9. `E:\kykt\Dream\registry\research_unit_registry.md`
 10. `E:\kykt\Dream\registry\source_registry.md`
+11. `E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 
 Then inspect the most relevant active file for the requested task:
 
@@ -36,6 +37,7 @@ Then inspect the most relevant active file for the requested task:
 - scoring: `IDEA_SCOREBOARD.md`
 - demo planning: `MINIMAL_DEMO_CANDIDATES.md`
 - reproduction readiness: `REPRODUCTION_READINESS_MATRIX.md`
+- frontend design handoff: `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 - phase decisions: `PHASE1_DECISION_MEMO.md`
 - current cycle: newest file under `cycles/`
 - experiment planning: relevant file under `experiments/`
@@ -58,6 +60,13 @@ No reproduction yet.
 No heavy installs.
 No KYKT app redesign.
 Build and refine the research operating system first.
+```
+
+Frontend ownership:
+
+```text
+KYKT frontend design and implementation is owned by Gemini CLI / designated frontend implementation agent.
+Dream/Codex prepares design prompts, constraints, and acceptance criteria by default.
 ```
 
 Current thesis candidate:
@@ -194,6 +203,8 @@ Ask the user before:
 - running reproduction or smoke tests
 - training or fine-tuning
 - changing KYKT app navigation or information architecture
+- Codex directly editing KYKT frontend code
+- asking Gemini CLI to perform a major frontend redesign
 - declaring teacher-demo readiness
 - packaging a reusable Codex skill
 
@@ -207,6 +218,7 @@ You may proceed without asking for:
 - source triage
 - scoring refinement
 - planned-only experiment files
+- frontend design prompt / handoff brief updates
 
 ### 7. Output Artifacts
 
@@ -221,6 +233,7 @@ When you make durable progress, update the relevant files:
 - cycle log: `cycles/`
 - experiment plan: `experiments/`
 - prompt/rules: `AGENT_MASTER_PROMPT.md` and `RESEARCH_SKILL_RULES_DRAFT.md`
+- frontend handoff: `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 
 If you add a new kind of repeated artifact, add a template under `templates/`.
 
@@ -237,6 +250,7 @@ Update `AGENT_MASTER_PROMPT.md` when:
 - a workflow lane becomes active or blocked
 - reusable agent behavior changes
 - a stable Codex skill is created
+- frontend ownership or Gemini CLI handoff rules change
 
 When updating this prompt:
 
@@ -277,6 +291,8 @@ If the user asks for KYKT app integration planning:
 - do not edit app code unless explicitly requested
 - define data contracts first
 - map to KYKT surfaces: research lane, runner, Sample Matrix, Advisor/report, system readiness, management area
+- if frontend design work is needed, prepare a Gemini CLI handoff prompt rather than implementing frontend code by default
+- update `FRONTEND_DESIGN_HANDOFF_PROMPT.md` or a task-specific frontend prompt under `Coding\4.06\vision_ui`
 
 If the user asks for reproduction:
 
@@ -306,6 +322,11 @@ Prefer A if the user wants app integration soon.
 Prefer C only when preparing for reproduction.
 Prefer D when the user wants deeper research direction discovery.
 
+Frontend note:
+
+- If a lane requires KYKT UI implementation, prepare or update the Gemini CLI handoff first.
+- Do not implement the frontend directly unless the user explicitly changes the ownership rule.
+
 ### 11. Tone And Final Response
 
 Be direct and rigorous.
@@ -327,4 +348,3 @@ For a shorter handoff, give an agent this:
 ```text
 Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then follow Dream's workflow. Do not reproduce models, download checkpoints, change KYKT app navigation, or finalize the thesis unless I explicitly approve it in this conversation.
 ```
-

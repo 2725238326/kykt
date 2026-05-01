@@ -119,3 +119,25 @@ The next useful question is:
 ```text
 Should the next workflow lane be KYKT research-lane data model, deeper prompt/rules refinement, planned-only smoke-test details, or a second Dream3R thesis research cycle?
 ```
+
+## Round 7
+
+Question: Who should own KYKT frontend design tasks going forward?
+
+Answer:
+
+- Frontend design / implementation tasks should still be handled by another agent, specifically Gemini CLI or a designated frontend implementation agent.
+- Dream / Codex should only emphasize, arrange, and maintain the frontend design prompt and task constraints.
+
+Decision:
+
+```text
+Gemini CLI owns KYKT frontend implementation by default.
+Dream / Codex owns frontend handoff prompts, constraints, sequencing, and acceptance criteria.
+```
+
+Output:
+
+- `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+- `templates/frontend_design_handoff.md`
+- `decisions/DEC-20260501-007-frontend-agent-boundary.md`

@@ -1,5 +1,24 @@
 # Prompt for next agent: KYKT Vision main-page redesign
 
+Owner:
+
+```text
+Gemini CLI / designated frontend implementation agent
+```
+
+Codex / Dream role:
+
+```text
+Maintain this prompt, research/product context, constraints, and acceptance criteria.
+Codex should not implement this frontend task by default unless the user explicitly asks.
+```
+
+Before implementation, also read:
+
+```text
+E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+```
+
 You are working on the KYKT Vision local desktop client:
 
 ```text
@@ -227,4 +246,3 @@ When finished, report:
 - what remains placeholder vs functional
 - build/test result
 - recommended next step for wiring the acceleration lane into backend data or job contracts
-

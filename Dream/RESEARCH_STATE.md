@@ -59,6 +59,12 @@ The user wants all of these eventually:
 
 This management area will be discussed later.
 
+Frontend implementation boundary:
+
+- KYKT app frontend design / implementation remains owned by Gemini CLI or another designated frontend implementation agent.
+- Dream / Codex should define the task, constraints, handoff prompt, and acceptance criteria.
+- Dream / Codex should not edit frontend code by default unless the user explicitly asks for direct frontend implementation.
+
 ### Evidence Standard
 
 No single evidence level is fixed.
@@ -173,6 +179,7 @@ Pause model reproduction and deploy the research operating system first.
 New workflow assets:
 
 - `AGENT_MASTER_PROMPT.md`
+- `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 - `RESEARCH_WORKFLOW.md`
 - `RESEARCH_DATA_MODEL.md`
 - `WORKFLOW_STATUS.md`
@@ -188,6 +195,23 @@ Current rule:
 ```text
 Planned experiments are allowed.
 Actual reproduction, heavy downloads, and app navigation changes require user confirmation.
+Frontend design prompts are allowed.
+Direct frontend implementation by Codex requires explicit user confirmation.
+```
+
+## Frontend Agent Boundary Decision
+
+Decision:
+
+```text
+KYKT frontend design implementation is delegated to Gemini CLI / designated frontend agent.
+Dream / Codex owns prompt framing, constraints, sequencing, and acceptance criteria.
+```
+
+Canonical handoff prompt:
+
+```text
+E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
 ```
 
 ## Agent Master Prompt Decision
@@ -213,6 +237,7 @@ The master prompt must be updated when:
 - decision gates change
 - reusable skill packaging happens
 - major workflow lanes are activated or blocked
+- frontend ownership or handoff rules change
 
 ## Current Strongest Candidate
 
