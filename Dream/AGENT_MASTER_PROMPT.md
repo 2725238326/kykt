@@ -60,13 +60,14 @@ No reproduction yet.
 No heavy installs.
 No KYKT app redesign.
 Build and refine the research operating system first.
+Backend/research pipeline contracts are the current priority.
 ```
 
 Frontend ownership:
 
 ```text
 KYKT frontend design and implementation is owned by Gemini CLI / designated frontend implementation agent.
-Dream/Codex prepares design prompts, constraints, and acceptance criteria by default.
+Frontend is downstream only. Dream/Codex prepares frontend prompts only after backend/research contracts are clear.
 ```
 
 Current thesis candidate:
@@ -311,20 +312,21 @@ If the user asks for audit/review:
 Unless the user gives a different priority, the next workflow lanes are:
 
 ```text
-A. KYKT research-lane data model, no UI yet.
+A. Dream backend research pipeline contract, no UI.
 B. Master prompt and agent rule refinement.
 C. Phase 2 smoke-test plan refinement, still no install.
 D. Second research cycle focused on Dream3R thesis validation.
 ```
 
 Prefer B if prompt/rule consistency is weak.
-Prefer A if the user wants app integration soon.
+Prefer A if the user wants to deploy the research process into KYKT infrastructure.
 Prefer C only when preparing for reproduction.
 Prefer D when the user wants deeper research direction discovery.
 
 Frontend note:
 
-- If a lane requires KYKT UI implementation, prepare or update the Gemini CLI handoff first.
+- Do not make frontend the center of the next phase.
+- If a lane eventually requires KYKT UI implementation, prepare or update the Gemini CLI handoff after backend contracts are clear.
 - Do not implement the frontend directly unless the user explicitly changes the ownership rule.
 
 ### 11. Tone And Final Response

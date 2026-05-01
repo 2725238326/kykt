@@ -117,7 +117,13 @@ Output:
 The next useful question is:
 
 ```text
-Should the next workflow lane be KYKT research-lane data model, deeper prompt/rules refinement, planned-only smoke-test details, or a second Dream3R thesis research cycle?
+Should the next workflow lane be backend research pipeline contract, deeper prompt/rules refinement, planned-only smoke-test details, or a second Dream3R thesis research cycle?
+```
+
+Correction after user feedback:
+
+```text
+Backend/research pipeline is the priority. Frontend is downstream only.
 ```
 
 ## Round 7

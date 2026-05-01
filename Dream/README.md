@@ -59,6 +59,7 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `QUESTION_LOG.md`: interview history and next questions.
 - `RESEARCH_PARADIGM.md`: the operating paradigm, research loop, evidence ladder, and user-discussion gates.
 - `RESEARCH_WORKFLOW.md`: operational workflow from source intake to implementation decision.
+- `COLLABORATION_ROADMAP.md`: human-agent collaboration path and near-term deployment sequence.
 - `RESEARCH_DATA_MODEL.md`: schema for sources, mechanisms, research units, decisions, and experiment plans.
 - `WORKFLOW_STATUS.md`: current workflow phase, active workstreams, and blocked decisions.
 - `PHASE1_RESEARCH_PLAN.md`: concrete plan for the first comprehensive research route survey.

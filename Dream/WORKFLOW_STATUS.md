@@ -59,6 +59,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Workstream | Status | Next artifact |
 |---|---|---|
 | Research workflow | active | `RESEARCH_WORKFLOW.md` |
+| Collaboration roadmap | active | `COLLABORATION_ROADMAP.md` |
 | Data model | active | `RESEARCH_DATA_MODEL.md` |
 | Source registry | seeded | `registry/source_registry.md` |
 | Research unit registry | seeded | `registry/research_unit_registry.md` |
@@ -67,7 +68,8 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Experiment planning | seeded | `experiments/EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | Frontend handoff prompt | active | `FRONTEND_DESIGN_HANDOFF_PROMPT.md` |
-| KYKT app integration | planned only | no app code changes yet |
+| KYKT backend integration | planned only | no backend service changes yet |
+| KYKT frontend integration | downstream only | no UI work unless backend contract exists |
 
 ## Blocked Until User Decision
 
@@ -84,9 +86,15 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 Choose the next workflow lane:
 
 ```text
-A. Build the Dream research lane data model for KYKT, no UI yet.
+A. Build the Dream backend research pipeline contract, no UI.
 B. Refine the master research prompt and agent rules.
 C. Prepare Phase 2 smoke-test plan in more detail, still no install.
 D. Start a second research cycle focused on one thesis branch.
-E. Prepare a Gemini CLI frontend handoff for a specific KYKT research-lane UI task.
+E. Prepare a Gemini CLI frontend handoff only after backend contract is ready.
+```
+
+Current recommendation:
+
+```text
+Start with A: Dream backend research pipeline contract, no UI.
 ```

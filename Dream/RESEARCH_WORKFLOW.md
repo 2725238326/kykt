@@ -176,7 +176,7 @@ Allowed:
 
 - build registries and templates
 - refine prompts and rules
-- prepare KYKT research-lane data model
+- prepare Dream backend research pipeline contracts
 - plan smoke tests
 - write decision memos
 

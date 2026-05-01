@@ -276,13 +276,68 @@ Current thesis name candidate:
 Dream3R
 ```
 
+## Backend-First Correction
+
+User correction:
+
+```text
+我们后端为主，前端这个又不是核心，你别跑偏了
+```
+
+Decision:
+
+```text
+Dream should prioritize backend/research-pipeline contracts.
+Frontend is downstream presentation only.
+```
+
+Current priority:
+
+- research data contracts
+- backend-owned registries
+- state transitions for source / RU / decision / experiment
+- API/task boundaries for later KYKT service integration
+- evidence and artifact reference rules
+- future agent automation hooks
+
+Current non-priority:
+
+- frontend UI implementation
+- visual polish
+- KYKT navigation changes
+- Gemini CLI work unless backend contracts are ready
+
 ## Next Workflow Choice
 
 The next useful decision is not "which model to install." It is which workflow lane to deepen first:
 
 ```text
-A. KYKT research-lane data model
+A. Dream backend research pipeline contract
 B. Master prompt and agent rule refinement
 C. Phase 2 smoke-test plan refinement without running it
 D. Second research cycle focused on the Dream3R thesis branch
+```
+
+## Collaboration Pathway
+
+Current collaboration roadmap:
+
+```text
+E:\kykt\Dream\COLLABORATION_ROADMAP.md
+```
+
+Recommended near-term sequence:
+
+```text
+1. Collaboration protocol
+2. Dream backend research pipeline contract
+3. Dream3R thesis validation cycle
+4. Teacher-facing storyboard
+5. Planned experiment selection
+```
+
+Current recommendation:
+
+```text
+Start next with Dream backend research pipeline contract, no UI implementation.
 ```
