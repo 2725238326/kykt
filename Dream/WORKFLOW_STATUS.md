@@ -72,6 +72,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Multi-track research canvas | active | `MULTI_TRACK_RESEARCH_CANVAS.md` |
 | Research graph / paper start | active | `RESEARCH_GRAPH_AND_PAPER_START.md` |
 | Branch comparison matrix | filled first comparative pass | `BRANCH_COMPARISON_MATRIX.md` |
+| Architecture mechanism intake | first-pass active | `ARCHITECTURE_MECHANISM_INTAKE.md` |
 | Frontend handoff prompt | active | `FRONTEND_DESIGN_HANDOFF_PROMPT.md` |
 | KYKT backend integration | support only | no backend service changes yet |
 | KYKT frontend integration | downstream only | no UI work unless research content and support contract exist |
@@ -92,14 +93,14 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 Choose the next research-content lane:
 
 ```text
-A. Review the filled branch comparison matrix and choose 2-3 branches for mechanism-spec drafting.
+A. Review the filled branch comparison matrix and mechanism intake map, then choose 2-3 branches for mechanism-spec drafting.
 B. Extend the failure-mode graph with more sources and composition edges before choosing branches.
-C. Define branch-neutral proxy metrics and action taxonomy, still with no reproduction.
-D. Mine frontier sources for weakly evidenced branches, especially event/cross-modal and active perception.
+C. Refine branch-neutral action taxonomy and proxy metrics, still with no reproduction.
+D. Mine frontier sources for weakly evidenced branches, especially event/cross-modal, active perception, and visual-prior mechanisms.
 ```
 
 Current recommendation:
 
 ```text
-Define branch-neutral proxy metrics and ask the user before deepening any single branch.
+Refine action taxonomy / proxy metrics, then ask the user before deepening any single branch.
 ```

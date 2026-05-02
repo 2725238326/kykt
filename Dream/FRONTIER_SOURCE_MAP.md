@@ -1,6 +1,6 @@
 # Frontier Source Map
 
-Last updated: 2026-05-01
+Last updated: 2026-05-02
 
 This is the first-pass source map for Dream Phase 1. It prioritizes primary sources: arXiv, CVF/OpenReview, official project pages, and official GitHub repositories.
 
@@ -86,6 +86,35 @@ This supports Dream's architecture-first framing.
 | [Interp3R](https://gist.science/paper/2603.14528) | 2026 | demo_enabler | Continuous-time pointmap interpolation using frames + events | secondary source currently | Needs primary arXiv verification; promising for continuous-time story |
 | [Event-3DGS](https://github.com/lanpokn/Event-3DGS) | 2024 | demo_enabler | Event-camera Gaussian Splatting pipeline | code | Research branch; hardware/data/pose preprocessing likely heavy |
 | [Next Best Sense](https://github.com/armlabstanford/NextBestSense) | 2025 | demo_enabler | Active sensing / next-best-view system with robot stack | code/docker claimed | Conceptually relevant, but too hardware-heavy for first demo |
+
+## Comparator Completion Pass 2026-05-02
+
+This pass records the comparator groups that must be carried into branch scoring and mechanism intake.
+
+| Comparator group | Sources / models | Primary failure modes | Dream use |
+|---|---|---|---|
+| Base pointmap / matching | DUSt3R, MASt3R, MASt3R-SfM | F3, F6 | baseline contracts for pointmap, matching, and alignment |
+| Many-view / sparse-view scale | Fast3R, MV-DUSt3R+ | F6, F3 | composer inputs and sparse/multiview capability cards |
+| Spatial memory / global pointmap | Spann3R, Point3R | F1, F6 | required comparators for any external-memory or global-pointmap claim |
+| Stateful / streaming 3R | CUT3R, STream3R, LONG3R | F1 | direct stateful baselines |
+| Memory / cache frontier | LoGeR, Mem3R, PAS3R, FILT3R, LongStream, OVGGT | F1, F3 | strongest pressure against generic memory claims |
+| Dynamic / 4D 3R | MonST3R, POMATO, D^2USt3R, Easi3R, RayMap3R | F2, F3 | dynamic branch comparators; object permanence must go beyond motion estimation |
+| Critic / test-time reasoning | Test3R, TTT3R, CTRL-style critic-revision | F3, F1 | geometry critic and revision-action comparators |
+| Visual asset / Gaussian output | Splatt3R, InstantSplat, NoPoSplat, 4DGS variants | F6, F2, demo | teacher-visible evidence surface, not automatically thesis novelty |
+| Guided / cross-modal | EAG3R, Event-3DGS, G-CUT3R, guided-prior methods | F5, F2, F3 | event/guided robustness branch and prior-conflict policy |
+| Active perception | NBV, active perception, NextBestSense-style systems | F4, F3 | keep as design/simulation-first future branch |
+
+New active intake artifact:
+
+```text
+ARCHITECTURE_MECHANISM_INTAKE.md
+```
+
+Use it to translate sparse attention, linear attention, SSM/Mamba, attention residuals, RL, continual learning, new visual features, segmentation/tracking/flow/VOS, Gaussian/4D, event, depth, IMU, LiDAR, and guided-prior mechanisms into:
+
+```text
+Failure mode -> Mechanism -> Action -> Proxy metric -> Comparator -> Evidence level
+```
 
 ## Initial Gaps
 

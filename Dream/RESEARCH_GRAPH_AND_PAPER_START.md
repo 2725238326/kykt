@@ -229,12 +229,12 @@ This pass keeps all major branches alive. It does not select a final thesis and 
 
 | Failure mode | Mechanism nodes | Source / comparator anchors | Conflict or caution | Candidate composition edges | Evidence path | Claim status |
 |---|---|---|---|---|---|---|
-| F1 Long-context drift / forgetting | persistent latent state; hybrid memory; external spatial pointer memory; keyframe-relative gauge; anchor protection; Kalman-style update | CUT3R; STream3R; LONG3R; LoGeR; Mem3R; PAS3R; FILT3R; LongStream; OVGGT; Point3R | generic "memory 3R" is already crowded; O(1) model state is not O(1) scene memory | C1, C2, C5, C8 | proxy policy simulation over frame/chunk metadata: update frequency, anchor retention, memory growth, predicted drift risk | source mechanisms paper-proven; Dream policy inferred; performance unknown |
-| F2 Dynamic-static entanglement | dynamic 4D pointmaps; temporal motion field; static/dynamic confidence split; object permanence memory; dynamic branch routing | MonST3R; POMATO; D^2USt3R; Easi3R; RayMap3R; 4DGS variants | dynamic pointmaps and training-free dynamic correction are already occupied | C3, C6, C9 | dynamic failure-case taxonomy plus simulated static/dynamic memory update policy | source mechanisms paper-proven; object permanence policy inferred |
-| F3 Hard-case geometric ambiguity | geometry critic; triplet / multiview consistency; hypothesis revision; adaptive compute; model rerouting; adapter budget trigger | Test3R; TTT3R; CTRL-style critic-revision; MASt3R-SfM; SLAM3R | critic-only reports are diagnostics, not architecture; revision action must be concrete | C2, C4, C7, C10 | non-learned critic report: reprojection residual, confidence conflict, pair/triplet inconsistency, retry or model-switch recommendation | consistency objectives paper-proven; Dream critic action set inferred |
+| F1 Long-context drift / forgetting | persistent latent state; hybrid memory; external spatial pointer memory; keyframe-relative gauge; anchor protection; Kalman-style update | Spann3R; CUT3R; STream3R; LONG3R; Point3R; LoGeR; Mem3R; PAS3R; FILT3R; LongStream; OVGGT | generic "memory 3R" is already crowded; O(1) model state is not O(1) scene memory | C1, C2, C5, C8 | proxy policy simulation over frame/chunk metadata: update frequency, anchor retention, memory growth, predicted drift risk | source mechanisms paper-proven; Dream policy inferred; performance unknown |
+| F2 Dynamic-static entanglement | dynamic 4D pointmaps; temporal motion field; static/dynamic confidence split; object permanence memory; dynamic branch routing | MonST3R; POMATO; D^2USt3R; Easi3R; RayMap3R; 4DGS variants; G-CUT3R as guided prior boundary | dynamic pointmaps and training-free dynamic correction are already occupied | C3, C6, C9 | dynamic failure-case taxonomy plus simulated static/dynamic memory update policy | source mechanisms paper-proven; object permanence policy inferred |
+| F3 Hard-case geometric ambiguity | geometry critic; triplet / multiview consistency; hypothesis revision; adaptive compute; model rerouting; adapter budget trigger | Test3R; TTT3R; CTRL-style critic-revision; MASt3R-SfM; SLAM3R; MV-DUSt3R+; G-CUT3R | critic-only reports are diagnostics, not architecture; revision action must be concrete | C2, C4, C7, C10 | non-learned critic report: reprojection residual, confidence conflict, pair/triplet inconsistency, retry or model-switch recommendation | consistency objectives paper-proven; Dream critic action set inferred |
 | F4 Passive observation limit | uncertainty map; next-best-view; information gain; route/revisit policy; active camera action | active perception / NBV literature; NextBestSense-style systems | robotics stack can dominate the research and raise sim-to-real burden | C11, C12 | design-only or simulation-only study: choose next view from 3R uncertainty without hardware | active perception principle paper-proven broadly; 3R-specific controller speculative |
 | F5 Sensor / modality fragility | event/RGB fusion; guided depth / pose / calibration priors; blur-free temporal signal; sensor-prior conflict check | EAG3R; Event-3DGS; G-CUT3R; event depth / reconstruction | obvious event-augmented pointmap framing is already emerging; hardware/data burden is high | C6, C10, C12 | dataset-only source analysis first: identify RGB failure cases where event or priors alter the evidence vector | event/guidance mechanisms paper-proven; Dream policy role inferred |
-| F6 Fragmented model ecology | capability cards; unified pointmap / pose / confidence contracts; composer routing; benchmark matrix; artifact evidence reports | DUSt3R; MASt3R; Fast3R; MonST3R; CUT3R; SLAM3R; Splatt3R; NoPoSplat; MV-DUSt3R+ | model routing alone may be system integration rather than paper-grade architecture | C4, C7, C8, C10 | capability matrix plus unified evidence report using existing KYKT/public metadata | model capabilities paper-proven or code-observed per source map; system value inferred |
+| F6 Fragmented model ecology | capability cards; unified pointmap / pose / confidence contracts; composer routing; benchmark matrix; artifact evidence reports | DUSt3R; MASt3R; Fast3R; Spann3R; MonST3R; CUT3R; STream3R; SLAM3R; MV-DUSt3R+; Splatt3R; InstantSplat; NoPoSplat | model routing alone may be system integration rather than paper-grade architecture | C4, C7, C8, C10 | capability matrix plus unified evidence report using existing KYKT/public metadata | model capabilities paper-proven or code-observed per source map; system value inferred |
 
 ### Mechanism Node Bank
 
@@ -254,6 +254,10 @@ This pass keeps all major branches alive. It does not select a final thesis and 
 | M12 | Unified evidence contract | pointmap, pose, confidence, artifact, report schema | incomparable outputs | common data model | weak comparison and demo disconnect | system-level test-time artifact contract | Composer / KYKT |
 | M13 | Uncertainty-driven active view | uncertainty map and view candidate state | passive missing-view failure | information gain | blind spots; poor trajectory | simulation/test-time planning first | Active Perception |
 | M14 | Adapter / self-update budget | restricted adapter or fast-weight delta | full fine-tuning | critic-gated update scope | scene/domain shift | test-time adaptation only if state actually changes | Continual |
+| M15 | Sparse / linear context budget | sparse high-value views, keyframes, cache tokens, or map cells | dense full-context attention | retrieval or compression prior | long-context compute blow-up; loop inconsistency | mostly architecture-level; proxy policy can be test-time | Memory / Composer |
+| M16 | Attention residual / hidden-state reuse | valuable prior hidden states or residual representations | recomputing or discarding useful context | residual state reuse | early-frame loss; keyframe forgetting | architecture-level; proxy maps to protected anchors | Memory / Architecture transfer |
+| M17 | Visual prior / semantic failure signal | segmentation, tracking, flow, VOS, or feature priors | purely geometry-blind routing | object, motion, or feature signal | dynamic pollution; repeated structure ambiguity | often precomputed at test time; training optional later | Dynamic / Critic / Composer |
+| M18 | Policy learning / RL action selector | learned policy over actions or view choices | fixed hand-written routing once rewards exist | reward from uncertainty, conflict, or route success | passive observation; wrong action choice | later learned policy; first proxy is non-RL | Active / Critic / Composer |
 
 ### Composition Edges
 
@@ -271,6 +275,10 @@ This pass keeps all major branches alive. It does not select a final thesis and 
 | C10 | Guided priors + critic conflict check | M10 + M6 -> F5/F3 | depth/pose/calibration priors help only if conflicts are detected and reported | source analysis of guided 3R plus synthetic conflict examples | inferred |
 | C11 | Active view + uncertainty map | M13 -> F4 | system requests the next observation that reduces reconstruction uncertainty | simulation-only next-view choice over mock uncertainty map | speculative |
 | C12 | Active sensing + event/guided mode | M13 + M10 -> F4/F5 | action can choose not only viewpoint but also sensing mode | design-only until hardware/sim route exists | speculative |
+| C13 | Sparse context + anchor protection | M15 + M5 -> F1 | retrieves global context only when anchors or loop cues indicate value | compare fixed window, fixed cache, and sparse retrieval policies | inferred |
+| C14 | Attention residual + external memory | M16 + M3 -> F1/F3 | preserves hidden evidence for revisits while external memory stores spatial anchors | simulate residual reuse as protected anchor references | speculative |
+| C15 | Visual prior + dynamic memory split | M17 + M8/M9 -> F2 | segmentation/tracking/flow can make object permanence measurable | dynamic pollution and identity-consistency annotation | inferred |
+| C16 | RL policy + critic/composer actions | M18 + M6/M11/M13 -> F3/F4/F6 | learned policy may choose verify, revise, reroute, or request view after proxy rewards exist | start with non-RL action logs and route-regret metrics | speculative |
 
 ### Branch-Neutral Evidence Ladder
 
@@ -349,28 +357,20 @@ We instantiate this formulation as a research graph and use it to derive candida
 
 ## Next Concrete Artifact
 
-Create:
+The branch matrix now has a first comparative pass. The next concrete artifact is refinement of:
 
 ```text
-BRANCH_COMPARISON_MATRIX.md
+ARCHITECTURE_MECHANISM_INTAKE.md
 ```
 
-Required columns:
+Required next refinements:
 
-- branch
-- failure modes addressed
-- closest competitors
-- mechanism ingredients
-- possible compositions
-- novelty gap
-- smallest evidence path
-- teacher-facing demo
-- engineering cost
-- top-conference risk
-- KYKT support path
-- recommendation
+- tighten the shared action taxonomy
+- define proxy metrics precisely enough to support L2 evidence
+- map each action to comparator groups and branch candidates
+- identify which 2-3 branches deserve user-approved mechanism specs
 
-This is the correct next step before mechanism spec or reproduction.
+This remains the correct next step before mechanism spec or reproduction.
 
 ## Research Rule
 

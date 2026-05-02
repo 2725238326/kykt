@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-01
+Last updated: 2026-05-02
 
 ## Purpose
 
@@ -70,6 +70,7 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `MULTI_TRACK_RESEARCH_CANVAS.md`: branch pool for comparing multiple research directions before selecting one.
 - `RESEARCH_GRAPH_AND_PAPER_START.md`: graph-based research method and top-conference paper starting scaffold.
 - `BRANCH_COMPARISON_MATRIX.md`: scaffold for comparing candidate research branches before deepening one.
+- `ARCHITECTURE_MECHANISM_INTAKE.md`: branch-neutral intake map for sparse/linear attention, SSM, RL, continual learning, attention residuals, new visual methods, sensor priors, actions, and proxy metrics.
 - `COLLABORATION_ROADMAP.md`: human-agent collaboration path and near-term deployment sequence.
 - `RESEARCH_DATA_MODEL.md`: schema for sources, mechanisms, research units, decisions, and experiment plans.
 - `WORKFLOW_STATUS.md`: current workflow phase, active workstreams, and blocked decisions.

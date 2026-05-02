@@ -39,6 +39,7 @@ Then inspect the most relevant active file for the requested task:
 - research source work: `FRONTIER_SOURCE_MAP.md`
 - graph-based research planning: `RESEARCH_GRAPH_AND_PAPER_START.md`
 - branch comparison: `BRANCH_COMPARISON_MATRIX.md`
+- architecture mechanism intake / action taxonomy / proxy metrics: `ARCHITECTURE_MECHANISM_INTAKE.md`
 - multi-track direction control: `MULTI_TRACK_RESEARCH_CANVAS.md`
 - idea synthesis: `RESEARCH_UNIT_BANK.md`
 - scoring: `IDEA_SCOREBOARD.md`
@@ -263,6 +264,7 @@ When you make durable progress, update the relevant files:
 - scoring: `IDEA_SCOREBOARD.md`
 - research graph and paper scaffold: `RESEARCH_GRAPH_AND_PAPER_START.md`
 - branch comparison: `BRANCH_COMPARISON_MATRIX.md`
+- architecture mechanism intake / action taxonomy / proxy metrics: `ARCHITECTURE_MECHANISM_INTAKE.md`
 - multi-track canvas: `MULTI_TRACK_RESEARCH_CANVAS.md`
 - decisions: `decisions/` and `registry/decision_registry.md`
 - cycle log: `cycles/`

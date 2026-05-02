@@ -1,6 +1,6 @@
 # Source Registry
 
-Last updated: 2026-05-01
+Last updated: 2026-05-02
 
 Status: seeded from Phase 1 source map. This file is the lightweight index; detailed notes stay in `FRONTIER_SOURCE_MAP.md` and cycle logs.
 
@@ -25,6 +25,7 @@ linked_units:
 | SRC-2024-001 | DUSt3R | https://github.com/naver/dust3r | 2024 | direct_3r | paper, code, checkpoints, demo | pose-free pointmap reconstruction | P0 baseline | RU-002, RU-014 |
 | SRC-2024-002 | MASt3R | https://github.com/naver/mast3r | 2024 | direct_3r | paper, code, checkpoints, demo | 3D-grounded matching and sparse global alignment | P1 baseline | RU-002 |
 | SRC-2024-003 | MonST3R | https://github.com/Junyi42/monst3r | 2024 | direct_3r | paper, code, demo | dynamic-video pointmap reconstruction | P1 dynamic | RU-013 |
+| SRC-2024-011 | Spann3R | https://github.com/HengyiWang/spann3r | 2024 | direct_3r | paper, code | spatial memory for global pointmap prediction | P1 memory comparator | RU-001, RU-004, RU-014, RU-015 |
 | SRC-2025-001 | Fast3R | https://github.com/facebookresearch/fast3r | 2025 | direct_3r | paper, code, checkpoint, demo | many images in one forward pass | P1 scale | RU-002, RU-014 |
 | SRC-2025-002 | CUT3R | https://github.com/CUT3R/CUT3R | 2025 | direct_3r | paper, code, checkpoints, demo | persistent-state continuous 3D perception | P2 architecture baseline | RU-001, RU-014 |
 | SRC-2025-003 | Point3R | https://github.com/YkiWu/Point3R | 2025 | direct_3r | paper, code, checkpoint | explicit spatial pointer memory | P2 comparator | RU-004, RU-014 |
@@ -50,6 +51,7 @@ linked_units:
 | SRC-2026-005 | FILT3R | https://arxiv.org/abs/2603.18493 | 2026 | direct_3r | paper, code promised | Kalman-style latent filtering for streaming 3R | mechanism | RU-001, RU-015 |
 | SRC-2026-006 | LongStream | https://arxiv.org/abs/2602.13172 | 2026 | direct_3r | paper, project | gauge-decoupled streaming visual geometry and cache refresh | comparator | RU-010, RU-014, RU-015 |
 | SRC-2026-007 | OVGGT | https://arxiv.org/abs/2603.05959 | 2026 | visual_geometry | paper, project, code | constant-budget cache compression and dynamic anchor protection | mechanism | RU-010, RU-014, RU-015 |
+| SRC-2026-008 | RayMap3R | https://raymap3r.github.io/ | 2026 | dynamic_3r | project, code claimed | inference-time RayMap for dynamic streaming reconstruction | comparator, verify before reproduction | RU-013, RU-015 |
 | SRC-2024-009 | MASt3R-SfM | https://arxiv.org/abs/2409.19152 | 2024 | direct_3r | paper, code via MASt3R ecosystem | matching, retrieval, and global SfM alignment | comparator | RU-002, RU-015 |
 | SRC-2024-010 | SLAM3R | https://arxiv.org/abs/2412.09401 | 2024 | direct_3r | paper, code | sliding-window dense SLAM using pointmap prediction and registration | comparator | RU-014, RU-015 |
 | SRC-2025-013 | Easi3R | https://arxiv.org/abs/2503.24391 | 2025 | dynamic_3r | paper, project | training-free dynamic adaptation / motion separation | comparator | RU-013, RU-015 |

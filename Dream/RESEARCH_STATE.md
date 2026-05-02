@@ -504,3 +504,53 @@ Define a branch-neutral action taxonomy and proxy metrics:
 conflict detection, action entropy, anchor retention, memory growth, dynamic pollution,
 route regret, and teacher-demo clarity.
 ```
+
+## Cycle 005 Discussion Synthesis
+
+Started:
+
+```text
+CYCLE-20260502-002: Research Preparation And Mechanism Intake Discussion
+```
+
+Discussion additions that must not be lost:
+
+- The comparator map must be expanded. Spann3R is an important memory / spatial-context comparator, and Point3R, SLAM3R, MV-DUSt3R+, RayMap3R, and G-CUT3R should also be placed into the appropriate branch comparisons.
+- Sparse attention, linear attention, SSM/Mamba, attention residuals, hidden-state reuse, KDA-like finite-state memory, RL, active perception, continual learning, adapter updates, new visual backbones, segmentation, tracking, optical flow, VOS, Gaussian/4D representations, event, depth, IMU, LiDAR, and guided-prior methods should enter Dream's mechanism bank.
+- These methods should not be added as buzzwords. Each must be mapped through `Failure mode -> Mechanism -> Action -> Proxy metric -> Comparator -> Evidence level`.
+- Combining strengths of several new 3R models is important, but has two layers:
+  - 3R Composer L1: system composer / model router / capability cards / evidence report.
+  - 3R Composer L2: mechanism distillation into unified 3R spatial-intelligence actions.
+- L1 is the strongest KYKT and demo support layer. L2 is the stronger paper-novelty path.
+
+Immediate path:
+
+```text
+Comparator completion
+-> Architecture mechanism intake
+-> Action taxonomy
+-> Proxy metrics
+-> Branch shortlist
+-> Mechanism spec
+-> Planned experiment
+```
+
+Follow-up progress:
+
+- Created `ARCHITECTURE_MECHANISM_INTAKE.md` as the active branch-neutral intake map for broad architecture and visual-method candidates.
+- Updated comparator anchors in `RESEARCH_GRAPH_AND_PAPER_START.md` and `BRANCH_COMPARISON_MATRIX.md` to include Spann3R and related missing comparators.
+- Updated `FRONTIER_SOURCE_MAP.md` with a comparator completion pass.
+- Updated `registry/source_registry.md` with Spann3R and RayMap3R lightweight entries.
+- Updated `AGENT_MASTER_PROMPT.md`, `README.md`, and `WORKFLOW_STATUS.md` so future Dream agents inspect the mechanism-intake artifact when relevant.
+
+Current near-term research object:
+
+```text
+Shared action taxonomy + proxy metric bank across all branches.
+```
+
+Status:
+
+```text
+first-pass drafted in ARCHITECTURE_MECHANISM_INTAKE.md, needs refinement before branch shortlist.
+```
