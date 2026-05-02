@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-05-02T05:17:00.023Z",
-  "turn_count": 194,
-  "last_progress_at": "2026-05-02T05:17:00.023Z",
-  "last_agent_output": "F1-F6 是我们给 3R / spatial intelligence 前沿研究整理出来的六类核心失败模式。它们不是模型名字，而是“现代 3R 系统为什么会失败”的问题分类。后续所有机制、分支、实验"
+  "last_turn_at": "2026-05-02T10:33:04.366Z",
+  "turn_count": 196,
+  "last_progress_at": "2026-05-02T10:33:04.366Z",
+  "last_agent_output": "对，确实还缺一些 comparator。比如 **Spann3R** 应该放进长上下文 / spatial memory 这一组里；另外 **Point3R、SLAM3R、MV-DUSt3R+、Ray"
 }
