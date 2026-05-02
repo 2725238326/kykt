@@ -39,7 +39,9 @@ Then inspect the most relevant active file for the requested task:
 - research source work: `FRONTIER_SOURCE_MAP.md`
 - graph-based research planning: `RESEARCH_GRAPH_AND_PAPER_START.md`
 - branch comparison: `BRANCH_COMPARISON_MATRIX.md`
+- branch shortlist / finalist decision surface: `BRANCH_SHORTLIST_DECISION_SURFACE.md`
 - architecture mechanism intake / action taxonomy / proxy metrics: `ARCHITECTURE_MECHANISM_INTAKE.md`
+- compact action taxonomy / proxy validation protocols: `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
 - multi-track direction control: `MULTI_TRACK_RESEARCH_CANVAS.md`
 - idea synthesis: `RESEARCH_UNIT_BANK.md`
 - scoring: `IDEA_SCOREBOARD.md`
@@ -264,7 +266,9 @@ When you make durable progress, update the relevant files:
 - scoring: `IDEA_SCOREBOARD.md`
 - research graph and paper scaffold: `RESEARCH_GRAPH_AND_PAPER_START.md`
 - branch comparison: `BRANCH_COMPARISON_MATRIX.md`
+- branch shortlist / finalist decision surface: `BRANCH_SHORTLIST_DECISION_SURFACE.md`
 - architecture mechanism intake / action taxonomy / proxy metrics: `ARCHITECTURE_MECHANISM_INTAKE.md`
+- compact action taxonomy / proxy validation protocols: `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
 - multi-track canvas: `MULTI_TRACK_RESEARCH_CANVAS.md`
 - decisions: `decisions/` and `registry/decision_registry.md`
 - cycle log: `cycles/`
@@ -351,17 +355,17 @@ If the user asks for audit/review:
 Unless the user gives a different priority, the next workflow lanes are:
 
 ```text
-A. Fill BRANCH_COMPARISON_MATRIX.md from the failure-mode graph.
-B. Expand RESEARCH_GRAPH_AND_PAPER_START.md with new nodes/edges/compositions.
-C. Mine frontier sources for missing mechanisms and update the source map.
-D. Select 2-3 finalist branches only after comparison, with user approval.
+A. Ask the user to choose finalists from BRANCH_SHORTLIST_DECISION_SURFACE.md.
+B. If the user does not choose yet, refine proxy case-card templates from ACTION_TAXONOMY_AND_PROXY_METRICS.md.
+C. Expand RESEARCH_GRAPH_AND_PAPER_START.md with missing nodes/edges/compositions only when the shortlist evidence is weak.
+D. Mine frontier sources for missing mechanisms when comparator coverage is weak.
 E. Draft a mechanism spec only for an approved finalist branch.
 ```
 
 Prefer A by default.
-Prefer B when the graph is too sparse or linear.
-Prefer C when a branch lacks comparator evidence.
-Prefer D only after the comparison matrix is filled.
+Prefer B when the user wants more validation before choosing finalists.
+Prefer C when the graph is too sparse or linear.
+Prefer D when a branch lacks comparator evidence.
 Prefer E only after the user agrees to deepen a finalist.
 
 Frontend note:

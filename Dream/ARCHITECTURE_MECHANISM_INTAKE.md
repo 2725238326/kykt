@@ -4,9 +4,25 @@ Last updated: 2026-05-02
 
 Status: first-pass intake map; not a thesis decision.
 
+Companion artifact:
+
+```text
+ACTION_TAXONOMY_AND_PROXY_METRICS.md
+```
+
+Use the companion file for the compact A1-A8 action set and proxy metric protocols.
+
 ## Purpose
 
 This file prevents Dream from losing broad architecture and visual-method candidates while also preventing buzzword-driven research.
+
+The mechanism pool also has writing value. Broad, well-organized intake helps Dream write a stronger paper by:
+
+- showing the field is fragmented across memory, reasoning, dynamics, sensing, action, and rendering
+- giving the related-work section a principled taxonomy instead of a flat paper list
+- making novelty claims more defensible because each mechanism is placed against comparator pressure
+- preserving high-writing-value mechanisms even when their first engineering path is not the cheapest
+- creating a vocabulary for paper figures: failure modes, actions, evidence signals, and composition edges
 
 Every new mechanism family must be translated through:
 
@@ -15,6 +31,8 @@ Failure mode -> Mechanism -> Action -> Proxy metric -> Comparator -> Evidence le
 ```
 
 Do not promote a mechanism to a branch unless it clearly addresses a 3R failure mode and has a plausible evidence path.
+
+Do not discard a mechanism only because it is not immediately implementable. If it improves paper framing, comparator coverage, or a future evidence path, keep it as a writing / taxonomy asset with the correct evidence label.
 
 ## Comparator Completion Map
 
@@ -50,6 +68,14 @@ Do not promote a mechanism to a branch unless it clearly addresses a 3R failure 
 | VLM / semantic failure classification | classify scene regimes or failure causes using language/semantic priors | F3, F6 | classify_failure_mode; reroute_model; explain_report | failure-label accuracy; route regret; demo clarity | VLM reasoning work, composer evidence reports | speculative for 3R | promote only as support signal, not geometry substitute |
 
 ## Shared Action Taxonomy Draft
+
+This draft has been compacted into A1-A8 in:
+
+```text
+ACTION_TAXONOMY_AND_PROXY_METRICS.md
+```
+
+Keep the detailed draft below as vocabulary support.
 
 | Action | Meaning | Main failure modes | Minimum proxy metric | Branches using it |
 |---|---|---|---|---|

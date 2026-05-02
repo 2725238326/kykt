@@ -72,7 +72,9 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Multi-track research canvas | active | `MULTI_TRACK_RESEARCH_CANVAS.md` |
 | Research graph / paper start | active | `RESEARCH_GRAPH_AND_PAPER_START.md` |
 | Branch comparison matrix | filled first comparative pass | `BRANCH_COMPARISON_MATRIX.md` |
+| Branch shortlist decision surface | draft ready for user decision | `BRANCH_SHORTLIST_DECISION_SURFACE.md` |
 | Architecture mechanism intake | first-pass active | `ARCHITECTURE_MECHANISM_INTAKE.md` |
+| Action taxonomy / proxy metrics | first compact pass | `ACTION_TAXONOMY_AND_PROXY_METRICS.md` |
 | Frontend handoff prompt | active | `FRONTEND_DESIGN_HANDOFF_PROMPT.md` |
 | KYKT backend integration | support only | no backend service changes yet |
 | KYKT frontend integration | downstream only | no UI work unless research content and support contract exist |
@@ -93,14 +95,24 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 Choose the next research-content lane:
 
 ```text
-A. Review the filled branch comparison matrix and mechanism intake map, then choose 2-3 branches for mechanism-spec drafting.
-B. Extend the failure-mode graph with more sources and composition edges before choosing branches.
-C. Refine branch-neutral action taxonomy and proxy metrics, still with no reproduction.
+A. Prepare the branch shortlist decision surface using A1-A8 actions and proxy metrics.
+B. Review the filled branch comparison matrix and mechanism intake map, then choose 2-3 branches for mechanism-spec drafting.
+C. Extend the failure-mode graph with more sources and composition edges before choosing branches.
 D. Mine frontier sources for weakly evidenced branches, especially event/cross-modal, active perception, and visual-prior mechanisms.
 ```
 
 Current recommendation:
 
 ```text
-Refine action taxonomy / proxy metrics, then ask the user before deepening any single branch.
+Ask the user to choose finalist branches from `BRANCH_SHORTLIST_DECISION_SURFACE.md` before deepening any single branch.
 ```
+
+## Guidance File Sync Rule
+
+When Dream creates or promotes a workflow artifact, update the relevant guidance files in the same pass:
+
+- `AGENT_MASTER_PROMPT.md`
+- `README.md`
+- `WORKFLOW_STATUS.md`
+- `RESEARCH_STATE.md`
+- current cycle log under `cycles/`

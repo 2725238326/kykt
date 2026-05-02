@@ -20,6 +20,16 @@ The user's research intuition is that useful innovation may come from unexpected
 
 A linear branch list is useful for organization, but insufficient for discovery.
 
+The graph is also a writing device. It keeps many new mechanisms in scope not because Dream should implement all of them, but because a strong paper needs to show how the field's partial solutions relate:
+
+```text
+memory mechanisms, critic mechanisms, dynamic mechanisms, sensor priors,
+active perception, continual adaptation, sparse/linear attention,
+and visual asset methods can be organized as actions over failure modes.
+```
+
+This helps convert a broad source pool into a paper taxonomy and a defensible novelty gap.
+
 ## Top-Conference Writing Principle
 
 A strong CVPR / ICCV style paper should not begin as:

@@ -21,3 +21,4 @@ Status: seeded.
 | DEC-20260501-011 | 2026-05-01 | thesis candidate | Reframe Dream3R toward GEM-3R executive memory as one candidate branch | proposed branch, not final | yes before final thesis | `decisions/DEC-20260501-011-dream3r-thesis-reframe.md` |
 | DEC-20260502-001 | 2026-05-02 | research process | Compare multiple research branches before betting on one direction | accepted | no | `decisions/DEC-20260502-001-multi-track-before-bet.md` |
 | DEC-20260502-002 | 2026-05-02 | research process | Track broad architecture and visual methods through a failure-mode/action/proxy-metric intake map before promoting them to branches | accepted | no | `decisions/DEC-20260502-002-architecture-mechanism-intake.md` |
+| DEC-20260502-003 | 2026-05-02 | workflow hygiene | Keep guidance files synchronized whenever a workflow artifact is created or promoted | accepted | no | `WORKFLOW_STATUS.md` |

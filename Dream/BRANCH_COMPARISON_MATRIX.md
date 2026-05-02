@@ -63,8 +63,18 @@ No branch is discarded. No finalist set is approved yet.
 
 ## Next Action
 
-Before drafting a mechanism spec for any single branch:
+The action taxonomy and proxy metric first pass now lives in:
 
-1. Add a compact action taxonomy shared by Memory, Critic, Dynamic, Composer, and Active branches.
-2. Define branch-neutral proxy metrics: conflict detection, action entropy, anchor retention, memory growth, dynamic pollution, route regret, demo clarity.
-3. Ask the user which 2-3 branches should be deepened after this comparison pass.
+```text
+ACTION_TAXONOMY_AND_PROXY_METRICS.md
+```
+
+Before drafting a mechanism spec for any single branch, prepare a shortlist decision surface:
+
+1. one-page summary per candidate branch
+2. owned A1-A8 actions
+3. weakest comparator pressure
+4. first proxy test
+5. teacher demo form
+6. fail-fast condition
+7. ask the user which 2-3 branches should be deepened

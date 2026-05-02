@@ -554,3 +554,116 @@ Status:
 ```text
 first-pass drafted in ARCHITECTURE_MECHANISM_INTAKE.md, needs refinement before branch shortlist.
 ```
+
+## Cycle 006 Action Taxonomy And Proxy Metrics
+
+Started:
+
+```text
+ACTION_TAXONOMY_AND_PROXY_METRICS.md
+```
+
+Progress:
+
+- Collapsed the broad action vocabulary into eight core Dream actions:
+  - A1 State Update Control
+  - A2 Spatial Memory Governance
+  - A3 Context / Anchor Budgeting
+  - A4 Geometry Verification
+  - A5 Repair / Reroute Decision
+  - A6 Dynamic/Object State Separation
+  - A7 Prior / Modality Arbitration
+  - A8 Evidence Acquisition / Adaptation Budget
+- Defined an evidence signal vector for frame/chunk/model-output/sample-regime reasoning.
+- Defined L2 proxy metric protocols:
+  - P1 conflict detection
+  - P2 anchor retention
+  - P3 memory growth and usefulness
+  - P4 dynamic pollution
+  - P5 route regret
+  - P6 action entropy
+  - P7 uncertainty reduction / view gain
+  - P8 adaptation benefit versus forgetting risk
+
+First research inference:
+
+```text
+The near-term finalist pool should probably combine:
+Geometry Critic / System-2 3R
++ Executive Memory / State Governance
++ 3R Composer as evidence infrastructure.
+```
+
+Important caveat:
+
+```text
+This is an inference, not a decision.
+Dynamic Object Permanence remains a close candidate and should not be discarded.
+User approval is still required before drafting any finalist mechanism spec.
+```
+
+Next research object:
+
+```text
+Branch shortlist decision surface:
+one-page summary per branch, owned A1-A8 actions, weakest comparator pressure,
+first proxy test, teacher demo form, and fail-fast condition.
+```
+
+Completed:
+
+```text
+BRANCH_SHORTLIST_DECISION_SURFACE.md
+```
+
+Provisional synthesis:
+
+- Geometry Critic / System-2 3R and Executive Memory / State Governance are the strongest immediate finalists.
+- 3R Composer / Unified Model Ecology is the strongest evidence infrastructure and likely support layer.
+- Dynamic Object Permanence / 4D Memory should be added as a third finalist if the user wants to preserve the strongest F2 / visual paper story before mechanism specs.
+
+Current recommendation:
+
+```text
+Ask the user to choose one of:
+A. Geometry Critic + Executive Memory, Composer as support
+B. Add Dynamic Object Permanence as third finalist
+C. Keep all six branches and prepare proxy case-card templates
+D. Mine more sources before choosing finalists
+```
+
+Guidance-sync rule:
+
+```text
+When a workflow artifact is created or promoted, update AGENT_MASTER_PROMPT.md,
+README.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md, and the current cycle log.
+```
+
+## Paper-Writing Value Of Broad Mechanism Intake
+
+User correction:
+
+```text
+Choosing many new mechanisms also helps us write the paper.
+```
+
+Decision:
+
+```text
+Mechanism intake should be judged not only by immediate implementation feasibility,
+but also by paper-writing value.
+```
+
+Interpretation:
+
+- Sparse attention, RL, continual learning, attention residuals, visual priors, event/guided sensing, dynamic/4D methods, and 3R model combinations help form a stronger related-work taxonomy.
+- The point is not to implement everything.
+- The point is to show the field's partial solutions and define Dream's control vocabulary over memory, verification, dynamics, priors, action, and evidence.
+- A mechanism can remain in the intake map as a writing / taxonomy asset even if it is not selected for the first prototype.
+- Branch shortlist decisions should score both evidence feasibility and writing value.
+
+Files updated:
+
+- `ARCHITECTURE_MECHANISM_INTAKE.md`
+- `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+- `RESEARCH_GRAPH_AND_PAPER_START.md`
