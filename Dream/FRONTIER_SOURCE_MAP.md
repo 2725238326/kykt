@@ -1,6 +1,6 @@
 # Frontier Source Map
 
-Last updated: 2026-05-02
+Last updated: 2026-05-02 (cycle 005)
 
 This is the first-pass source map for Dream Phase 1. It prioritizes primary sources: arXiv, CVF/OpenReview, official project pages, and official GitHub repositories.
 
@@ -176,3 +176,64 @@ cross-session revisitable scene memory,
 dynamic object permanence,
 and a unified executive contract across reconstruction / matching / localization / SLAM.
 ```
+
+## Cycle 005 Source Mining Pass (2026-05-02)
+
+Goal: fill weak comparator coverage for branches beyond direct 3R: visual priors, metric-depth priors, active perception / NBV on NeRF/3DGS, and event-camera visual odometry.
+
+All arXiv IDs in this section were verified by web search in CYCLE-20260502-005. Code / license / checkpoint / demo verification is still pending per the Initial Gaps rule above.
+
+### Visual Priors (semantic, tracking, foundation features)
+
+| Source | Year | Tag | Mechanism | Evidence | Dream relevance |
+|---|---:|---|---|---|---|
+| [DINOv2](https://arxiv.org/abs/2304.07193) | 2023 | architecture_transfer | Self-supervised all-purpose visual features trained at scale; strong without finetuning | paper, code, checkpoints | Feature / semantic prior for A6 split_dynamic_static and A7 add_sensor_prior; supports dynamic branch and critic conflict check |
+| [CoTracker](https://arxiv.org/abs/2307.07635) | 2023 | architecture_transfer | Transformer that tracks many 2D points jointly in long video, exploiting point dependencies | paper, code, checkpoints | Object identity and motion evidence for F2; candidate signal for A6 preserve_object_identity |
+| [SAM 2](https://arxiv.org/abs/2408.00714) | 2024 | architecture_transfer | Promptable segmentation foundation model for images and videos with a data engine | paper, code, checkpoints, demo | Mask prior for dynamic/static separation; supports object permanence evidence without Dream training |
+| [SpatialTracker](https://arxiv.org/abs/2404.04319) | 2024 | architecture_transfer | Lifts 2D pixel tracking to 3D space to handle occlusion and discontinuity | paper, code | 3D-aware track prior for F2 and F3; follow-up SpatialTrackerV2 (2507.12462) unifies tracking, depth, and pose |
+
+### Monocular Metric-Depth Priors
+
+| Source | Year | Tag | Mechanism | Evidence | Dream relevance |
+|---|---:|---|---|---|---|
+| [Depth Anything V2](https://arxiv.org/abs/2406.09414) | 2024 | architecture_transfer | Large-scale monocular depth foundation model producing finer and more robust depth | paper, code, checkpoints | Depth prior for A7 add_sensor_prior and A7 check_prior_conflict; relates to F3 and F5 |
+| [Depth Pro](https://arxiv.org/abs/2410.02073) | 2024 | architecture_transfer | Zero-shot metric monocular depth with sharp boundaries at near-real-time speed | paper, code, checkpoints | Metric scale prior for A1 state-update and A7 add_sensor_prior; directly relevant to gauge/anchor reasoning |
+| [Metric3D v2](https://arxiv.org/abs/2404.15506) | 2024 | architecture_transfer | Zero-shot metric depth and surface normal from a single image | paper, code | Joint depth/normal prior; supports cross-modal branch and geometry critic |
+
+### Active Perception / Next-Best-View
+
+| Source | Year | Tag | Mechanism | Evidence | Dream relevance |
+|---|---:|---|---|---|---|
+| [ActiveNeRF](https://arxiv.org/abs/2209.08546) | 2022 | architecture_transfer | Uncertainty-aware NeRF with active view selection via uncertainty estimation | paper, ECCV | Canonical NBV-in-neural-field anchor; supports A8 request_new_view |
+| [FisherRF](https://arxiv.org/abs/2311.17874) | 2023/2024 | architecture_transfer | Fisher-information based active view selection and uncertainty quantification for radiance fields | paper, code, ECCV 2024 | Principled view-gain signal; required comparator for A8 proxy P7 |
+| [ActiveSplat](https://arxiv.org/abs/2410.21955) | 2024 | architecture_transfer | Online active mapping with Gaussian splatting plus viewpoint selection and path planning | paper, RA-L 2025, project page | Active-3DGS anchor; strong teacher-demo path for A8 once mock simulation is designed |
+| [ActiveGS](https://arxiv.org/abs/2412.17769) | 2024 | architecture_transfer | Active scene reconstruction using Gaussian splatting | paper | Comparator for ActiveSplat and FisherRF; supports design-only A8 proxy design |
+
+### Event / Cross-Modal
+
+| Source | Year | Tag | Mechanism | Evidence | Dream relevance |
+|---|---:|---|---|---|---|
+| [DEVO (Deep Event Visual Odometry)](https://arxiv.org/abs/2312.09800) | 2023 | architecture_transfer | Learning-based monocular event-only VO with patch selector and pooled multinomial | paper, RA-L 2023 | Event-only pose / motion prior; required comparator for any event-augmented 3R claim (paired with EAG3R, Event-3DGS) |
+
+### Existing Entry Clarification
+
+`Next Best Sense` entry above refers to arXiv paper `2410.04680` ("Next Best Sense: Guiding Vision and Touch with FisherRF for 3D Gaussian Splatting"). It is a robotics extension that uses FisherRF as a component, not a standalone NBV method.
+
+### Gap Closure Summary
+
+| Target gap | Previous coverage | New anchors |
+|---|---|---|
+| Visual priors (A6/A7 semantic, tracking) | intake-only | DINOv2, CoTracker, SAM 2, SpatialTracker |
+| Monocular depth priors (A7) | only indirectly via G-CUT3R | Depth Anything V2, Depth Pro, Metric3D v2 |
+| Active perception / NBV (A8) | NextBestSense only | ActiveNeRF, FisherRF, ActiveSplat, ActiveGS |
+| Event-camera 3R (A7 F5) | EAG3R, Event-3DGS, Interp3R | DEVO (event-only VO baseline) |
+
+### Still-Open Sub-Gaps
+
+- IMU / LiDAR guided 3R beyond G-CUT3R
+- event-based dense reconstruction (beyond Event-3DGS) if we target cross-modal branch
+- long-video tracking benchmarks relevant to F2 evaluation
+- diffusion-prior 3R (if we later justify a generative-prior arm)
+- VLM / scene-regime classification for composer L2
+
+These gaps are noted, not scheduled. They should be filled only when a branch that owns them is chosen for mechanism spec drafting.

@@ -1,6 +1,6 @@
 # Architecture Mechanism Intake
 
-Last updated: 2026-05-02
+Last updated: 2026-05-02 (cycle 005)
 
 Status: first-pass intake map; not a thesis decision.
 
@@ -47,7 +47,10 @@ Do not discard a mechanism only because it is not immediately implementable. If 
 | Critic / test-time reasoning | Test3R, TTT3R, CTRL-style critic-revision | F3, F1 | geometric consistency, test-time update, critic-revision analogy | critic must trigger a concrete action, not only diagnose |
 | Visual asset / Gaussian output | Splatt3R, InstantSplat, NoPoSplat, 4DGS variants | F6, F2, demo | pose-free Gaussian or NVS output, teacher-visible artifacts | demo surface is valuable but not alone a thesis |
 | Guided / cross-modal | EAG3R, Event-3DGS, G-CUT3R, depth / pose / calibration priors | F5, F2, F3 | event/RGB fusion and guided reconstruction priors | hardware/data burden and already-emerging event 3R framing |
-| Active perception | NBV, active perception, NextBestSense-style systems | F4, F3 | view selection, information gain, sensing policy | keep simulation/design-first; avoid robot-stack takeover |
+| Active perception | NBV, active perception, NextBestSense-style systems, ActiveNeRF, FisherRF, ActiveSplat, ActiveGS | F4, F3 | view selection, information gain, sensing policy, Fisher-information view-gain | keep simulation/design-first; avoid robot-stack takeover |
+| Visual priors (semantic / tracking) | DINOv2, SAM 2, CoTracker, SpatialTracker | F2, F3 | foundation features, promptable segmentation, joint 2D/3D point tracking | use as prior signals for A6/A7, not as geometry substitutes |
+| Monocular metric-depth priors | Depth Anything V2, Depth Pro, Metric3D v2 | F3, F5 | monocular metric depth / joint depth-normal as arbitrated prior | paired with critic for A7 check_prior_conflict |
+| Event-camera VO / cross-modal add-on | DEVO, EAG3R, Event-3DGS | F5, F2 | event-only pose/motion, event-augmented pointmap, event Gaussian Splatting | sensor scope can inflate engineering; keep as robustness branch |
 
 ## Architecture And Visual Mechanism Intake Table
 

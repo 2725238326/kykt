@@ -691,3 +691,123 @@ Files updated:
 - `ARCHITECTURE_MECHANISM_INTAKE.md`
 - `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
 - `RESEARCH_GRAPH_AND_PAPER_START.md`
+
+## Cycle 007 Proxy And Spec Templates
+
+Started:
+
+```text
+CYCLE-20260502-004: Proxy Case-Card And Finalist Mechanism Spec Templates
+```
+
+User direction:
+
+```text
+Use AGENT_MASTER_PROMPT.md. Continue from the shortlist stage and prepare proxy
+case-card templates and user-approved finalist mechanism specs without reproduction,
+checkpoint downloads, training, KYKT navigation changes, frontend implementation,
+discarding major branches, or thesis finalization.
+```
+
+Decision:
+
+```text
+Create branch-neutral templates so any shortlist outcome (A / B / C / D) can be executed
+in the next cycle without re-doing structural work.
+```
+
+New artifacts:
+
+- `templates/proxy_case_card.md`
+- `templates/finalist_mechanism_spec.md`
+- `cycles/CYCLE-20260502-004.md`
+
+Updated:
+
+- `README.md`
+- `WORKFLOW_STATUS.md`
+- this file
+
+Status:
+
+- proxy case-card form: ready for instantiation
+- finalist mechanism spec form: ready, blocked on user shortlist approval
+- no branch selected
+- no thesis finalized
+- no reproduction authorized
+
+Current recommendation:
+
+```text
+Ask the user to choose from BRANCH_SHORTLIST_DECISION_SURFACE.md:
+A. Geometry Critic + Executive Memory, Composer as support
+B. Add Dynamic Object Permanence as third finalist
+C. Keep all six branches; first fill proxy case cards
+D. Mine more sources before choosing finalists
+```
+
+## Cycle 008 Source Mining Pass
+
+Started:
+
+```text
+CYCLE-20260502-005: Source Mining Pass For Weak Comparator Coverage
+```
+
+User direction:
+
+```text
+D. Mine more sources first.
+```
+
+Decision:
+
+```text
+Add primary source anchors for visual priors, monocular metric-depth priors,
+active perception / NBV on NeRF/3DGS, and event-camera visual odometry
+before drafting any finalist mechanism spec.
+```
+
+New sources added (arXiv IDs verified in this cycle):
+
+- Visual priors: DINOv2, CoTracker, SAM 2, SpatialTracker
+- Depth priors: Depth Anything V2, Depth Pro, Metric3D v2
+- Active perception: ActiveNeRF, FisherRF, ActiveSplat, ActiveGS
+- Event / cross-modal: DEVO
+
+Files updated:
+
+- `FRONTIER_SOURCE_MAP.md`
+- `registry/source_registry.md`
+- `ARCHITECTURE_MECHANISM_INTAKE.md`
+- this file
+- `WORKFLOW_STATUS.md`
+
+Gap closure status:
+
+- visual priors: initial anchors (A6 / A7)
+- monocular depth priors: initial anchors (A7 / A1 scale prior)
+- active perception: four anchors (A8) including standalone FisherRF and ActiveSplat
+- event camera: DEVO added as event-only VO comparator; cross-modal branch still carries data/hardware risk
+
+Still open sub-gaps (documented, not scheduled):
+
+- IMU / LiDAR guided 3R beyond G-CUT3R
+- event-based dense reconstruction
+- long-video tracking benchmarks for F2 evaluation
+- VLM / scene-regime classification for composer L2
+- diffusion-prior 3R
+
+Status:
+
+- code / license / checkpoint verification pending per Initial Gaps rule
+- no Research Unit changes
+- no branch selected
+- no thesis finalized
+- no reproduction authorized
+
+Current recommendation:
+
+```text
+Return to the shortlist decision surface (A / B / C). The weakest comparator gaps now have initial primary-source anchors, so mechanism-spec drafting or case-card population can proceed without being blocked on missing comparators.
+```

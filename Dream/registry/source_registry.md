@@ -1,6 +1,6 @@
 # Source Registry
 
-Last updated: 2026-05-02
+Last updated: 2026-05-02 (cycle 005)
 
 Status: seeded from Phase 1 source map. This file is the lightweight index; detailed notes stay in `FRONTIER_SOURCE_MAP.md` and cycle logs.
 
@@ -56,3 +56,15 @@ linked_units:
 | SRC-2024-010 | SLAM3R | https://arxiv.org/abs/2412.09401 | 2024 | direct_3r | paper, code | sliding-window dense SLAM using pointmap prediction and registration | comparator | RU-014, RU-015 |
 | SRC-2025-013 | Easi3R | https://arxiv.org/abs/2503.24391 | 2025 | dynamic_3r | paper, project | training-free dynamic adaptation / motion separation | comparator | RU-013, RU-015 |
 | SRC-2025-014 | G-CUT3R | https://arxiv.org/abs/2508.11379 | 2025 | guided_3r | paper | guided CUT3R with depth / calibration / pose priors | comparator | RU-002, RU-015 |
+| SRC-2022-001 | ActiveNeRF | https://arxiv.org/abs/2209.08546 | 2022 | architecture_transfer | paper, ECCV | uncertainty-driven active view selection for NeRF | A8 comparator | future active-perception unit |
+| SRC-2023-002 | DINOv2 | https://arxiv.org/abs/2304.07193 | 2023 | architecture_transfer | paper, code, checkpoints | self-supervised all-purpose visual features | A6/A7 visual prior | RU-011, RU-013, RU-015 |
+| SRC-2023-003 | CoTracker | https://arxiv.org/abs/2307.07635 | 2023 | architecture_transfer | paper, code, checkpoints | joint 2D point tracking in long video | A6 object identity prior | RU-013 |
+| SRC-2023-004 | DEVO | https://arxiv.org/abs/2312.09800 | 2023 | architecture_transfer | paper, RA-L | deep event visual odometry from monocular events | A7 event prior | RU-006 |
+| SRC-2024-012 | SAM 2 | https://arxiv.org/abs/2408.00714 | 2024 | architecture_transfer | paper, code, checkpoints, demo | promptable image/video segmentation foundation model | A6 dynamic/static mask prior | RU-013 |
+| SRC-2024-013 | SpatialTracker | https://arxiv.org/abs/2404.04319 | 2024 | architecture_transfer | paper, code | tracks 2D pixels in 3D space; V2 (2507.12462) unifies track, depth, pose | A6 3D-aware motion prior | RU-013 |
+| SRC-2024-014 | Depth Anything V2 | https://arxiv.org/abs/2406.09414 | 2024 | architecture_transfer | paper, code, checkpoints | monocular depth foundation model; finer and more robust | A7 depth prior | RU-011, RU-015 |
+| SRC-2024-015 | Depth Pro | https://arxiv.org/abs/2410.02073 | 2024 | architecture_transfer | paper, code, checkpoints | zero-shot metric monocular depth, sharp boundaries, fast | A1/A7 metric-scale prior | RU-011, RU-015 |
+| SRC-2024-016 | Metric3D v2 | https://arxiv.org/abs/2404.15506 | 2024 | architecture_transfer | paper, code | zero-shot metric depth and surface normal from single image | A7 joint geometry prior | RU-006, RU-011 |
+| SRC-2024-017 | FisherRF | https://arxiv.org/abs/2311.17874 | 2023/2024 | architecture_transfer | paper, code, ECCV | Fisher-information active view selection and uncertainty for radiance fields | A8 view-gain anchor | future active-perception unit |
+| SRC-2024-018 | ActiveSplat | https://arxiv.org/abs/2410.21955 | 2024 | architecture_transfer | paper, project, RA-L | active mapping, view selection, path planning on 3DGS | A8 active-3DGS anchor | future active-perception unit, RU-008 |
+| SRC-2024-019 | ActiveGS | https://arxiv.org/abs/2412.17769 | 2024 | architecture_transfer | paper | active scene reconstruction using Gaussian splatting | A8 comparator | future active-perception unit |

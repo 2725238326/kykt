@@ -96,6 +96,8 @@ Instead, Dream should first build a systematic research engine that can compare 
 - `experiments/`: experiment plans; a file here does not mean the experiment has been run.
 - `templates/`: reusable forms for sources, research units, decisions, cycles, and experiments.
 - `templates/frontend_design_handoff.md`: reusable frontend task brief template for Gemini CLI.
+- `templates/proxy_case_card.md`: branch-neutral L2 proxy case-card form for P1-P8 instantiation.
+- `templates/finalist_mechanism_spec.md`: branch-neutral mechanism spec form for user-approved finalist branches; must not be populated before approval.
 
 ## Working Loop
 
