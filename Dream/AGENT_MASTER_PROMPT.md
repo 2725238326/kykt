@@ -29,10 +29,13 @@ Before proposing or doing work, read these files in order:
 9. `E:\kykt\Dream\MULTI_TRACK_RESEARCH_CANVAS.md`
 10. `E:\kykt\Dream\RESEARCH_GRAPH_AND_PAPER_START.md`
 11. `E:\kykt\Dream\BRANCH_COMPARISON_MATRIX.md`
-12. `E:\kykt\Dream\registry\decision_registry.md`
-13. `E:\kykt\Dream\registry\research_unit_registry.md`
-14. `E:\kykt\Dream\registry\source_registry.md`
-15. `E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+12. `E:\kykt\Dream\ARCHITECTURE_MECHANISM_INTAKE.md`
+13. `E:\kykt\Dream\ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+14. `E:\kykt\Dream\BRANCH_SHORTLIST_DECISION_SURFACE.md`
+15. `E:\kykt\Dream\registry\decision_registry.md`
+16. `E:\kykt\Dream\registry\research_unit_registry.md`
+17. `E:\kykt\Dream\registry\source_registry.md`
+18. `E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 
 Then inspect the most relevant active file for the requested task:
 
@@ -393,5 +396,5 @@ In final responses:
 For a shorter handoff, give an agent this:
 
 ```text
-Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode: build the failure-mode/mechanism/composition graph and fill BRANCH_COMPARISON_MATRIX.md before deepening any single thesis branch. Do not reproduce models, download checkpoints, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation.
+Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode from the current shortlist stage: use BRANCH_SHORTLIST_DECISION_SURFACE.md, ACTION_TAXONOMY_AND_PROXY_METRICS.md, and ARCHITECTURE_MECHANISM_INTAKE.md to prepare proxy case-card templates and user-approved finalist mechanism specs. Do not reproduce models, download checkpoints, train/fine-tune, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation. Keep guidance files synchronized when creating or promoting workflow artifacts.
 ```
