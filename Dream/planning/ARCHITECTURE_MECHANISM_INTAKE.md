@@ -7,7 +7,7 @@ Status: first-pass intake map; not a thesis decision.
 Companion artifact:
 
 ```text
-ACTION_TAXONOMY_AND_PROXY_METRICS.md
+planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md
 ```
 
 Use the companion file for the compact A1-A8 action set and proxy metric protocols.
@@ -75,7 +75,7 @@ Do not discard a mechanism only because it is not immediately implementable. If 
 This draft has been compacted into A1-A8 in:
 
 ```text
-ACTION_TAXONOMY_AND_PROXY_METRICS.md
+planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md
 ```
 
 Keep the detailed draft below as vocabulary support.
@@ -122,9 +122,9 @@ Keep the detailed draft below as vocabulary support.
 
 Use this file to update:
 
-- `RESEARCH_GRAPH_AND_PAPER_START.md`
-- `BRANCH_COMPARISON_MATRIX.md`
-- `FRONTIER_SOURCE_MAP.md`
-- `RESEARCH_UNIT_BANK.md`
+- `planning/RESEARCH_GRAPH_AND_PAPER_START.md`
+- `planning/BRANCH_COMPARISON_MATRIX.md`
+- `sources/FRONTIER_SOURCE_MAP.md`
+- `units/RESEARCH_UNIT_BANK.md`
 
 Do not use this file to justify reproduction, checkpoint downloads, model training, or frontend implementation without user approval.

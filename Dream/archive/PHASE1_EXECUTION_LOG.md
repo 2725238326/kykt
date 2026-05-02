@@ -45,7 +45,7 @@ Implication:
 Resolved / pending:
 
 - reproduction-readiness subagent result: completed and merged
-- first readiness table: completed in `REPRODUCTION_READINESS_MATRIX.md`
+- first readiness table: completed in `units/REPRODUCTION_READINESS_MATRIX.md`
 - master prompt: completed in `AGENT_MASTER_PROMPT.md`
 - still pending: user discussion before Phase 2 implementation commitment
 

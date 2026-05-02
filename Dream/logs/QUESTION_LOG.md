@@ -66,7 +66,7 @@ Create Phase 1 research route survey plan.
 
 Output:
 
-- `PHASE1_RESEARCH_PLAN.md`
+- `archive/PHASE1_RESEARCH_PLAN.md`
 
 ## Round 5
 
@@ -85,8 +85,8 @@ Phase 1.5 = Research Workflow Deployment.
 
 Output:
 
-- `RESEARCH_WORKFLOW.md`
-- `RESEARCH_DATA_MODEL.md`
+- `paradigm/RESEARCH_WORKFLOW.md`
+- `paradigm/RESEARCH_DATA_MODEL.md`
 - `WORKFLOW_STATUS.md`
 - registries, templates, cycle log, and planned-only experiment file
 
@@ -104,7 +104,7 @@ Decision:
 
 ```text
 Create AGENT_MASTER_PROMPT.md as the canonical entry prompt.
-Keep MASTER_RESEARCH_PROMPT_DRAFT.md as historical only.
+Keep archive/MASTER_RESEARCH_PROMPT_DRAFT.md as historical only.
 ```
 
 Output:
@@ -144,7 +144,7 @@ Dream / Codex owns frontend handoff prompts, constraints, sequencing, and accept
 
 Output:
 
-- `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+- `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 - `templates/frontend_design_handoff.md`
 - `decisions/DEC-20260501-007-frontend-agent-boundary.md`
 
@@ -167,7 +167,7 @@ Backend, app, and frontend are supporting layers.
 
 Output:
 
-- `RESEARCH_CONTENT_ROADMAP.md`
+- `paradigm/RESEARCH_CONTENT_ROADMAP.md`
 - `decisions/DEC-20260501-010-research-mainline-correction.md`
 
 ## Round 9
@@ -189,6 +189,6 @@ Fill branch comparison before deepening any single thesis branch.
 
 Output:
 
-- `RESEARCH_GRAPH_AND_PAPER_START.md`
-- `BRANCH_COMPARISON_MATRIX.md`
+- `planning/RESEARCH_GRAPH_AND_PAPER_START.md`
+- `planning/BRANCH_COMPARISON_MATRIX.md`
 - updated `AGENT_MASTER_PROMPT.md` short invocation

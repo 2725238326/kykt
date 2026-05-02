@@ -26,9 +26,9 @@ No branch is finalized here. No branch is discarded here.
 
 Choose 2-3 branches for mechanism-spec drafting only after reading:
 
-- `BRANCH_COMPARISON_MATRIX.md`
-- `ARCHITECTURE_MECHANISM_INTAKE.md`
-- `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+- `planning/BRANCH_COMPARISON_MATRIX.md`
+- `planning/ARCHITECTURE_MECHANISM_INTAKE.md`
+- `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`
 - this file
 
 The selected branches should optimize for:

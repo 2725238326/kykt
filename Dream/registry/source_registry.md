@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-02 (cycle 005)
 
-Status: seeded from Phase 1 source map. This file is the lightweight index; detailed notes stay in `FRONTIER_SOURCE_MAP.md` and cycle logs.
+Status: seeded from Phase 1 source map. This file is the lightweight index; detailed notes stay in `sources/FRONTIER_SOURCE_MAP.md` and cycle logs.
 
 ## Schema
 

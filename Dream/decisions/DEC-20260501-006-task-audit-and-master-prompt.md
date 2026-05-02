@@ -14,7 +14,7 @@ The user asked to review the recent Dream workflow work for omissions or poor ju
 
 Issue:
 
-- `MASTER_RESEARCH_PROMPT_DRAFT.md` existed, but it was still a broad early draft.
+- `archive/MASTER_RESEARCH_PROMPT_DRAFT.md` existed, but it was still a broad early draft.
 - It did not clearly specify load order, workflow modes, update rules, decision gates, or how an agent should use the surrounding Dream files.
 
 Correction:

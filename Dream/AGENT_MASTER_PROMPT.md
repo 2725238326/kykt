@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-02
+Last updated: 2026-05-02 (cycle 006 workspace reorganization)
 
 Status: canonical entry prompt for Dream research agents.
 
@@ -19,42 +19,45 @@ Your job is to advance an architecture-first 3R / spatial intelligence research 
 Before proposing or doing work, read these files in order:
 
 1. `E:\kykt\Dream\README.md`
-2. `E:\kykt\Dream\WORKFLOW_STATUS.md`
-3. `E:\kykt\Dream\RESEARCH_STATE.md`
-4. `E:\kykt\Dream\RESEARCH_WORKFLOW.md`
-5. `E:\kykt\Dream\RESEARCH_DATA_MODEL.md`
-6. `E:\kykt\Dream\RESEARCH_PARADIGM.md`
-7. `E:\kykt\Dream\RESEARCH_SKILL_RULES_DRAFT.md`
-8. `E:\kykt\Dream\RESEARCH_CONTENT_ROADMAP.md`
-9. `E:\kykt\Dream\MULTI_TRACK_RESEARCH_CANVAS.md`
-10. `E:\kykt\Dream\RESEARCH_GRAPH_AND_PAPER_START.md`
-11. `E:\kykt\Dream\BRANCH_COMPARISON_MATRIX.md`
-12. `E:\kykt\Dream\ARCHITECTURE_MECHANISM_INTAKE.md`
-13. `E:\kykt\Dream\ACTION_TAXONOMY_AND_PROXY_METRICS.md`
-14. `E:\kykt\Dream\BRANCH_SHORTLIST_DECISION_SURFACE.md`
-15. `E:\kykt\Dream\registry\decision_registry.md`
-16. `E:\kykt\Dream\registry\research_unit_registry.md`
-17. `E:\kykt\Dream\registry\source_registry.md`
-18. `E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+2. `E:\kykt\Dream\INDEX.md`
+3. `E:\kykt\Dream\WORKFLOW_STATUS.md`
+4. `E:\kykt\Dream\RESEARCH_STATE.md`
+5. `E:\kykt\Dream\paradigm\RESEARCH_WORKFLOW.md`
+6. `E:\kykt\Dream\paradigm\RESEARCH_DATA_MODEL.md`
+7. `E:\kykt\Dream\paradigm\RESEARCH_PARADIGM.md`
+8. `E:\kykt\Dream\paradigm\RESEARCH_SKILL_RULES_DRAFT.md`
+9. `E:\kykt\Dream\paradigm\RESEARCH_CONTENT_ROADMAP.md`
+10. `E:\kykt\Dream\planning\MULTI_TRACK_RESEARCH_CANVAS.md`
+11. `E:\kykt\Dream\planning\RESEARCH_GRAPH_AND_PAPER_START.md`
+12. `E:\kykt\Dream\planning\BRANCH_COMPARISON_MATRIX.md`
+13. `E:\kykt\Dream\planning\ARCHITECTURE_MECHANISM_INTAKE.md`
+14. `E:\kykt\Dream\planning\ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+15. `E:\kykt\Dream\planning\BRANCH_SHORTLIST_DECISION_SURFACE.md`
+16. `E:\kykt\Dream\registry\decision_registry.md`
+17. `E:\kykt\Dream\registry\research_unit_registry.md`
+18. `E:\kykt\Dream\registry\source_registry.md`
+19. `E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 
 Then inspect the most relevant active file for the requested task:
 
-- research source work: `FRONTIER_SOURCE_MAP.md`
-- graph-based research planning: `RESEARCH_GRAPH_AND_PAPER_START.md`
-- branch comparison: `BRANCH_COMPARISON_MATRIX.md`
-- branch shortlist / finalist decision surface: `BRANCH_SHORTLIST_DECISION_SURFACE.md`
-- architecture mechanism intake / action taxonomy / proxy metrics: `ARCHITECTURE_MECHANISM_INTAKE.md`
-- compact action taxonomy / proxy validation protocols: `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
-- multi-track direction control: `MULTI_TRACK_RESEARCH_CANVAS.md`
-- idea synthesis: `RESEARCH_UNIT_BANK.md`
-- scoring: `IDEA_SCOREBOARD.md`
-- demo planning: `MINIMAL_DEMO_CANDIDATES.md`
-- reproduction readiness: `REPRODUCTION_READINESS_MATRIX.md`
-- frontend design handoff: `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
-- phase decisions: `PHASE1_DECISION_MEMO.md`
+- research source work: `sources/FRONTIER_SOURCE_MAP.md`
+- graph-based research planning: `planning/RESEARCH_GRAPH_AND_PAPER_START.md`
+- branch comparison: `planning/BRANCH_COMPARISON_MATRIX.md`
+- branch shortlist / finalist decision surface: `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md`
+- architecture mechanism intake / action taxonomy / proxy metrics: `planning/ARCHITECTURE_MECHANISM_INTAKE.md`
+- compact action taxonomy / proxy validation protocols: `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+- multi-track direction control: `planning/MULTI_TRACK_RESEARCH_CANVAS.md`
+- idea synthesis: `units/RESEARCH_UNIT_BANK.md`
+- scoring: `units/IDEA_SCOREBOARD.md`
+- demo planning: `planning/MINIMAL_DEMO_CANDIDATES.md`
+- reproduction readiness: `units/REPRODUCTION_READINESS_MATRIX.md`
+- frontend design handoff: `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+- phase decisions: `archive/PHASE1_DECISION_MEMO.md` (historical)
 - current cycle: newest file under `cycles/`
 - experiment planning: relevant file under `experiments/`
 - reusable forms: files under `templates/`
+- collaboration plan: `handoff/COLLABORATION_ROADMAP.md`
+- question log: `logs/QUESTION_LOG.md`
 
 Do not treat this prompt as a replacement for those files. Treat it as the entry point that tells you how to use them.
 
@@ -264,20 +267,20 @@ When you make durable progress, update the relevant files:
 
 - global state: `RESEARCH_STATE.md`
 - workflow phase: `WORKFLOW_STATUS.md`
-- source list: `registry/source_registry.md`
-- research units: `RESEARCH_UNIT_BANK.md` and `registry/research_unit_registry.md`
-- scoring: `IDEA_SCOREBOARD.md`
-- research graph and paper scaffold: `RESEARCH_GRAPH_AND_PAPER_START.md`
-- branch comparison: `BRANCH_COMPARISON_MATRIX.md`
-- branch shortlist / finalist decision surface: `BRANCH_SHORTLIST_DECISION_SURFACE.md`
-- architecture mechanism intake / action taxonomy / proxy metrics: `ARCHITECTURE_MECHANISM_INTAKE.md`
-- compact action taxonomy / proxy validation protocols: `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
-- multi-track canvas: `MULTI_TRACK_RESEARCH_CANVAS.md`
+- source list: `registry/source_registry.md` and `sources/FRONTIER_SOURCE_MAP.md`
+- research units: `units/RESEARCH_UNIT_BANK.md` and `registry/research_unit_registry.md`
+- scoring: `units/IDEA_SCOREBOARD.md`
+- research graph and paper scaffold: `planning/RESEARCH_GRAPH_AND_PAPER_START.md`
+- branch comparison: `planning/BRANCH_COMPARISON_MATRIX.md`
+- branch shortlist / finalist decision surface: `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md`
+- architecture mechanism intake: `planning/ARCHITECTURE_MECHANISM_INTAKE.md`
+- compact action taxonomy / proxy validation protocols: `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+- multi-track canvas: `planning/MULTI_TRACK_RESEARCH_CANVAS.md`
 - decisions: `decisions/` and `registry/decision_registry.md`
 - cycle log: `cycles/`
 - experiment plan: `experiments/`
-- prompt/rules: `AGENT_MASTER_PROMPT.md` and `RESEARCH_SKILL_RULES_DRAFT.md`
-- frontend handoff: `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+- prompt/rules: `AGENT_MASTER_PROMPT.md` and `paradigm/RESEARCH_SKILL_RULES_DRAFT.md`
+- frontend handoff: `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 
 If you add a new kind of repeated artifact, add a template under `templates/`.
 
@@ -328,7 +331,7 @@ If the user asks for idea synthesis:
 
 If the user asks for prompt/rule work:
 
-- update this file and `RESEARCH_SKILL_RULES_DRAFT.md`
+- update this file and `paradigm/RESEARCH_SKILL_RULES_DRAFT.md`
 - check consistency with workflow and state
 - explain how to use the prompt
 
@@ -339,11 +342,11 @@ If the user asks for KYKT app integration planning:
 - define data contracts only as a support layer
 - map to KYKT surfaces: research lane, runner, Sample Matrix, Advisor/report, system readiness, management area
 - if frontend design work is needed, prepare a Gemini CLI handoff prompt rather than implementing frontend code by default
-- update `FRONTEND_DESIGN_HANDOFF_PROMPT.md` or a task-specific frontend prompt under `Coding\4.06\vision_ui`
+- update `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` or a task-specific frontend prompt under `Coding\4.06\vision_ui`
 
 If the user asks for reproduction:
 
-- first check `REPRODUCTION_READINESS_MATRIX.md`
+- first check `units/REPRODUCTION_READINESS_MATRIX.md`
 - create or update an experiment plan
 - ask before heavy clone/install/download/run if approval has not already been given
 
@@ -396,5 +399,4 @@ In final responses:
 For a shorter handoff, give an agent this:
 
 ```text
-Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode from the current shortlist stage: use BRANCH_SHORTLIST_DECISION_SURFACE.md, ACTION_TAXONOMY_AND_PROXY_METRICS.md, and ARCHITECTURE_MECHANISM_INTAKE.md to prepare proxy case-card templates and user-approved finalist mechanism specs. Do not reproduce models, download checkpoints, train/fine-tune, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation. Keep guidance files synchronized when creating or promoting workflow artifacts.
-```
+Use `E:\kykt\Dream\AGENT_MASTER_PROMPT.md` as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode from the current shortlist stage: use planning/BRANCH_SHORTLIST_DECISION_SURFACE.md, planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md, and planning/ARCHITECTURE_MECHANISM_INTAKE.md to prepare proxy case-card templates and user-approved finalist mechanism specs. Do not reproduce models, download checkpoints, train/fine-tune, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation. Keep guidance files synchronized when creating or promoting workflow artifacts.

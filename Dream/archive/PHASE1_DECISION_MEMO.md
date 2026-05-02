@@ -72,8 +72,8 @@ Before moving from survey to implementation, discuss:
 
 ## Recommended Phase 2 Plan
 
-1. Build a `Dream Source Registry` data file from `FRONTIER_SOURCE_MAP.md`.
-2. Build a minimal `Research Unit` schema from `RESEARCH_UNIT_BANK.md`.
+1. Build a `Dream Source Registry` data file from `sources/FRONTIER_SOURCE_MAP.md`.
+2. Build a minimal `Research Unit` schema from `units/RESEARCH_UNIT_BANK.md`.
 3. Add a KYKT Dream research lane that renders source, unit, score, and demo status.
 4. Run one visual reproduction candidate:
    - first try DUSt3R as the stable foundational baseline

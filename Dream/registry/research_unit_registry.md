@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-01
 
-Status: seeded from `RESEARCH_UNIT_BANK.md`.
+Status: seeded from `units/RESEARCH_UNIT_BANK.md`.
 
 ## Registry
 

@@ -15,7 +15,7 @@ Dream should track broad architecture and visual methods through a branch-neutra
 New active artifact:
 
 ```text
-ARCHITECTURE_MECHANISM_INTAKE.md
+planning/ARCHITECTURE_MECHANISM_INTAKE.md
 ```
 
 ## Reason
@@ -44,7 +44,7 @@ It does not approve:
 
 ## Expected Use
 
-Future Dream research passes should use `ARCHITECTURE_MECHANISM_INTAKE.md` when:
+Future Dream research passes should use `planning/ARCHITECTURE_MECHANISM_INTAKE.md` when:
 
 - adding sparse / linear attention mechanisms
 - comparing SSM/Mamba-like state models

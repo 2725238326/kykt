@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-02
+Last updated: 2026-05-02 (cycle 006 workspace reorganization)
 
 ## Purpose
 
@@ -36,7 +36,13 @@ E:\kykt\Dream\AGENT_MASTER_PROMPT.md
 Canonical frontend design handoff prompt:
 
 ```text
-E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+```
+
+Quick navigation index:
+
+```text
+E:\kykt\Dream\INDEX.md
 ```
 
 ## Current Direction
@@ -58,56 +64,65 @@ Instead, Dream should first build a systematic research engine that can compare 
 - Cross-modal and new sensor extensions
 - System demo paths that can surprise a teacher while staying feasible
 
-## File Map
-
-- `RESEARCH_STATE.md`: current decisions, assumptions, and open questions.
-- `AGENT_MASTER_PROMPT.md`: canonical operating prompt for future Dream agents.
-- `FRONTEND_DESIGN_HANDOFF_PROMPT.md`: canonical prompt and boundary for Gemini CLI / frontend implementation agents.
-- `QUESTION_LOG.md`: interview history and next questions.
-- `RESEARCH_PARADIGM.md`: the operating paradigm, research loop, evidence ladder, and user-discussion gates.
-- `RESEARCH_WORKFLOW.md`: operational workflow from source intake to implementation decision.
-- `RESEARCH_CONTENT_ROADMAP.md`: research-content-first roadmap for thesis validation and mechanism discovery.
-- `MULTI_TRACK_RESEARCH_CANVAS.md`: branch pool for comparing multiple research directions before selecting one.
-- `RESEARCH_GRAPH_AND_PAPER_START.md`: graph-based research method and top-conference paper starting scaffold.
-- `BRANCH_COMPARISON_MATRIX.md`: scaffold for comparing candidate research branches before deepening one.
-- `BRANCH_SHORTLIST_DECISION_SURFACE.md`: user decision surface for choosing 2-3 branches before mechanism specs.
-- `ARCHITECTURE_MECHANISM_INTAKE.md`: branch-neutral intake map for sparse/linear attention, SSM, RL, continual learning, attention residuals, new visual methods, sensor priors, actions, and proxy metrics.
-- `ACTION_TAXONOMY_AND_PROXY_METRICS.md`: compact A1-A8 Dream action taxonomy and L2 proxy validation protocols.
-- `COLLABORATION_ROADMAP.md`: human-agent collaboration path and near-term deployment sequence.
-- `RESEARCH_DATA_MODEL.md`: schema for sources, mechanisms, research units, decisions, and experiment plans.
-- `WORKFLOW_STATUS.md`: current workflow phase, active workstreams, and blocked decisions.
-- `PHASE1_RESEARCH_PLAN.md`: concrete plan for the first comprehensive research route survey.
-- `PHASE1_EXECUTION_LOG.md`: running log for actual Phase 1 research execution.
-- `FRONTIER_SOURCE_MAP.md`: verified and pending source map for papers/projects.
-- `DREAM3R_THESIS_STRESS_TEST.md`: active stress test and reframe for the Dream3R / GEM-3R candidate.
-- `RESEARCH_UNIT_BANK.md`: structured Dream Research Units.
-- `IDEA_SCOREBOARD.md`: score table for candidate ideas.
-- `MINIMAL_DEMO_CANDIDATES.md`: teacher-demo candidate analysis.
-- `REPRODUCTION_READINESS_MATRIX.md`: repo-level smoke-test and KYKT integration readiness notes.
-- `PHASE1_DECISION_MEMO.md`: preliminary synthesis and Phase 2 decision gates.
-- `MASTER_RESEARCH_PROMPT_DRAFT.md`: historical early draft; do not use as the operating prompt.
-- `RESEARCH_SKILL_RULES_DRAFT.md`: evolving rules for a project skill and future Codex skill.
-
 ## Directory Map
 
-- `registry/`: lightweight indexes for sources, research units, and decisions.
+Root-level files (entry points):
+
+- `README.md`: this file.
+- `INDEX.md`: compact total index for humans and agents; start here when navigating.
+- `AGENT_MASTER_PROMPT.md`: canonical operating prompt for future Dream agents; contains the mandatory load protocol.
+- `WORKFLOW_STATUS.md`: current workflow phase, active workstreams, blocked decisions, and recommended next user decision.
+- `RESEARCH_STATE.md`: current decisions, assumptions, open questions, and cycle history.
+
+Subdirectories:
+
+- `paradigm/`: how Dream operates (paradigm, workflow, data model, rules draft, content roadmap).
+- `planning/`: active research-planning artifacts (graph, branch matrix, shortlist surface, mechanism intake, action taxonomy, multi-track canvas, thesis stress test, minimal demo candidates).
+- `sources/`: source mining artifacts (`FRONTIER_SOURCE_MAP.md`).
+- `units/`: Research Units, scoring, reproduction readiness.
+- `handoff/`: collaboration roadmap and frontend handoff prompt for Gemini CLI.
+- `logs/`: question log and future running logs.
+- `archive/`: historical / superseded documents (Phase 1 artifacts, early prompt drafts).
 - `cycles/`: per-cycle research logs.
 - `decisions/`: decision memos that require commitment or deferral.
 - `experiments/`: experiment plans; a file here does not mean the experiment has been run.
-- `templates/`: reusable forms for sources, research units, decisions, cycles, and experiments.
-- `templates/frontend_design_handoff.md`: reusable frontend task brief template for Gemini CLI.
-- `templates/proxy_case_card.md`: branch-neutral L2 proxy case-card form for P1-P8 instantiation.
-- `templates/finalist_mechanism_spec.md`: branch-neutral mechanism spec form for user-approved finalist branches; must not be populated before approval.
+- `registry/`: lightweight indexes for sources, research units, and decisions.
+- `templates/`: reusable forms (source card, research unit, decision memo, cycle log, experiment plan, frontend design handoff, proxy case card, finalist mechanism spec).
+
+Key files by subdirectory:
+
+- `paradigm/RESEARCH_PARADIGM.md`: operating paradigm, research loop, evidence ladder, user-discussion gates.
+- `paradigm/RESEARCH_WORKFLOW.md`: source-to-implementation workflow.
+- `paradigm/RESEARCH_DATA_MODEL.md`: schema for sources, mechanisms, units, decisions, experiments.
+- `paradigm/RESEARCH_SKILL_RULES_DRAFT.md`: evolving rules for a project skill and future Codex skill.
+- `paradigm/RESEARCH_CONTENT_ROADMAP.md`: research-content-first roadmap.
+- `planning/MULTI_TRACK_RESEARCH_CANVAS.md`: multi-branch comparison canvas.
+- `planning/RESEARCH_GRAPH_AND_PAPER_START.md`: graph-based research method and paper scaffold.
+- `planning/BRANCH_COMPARISON_MATRIX.md`: branch-level comparison matrix.
+- `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md`: user decision surface for choosing 2-3 branches.
+- `planning/ARCHITECTURE_MECHANISM_INTAKE.md`: branch-neutral intake map.
+- `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`: compact A1-A8 action taxonomy and P1-P8 proxy protocols.
+- `planning/DREAM3R_THESIS_STRESS_TEST.md`: Dream3R / GEM-3R candidate stress test.
+- `planning/MINIMAL_DEMO_CANDIDATES.md`: teacher-demo candidate analysis.
+- `sources/FRONTIER_SOURCE_MAP.md`: verified and pending source map.
+- `units/RESEARCH_UNIT_BANK.md`: structured Dream Research Units.
+- `units/IDEA_SCOREBOARD.md`: score table for candidate ideas.
+- `units/REPRODUCTION_READINESS_MATRIX.md`: repo-level smoke-test and KYKT integration readiness notes.
+- `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`: canonical prompt and boundary for Gemini CLI / frontend implementation agents.
+- `handoff/COLLABORATION_ROADMAP.md`: human-agent collaboration path and near-term deployment sequence.
+- `logs/QUESTION_LOG.md`: interview history and next questions.
+- `archive/PHASE1_RESEARCH_PLAN.md`, `archive/PHASE1_EXECUTION_LOG.md`, `archive/PHASE1_DECISION_MEMO.md`: Phase 1 historical artifacts.
+- `archive/MASTER_RESEARCH_PROMPT_DRAFT.md`: superseded by `AGENT_MASTER_PROMPT.md`.
 
 ## Working Loop
 
 Use this loop after each discussion:
 
 1. Update `RESEARCH_STATE.md` with decisions.
-2. Update `QUESTION_LOG.md` with the question/answer trail.
-3. Update `RESEARCH_PARADIGM.md` when the operating model or decision gates change.
+2. Update `logs/QUESTION_LOG.md` with the question/answer trail.
+3. Update `paradigm/RESEARCH_PARADIGM.md` when the operating model or decision gates change.
 4. Refine `AGENT_MASTER_PROMPT.md` when the operating prompt, load protocol, phase, or decision gates change.
-5. Refine `RESEARCH_SKILL_RULES_DRAFT.md` when we learn a reusable rule.
+5. Refine `paradigm/RESEARCH_SKILL_RULES_DRAFT.md` when we learn a reusable rule.
 6. Later, split stable rules into:
    - a project-local version under `E:\kykt\Dream`
    - a reusable Codex skill

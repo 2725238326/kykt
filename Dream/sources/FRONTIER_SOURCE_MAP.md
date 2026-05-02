@@ -107,7 +107,7 @@ This pass records the comparator groups that must be carried into branch scoring
 New active intake artifact:
 
 ```text
-ARCHITECTURE_MECHANISM_INTAKE.md
+planning/ARCHITECTURE_MECHANISM_INTAKE.md
 ```
 
 Use it to translate sparse attention, linear attention, SSM/Mamba, attention residuals, RL, continual learning, new visual features, segmentation/tracking/flow/VOS, Gaussian/4D, event, depth, IMU, LiDAR, and guided-prior mechanisms into:
@@ -165,7 +165,7 @@ external memory, cache/anchor protection, geometry critic, dynamic branch, and a
 New artifact:
 
 ```text
-DREAM3R_THESIS_STRESS_TEST.md
+planning/DREAM3R_THESIS_STRESS_TEST.md
 ```
 
 Subagent boundary update:

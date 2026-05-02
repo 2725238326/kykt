@@ -45,9 +45,9 @@ Dream should first run a multi-track comparison across:
 
 ## Consequences
 
-- `DREAM3R_THESIS_STRESS_TEST.md` remains valid as one branch stress test, not a project commitment.
+- `planning/DREAM3R_THESIS_STRESS_TEST.md` remains valid as one branch stress test, not a project commitment.
 - `RU-015` remains a strong candidate branch, not the top-level bet.
-- The next recommended artifact is `MULTI_TRACK_RESEARCH_CANVAS.md` and then a branch comparison matrix.
+- The next recommended artifact is `planning/MULTI_TRACK_RESEARCH_CANVAS.md` and then a branch comparison matrix.
 - No mechanism spec should be deepened before the branch comparison is done.
 
 ## User Approval Required

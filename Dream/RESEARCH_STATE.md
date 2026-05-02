@@ -126,7 +126,7 @@ The next critical step is a comprehensive research route survey that prepares fu
 The plan is documented in:
 
 ```text
-E:\kykt\Dream\PHASE1_RESEARCH_PLAN.md
+E:\kykt\Dream\archive\PHASE1_RESEARCH_PLAN.md
 ```
 
 This phase should produce:
@@ -143,12 +143,12 @@ Started on 2026-05-01.
 
 Current artifacts:
 
-- `PHASE1_EXECUTION_LOG.md`
-- `FRONTIER_SOURCE_MAP.md`
-- `RESEARCH_UNIT_BANK.md`
-- `IDEA_SCOREBOARD.md`
-- `MINIMAL_DEMO_CANDIDATES.md`
-- `PHASE1_DECISION_MEMO.md`
+- `archive/PHASE1_EXECUTION_LOG.md`
+- `sources/FRONTIER_SOURCE_MAP.md`
+- `units/RESEARCH_UNIT_BANK.md`
+- `units/IDEA_SCOREBOARD.md`
+- `planning/MINIMAL_DEMO_CANDIDATES.md`
+- `archive/PHASE1_DECISION_MEMO.md`
 
 Updated signal after subagent-assisted survey:
 
@@ -179,9 +179,9 @@ Pause model reproduction and deploy the research operating system first.
 New workflow assets:
 
 - `AGENT_MASTER_PROMPT.md`
-- `FRONTEND_DESIGN_HANDOFF_PROMPT.md`
-- `RESEARCH_WORKFLOW.md`
-- `RESEARCH_DATA_MODEL.md`
+- `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+- `paradigm/RESEARCH_WORKFLOW.md`
+- `paradigm/RESEARCH_DATA_MODEL.md`
 - `WORKFLOW_STATUS.md`
 - `registry/source_registry.md`
 - `registry/research_unit_registry.md`
@@ -211,7 +211,7 @@ Dream / Codex owns prompt framing, constraints, sequencing, and acceptance crite
 Canonical handoff prompt:
 
 ```text
-E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md
 ```
 
 ## Agent Master Prompt Decision
@@ -226,7 +226,7 @@ Decision:
 
 ```text
 Use AGENT_MASTER_PROMPT.md as the required entry point for future Dream agents.
-MASTER_RESEARCH_PROMPT_DRAFT.md is now historical only.
+archive/MASTER_RESEARCH_PROMPT_DRAFT.md is now historical only.
 ```
 
 The master prompt must be updated when:
@@ -345,7 +345,7 @@ D. Phase 2 smoke-test plan refinement without running it
 Current collaboration roadmap:
 
 ```text
-E:\kykt\Dream\COLLABORATION_ROADMAP.md
+E:\kykt\Dream\handoff\COLLABORATION_ROADMAP.md
 ```
 
 Recommended near-term sequence:
@@ -375,7 +375,7 @@ CYCLE-20260501-003: Dream3R Thesis Stress Test
 New artifact:
 
 ```text
-E:\kykt\Dream\DREAM3R_THESIS_STRESS_TEST.md
+E:\kykt\Dream\planning\DREAM3R_THESIS_STRESS_TEST.md
 ```
 
 Main finding:
@@ -427,7 +427,7 @@ Current branch pool:
 New artifact:
 
 ```text
-E:\kykt\Dream\MULTI_TRACK_RESEARCH_CANVAS.md
+E:\kykt\Dream\planning\MULTI_TRACK_RESEARCH_CANVAS.md
 ```
 
 Current recommendation:
@@ -453,8 +453,8 @@ Start from a failure-mode / mechanism / evidence research graph, not from a sing
 
 New artifacts:
 
-- `RESEARCH_GRAPH_AND_PAPER_START.md`
-- `BRANCH_COMPARISON_MATRIX.md`
+- `planning/RESEARCH_GRAPH_AND_PAPER_START.md`
+- `planning/BRANCH_COMPARISON_MATRIX.md`
 
 Paper-start principle:
 
@@ -475,13 +475,13 @@ User direction:
 
 ```text
 Continue Dream in research-content-first mode.
-Build the failure-mode / mechanism / composition graph and fill BRANCH_COMPARISON_MATRIX.md before deepening any single thesis branch.
+Build the failure-mode / mechanism / composition graph and fill planning/BRANCH_COMPARISON_MATRIX.md before deepening any single thesis branch.
 ```
 
 Artifacts updated:
 
-- `RESEARCH_GRAPH_AND_PAPER_START.md`
-- `BRANCH_COMPARISON_MATRIX.md`
+- `planning/RESEARCH_GRAPH_AND_PAPER_START.md`
+- `planning/BRANCH_COMPARISON_MATRIX.md`
 
 Current interpretation:
 
@@ -537,9 +537,9 @@ Comparator completion
 
 Follow-up progress:
 
-- Created `ARCHITECTURE_MECHANISM_INTAKE.md` as the active branch-neutral intake map for broad architecture and visual-method candidates.
-- Updated comparator anchors in `RESEARCH_GRAPH_AND_PAPER_START.md` and `BRANCH_COMPARISON_MATRIX.md` to include Spann3R and related missing comparators.
-- Updated `FRONTIER_SOURCE_MAP.md` with a comparator completion pass.
+- Created `planning/ARCHITECTURE_MECHANISM_INTAKE.md` as the active branch-neutral intake map for broad architecture and visual-method candidates.
+- Updated comparator anchors in `planning/RESEARCH_GRAPH_AND_PAPER_START.md` and `planning/BRANCH_COMPARISON_MATRIX.md` to include Spann3R and related missing comparators.
+- Updated `sources/FRONTIER_SOURCE_MAP.md` with a comparator completion pass.
 - Updated `registry/source_registry.md` with Spann3R and RayMap3R lightweight entries.
 - Updated `AGENT_MASTER_PROMPT.md`, `README.md`, and `WORKFLOW_STATUS.md` so future Dream agents inspect the mechanism-intake artifact when relevant.
 
@@ -552,7 +552,7 @@ Shared action taxonomy + proxy metric bank across all branches.
 Status:
 
 ```text
-first-pass drafted in ARCHITECTURE_MECHANISM_INTAKE.md, needs refinement before branch shortlist.
+first-pass drafted in planning/ARCHITECTURE_MECHANISM_INTAKE.md, needs refinement before branch shortlist.
 ```
 
 ## Cycle 006 Action Taxonomy And Proxy Metrics
@@ -560,7 +560,7 @@ first-pass drafted in ARCHITECTURE_MECHANISM_INTAKE.md, needs refinement before 
 Started:
 
 ```text
-ACTION_TAXONOMY_AND_PROXY_METRICS.md
+planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md
 ```
 
 Progress:
@@ -613,7 +613,7 @@ first proxy test, teacher demo form, and fail-fast condition.
 Completed:
 
 ```text
-BRANCH_SHORTLIST_DECISION_SURFACE.md
+planning/BRANCH_SHORTLIST_DECISION_SURFACE.md
 ```
 
 Provisional synthesis:
@@ -644,23 +644,23 @@ README.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md, and the current cycle log.
 Decision:
 
 ```text
-The old short invocation that asks agents to build the graph and fill BRANCH_COMPARISON_MATRIX.md is stale.
+The old short invocation that asks agents to build the graph and fill planning/BRANCH_COMPARISON_MATRIX.md is stale.
 Future agents should continue from the shortlist stage.
 ```
 
 Updated:
 
 - `AGENT_MASTER_PROMPT.md` mandatory load protocol now includes:
-  - `ARCHITECTURE_MECHANISM_INTAKE.md`
-  - `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
-  - `BRANCH_SHORTLIST_DECISION_SURFACE.md`
+  - `planning/ARCHITECTURE_MECHANISM_INTAKE.md`
+  - `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+  - `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md`
 - `AGENT_MASTER_PROMPT.md` short invocation now tells agents to prepare proxy case-card templates and user-approved finalist mechanism specs, not to repeat graph/matrix filling.
 - `registry/decision_registry.md` records this as DEC-20260502-004.
 
 Current handoff instruction:
 
 ```text
-Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode from the current shortlist stage: use BRANCH_SHORTLIST_DECISION_SURFACE.md, ACTION_TAXONOMY_AND_PROXY_METRICS.md, and ARCHITECTURE_MECHANISM_INTAKE.md to prepare proxy case-card templates and user-approved finalist mechanism specs. Do not reproduce models, download checkpoints, train/fine-tune, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation. Keep guidance files synchronized when creating or promoting workflow artifacts.
+Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode from the current shortlist stage: use planning/BRANCH_SHORTLIST_DECISION_SURFACE.md, planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md, and planning/ARCHITECTURE_MECHANISM_INTAKE.md to prepare proxy case-card templates and user-approved finalist mechanism specs. Do not reproduce models, download checkpoints, train/fine-tune, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation. Keep guidance files synchronized when creating or promoting workflow artifacts.
 ```
 
 ## Paper-Writing Value Of Broad Mechanism Intake
@@ -688,9 +688,9 @@ Interpretation:
 
 Files updated:
 
-- `ARCHITECTURE_MECHANISM_INTAKE.md`
-- `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
-- `RESEARCH_GRAPH_AND_PAPER_START.md`
+- `planning/ARCHITECTURE_MECHANISM_INTAKE.md`
+- `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+- `planning/RESEARCH_GRAPH_AND_PAPER_START.md`
 
 ## Cycle 007 Proxy And Spec Templates
 
@@ -739,7 +739,7 @@ Status:
 Current recommendation:
 
 ```text
-Ask the user to choose from BRANCH_SHORTLIST_DECISION_SURFACE.md:
+Ask the user to choose from planning/BRANCH_SHORTLIST_DECISION_SURFACE.md:
 A. Geometry Critic + Executive Memory, Composer as support
 B. Add Dynamic Object Permanence as third finalist
 C. Keep all six branches; first fill proxy case cards
@@ -777,9 +777,9 @@ New sources added (arXiv IDs verified in this cycle):
 
 Files updated:
 
-- `FRONTIER_SOURCE_MAP.md`
+- `sources/FRONTIER_SOURCE_MAP.md`
 - `registry/source_registry.md`
-- `ARCHITECTURE_MECHANISM_INTAKE.md`
+- `planning/ARCHITECTURE_MECHANISM_INTAKE.md`
 - this file
 - `WORKFLOW_STATUS.md`
 

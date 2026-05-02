@@ -26,7 +26,7 @@ Agents should use `AGENT_MASTER_PROMPT.md` as the entry prompt, then use this fi
 Frontend handoff prompt:
 
 ```text
-E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md
 ```
 
 Use this when KYKT app frontend design tasks must be handed to Gemini CLI or another frontend implementation agent.
@@ -168,7 +168,7 @@ Codex / Dream should:
 - define target surfaces and constraints
 - define functional vs placeholder boundaries
 - define acceptance criteria and build/test commands
-- update `FRONTEND_DESIGN_HANDOFF_PROMPT.md` or a task-specific prompt under `Coding\4.06\vision_ui`
+- update `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` or a task-specific prompt under `Coding\4.06\vision_ui`
 
 Codex / Dream should not edit frontend code unless the user explicitly asks for direct frontend implementation.
 

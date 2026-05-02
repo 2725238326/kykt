@@ -370,7 +370,7 @@ We instantiate this formulation as a research graph and use it to derive candida
 The branch matrix now has a first comparative pass. The next concrete artifact is refinement of:
 
 ```text
-ARCHITECTURE_MECHANISM_INTAKE.md
+planning/ARCHITECTURE_MECHANISM_INTAKE.md
 ```
 
 Required next refinements:

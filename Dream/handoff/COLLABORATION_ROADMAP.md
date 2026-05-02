@@ -105,8 +105,8 @@ Use when:
 
 Outputs:
 
-- updated `RESEARCH_UNIT_BANK.md`
-- updated `IDEA_SCOREBOARD.md`
+- updated `units/RESEARCH_UNIT_BANK.md`
+- updated `units/IDEA_SCOREBOARD.md`
 - decision memo if a route should be chosen
 
 ### Type B: Source / Literature Cycle
@@ -118,7 +118,7 @@ Use when:
 
 Outputs:
 
-- `FRONTIER_SOURCE_MAP.md`
+- `sources/FRONTIER_SOURCE_MAP.md`
 - `registry/source_registry.md`
 - cycle log
 - new or updated RUs

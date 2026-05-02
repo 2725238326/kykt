@@ -113,7 +113,7 @@ Important: during actual execution, verify this information online because proje
 File:
 
 ```text
-E:\kykt\Dream\FRONTIER_SOURCE_MAP.md
+E:\kykt\Dream\sources\FRONTIER_SOURCE_MAP.md
 ```
 
 Required sections:
@@ -135,7 +135,7 @@ direct_3r | architecture_transfer | demo_enabler | background | defer
 File:
 
 ```text
-E:\kykt\Dream\RESEARCH_UNIT_BANK.md
+E:\kykt\Dream\units\RESEARCH_UNIT_BANK.md
 ```
 
 Each unit follows:
@@ -169,7 +169,7 @@ Target count for first pass:
 File:
 
 ```text
-E:\kykt\Dream\IDEA_SCOREBOARD.md
+E:\kykt\Dream\units\IDEA_SCOREBOARD.md
 ```
 
 Columns:
@@ -201,7 +201,7 @@ Do not let pure novelty outrank feasibility unless the idea is kept explicitly a
 File:
 
 ```text
-E:\kykt\Dream\MINIMAL_DEMO_CANDIDATES.md
+E:\kykt\Dream\planning\MINIMAL_DEMO_CANDIDATES.md
 ```
 
 Evaluate at least five possible teacher-demo forms:
@@ -226,7 +226,7 @@ For each demo:
 File:
 
 ```text
-E:\kykt\Dream\PHASE1_DECISION_MEMO.md
+E:\kykt\Dream\archive\PHASE1_DECISION_MEMO.md
 ```
 
 This is written after the first source map and scoring pass.

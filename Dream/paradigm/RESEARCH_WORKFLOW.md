@@ -25,7 +25,7 @@ E:\kykt\Dream\AGENT_MASTER_PROMPT.md
 Canonical frontend handoff prompt:
 
 ```text
-E:\kykt\Dream\FRONTEND_DESIGN_HANDOFF_PROMPT.md
+E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md
 ```
 
 ## Operating Principle
@@ -93,7 +93,7 @@ Goal:
 
 Outputs:
 
-- updated `IDEA_SCOREBOARD.md`
+- updated `units/IDEA_SCOREBOARD.md`
 - cycle-specific ranking
 
 Completion rule:
@@ -262,8 +262,8 @@ These roles can be handled by one agent or delegated to subagents when explicitl
 ## Canonical Files
 
 - `RESEARCH_STATE.md`: current global state
-- `RESEARCH_PARADIGM.md`: high-level research philosophy
-- `RESEARCH_WORKFLOW.md`: operational process
+- `paradigm/RESEARCH_PARADIGM.md`: high-level research philosophy
+- `paradigm/RESEARCH_WORKFLOW.md`: operational process
 - `registry/source_registry.md`: source index
 - `registry/research_unit_registry.md`: research unit index
 - `registry/decision_registry.md`: decision index
@@ -271,4 +271,4 @@ These roles can be handled by one agent or delegated to subagents when explicitl
 - `decisions/`: decision memos
 - `experiments/`: experiment and smoke-test plans
 - `templates/`: reusable forms
-- `FRONTEND_DESIGN_HANDOFF_PROMPT.md`: Gemini CLI / frontend agent handoff prompt
+- `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`: Gemini CLI / frontend agent handoff prompt

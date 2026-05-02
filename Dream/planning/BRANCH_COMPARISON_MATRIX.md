@@ -66,7 +66,7 @@ No branch is discarded. No finalist set is approved yet.
 The action taxonomy and proxy metric first pass now lives in:
 
 ```text
-ACTION_TAXONOMY_AND_PROXY_METRICS.md
+planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md
 ```
 
 Before drafting a mechanism spec for any single branch, prepare a shortlist decision surface:

@@ -5,10 +5,10 @@ Status: branch-neutral form. One card per scenario, per proxy metric.
 Use with:
 
 ```text
-ACTION_TAXONOMY_AND_PROXY_METRICS.md (A1-A8, P1-P8, evidence vector)
-ARCHITECTURE_MECHANISM_INTAKE.md (mechanism families and comparator groups)
-BRANCH_SHORTLIST_DECISION_SURFACE.md (branch ownership of actions)
-RESEARCH_GRAPH_AND_PAPER_START.md (failure modes F1-F6, mechanism nodes M1-M18, composition edges C1-C16)
+planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md (A1-A8, P1-P8, evidence vector)
+planning/ARCHITECTURE_MECHANISM_INTAKE.md (mechanism families and comparator groups)
+planning/BRANCH_SHORTLIST_DECISION_SURFACE.md (branch ownership of actions)
+planning/RESEARCH_GRAPH_AND_PAPER_START.md (failure modes F1-F6, mechanism nodes M1-M18, composition edges C1-C16)
 ```
 
 A case card must not claim measured performance. It records a predicted action, predicted proxy values, and a comparison against named comparator policies, with an explicit evidence label.
