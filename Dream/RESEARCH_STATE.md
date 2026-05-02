@@ -639,6 +639,30 @@ When a workflow artifact is created or promoted, update AGENT_MASTER_PROMPT.md,
 README.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md, and the current cycle log.
 ```
 
+## Agent Handoff Prompt Update
+
+Decision:
+
+```text
+The old short invocation that asks agents to build the graph and fill BRANCH_COMPARISON_MATRIX.md is stale.
+Future agents should continue from the shortlist stage.
+```
+
+Updated:
+
+- `AGENT_MASTER_PROMPT.md` mandatory load protocol now includes:
+  - `ARCHITECTURE_MECHANISM_INTAKE.md`
+  - `ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+  - `BRANCH_SHORTLIST_DECISION_SURFACE.md`
+- `AGENT_MASTER_PROMPT.md` short invocation now tells agents to prepare proxy case-card templates and user-approved finalist mechanism specs, not to repeat graph/matrix filling.
+- `registry/decision_registry.md` records this as DEC-20260502-004.
+
+Current handoff instruction:
+
+```text
+Use E:\kykt\Dream\AGENT_MASTER_PROMPT.md as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode from the current shortlist stage: use BRANCH_SHORTLIST_DECISION_SURFACE.md, ACTION_TAXONOMY_AND_PROXY_METRICS.md, and ARCHITECTURE_MECHANISM_INTAKE.md to prepare proxy case-card templates and user-approved finalist mechanism specs. Do not reproduce models, download checkpoints, train/fine-tune, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation. Keep guidance files synchronized when creating or promoting workflow artifacts.
+```
+
 ## Paper-Writing Value Of Broad Mechanism Intake
 
 User correction:

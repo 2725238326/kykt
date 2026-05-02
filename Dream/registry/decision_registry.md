@@ -22,3 +22,4 @@ Status: seeded.
 | DEC-20260502-001 | 2026-05-02 | research process | Compare multiple research branches before betting on one direction | accepted | no | `decisions/DEC-20260502-001-multi-track-before-bet.md` |
 | DEC-20260502-002 | 2026-05-02 | research process | Track broad architecture and visual methods through a failure-mode/action/proxy-metric intake map before promoting them to branches | accepted | no | `decisions/DEC-20260502-002-architecture-mechanism-intake.md` |
 | DEC-20260502-003 | 2026-05-02 | workflow hygiene | Keep guidance files synchronized whenever a workflow artifact is created or promoted | accepted | no | `WORKFLOW_STATUS.md` |
+| DEC-20260502-004 | 2026-05-02 | agent handoff | Promote mechanism intake, action taxonomy, and branch shortlist files into the mandatory load protocol; update short invocation to shortlist-stage continuation | accepted | no | `AGENT_MASTER_PROMPT.md` |
