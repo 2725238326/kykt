@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-02
+Last updated: 2026-05-03 (cycle 008 drafted three finalist mechanism specs after user-approved option B)
 
 ## User Intent
 
@@ -811,3 +811,169 @@ Current recommendation:
 ```text
 Return to the shortlist decision surface (A / B / C). The weakest comparator gaps now have initial primary-source anchors, so mechanism-spec drafting or case-card population can proceed without being blocked on missing comparators.
 ```
+
+## Cycle 009 Research & Code Discipline
+
+Started:
+
+```text
+CYCLE-20260503-001: Research & Code Discipline Adoption
+```
+
+User direction:
+
+```text
+读 forrestchang/andrej-karpathy-skills，在它的基础上为 Dream 的研究和代码规范再加一份规范。
+```
+
+Source:
+
+- `https://github.com/forrestchang/andrej-karpathy-skills`
+- A community-distilled `CLAUDE.md` translating Andrej Karpathy's X-thread observations on LLM coding pitfalls into four behavior principles (Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution).
+
+Decision:
+
+```text
+Adopt as a paradigm-layer behavior file rather than inline edits or a packaged skill.
+Create paradigm/RESEARCH_CODE_DISCIPLINE.md adapting the four principles to Dream's
+synthesis context, plus a fifth Dream-native rule (Honesty Override) that handles
+the truth-tracking pressure unique to research artifacts.
+```
+
+Form selected:
+
+- Single new paradigm file: `paradigm/RESEARCH_CODE_DISCIPLINE.md`
+- Wired into `AGENT_MASTER_PROMPT.md` mandatory load protocol at position 9 (between `RESEARCH_SKILL_RULES_DRAFT.md` and `RESEARCH_CONTENT_ROADMAP.md`)
+- Cross-referenced from `AGENT_MASTER_PROMPT.md` section 11 Tone And Final Response
+
+New artifacts:
+
+- `paradigm/RESEARCH_CODE_DISCIPLINE.md`
+- `cycles/CYCLE-20260503-001.md`
+- `decisions/DEC-20260503-001-research-code-discipline.md`
+
+Files updated for Guidance File Sync Rule:
+
+- `AGENT_MASTER_PROMPT.md` (load protocol + tone section + last-updated)
+- `README.md` (paradigm key files list + last-updated)
+- `INDEX.md` (paradigm/ table + Find By Question table + last-updated)
+- `WORKFLOW_STATUS.md` (active workstreams + last-updated)
+- `RESEARCH_STATE.md` (this entry)
+- `paradigm/RESEARCH_SKILL_RULES_DRAFT.md` (cross-reference)
+- `registry/decision_registry.md` (DEC-20260503-001 row)
+
+Status:
+
+- behavior rulebook is active
+- no thesis finalized
+- no branch selected
+- no reproduction authorized
+- shortlist decision (A / B / C / D in `BRANCH_SHORTLIST_DECISION_SURFACE.md`) still blocked on user
+
+Why this happens before the shortlist decision:
+
+- The discipline file applies regardless of which finalist set is chosen, so it does not pre-judge A / B / C / D.
+- Future cycle work (case cards, mechanism specs, scoreboard updates) becomes more rigorous once the rulebook is in place; doing it after a shortlist decision would force re-edits.
+- Falls under "prompt/rule refinement," which `AGENT_MASTER_PROMPT.md` section 6 lists as not requiring user approval.
+
+Current recommendation (unchanged):
+
+```text
+Return to BRANCH_SHORTLIST_DECISION_SURFACE.md and choose A / B / C / D.
+The discipline rules now apply automatically once a finalist set is approved.
+```
+
+## Cycle 010 Finalist Mechanism Specs
+
+Started:
+
+```text
+CYCLE-20260503-002: Finalist Mechanism Specs - Critic + Memory + Permanence
+```
+
+Running counter note:
+
+```text
+This RESEARCH_STATE.md uses sequential per-section headers, so this section is
+labeled "Cycle 010" (continuing 006 / 007 / 008 / 009 above). The cycle log
+itself (`cycles/CYCLE-20260503-002.md`) uses an internal running counter that
+calls this "cycle 008" because it counts substantive research-process cycles
+differently. Both counters point to the same physical cycle file. Discipline
+rule 3 (Surgical Edits) means we do not retro-renumber here; the discrepancy
+is documented and can be reconciled in a later dedicated cycle if the user
+wants a single canonical counter.
+```
+
+User direction:
+
+```text
+"B方案吧，同时我们在这个过程里还需要很多次讨论，请你继续推进！"
+```
+
+Translated: option B from `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md` (add Dynamic Object Permanence as a third finalist), with explicit collaboration framing ("we need many more discussions").
+
+Decision:
+
+```text
+Adopt three finalists (Geometry Critic + Executive Memory + Dynamic Object
+Permanence). Composer remains supporting layer. Cross-Modal and Active
+Perception remain alive at lower priority but not in this finalist set.
+Each finalist owns <=3 actions per Discipline rule 2 and carries an
+explicit fail-fast condition per Discipline rule 4.
+```
+
+Spec ownership map (recorded in case the user wants to renegotiate):
+
+- Geometry Critic SPEC-20260503-001: owns A4 + A5; primary proxy P1 + P5.
+- Executive Memory SPEC-20260503-002: owns A1 + A2 + A3; primary proxy P2 + P3.
+- Dynamic Object Permanence SPEC-20260503-003: owns A6 only; primary proxy P4 + identity_consistency.
+
+Cross-spec read-only signals are explicit in each spec to prevent action collisions.
+
+L2 evidence base for cycle 011 (next cycle):
+
+- 20260420-222729 MASt3R static pair (matches.png + ply)
+- 20260420-222928 MonST3R 48 frames + 96 dynamic masks + 96 confidence arrays
+- 20260425-113002 Fast3R pointcloud + camera_poses + confidence_summary
+- 20260425-113227 Spann3R pointcloud + transforms.json
+
+This inventory is what makes L2 case cards cheap. No reproduction. No checkpoint download. No remote runs. Annotation budget capped per spec (60 min hard cap on Permanence MonST3R job).
+
+New artifacts:
+
+- `specs/SPEC-20260503-001-geometry-critic.md`
+- `specs/SPEC-20260503-002-executive-memory.md`
+- `specs/SPEC-20260503-003-dynamic-object-permanence.md`
+- `decisions/DEC-20260503-002-finalist-shortlist-approval.md`
+- `cycles/CYCLE-20260503-002.md`
+
+Files updated for Guidance File Sync Rule:
+
+- `WORKFLOW_STATUS.md` (active workstreams + recommended-next + last-updated)
+- `RESEARCH_STATE.md` (this entry)
+- `INDEX.md` (specs/ row)
+- `README.md` (specs/ subdirectory mention)
+- `registry/decision_registry.md` (DEC-20260503-002 row)
+- `registry/research_unit_registry.md` (RU-003 / RU-011 / RU-013 / RU-015 decision = `spec_drafted`)
+- `units/RESEARCH_UNIT_BANK.md` (Last updated; decision lines on same four RUs)
+
+Status after cycle 010:
+
+- 3 finalist specs drafted at L1 (design level), branch-neutral, with proxy plans defined
+- L2 case cards reserved as `CASE-20260504-CRITIC-01..03`, `CASE-20260504-MEMORY-01..03`, `CASE-20260504-PERMANENCE-01..03` for the next cycle
+- no thesis finalized
+- no reproduction authorized
+- no KYKT navigation change
+- Composer remains supporting layer
+- Cross-Modal and Active Perception remain alive at lower priority
+
+Why this falls inside agent autonomy:
+
+- `AGENT_MASTER_PROMPT.md` section 6 lists "drafting a mechanism spec only for an approved finalist branch" as authorized once branch finalist approval is on file. The user gate was DEC-20260503-002.
+
+Next discussion points (also surfaced in the cycle log and inside each spec):
+
+1. Which spec gets the first L2 case-card pass in cycle 011? Default: Critic.
+2. Composer L1 vs L2 framing: fourth spec when a finalist clears, or undocumented support.
+3. First teacher-facing demo target: Critic timeline / Memory simulation / Permanence object-track.
+4. Annotation cost ceiling for cycle 011 (Permanence has a hard 60-minute fail-fast).

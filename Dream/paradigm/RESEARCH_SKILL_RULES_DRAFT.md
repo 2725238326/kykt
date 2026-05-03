@@ -1,11 +1,23 @@
 # Research Skill / Rules Draft
 
-Last updated: 2026-05-01
+Last updated: 2026-05-03
 
 This draft will later become:
 
 1. a project-local Dream research rulebook
 2. possibly a reusable Codex skill
+
+A lighter behavior layer sits below this draft:
+
+```text
+E:\kykt\Dream\paradigm\RESEARCH_CODE_DISCIPLINE.md
+```
+
+`RESEARCH_CODE_DISCIPLINE.md` adapts Andrej Karpathy's four LLM-coding principles
+(Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution)
+into Dream's synthesis context and adds a fifth Dream-native Honesty Override.
+This draft remains the long-form ruleset; the discipline file is what an agent
+should mentally pass through before producing a durable artifact.
 
 ## Candidate Skill Name
 

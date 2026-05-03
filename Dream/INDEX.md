@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-02 (cycle 006 workspace reorganization)
+Last updated: 2026-05-03 (cycle 008 added specs/ subdirectory after user-approved option B finalist set)
 
 Quick navigation for humans and agents. For full operating rules, read `AGENT_MASTER_PROMPT.md` first.
 
@@ -31,6 +31,7 @@ Quick navigation for humans and agents. For full operating rules, read `AGENT_MA
 | `RESEARCH_WORKFLOW.md` | Source-to-implementation operational workflow |
 | `RESEARCH_DATA_MODEL.md` | Schema for sources, mechanisms, RUs, decisions, experiments |
 | `RESEARCH_SKILL_RULES_DRAFT.md` | Evolving rules for a future Codex skill |
+| `RESEARCH_CODE_DISCIPLINE.md` | Behavior rules for synthesis and Dream-driven code (Karpathy-adapted + honesty override) |
 | `RESEARCH_CONTENT_ROADMAP.md` | Research-content-first roadmap and axes |
 
 ### `planning/` - Active Research Planning
@@ -94,6 +95,16 @@ Format: `DEC-YYYYMMDD-NNN-<slug>.md`. Indexed in `registry/decision_registry.md`
 
 Format: `EXP-YYYYMMDD-NNN-<slug>.md`. Filing here does not mean the experiment was run.
 
+### `specs/` - Finalist Mechanism Specs
+
+Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branch. Created via `templates/finalist_mechanism_spec.md`. Drafting a spec does not authorize reproduction, training, checkpoint download, or KYKT navigation change.
+
+| File | Role |
+|---|---|
+| `SPEC-20260503-001-geometry-critic.md` | Geometry Critic / System-2 3R finalist spec (A4 + A5; P1 + P5) |
+| `SPEC-20260503-002-executive-memory.md` | Executive Memory / State Governance finalist spec (A1 + A2 + A3; P2 + P3) |
+| `SPEC-20260503-003-dynamic-object-permanence.md` | Dynamic Object Permanence / 4D Memory finalist spec (A6; P4 + identity_consistency) |
+
 ### `registry/` - Lightweight Indexes
 
 | File | Role |
@@ -124,8 +135,10 @@ Format: `EXP-YYYYMMDD-NNN-<slug>.md`. Filing here does not mean the experiment w
 | What sources do we know about? | `sources/FRONTIER_SOURCE_MAP.md` and `registry/source_registry.md` |
 | What ideas are on the table? | `units/RESEARCH_UNIT_BANK.md`, `units/IDEA_SCOREBOARD.md` |
 | Why this branch and not that one? | `planning/BRANCH_COMPARISON_MATRIX.md`, `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md` |
+| Which branches are user-approved finalists, and what are their specs? | `specs/` (one file per finalist) |
 | What can Dream do without asking the user? | `AGENT_MASTER_PROMPT.md` section 6 |
 | What requires user approval? | `AGENT_MASTER_PROMPT.md` section 6 + `WORKFLOW_STATUS.md` Blocked Until User Decision |
+| How should I behave when synthesizing or editing files? | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
 | What is the latest research result? | newest file under `cycles/` |
 | What did we decide? | `registry/decision_registry.md` and files under `decisions/` |
 | What experiments are planned? | files under `experiments/` |

@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-02 (cycle 006 workspace reorganization)
+Last updated: 2026-05-03 (cycle 007 added research & code discipline)
 
 Status: canonical entry prompt for Dream research agents.
 
@@ -26,17 +26,18 @@ Before proposing or doing work, read these files in order:
 6. `E:\kykt\Dream\paradigm\RESEARCH_DATA_MODEL.md`
 7. `E:\kykt\Dream\paradigm\RESEARCH_PARADIGM.md`
 8. `E:\kykt\Dream\paradigm\RESEARCH_SKILL_RULES_DRAFT.md`
-9. `E:\kykt\Dream\paradigm\RESEARCH_CONTENT_ROADMAP.md`
-10. `E:\kykt\Dream\planning\MULTI_TRACK_RESEARCH_CANVAS.md`
-11. `E:\kykt\Dream\planning\RESEARCH_GRAPH_AND_PAPER_START.md`
-12. `E:\kykt\Dream\planning\BRANCH_COMPARISON_MATRIX.md`
-13. `E:\kykt\Dream\planning\ARCHITECTURE_MECHANISM_INTAKE.md`
-14. `E:\kykt\Dream\planning\ACTION_TAXONOMY_AND_PROXY_METRICS.md`
-15. `E:\kykt\Dream\planning\BRANCH_SHORTLIST_DECISION_SURFACE.md`
-16. `E:\kykt\Dream\registry\decision_registry.md`
-17. `E:\kykt\Dream\registry\research_unit_registry.md`
-18. `E:\kykt\Dream\registry\source_registry.md`
-19. `E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+9. `E:\kykt\Dream\paradigm\RESEARCH_CODE_DISCIPLINE.md`
+10. `E:\kykt\Dream\paradigm\RESEARCH_CONTENT_ROADMAP.md`
+11. `E:\kykt\Dream\planning\MULTI_TRACK_RESEARCH_CANVAS.md`
+12. `E:\kykt\Dream\planning\RESEARCH_GRAPH_AND_PAPER_START.md`
+13. `E:\kykt\Dream\planning\BRANCH_COMPARISON_MATRIX.md`
+14. `E:\kykt\Dream\planning\ARCHITECTURE_MECHANISM_INTAKE.md`
+15. `E:\kykt\Dream\planning\ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+16. `E:\kykt\Dream\planning\BRANCH_SHORTLIST_DECISION_SURFACE.md`
+17. `E:\kykt\Dream\registry\decision_registry.md`
+18. `E:\kykt\Dream\registry\research_unit_registry.md`
+19. `E:\kykt\Dream\registry\source_registry.md`
+20. `E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 
 Then inspect the most relevant active file for the requested task:
 
@@ -47,6 +48,7 @@ Then inspect the most relevant active file for the requested task:
 - architecture mechanism intake / action taxonomy / proxy metrics: `planning/ARCHITECTURE_MECHANISM_INTAKE.md`
 - compact action taxonomy / proxy validation protocols: `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`
 - multi-track direction control: `planning/MULTI_TRACK_RESEARCH_CANVAS.md`
+- behavior discipline for synthesis and code: `paradigm/RESEARCH_CODE_DISCIPLINE.md`
 - idea synthesis: `units/RESEARCH_UNIT_BANK.md`
 - scoring: `units/IDEA_SCOREBOARD.md`
 - demo planning: `planning/MINIMAL_DEMO_CANDIDATES.md`
@@ -391,6 +393,7 @@ In final responses:
 - state what is still blocked or requires user decision
 - do not overclaim research validity
 - do not say reproduction was done unless it was actually done
+- follow `paradigm/RESEARCH_CODE_DISCIPLINE.md` rule 5 (Honesty Override): tone must follow evidence label; retracted claims must be stated, not silently overwritten
 
 ---
 

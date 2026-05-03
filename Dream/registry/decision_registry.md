@@ -1,6 +1,6 @@
 # Decision Registry
 
-Last updated: 2026-05-02 (cycle 006 workspace reorganization)
+Last updated: 2026-05-03 (cycle 008 added DEC-20260503-002 finalist shortlist approval)
 
 Status: seeded.
 
@@ -24,3 +24,5 @@ Status: seeded.
 | DEC-20260502-003 | 2026-05-02 | workflow hygiene | Keep guidance files synchronized whenever a workflow artifact is created or promoted | accepted | no | `WORKFLOW_STATUS.md` |
 | DEC-20260502-004 | 2026-05-02 | agent handoff | Promote mechanism intake, action taxonomy, and branch shortlist files into the mandatory load protocol; update short invocation to shortlist-stage continuation | accepted | no | `AGENT_MASTER_PROMPT.md` |
 | DEC-20260502-005 | 2026-05-02 | workspace | Reorganize Dream into topical subdirectories (paradigm/, planning/, sources/, units/, handoff/, logs/, archive/) and add INDEX.md as navigation entry | accepted | yes (user approved Stage A + B + C) | `decisions/DEC-20260502-005-workspace-reorganization.md` |
+| DEC-20260503-001 | 2026-05-03 | paradigm / agent behavior | Adopt `paradigm/RESEARCH_CODE_DISCIPLINE.md` as the active behavior rulebook (Karpathy four principles + Dream-native Honesty Override); wire into mandatory load protocol | accepted | no (prompt/rule refinement) | `decisions/DEC-20260503-001-research-code-discipline.md` |
+| DEC-20260503-002 | 2026-05-03 | thesis shortlist / mechanism-spec authorization | User approved option B (Geometry Critic + Executive Memory + Dynamic Object Permanence as finalists; Composer support; Cross-Modal and Active Perception alive at lower priority); authorize drafting three finalist mechanism specs under `specs/` and reserving L2 case cards for cycle 011; thesis selection remains gated | accepted | yes (this DEC IS the user approval gate) | `decisions/DEC-20260503-002-finalist-shortlist-approval.md` |

@@ -1,6 +1,6 @@
 # Research Unit Bank
 
-Last updated: 2026-05-01
+Last updated: 2026-05-03 (cycle 008 promoted RU-003 / RU-011 / RU-013 / RU-015 to `spec_drafted`)
 
 This is an initial bank. Scores and decisions may change after subagent outputs are merged.
 
@@ -169,6 +169,7 @@ Risks:
 Decision:
 
 - Strong demo + research bridge candidate.
+- 2026-05-03 (cycle 008): promoted to `spec_drafted` and linked to `specs/SPEC-20260503-001-geometry-critic.md` (Critic finalist owns A4 + A5; primary proxy P1 + P5). Next action is `CASE-20260504-CRITIC-01..03` in cycle 011.
 
 ## RU-004: External Sparse Spatial Memory for 3R
 
@@ -599,6 +600,7 @@ Risks:
 Decision:
 
 - Merge with RU-003 as the main System-2 direction.
+- 2026-05-03 (cycle 008): promoted to `spec_drafted` and linked to `specs/SPEC-20260503-001-geometry-critic.md` jointly with RU-003. Next action is `CASE-20260504-CRITIC-01..03` in cycle 011.
 
 ## RU-012: Self-Adapt Adapter for 3R
 
@@ -708,6 +710,7 @@ Risks:
 Decision:
 
 - Keep as a required comparator branch for any final thesis.
+- 2026-05-03 (cycle 008): promoted to `spec_drafted` and linked to `specs/SPEC-20260503-003-dynamic-object-permanence.md` (Permanence finalist owns A6; primary proxy P4 + identity_consistency; 4DGS asset path explicitly out of scope). Next action is `CASE-20260504-PERMANENCE-01..03` in cycle 011.
 
 ## RU-014: Long-Context Hybrid Memory Benchmark
 
@@ -850,3 +853,4 @@ Risks:
 Decision:
 
 - New top architecture thesis candidate, not final.
+- 2026-05-03 (cycle 008): promoted to `spec_drafted` and linked to `specs/SPEC-20260503-002-executive-memory.md` (Memory finalist owns A1 + A2 + A3; primary proxy P2 + P3). Thesis status remains "candidate, not final"; spec drafting does not select the thesis. Next action is `CASE-20260504-MEMORY-01..03` in cycle 011.

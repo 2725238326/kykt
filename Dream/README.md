@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-02 (cycle 006 workspace reorganization)
+Last updated: 2026-05-03 (cycle 008 added specs/ subdirectory after user-approved option B finalist set)
 
 ## Purpose
 
@@ -86,6 +86,7 @@ Subdirectories:
 - `cycles/`: per-cycle research logs.
 - `decisions/`: decision memos that require commitment or deferral.
 - `experiments/`: experiment plans; a file here does not mean the experiment has been run.
+- `specs/`: finalist mechanism specs (one per user-approved finalist branch; created via `templates/finalist_mechanism_spec.md`).
 - `registry/`: lightweight indexes for sources, research units, and decisions.
 - `templates/`: reusable forms (source card, research unit, decision memo, cycle log, experiment plan, frontend design handoff, proxy case card, finalist mechanism spec).
 
@@ -95,6 +96,7 @@ Key files by subdirectory:
 - `paradigm/RESEARCH_WORKFLOW.md`: source-to-implementation workflow.
 - `paradigm/RESEARCH_DATA_MODEL.md`: schema for sources, mechanisms, units, decisions, experiments.
 - `paradigm/RESEARCH_SKILL_RULES_DRAFT.md`: evolving rules for a project skill and future Codex skill.
+- `paradigm/RESEARCH_CODE_DISCIPLINE.md`: behavior rules for research synthesis and Dream-driven code (adapted from Karpathy's CLAUDE.md observations + a Dream-native honesty override).
 - `paradigm/RESEARCH_CONTENT_ROADMAP.md`: research-content-first roadmap.
 - `planning/MULTI_TRACK_RESEARCH_CANVAS.md`: multi-branch comparison canvas.
 - `planning/RESEARCH_GRAPH_AND_PAPER_START.md`: graph-based research method and paper scaffold.
