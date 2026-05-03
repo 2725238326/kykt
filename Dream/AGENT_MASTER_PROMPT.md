@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-03 (cycle 007 added research & code discipline)
+Last updated: 2026-05-04 (cycle 008.5 added literature/INDEX, paradigm/CROSS_SPEC_SIGNAL_CONTRACT, paradigm/TEACHER_AUDIENCE_PROFILE to load protocol; promoted Composer to fourth finalist via SPEC-20260504-001)
 
 Status: canonical entry prompt for Dream research agents.
 
@@ -38,6 +38,9 @@ Before proposing or doing work, read these files in order:
 18. `E:\kykt\Dream\registry\research_unit_registry.md`
 19. `E:\kykt\Dream\registry\source_registry.md`
 20. `E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+21. `E:\kykt\Dream\paradigm\CROSS_SPEC_SIGNAL_CONTRACT.md`
+22. `E:\kykt\Dream\paradigm\TEACHER_AUDIENCE_PROFILE.md`
+23. `E:\kykt\Dream\literature\INDEX.md`
 
 Then inspect the most relevant active file for the requested task:
 
@@ -54,6 +57,11 @@ Then inspect the most relevant active file for the requested task:
 - demo planning: `planning/MINIMAL_DEMO_CANDIDATES.md`
 - reproduction readiness: `units/REPRODUCTION_READINESS_MATRIX.md`
 - frontend design handoff: `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+- finalist specs (one per user-approved finalist): files under `specs/`, including `SPEC-20260504-001-3r-composer.md`
+- cross-spec signal contract: `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md`
+- teacher audience profile (gates D3): `paradigm/TEACHER_AUDIENCE_PROFILE.md`
+- consolidated risk view: `planning/WORK_RISK_REGISTER.md`
+- literature guidance (curated reading order, deconfusion, paper skeleton): `literature/INDEX.md`, `literature/SPINE_CRITIC.md`, `literature/SPINE_MEMORY.md`, `literature/SPINE_PERMANENCE.md`, `literature/SPINE_COMPOSER.md`, `literature/CRITICAL_NOTES.md`, `literature/PAPER_RELATED_WORK_SKELETON.md`
 - phase decisions: `archive/PHASE1_DECISION_MEMO.md` (historical)
 - current cycle: newest file under `cycles/`
 - experiment planning: relevant file under `experiments/`

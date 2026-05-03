@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-03 (cycle 008 added specs/ subdirectory after user-approved option B finalist set)
+Last updated: 2026-05-04 (cycle 008.5 added literature/ guidance board, paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md, paradigm/TEACHER_AUDIENCE_PROFILE.md, planning/WORK_RISK_REGISTER.md, templates/demo_storyboard.md, and SPEC-20260504-001 for Composer finalist)
 
 ## Purpose
 
@@ -76,8 +76,8 @@ Root-level files (entry points):
 
 Subdirectories:
 
-- `paradigm/`: how Dream operates (paradigm, workflow, data model, rules draft, content roadmap).
-- `planning/`: active research-planning artifacts (graph, branch matrix, shortlist surface, mechanism intake, action taxonomy, multi-track canvas, thesis stress test, minimal demo candidates).
+- `paradigm/`: how Dream operates (paradigm, workflow, data model, rules draft, content roadmap, cross-spec signal contract, teacher audience profile placeholder).
+- `planning/`: active research-planning artifacts (graph, branch matrix, shortlist surface, mechanism intake, action taxonomy, multi-track canvas, thesis stress test, minimal demo candidates, work risk register).
 - `sources/`: source mining artifacts (`FRONTIER_SOURCE_MAP.md`).
 - `units/`: Research Units, scoring, reproduction readiness.
 - `handoff/`: collaboration roadmap and frontend handoff prompt for Gemini CLI.
@@ -86,9 +86,10 @@ Subdirectories:
 - `cycles/`: per-cycle research logs.
 - `decisions/`: decision memos that require commitment or deferral.
 - `experiments/`: experiment plans; a file here does not mean the experiment has been run.
+- `literature/`: literature guidance board (curated reading order, deconfusion notes, paper-related-work skeleton); not a duplicate inventory.
 - `specs/`: finalist mechanism specs (one per user-approved finalist branch; created via `templates/finalist_mechanism_spec.md`).
 - `registry/`: lightweight indexes for sources, research units, and decisions.
-- `templates/`: reusable forms (source card, research unit, decision memo, cycle log, experiment plan, frontend design handoff, proxy case card, finalist mechanism spec).
+- `templates/`: reusable forms (source card, research unit, decision memo, cycle log, experiment plan, frontend design handoff, proxy case card, finalist mechanism spec, demo storyboard).
 
 Key files by subdirectory:
 
@@ -98,6 +99,8 @@ Key files by subdirectory:
 - `paradigm/RESEARCH_SKILL_RULES_DRAFT.md`: evolving rules for a project skill and future Codex skill.
 - `paradigm/RESEARCH_CODE_DISCIPLINE.md`: behavior rules for research synthesis and Dream-driven code (adapted from Karpathy's CLAUDE.md observations + a Dream-native honesty override).
 - `paradigm/RESEARCH_CONTENT_ROADMAP.md`: research-content-first roadmap.
+- `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md`: formal contract for read-only / handoff signals between finalist specs (v1 covers Critic / Memory / Permanence / Composer).
+- `paradigm/TEACHER_AUDIENCE_PROFILE.md`: placeholder file for the user to populate; gates D3 (first teacher demo target).
 - `planning/MULTI_TRACK_RESEARCH_CANVAS.md`: multi-branch comparison canvas.
 - `planning/RESEARCH_GRAPH_AND_PAPER_START.md`: graph-based research method and paper scaffold.
 - `planning/BRANCH_COMPARISON_MATRIX.md`: branch-level comparison matrix.
@@ -106,6 +109,7 @@ Key files by subdirectory:
 - `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`: compact A1-A8 action taxonomy and P1-P8 proxy protocols.
 - `planning/DREAM3R_THESIS_STRESS_TEST.md`: Dream3R / GEM-3R candidate stress test.
 - `planning/MINIMAL_DEMO_CANDIDATES.md`: teacher-demo candidate analysis.
+- `planning/WORK_RISK_REGISTER.md`: consolidated cross-spec risk view (per-spec risks aggregated; cross-spec risks like contract drift, annotation budget overflow, numbering reconciliation).
 - `sources/FRONTIER_SOURCE_MAP.md`: verified and pending source map.
 - `units/RESEARCH_UNIT_BANK.md`: structured Dream Research Units.
 - `units/IDEA_SCOREBOARD.md`: score table for candidate ideas.

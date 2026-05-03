@@ -98,6 +98,20 @@ Format: `DEC-YYYYMMDD-NNN-<slug>.md`. Indexed in `registry/decision_registry.md`
 
 Format: `EXP-YYYYMMDD-NNN-<slug>.md`. Filing here does not mean the experiment was run.
 
+### `literature/` - Literature Guidance Board
+
+Curated guidance, not inventory. Inventories live in `sources/FRONTIER_SOURCE_MAP.md` and `registry/source_registry.md`.
+
+| File | Role |
+|---|---|
+| `INDEX.md` | Entry point; usage rules; pointers to inventories so guidance and inventory do not duplicate |
+| `SPINE_CRITIC.md` | Required + advanced + skip-with-reason reading for the Critic finalist (SPEC-20260503-001); cross-paper disagreements; spec interface |
+| `SPINE_MEMORY.md` | Same structure for the Executive Memory finalist (SPEC-20260503-002) |
+| `SPINE_PERMANENCE.md` | Same structure for the Dynamic Object Permanence finalist (SPEC-20260503-003) |
+| `SPINE_COMPOSER.md` | Same structure for the Composer finalist (SPEC-20260504-001); MoE routing as cross-domain analog |
+| `CRITICAL_NOTES.md` | Running log of "looks like X is X' but actually" insights; deconfusion of commonly-confused mechanisms |
+| `PAPER_RELATED_WORK_SKELETON.md` | Section list mapped to F1-F6 failure modes; populated from SPINE files; updates as case cards land |
+
 ### `specs/` - Finalist Mechanism Specs
 
 Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branch. Created via `templates/finalist_mechanism_spec.md`. Drafting a spec does not authorize reproduction, training, checkpoint download, or KYKT navigation change.
@@ -129,6 +143,7 @@ Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branc
 | `frontend_design_handoff.md` | Frontend task brief form for Gemini CLI |
 | `proxy_case_card.md` | Branch-neutral L2 proxy case-card form (P1-P8) |
 | `finalist_mechanism_spec.md` | Branch-neutral mechanism spec form (requires user approval) |
+| `demo_storyboard.md` | Branch-neutral teacher demo storyboard skeleton; filling does not authorize showing |
 
 ## Find By Question
 
