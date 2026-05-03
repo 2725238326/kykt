@@ -156,8 +156,9 @@ Still blocked on user approval (unchanged from prior cycles):
 
 ## Guidance File Sync Rule
 
-When Dream creates or promotes a workflow artifact, update the relevant guidance files in the same pass:
+When Dream creates or promotes a workflow artifact, update the relevant guidance files in the same pass. **`TASK_SNAPSHOT.md` updates first in this chain** so that a sync interrupted partway through still leaves a valid resume pointer:
 
+- `TASK_SNAPSHOT.md` (highest-authority resume pointer; updated first; see its own "Update protocol" section for transitions)
 - `AGENT_MASTER_PROMPT.md`
 - `README.md`
 - `WORKFLOW_STATUS.md`
