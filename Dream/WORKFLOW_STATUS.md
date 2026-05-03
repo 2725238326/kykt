@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-03 (cycle 008 drafted three finalist mechanism specs after user-approved option B)
+Last updated: 2026-05-04 (cycle 008.5 closeout: composer finalist upgrade, cross-spec signal contract, literature board v1, supporting artifacts)
 
 ## Current Phase
 
@@ -80,10 +80,18 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Geometry Critic finalist spec | draft (L1); L2 case cards next cycle | `specs/SPEC-20260503-001-geometry-critic.md` |
 | Executive Memory finalist spec | draft (L1); L2 case cards next cycle | `specs/SPEC-20260503-002-executive-memory.md` |
 | Dynamic Object Permanence finalist spec | draft (L1); L2 case cards next cycle | `specs/SPEC-20260503-003-dynamic-object-permanence.md` |
+| 3R Composer finalist spec | draft (L1); L2 case cards next cycle | `specs/SPEC-20260504-001-3r-composer.md` |
+| Cross-spec signal contract | v1 active; first exercise in cycle 009 case cards | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` |
+| Literature guidance board | v1 active (INDEX + four SPINE + CRITICAL_NOTES + PAPER_RELATED_WORK_SKELETON) | `literature/INDEX.md` |
+| Work risk register | v1 active; consolidates per-spec + cross-spec risks | `planning/WORK_RISK_REGISTER.md` |
+| Demo storyboard template | active form; populated per finalist after demo authorization | `templates/demo_storyboard.md` |
+| Teacher audience profile | placeholder; awaits user input to unblock D3 | `paradigm/TEACHER_AUDIENCE_PROFILE.md` |
 | Source mining (cycle 005 pass) | complete for visual priors, depth priors, active perception, event VO | `sources/FRONTIER_SOURCE_MAP.md` (Cycle 005 Source Mining Pass section) |
 | Workspace reorganization (cycle 006) | complete; topical subdirectories + archive/ + INDEX.md | `cycles/CYCLE-20260502-006.md` |
 | Research & code discipline (cycle 007) | active rulebook for synthesis behavior and Dream-driven code | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
 | Finalist shortlist approval (cycle 008) | user-approved option B; three finalist specs drafted | `decisions/DEC-20260503-002-finalist-shortlist-approval.md` |
+| Composer finalist upgrade (cycle 008.5) | user-approved; SPEC-20260504-001 drafted; cross-spec contract formalized | `decisions/DEC-20260504-001-composer-finalist-upgrade.md` |
+| No-all-in posture (cycle 008.5) | user-locked; D3 deferred until cycle 009 case-card data + audience profile | `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md` |
 | Frontend handoff prompt | active | `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` |
 | KYKT backend integration | support only | no backend service changes yet |
 | KYKT frontend integration | downstream only | no UI work unless research content and support contract exist |
@@ -101,16 +109,37 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 008 closed the shortlist gate (option B approved) and drafted three finalist mechanism specs under `specs/`. The next user-facing decisions are:
+Cycle 008.5 closed the cycle 008 follow-up gates. Locked this session:
 
 ```text
-1. Which spec gets the first L2 case-card pass in cycle 009? Default: Critic (cheapest proxy, immediate L2 yes/no). Alternative: Permanence if you want the visual demo earliest.
-2. Composer L1 vs L2 framing: draft Composer as a fourth spec once one of the three finalists clears its first case card, or keep Composer as undocumented support until then?
-3. First teacher-facing demo target: Critic-on-existing-jobs timeline, Memory simulation panel, or Permanence object-track overlay on MonST3R sample?
-4. Annotation cost ceiling for cycle 009 (estimated 1-4 hours per spec; Permanence has a hard 60-minute fail-fast).
+D1 (Critic first): locked; cycle 009 begins with CASE-20260505-CRITIC-01
+D2 (Composer L1 vs L2): locked as upgrade; SPEC-20260504-001 drafted
+D4 (annotation budget): locked at 90-120 minutes per case card
 ```
 
-These four points are also the explicit "next discussion points" carried inside `cycles/CYCLE-20260503-002.md` and at the end of each finalist spec.
+Deferred this session per `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md`:
+
+```text
+D3 (first teacher demo target): deferred until cycle 009 case-card data exists
+                                AND `paradigm/TEACHER_AUDIENCE_PROFILE.md` is populated
+```
+
+Open user decisions surfaced by Composer SPEC and the cross-spec contract:
+
+```text
+1. Cycle 009 ordering: Composer case cards run in parallel with Critic
+   (default; the cross-spec contract is the test path), or sequentially
+   after Critic's first card lands.
+2. Composer capability card source: paper-derived only (default; faster)
+   vs paper-derived + KYKT-job-derived (slower; deferred to cycle 010
+   under default).
+3. Populate `paradigm/TEACHER_AUDIENCE_PROFILE.md` to unblock D3 in a
+   future cycle. The agent will not invent fields.
+4. Authorize cycle 009 to start filling case cards
+   (CASE-20260505-CRITIC-01..03 first, per D1).
+```
+
+These four points are also surfaced in `cycles/CYCLE-20260504-001.md` and inside the Composer spec's `Next Discussion Point For The User` block.
 
 Still blocked on user approval (unchanged from prior cycles):
 

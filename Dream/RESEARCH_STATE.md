@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-03 (cycle 008 drafted three finalist mechanism specs after user-approved option B)
+Last updated: 2026-05-04 (cycle 008.5 closeout: composer finalist upgrade, cross-spec signal contract v1, literature board v1, supporting artifacts; D1/D2/D4 locked, D3 deferred)
 
 ## User Intent
 
