@@ -1,8 +1,8 @@
 # Research Graph And Paper Start
 
-Last updated: 2026-05-02
+Last updated: 2026-05-04 (cycle 008.5 sync: F6 row note for Composer finalist promotion; Next Concrete Artifact section superseded)
 
-Status: active planning artifact; expanded first graph pass.
+Status: active planning artifact; expanded first graph pass (cycle 004) + cycle 008.5 sync.
 
 ## Core Decision
 
@@ -244,7 +244,7 @@ This pass keeps all major branches alive. It does not select a final thesis and 
 | F3 Hard-case geometric ambiguity | geometry critic; triplet / multiview consistency; hypothesis revision; adaptive compute; model rerouting; adapter budget trigger | Test3R; TTT3R; CTRL-style critic-revision; MASt3R-SfM; SLAM3R; MV-DUSt3R+; G-CUT3R | critic-only reports are diagnostics, not architecture; revision action must be concrete | C2, C4, C7, C10 | non-learned critic report: reprojection residual, confidence conflict, pair/triplet inconsistency, retry or model-switch recommendation | consistency objectives paper-proven; Dream critic action set inferred |
 | F4 Passive observation limit | uncertainty map; next-best-view; information gain; route/revisit policy; active camera action | active perception / NBV literature; NextBestSense-style systems | robotics stack can dominate the research and raise sim-to-real burden | C11, C12 | design-only or simulation-only study: choose next view from 3R uncertainty without hardware | active perception principle paper-proven broadly; 3R-specific controller speculative |
 | F5 Sensor / modality fragility | event/RGB fusion; guided depth / pose / calibration priors; blur-free temporal signal; sensor-prior conflict check | EAG3R; Event-3DGS; G-CUT3R; event depth / reconstruction | obvious event-augmented pointmap framing is already emerging; hardware/data burden is high | C6, C10, C12 | dataset-only source analysis first: identify RGB failure cases where event or priors alter the evidence vector | event/guidance mechanisms paper-proven; Dream policy role inferred |
-| F6 Fragmented model ecology | capability cards; unified pointmap / pose / confidence contracts; composer routing; benchmark matrix; artifact evidence reports | DUSt3R; MASt3R; Fast3R; Spann3R; MonST3R; CUT3R; STream3R; SLAM3R; MV-DUSt3R+; Splatt3R; InstantSplat; NoPoSplat | model routing alone may be system integration rather than paper-grade architecture | C4, C7, C8, C10 | capability matrix plus unified evidence report using existing KYKT/public metadata | model capabilities paper-proven or code-observed per source map; system value inferred |
+| F6 Fragmented model ecology | capability cards; unified pointmap / pose / confidence contracts; composer routing; benchmark matrix; artifact evidence reports | DUSt3R; MASt3R; Fast3R; Spann3R; MonST3R; CUT3R; STream3R; SLAM3R; MV-DUSt3R+; Splatt3R; InstantSplat; NoPoSplat | model routing alone may be system integration rather than paper-grade architecture | C4, C7, C8, C10 | capability matrix plus unified evidence report using existing KYKT/public metadata | model capabilities paper-proven or code-observed per source map; system value inferred; cycle 008.5 update: Composer promoted to fourth finalist (SPEC-20260504-001) with route_regret as falsification axis; the "system integration" caution is mitigated by the explicit P5 fail-fast threshold |
 
 ### Mechanism Node Bank
 
@@ -381,6 +381,20 @@ Required next refinements:
 - identify which 2-3 branches deserve user-approved mechanism specs
 
 This remains the correct next step before mechanism spec or reproduction.
+
+## Next Concrete Artifact (Superseded; Cycle 008.5)
+
+The cycle 004 next-artifact plan above has been executed across cycles 005-008.5:
+
+- shared action taxonomy compacted to A1-A8 in `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+- proxy metrics defined as P1-P8 in the same file
+- action-to-comparator-group mapping completed in `planning/ARCHITECTURE_MECHANISM_INTAKE.md` and `planning/BRANCH_COMPARISON_MATRIX.md`
+- finalist set chosen via `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md` + DEC-20260503-002 + DEC-20260504-001
+- four mechanism specs drafted under `specs/`
+- cross-spec read-only / handoff signals formalized in `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` v1
+- literature guidance board v1 in `literature/`
+
+The current next concrete artifact is L2 case-card data, populated via `templates/proxy_case_card.md` against the four finalist specs. First card per cycle 008 D1: `CASE-20260505-CRITIC-01`. Authorization to start cycle 009 is the open user decision.
 
 ## Research Rule
 

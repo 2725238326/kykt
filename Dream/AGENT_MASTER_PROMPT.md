@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-04 (cycle 008.5 added literature/INDEX, paradigm/CROSS_SPEC_SIGNAL_CONTRACT, paradigm/TEACHER_AUDIENCE_PROFILE to load protocol; promoted Composer to fourth finalist via SPEC-20260504-001)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync: BRANCH_COMPARISON_MATRIX / MULTI_TRACK_RESEARCH_CANVAS / ACTION_TAXONOMY_AND_PROXY_METRICS / RESEARCH_GRAPH_AND_PAPER_START aligned to four-finalist posture)
 
 Status: canonical entry prompt for Dream research agents.
 

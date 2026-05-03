@@ -1,8 +1,8 @@
 # Branch Comparison Matrix
 
-Last updated: 2026-05-02
+Last updated: 2026-05-04 (cycle 008.5 sync: Composer promoted to fourth finalist; no-all-in posture recorded; Next Action superseded)
 
-Status: filled first comparative pass; not a finalist or thesis decision.
+Status: filled first comparative pass (cycle 004); four-finalist set drafted at L1 (cycle 008 + cycle 008.5); not a thesis decision.
 
 ## Purpose
 
@@ -51,6 +51,28 @@ The current matrix suggests a three-layer research structure, not a final thesis
 
 No branch is discarded. No finalist set is approved yet.
 
+## Cycle 008.5 Update
+
+The cycle 004 layer-structure framing above is preserved as historical interpretation. The current state after cycle 008 + cycle 008.5 supersedes it:
+
+```text
+Four user-approved finalists (parallel; no thesis spine per DEC-20260504-002):
+  Finalist 1: Geometry Critic / System-2 3R           (SPEC-20260503-001; A4 + A5 repair facet; P1 + P5)
+  Finalist 2: Executive Memory / State Governance     (SPEC-20260503-002; A1 + A2 + A3; P2 + P3)
+  Finalist 3: Dynamic Object Permanence / 4D Memory   (SPEC-20260503-003; A6; P4 + identity_consistency)
+  Finalist 4: 3R Composer / Unified Model Ecology     (SPEC-20260504-001; A5 routing facet; P5 + capability_match)
+
+Lower-priority reserves (alive in canvas; not finalists):
+  Cross-Modal / Event-Augmented 3R     (A7 owner; deferred)
+  Active Spatial Perception / RL-3R    (A8 owner; deferred)
+```
+
+A5 ownership is split across finalists 1 and 4: Critic owns the per-window repair facet (rerun_local_region, open_anchor_budget, request_prior); Composer owns the across-model routing facet (reroute_model). The split is formalized in `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` v1 conflict rule CR-1.
+
+The "evidence infrastructure" framing for Composer is no longer current. Composer is now a finalist with its own falsification axis (route_regret); its evidence-infrastructure character continues but is not the primary claim.
+
+The score matrix above is preserved as a cycle 004 signal. It has not been re-scored after cycle 008.5; Composer's score row in particular reflects the original "evidence infrastructure" framing rather than its current finalist status. Re-scoring is deferred until cycle 009 case-card data lands.
+
 ## Open Comparison Questions
 
 | Question | Why it matters | Branches affected | Evidence needed before deepening |
@@ -60,6 +82,14 @@ No branch is discarded. No finalist set is approved yet.
 | What is the smallest object permanence signal? | prevents dynamic branch from becoming generic 4D reconstruction | Dynamic; Event; Memory | identity, uncertainty, and memory-update labels on dynamic samples |
 | Is Composer a paper claim or only KYKT infrastructure? | controls top-conference risk | Composer; all branches | capability-card benchmark and failure-mode routing objective |
 | Can active perception be studied without robot/sim overhead? | keeps the branch alive without derailing Phase 1.5 | Active; Memory; Critic | mock uncertainty map and next-view policy design |
+
+Status of each question after cycle 008.5:
+
+- Memory action set reduced to A1 + A2 + A3 in `specs/SPEC-20260503-002-executive-memory.md`. Cycle 009 case cards test whether this passes the "5-7 measurable actions" bar via P2/P3.
+- Critic concrete-action question answered at L1 by `specs/SPEC-20260503-001-geometry-critic.md` action policy table (rerun_local_region / reroute_model / open_anchor_budget / request_prior). Cycle 009 case cards test whether each fires non-trivially.
+- Permanence object-identity signal defined in `specs/SPEC-20260503-003-dynamic-object-permanence.md` as identity_consistency proxy under P4. Cycle 009 case cards test whether it is hand-labelable within the D4 budget.
+- Composer paper-vs-infrastructure question answered by promoting Composer to finalist with route_regret falsification axis in `specs/SPEC-20260504-001-3r-composer.md`. Cycle 009 case cards test whether route_regret has nonzero spread.
+- Active perception remains deferred; no spec drafted; question stays open.
 
 ## Next Action
 
@@ -78,3 +108,18 @@ Before drafting a mechanism spec for any single branch, prepare a shortlist deci
 5. teacher demo form
 6. fail-fast condition
 7. ask the user which 2-3 branches should be deepened
+
+## Next Action (Superseded; Cycle 008.5)
+
+The cycle 004 next-action plan above has been executed:
+
+- Step 1-7 produced `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md`.
+- The user shortlist decision was DEC-20260503-002 (option B: Critic + Memory + Permanence) plus DEC-20260504-001 (Composer added as fourth finalist).
+- Mechanism specs were drafted for all four finalists.
+
+The current next action is:
+
+1. Authorize cycle 009 to start filling L2 case cards (`CASE-20260505-CRITIC-01..03` first per cycle 008 D1).
+2. Run the four parallel case-card tracks under the per-card 90-120 minute budget (D4) and the cross-spec signal contract v1.
+3. After case-card data lands, re-surface D3 (first teacher demo target) once `paradigm/TEACHER_AUDIENCE_PROFILE.md` is populated.
+4. Re-score this matrix in cycle 010+ with case-card evidence rather than cycle 004 design-only signals.

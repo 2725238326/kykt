@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-04 (cycle 008.5 closeout: composer finalist upgrade, cross-spec signal contract v1, literature board v1, supporting artifacts; D1/D2/D4 locked, D3 deferred)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync: planning/ files aligned to four-finalist posture)
 
 ## User Intent
 
@@ -977,3 +977,191 @@ Next discussion points (also surfaced in the cycle log and inside each spec):
 2. Composer L1 vs L2 framing: fourth spec when a finalist clears, or undocumented support.
 3. First teacher-facing demo target: Critic timeline / Memory simulation / Permanence object-track.
 4. Annotation cost ceiling for cycle 011 (Permanence has a hard 60-minute fail-fast).
+
+## Cycle 008.5 Closeout And Cycle 009 Prep
+
+Sub-cycle within the cycle 008 numbering, not a new substantive research-process cycle. Closes the four follow-up gates from cycle 008 (D1, D2, D3, D4) and stands up cycle 009 infrastructure.
+
+Numbering note (preserved per Discipline rule 3 Surgical Edits):
+
+```text
+The previous "Cycle 010" section header above continues the running counter
+this file uses (which counts substantive process cycles 006 / 007 / 008 / 009 / 010).
+The cycle log itself names the same physical cycle file `cycles/CYCLE-20260503-002.md`
+(running counter "cycle 008" inside that log). Cycle 008.5 is THIS sub-cycle, with
+cycle log file `cycles/CYCLE-20260504-001.md`. The two counters remain divergent
+on purpose; reconciliation requires a dedicated cycle and is not done here.
+```
+
+Started:
+
+```text
+CYCLE-20260504-001: Cycle 008.5 Closeout: Composer Upgrade, Cross-Spec
+                    Contract, Literature Board V1, Supporting Artifacts
+```
+
+User direction (this session):
+
+```text
+1. 决策2改成升格吧，因为确实有效果
+   -> upgrade Composer to a fourth finalist spec, drafted now (D2 locked)
+2. 我觉得记忆系统啥的只是我们借鉴优点的一个部分，我觉得不能all in
+   -> no all-in on any single finalist; memory borrowable as one component
+3. 全力提速了
+   -> tempo acceleration; cycle 008.5 runs as a single sub-cycle
+4. literature guidance board needed; existing source files are inventories
+```
+
+Decisions recorded:
+
+```text
+DEC-20260504-001 Composer Finalist Upgrade
+  - Upgrade 3R Composer / Unified Model Ecology from supporting layer to a
+    fourth finalist mechanism spec; draft now (cycle 008.5).
+  - Composer owns A5 routing facet only (split from Critic's A5 repair facet).
+  - Primary proxy: P5 route_regret + capability_match (secondary).
+  - Cross-spec contract with Critic A5 formalized in
+    paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md.
+
+DEC-20260504-002 No All-In On Any Single Finalist
+  - No single finalist (Critic / Memory / Permanence / Composer) is treated
+    as the thesis spine. Memory is borrowable as one component, not headline.
+  - Cycle 009 runs case cards on parallel tracks; Critic first per cycle 008
+    D1 is execution order, NOT preference order.
+  - D3 (first teacher demo target) deferred until cycle 009 case-card data
+    exists AND paradigm/TEACHER_AUDIENCE_PROFILE.md is populated.
+  - Per-card annotation budget: 90-120 minutes per cycle 008 D4.
+```
+
+Cycle 008 follow-up gates resolved:
+
+```text
+D1 (which spec gets first L2 case-card pass): locked Critic first.
+D2 (Composer L1 vs L2 framing):                locked as upgrade; SPEC-20260504-001 drafted.
+D3 (first teacher demo target):                deferred per DEC-20260504-002.
+D4 (annotation cost ceiling):                  locked at 90-120 minutes per case card.
+```
+
+New artifacts:
+
+- `decisions/DEC-20260504-001-composer-finalist-upgrade.md`
+- `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md`
+- `specs/SPEC-20260504-001-3r-composer.md`
+- `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` (v1; not yet exercised by case cards)
+- `paradigm/TEACHER_AUDIENCE_PROFILE.md` (placeholder; awaits user input)
+- `literature/INDEX.md`
+- `literature/SPINE_CRITIC.md`
+- `literature/SPINE_MEMORY.md`
+- `literature/SPINE_PERMANENCE.md`
+- `literature/SPINE_COMPOSER.md`
+- `literature/CRITICAL_NOTES.md`
+- `literature/PAPER_RELATED_WORK_SKELETON.md`
+- `templates/demo_storyboard.md`
+- `planning/WORK_RISK_REGISTER.md`
+- `cycles/CYCLE-20260504-001.md`
+
+Files updated for Guidance File Sync Rule:
+
+- `AGENT_MASTER_PROMPT.md` (load protocol entries 21 / 22 / 23 added; topical "inspect" subsection augmented; Last updated)
+- `WORKFLOW_STATUS.md` (active workstreams + Recommended Next User Decision rewritten + Last updated)
+- `INDEX.md` (specs row + paradigm rows + planning row + literature subsection + templates row + Last updated)
+- `README.md` (subdirectory + key files + Last updated)
+- `RESEARCH_STATE.md` (this section)
+- `registry/decision_registry.md` (DEC-20260504-001 + DEC-20260504-002 rows + Last updated)
+- `registry/research_unit_registry.md` (RU-002 -> spec_drafted + Last updated)
+- `units/RESEARCH_UNIT_BANK.md` (RU-002 decision line + Last updated)
+- three existing SPECs (D4 budget references only; surgical)
+
+Status after cycle 008.5:
+
+- 4 finalist specs drafted at L1 (Critic / Memory / Permanence / Composer)
+- L2 proxy plans defined per spec; case cards reserved for cycle 009
+- cross-spec signal contract v1 in place; not yet exercised
+- literature guidance board v1 in place
+- demo storyboard template + teacher audience profile placeholder in place
+- consolidated work risk register in place
+- D1 / D2 / D4 locked; D3 deferred
+- no thesis finalized
+- no reproduction authorized
+- no KYKT navigation change
+- no demo target picked
+- no teacher audience profile content invented
+- Cross-Modal and Active Perception remain alive at lower priority
+
+Why this falls inside agent autonomy:
+
+- `AGENT_MASTER_PROMPT.md` section 6 lists "drafting a mechanism spec only for an approved finalist branch" as authorized once branch finalist approval is on file. DEC-20260504-001 IS the user approval gate for Composer's promotion to finalist.
+- The cross-spec signal contract, literature board, demo storyboard template, teacher audience profile placeholder, and work risk register fall under "prompt/rule refinement", "registry updates", "templates", and "frontend design prompt / handoff brief updates" categories that section 6 lists as not requiring user approval.
+
+Next discussion points (carried into cycle 009; surfaced in `WORKFLOW_STATUS.md` and `cycles/CYCLE-20260504-001.md`):
+
+```text
+1. Cycle 009 ordering: Composer case cards in parallel with Critic
+   (default; cross-spec contract is the test path) vs sequential.
+2. Composer capability card source: paper-derived only (default) vs
+   paper-derived + KYKT-job-derived (deferred to cycle 010).
+3. User population of paradigm/TEACHER_AUDIENCE_PROFILE.md to unblock D3
+   in a future cycle.
+4. Authorize cycle 009 to start filling case cards
+   (CASE-20260505-CRITIC-01..03 first per cycle 008 D1).
+```
+
+### Planning-Layer Sync (Cycle 008.5 Post-Closeout)
+
+After the cycle 008.5 closeout above, the user asked the agent to push 1.A from the "what else can be advanced" menu: align the four cycle-004-era planning files to the new four-finalist + no-all-in posture so cycle 009 case-card authors do not read stale framing.
+
+Files updated under Surgical Edits + Honesty Override (original framing preserved as historical; new state appended as supersede sections):
+
+```text
+planning/BRANCH_COMPARISON_MATRIX.md
+  - status line bumped to "four-finalist set drafted at L1 + cycle 008.5 sync"
+  - Cross-Branch Interpretation: cycle 004 three-layer framing preserved;
+    "Cycle 008.5 Update" section added with the four-finalist set and
+    A5 split note
+  - Open Comparison Questions: cycle 008.5 status appended per question
+  - Next Action: cycle 004 plan preserved; "Next Action (Superseded)"
+    section points to cycle 009 case cards
+
+planning/MULTI_TRACK_RESEARCH_CANVAS.md
+  - status preserved
+  - Near-Term Rule: cycle 003 GEM-3R framing preserved; "Cycle 008.5
+    Update" appended with current four-finalist set, no-all-in posture,
+    and updated anti-collapse rule
+
+planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md
+  - Core Action Set V1 table A5 row: Critic / Composer ownership now
+    annotated with facet labels (repair / routing)
+  - Why This Compression Matters: "Cycle 008.5 A5 Split" subsection added
+  - Branch Pressure After Taxonomy: Critic A5 owned -> "A5 (repair facet)";
+    Composer A5 owned -> "A5 (routing facet)"
+  - First Research Inference: cycle 006 inference preserved; supersede
+    section added pointing to DEC-20260503-002, DEC-20260504-001,
+    DEC-20260504-002 and current four-finalist state
+  - Immediate Next Research Task: cycle 006 task preserved; supersede
+    section points to cycle 009 case cards
+
+planning/RESEARCH_GRAPH_AND_PAPER_START.md
+  - F6 row in Failure Mode To Mechanism Graph: cycle 008.5 note appended
+    inside the Claim status cell
+  - Next Concrete Artifact: cycle 004 plan preserved; supersede section
+    summarizes execution across cycles 005-008.5 and points to cycle 009
+    case cards
+```
+
+No retro-renumbering. No deleted prose. No score-matrix re-scoring (deferred to cycle 010 with case-card data per Discipline rule 5).
+
+Guidance file sync coverage for this sub-pass:
+
+```text
+AGENT_MASTER_PROMPT.md   - last updated stamp
+README.md                - last updated stamp
+INDEX.md                 - last updated stamp
+WORKFLOW_STATUS.md       - last updated stamp; planning-layer rows updated
+                           with cycle 008.5 status; duplicate rows checked
+                           and removed
+RESEARCH_STATE.md        - this subsection
+cycles/CYCLE-20260504-001.md - "Post-Closeout Planning Sync" section
+                                appended
+```
+
+This planning-layer sync does NOT add new artifacts; it only aligns existing planning files. Status of locked / open / blocked items is unchanged from the cycle 008.5 closeout above.

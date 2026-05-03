@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-04 (cycle 008.5 closeout: composer finalist upgrade, cross-spec signal contract, literature board v1, supporting artifacts)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync: planning/ files aligned to four-finalist posture)
 
 ## Current Phase
 
@@ -69,12 +69,12 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Experiment planning | seeded | `experiments/EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | Research content roadmap | active | `paradigm/RESEARCH_CONTENT_ROADMAP.md` |
-| Multi-track research canvas | active | `planning/MULTI_TRACK_RESEARCH_CANVAS.md` |
-| Research graph / paper start | active | `planning/RESEARCH_GRAPH_AND_PAPER_START.md` |
-| Branch comparison matrix | filled first comparative pass | `planning/BRANCH_COMPARISON_MATRIX.md` |
+| Multi-track research canvas | active; cycle 008.5 four-finalist + no-all-in section appended | `planning/MULTI_TRACK_RESEARCH_CANVAS.md` |
+| Research graph / paper start | active; cycle 008.5 F6 row note + Next Concrete Artifact supersede applied | `planning/RESEARCH_GRAPH_AND_PAPER_START.md` |
+| Branch comparison matrix | filled first comparative pass (cycle 004); cycle 008.5 supersede annotations applied | `planning/BRANCH_COMPARISON_MATRIX.md` |
 | Branch shortlist decision surface | user approved option B (cycle 008) | `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md` |
 | Architecture mechanism intake | first-pass active | `planning/ARCHITECTURE_MECHANISM_INTAKE.md` |
-| Action taxonomy / proxy metrics | first compact pass | `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md` |
+| Action taxonomy / proxy metrics | first compact pass (cycle 006); cycle 008.5 A5 split + supersede annotations applied | `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md` |
 | Proxy case-card template | active form, populated in cycle 009 | `templates/proxy_case_card.md` |
 | Finalist mechanism spec template | populated for three finalists in cycle 008 | `templates/finalist_mechanism_spec.md` |
 | Geometry Critic finalist spec | draft (L1); L2 case cards next cycle | `specs/SPEC-20260503-001-geometry-critic.md` |

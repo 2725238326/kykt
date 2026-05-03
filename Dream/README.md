@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-04 (cycle 008.5 added literature/ guidance board, paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md, paradigm/TEACHER_AUDIENCE_PROFILE.md, planning/WORK_RISK_REGISTER.md, templates/demo_storyboard.md, and SPEC-20260504-001 for Composer finalist)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync: planning/ files aligned to four-finalist posture)
 
 ## Purpose
 

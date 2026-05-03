@@ -1,8 +1,8 @@
 # Action Taxonomy And Proxy Metrics
 
-Last updated: 2026-05-02
+Last updated: 2026-05-04 (cycle 008.5 sync: A5 split (Composer routing facet vs Critic repair facet) annotated in Branch Pressure table; First Research Inference marked superseded)
 
-Status: first compact taxonomy; not a branch shortlist or thesis decision.
+Status: first compact taxonomy (cycle 006) + cycle 008.5 sync; not a thesis decision.
 
 ## Purpose
 
@@ -53,7 +53,7 @@ The earlier draft had many small actions. For research comparison, collapse them
 | A2 | Spatial Memory Governance | write pointer; read pointer; merge pointer; ignore memory | F1, F6 | memory overlap, loop candidate, novelty, map conflict, retrieval value | memory growth, later retrieval usefulness, duplicate rate, anchor retention | Spann3R, Point3R, LoGeR, Mem3R | Executive Memory, Composer |
 | A3 | Context / Anchor Budgeting | protect anchor; evict cache; request global context; sparse retrieval | F1, F3, F6 | anchor importance, loop candidate, cache pressure, conflict region, long sequence length | anchor retention, cache budget, compute-quality tradeoff, route regret | LongStream, OVGGT, LoGeR, Mem3R, sparse/linear attention work | Executive Memory, Composer |
 | A4 | Geometry Verification | verify geometry; check consistency; check prior conflict | F3, F5, F6 | low overlap, confidence conflict, triplet inconsistency, prior/RGB mismatch | conflict detection, false alarm rate, prior conflict detection, demo clarity | Test3R, TTT3R, MASt3R-SfM, G-CUT3R | Geometry Critic, Composer, Cross-Modal |
-| A5 | Repair / Reroute Decision | revise hypothesis; rerun local region; reroute model; allocate compute | F3, F6 | critic failure, route uncertainty, model capability mismatch, hard-case label | revision success proxy, route regret, compute-quality tradeoff | Test3R, TTT3R, CTRL, MASt3R-SfM, SLAM3R | Geometry Critic, Composer |
+| A5 | Repair / Reroute Decision | revise hypothesis; rerun local region; reroute model; allocate compute | F3, F6 | critic failure, route uncertainty, model capability mismatch, hard-case label | revision success proxy, route regret, compute-quality tradeoff | Test3R, TTT3R, CTRL, MASt3R-SfM, SLAM3R | Geometry Critic (repair facet, cycle 008.5), Composer (routing facet, cycle 008.5) |
 | A6 | Dynamic/Object State Separation | split dynamic/static; reject dynamic update; preserve object identity | F2, F3 | dynamic ratio, optical flow conflict, motion field, object track, static-map conflict | dynamic pollution, static-map stability, object identity consistency | MonST3R, POMATO, D^2USt3R, Easi3R, RayMap3R | Dynamic Object Permanence, Executive Memory |
 | A7 | Prior / Modality Arbitration | add sensor prior; route to guided mode; request sensing mode; reject conflicting prior | F5, F2, F3 | blur, low light, high speed, texturelessness, guided-prior conflict | robustness label, prior conflict detection, sensing-mode gain, hardware burden | EAG3R, Event-3DGS, G-CUT3R, guided 3R | Cross-Modal, Geometry Critic, Active |
 | A8 | Evidence Acquisition / Adaptation Budget | request new view; revisit region; open adapter budget; constrained self-update | F4, F1, F3, F5 | high uncertainty, blind spot, persistent conflict, domain shift | uncertainty reduction, view gain, forgetting risk, adaptation budget | NBV, active perception, TTT3R, SEAL, CTRL | Active Perception, Continual, Critic |
@@ -69,6 +69,15 @@ The eight actions separate Dream from a generic model zoo:
 - A8 is active evidence acquisition and constrained adaptation.
 
 This structure lets different branches share a common action language while retaining distinct research claims.
+
+### Cycle 008.5 A5 Split
+
+Cycle 008.5 split A5 into two functional facets owned by different finalist specs:
+
+- **A5 repair facet** — owned by Geometry Critic (`specs/SPEC-20260503-001-geometry-critic.md`). Sub-actions: `rerun_local_region`, `open_anchor_budget` (handoff to Memory), `request_prior` (handoff to future Cross-Modal). Trigger: per-window critic conflict_score above threshold.
+- **A5 routing facet** — owned by 3R Composer (`specs/SPEC-20260504-001-3r-composer.md`). Sub-action: `reroute_model`. Trigger: across-model regime card + capability_match join; Critic A5 reroute_model consumes Composer's `route_recommendation` per `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` rule CR-1.
+
+The split is intentional: repair is verification-coupled (per-window evidence), routing is regime-coupled (across-model regime fit). Owning both inside Critic alone would either fragment routing across specs or duplicate Composer's regime card.
 
 ## Evidence Signal Vector V1
 
@@ -330,10 +339,10 @@ This is an adaptation-policy design signal, not proof of online learning.
 | Branch | Strong owned actions | Required support actions | Best first proxy | Main risk after taxonomy |
 |---|---|---|---|---|
 | Executive Memory / State Governance | A1, A2, A3 | A4, A6 | P2 anchor retention + P3 memory growth/usefulness | too broad unless reduced to state/memory/cache decisions |
-| Geometry Critic / System-2 3R | A4, A5 | A3, A7 | P1 conflict detection + P5 route regret | diagnostic-only unless A5 changes route or output |
+| Geometry Critic / System-2 3R | A4, A5 (repair facet) | A3, A7 | P1 conflict detection + P5 route regret | diagnostic-only unless A5 changes route or output |
 | Dynamic Object Permanence / 4D Memory | A6 | A2, A4, A7 | P4 dynamic pollution + identity consistency | can become motion estimation or graphics demo only |
 | Cross-Modal / Event-Augmented 3R | A7 | A4, A6, A8 | prior conflict detection + robustness labels | hardware/data burden; event 3R is already emerging |
-| 3R Composer / Unified Model Ecology | A5 | A3, A4, A7 | P5 route regret + capability match | system wrapper unless L2 mechanism distillation is explicit |
+| 3R Composer / Unified Model Ecology | A5 (routing facet) | A3, A4, A7 | P5 route regret + capability match | system wrapper unless L2 mechanism distillation is explicit |
 | Active Spatial Perception / RL-3R | A8 | A4, A7 | P7 view gain | too costly if it jumps to robotics/simulation too early |
 
 ## First Research Inference
@@ -350,6 +359,30 @@ Dynamic Object Permanence should remain a close third/fourth candidate because i
 
 This is an inference, not a decision. User approval is still required before drafting any finalist mechanism spec.
 
+## First Research Inference (Superseded; Cycle 008.5)
+
+The cycle 006 inference above is preserved for honesty (Discipline rule 5) but no longer reflects the current state. Superseding events:
+
+- **DEC-20260503-002 (cycle 008)**: User approved option B (Critic + Memory + Permanence as finalists; Composer as supporting layer). The inference's "Composer as evidence infrastructure" framing was honored at that gate.
+- **DEC-20260504-001 (cycle 008.5)**: User upgraded Composer to fourth finalist. The inference's framing of Composer as "evidence infrastructure" rather than finalist is therefore superseded.
+- **DEC-20260504-002 (cycle 008.5)**: User locked the no-all-in posture. The inference's "near-term finalist pool" framing remains accurate at the set level but must not be read as preferring any single finalist.
+
+Current state (after cycle 008.5):
+
+```text
+Four finalists with mechanism specs drafted at L1:
+  Geometry Critic     (A4 + A5 repair facet; P1 + P5)
+  Executive Memory    (A1 + A2 + A3; P2 + P3)
+  Dynamic Object Permanence (A6; P4 + identity_consistency)
+  3R Composer         (A5 routing facet; P5 + capability_match)
+
+Cross-Modal (A7) and Active Perception (A8) remain alive at lower priority;
+no specs drafted; no finalist status.
+
+Cycle 009 fills L2 case cards on parallel tracks. Critic first per cycle 008
+D1 is execution order, NOT preference order, per DEC-20260504-002.
+```
+
 ## Immediate Next Research Task
 
 Prepare the branch shortlist decision surface:
@@ -360,3 +393,13 @@ Prepare the branch shortlist decision surface:
 4. first proxy test
 5. what teacher demo would show
 6. what would make the branch fail fast
+
+## Immediate Next Research Task (Superseded; Cycle 008.5)
+
+The cycle 006 task above produced `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md`, which the user resolved via DEC-20260503-002 + DEC-20260504-001. The current next task is:
+
+```text
+Authorize cycle 009 to start filling L2 case cards on four parallel tracks
+under the cross-spec signal contract v1 (`paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md`).
+First card per cycle 008 D1: CASE-20260505-CRITIC-01.
+```

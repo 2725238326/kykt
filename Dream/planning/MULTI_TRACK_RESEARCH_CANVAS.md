@@ -1,6 +1,6 @@
 # Dream Multi-Track Research Canvas
 
-Last updated: 2026-05-02
+Last updated: 2026-05-04 (cycle 008.5 sync: four-finalist set + no-all-in posture appended; original cycle 003 GEM-3R framing preserved)
 
 Status: active.
 
@@ -234,3 +234,37 @@ Branch survey -> branch comparison matrix -> 2-3 finalist branches -> user decis
 ```
 
 GEM-3R remains a strong candidate branch, but not the default thesis.
+
+## Cycle 008.5 Update
+
+The cycle 003 framing above (GEM-3R as one candidate branch among many; near-term rule for one comparative round) is preserved as historical posture. The current state after cycle 008 + cycle 008.5 supersedes it on two axes:
+
+1. **The comparative round has run.** The shortlist decision surface (`planning/BRANCH_SHORTLIST_DECISION_SURFACE.md`) was completed; user chose option B (DEC-20260503-002), then upgraded Composer to fourth finalist (DEC-20260504-001). Mechanism specs are drafted at L1 for all four finalists. The "before drafting a spec" precondition is therefore satisfied for the current finalist set.
+
+2. **No single finalist is the thesis spine.** Per DEC-20260504-002, memory / critic / permanence / composer are treated as parallel borrowable components, not thesis-level commitments. The "GEM-3R remains a strong candidate" line is honored: GEM-3R is the working title for the Memory finalist (`specs/SPEC-20260503-002-executive-memory.md`), one of four parallel finalists, and is explicitly not the spine.
+
+Current four-finalist set:
+
+```text
+Branch A: Executive Memory / State Governance       SPEC-20260503-002 (GEM-3R working title)
+Branch B: Geometry Critic / System-2 3R             SPEC-20260503-001
+Branch C: Dynamic Object Permanence / 4D Memory     SPEC-20260503-003
+Branch E: 3R Composer / Unified Model Ecology       SPEC-20260504-001
+```
+
+Lower-priority reserves (alive in canvas; not finalists):
+
+```text
+Branch D: Cross-Modal / Event-Augmented 3R          (A7 owner; deferred)
+Branch F: Active Spatial Perception / RL-3R         (A8 owner; deferred)
+```
+
+Anti-collapse rule (current):
+
+```text
+Do not collapse Dream into Critic alone, Memory alone, Permanence alone, or
+Composer alone. Cycle 009 case cards run on parallel tracks; agent must not
+auto-promote any single result to "leading" status without a user decision turn.
+```
+
+The cycle 003 anti-collapse rule (do not collapse into GEM-3R / Mamba-3R / Event-DUSt3R / 4DGS / single-thesis-branch) remains active and now subsumes the cycle 008.5 anti-collapse rule.
