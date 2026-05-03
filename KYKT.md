@@ -1,6 +1,6 @@
 # KYKT Project Sync
 
-Last updated: 2026-04-20
+Last updated: 2026-05-03
 
 ## Project Lines
 
@@ -202,6 +202,11 @@ Current frontend capabilities:
 - 2026-04-23: Active 3R code, weights, and shared smoke samples were uploaded to the server. Spann3R first smoke passed on official `s00567`, and Fast3R first forward smoke passed on the static pair after forcing `pytorch_naive` attention for TITAN RTX / sm75. Align3R and CUT3R envs exist but still need `curope` / CUDA compatibility fixes.
 - 2026-04-23: Root work history was renamed and refreshed as `E:\kykt\PROJECT_PROGRESS_2026-04-23.md`. The old `近期工作历程_3.2-3.23.md` was removed from the root to avoid stale guidance.
 - 2026-04-23: Local `E:\kykt\model_uploads\active_3r` was confirmed safe to remove after server upload and verification. It occupied about 21.6GB before cleanup.
+- 2026-05-03: Align3R curope unblocked. The previous "CUDA 11.3 vs torch cu121 mismatch" diagnosis was incorrect; the server actually has CUDA 12.6 available at `/usr/local/cuda-12.6/bin/nvcc`. The real blocker was that the prebuilt `croco/models/curope/curope.cpython-311-x86_64-linux-gnu.so` shipped with the env required `GLIBC_2.32`, which is newer than the host libc. We rebuilt curope in-place against the env's torch 2.5.1+cu121 with `TORCH_CUDA_ARCH_LIST=7.5` and verified `cuRoPE2D` instantiates and the CUDA kernel is callable.
+- 2026-05-03: CUT3R curope unblocked. No prior build artifact existed at `src/croco/models/curope/`; we ran the same in-place build with the cut3r env. `cuRoPE2D` instantiates and the CUDA kernel is callable. Both Align3R and CUT3R can now have a runner written without env work.
+- 2026-05-03: Vision UI default frontend switched to the React/Vite client. When `Coding/4.06/vision_ui/client/dist/index.html` exists, FastAPI serves it on `/` and `/jobs/{id}` and mounts `client/dist/assets/` at `/assets`. Jinja templates (`templates/index.html`, `templates/job_detail.html`) remain as a graceful fallback when the build is absent so existing dev flows do not break.
+- 2026-05-03: Tauri desktop client packaging was made portable-friendly. `is_backend_root` now requires only `app.py + job_store.py`; Python is resolved by a separate chain (`KYKT_BACKEND_PYTHON` → `<root>/.venv/Scripts/python.exe` → `<root>/python/python.exe` → portable `python/` near the exe → system PATH `python.exe`). Bundle layout and steps for an embeddable Python distribution are in `Coding/4.06/vision_ui/PORTABLE_BUNDLE.md`.
+- 2026-05-03: Cancel + recovery flow hardened. `_kill_remote_job_processes` now adds `align3r_runner.py / cut3r_runner.py / run_job.py` to its needle list, runs SIGTERM → 2s grace → SIGKILL → 1s verify, and returns `{killed, remaining}` so the cancel status message names specific PIDs. FastAPI startup also rehydrates orphan `running` jobs whose runner thread did not survive a backend restart, marking them as `failed` with a clear retry hint.
 - 2026-04-20: MonST3R result semantics were strengthened: future `scene_meta.json` and generated summaries can identify core review targets, artifact groups, frame previews, dynamic masks, confidence arrays, trajectory files, and intrinsics files instead of presenting the output as an undifferentiated file list.
 - 2026-04-11: A tiny remote MonST3R smoke run was executed against the uploaded video path. After uploading `third_party/RAFT/models/raft-things.pth`, the smoke run succeeded end-to-end and exported 15 artifacts including `scene.glb`, `pred_traj.txt`, `pred_intrinsics.txt`, confidence maps, dynamic masks, and `scene_meta.json`. Example remote smoke job: `/hdd3/kykt26/jobs/monst3r_smoke_20260411_010843`.
 - 2026-04-10: New launch scripts were added:
@@ -282,18 +287,23 @@ Current frontend capabilities:
 
 Still missing:
 
-- Replacing the current Jinja entry pages with the new React client as the default visible UI.
-- A fully portable package that bundles Python/runtime dependencies. The current desktop exe supervises the existing project `.venv`; if the project root is moved, set `KYKT_BACKEND_ROOT` to `E:\kykt\Coding\4.06\vision_ui` or the new backend root.
+- A fully portable package with a built-in embedded Python and React `dist/`. The plumbing is in place (see `Coding/4.06/vision_ui/PORTABLE_BUNDLE.md`); a one-shot installer/zip recipe still needs to be cut and tested on a clean machine.
 - MASt3R still needs a first real server smoke test and one reviewed output sample.
-- Stronger remote process cleanup verification after cancellation.
 - First end-to-end MonST3R client run with one short video or one small frame sequence, followed by output quality inspection.
 - A final MonST3R input/output contract after observing the real `.glb`, trajectory, depth, and confidence artifacts on a few examples.
 - First real MASt3R server smoke test using the server repo/env/weights, followed by one client-dispatched MASt3R sample.
+- First `align3r_runner.py` and `cut3r_runner.py` (env blockers cleared 2026-05-03; runners are the next concrete step).
 - Filling `settings/advisor.json` with a real OpenAI-compatible endpoint and validating one end-to-end AI evaluation response on a finished job.
 - Better stuck-process recovery on Windows when an old local uvicorn/ssh process refuses termination.
-- Automatic stale-job recovery after a local backend crash. Right now the UI can reconnect and restart the backend, but partially running jobs are still not rehydrated into an explicit “interrupted / safe to retry” state.
 - Exact server-written progress ingestion for every major phase, instead of only mixed local/remote progress approximation.
 - More complete task controls such as one-click rerun presets, clearer recovery hints when a job is partially finished, and richer large-result handling for GLB / point-cloud opening workflows.
+
+Recently closed (2026-05-03):
+
+- ✓ Replacing the current Jinja entry pages with the new React client as the default visible UI. (FastAPI serves React on `/` and `/jobs/{id}` when the build exists; Jinja stays as fallback.)
+- ✓ Stronger remote process cleanup verification after cancellation. (Cancel now SIGTERM → grace → SIGKILL → verify, returns `{killed, remaining}`, names PIDs in the status message, logs to `dispatch.debug.log`.)
+- ✓ Automatic stale-job recovery after a local backend crash. (FastAPI startup reflows orphan `running` jobs into `failed` with retry guidance.)
+- ✓ Align3R / CUT3R env compatibility. (Both `curope` extensions rebuilt in-place against env torch + system CUDA 12.6; smoke shows kernel reachable.)
 
 ## SSH / SCP Setup
 
@@ -370,6 +380,7 @@ These are the main blockers between the current state and a more deliverable too
 
 - Read this file first.
 - Then read `E:\kykt\PROJECT_PROGRESS_2026-04-23.md`.
+- **The actual research mainline now lives in `E:\kykt\Dream\`.** Treat this `vision_ui` workbench, runners, and SSH dispatch as the supporting engineering layer; new architecture / 3R research happens through the Dream operating prompt at `E:\kykt\Dream\AGENT_MASTER_PROMPT.md`. Do not collapse Dream into a single thesis or run reproductions without explicit user approval — see the decision gates inside that prompt.
 - Keep the frontend centered on `job.json`, local cache, and SSH/SCP.
 - Do not split DUSt3R pair and multi-image into separate frontend products.
 - Expand backend runners instead.
@@ -380,3 +391,7 @@ These are the main blockers between the current state and a more deliverable too
 Current most important active repo:
 
 - `E:\kykt\Coding\4.06\vision_ui`
+
+Research mainline (read separately):
+
+- `E:\kykt\Dream\` — architecture-first 3R research engine. Phase 1.5 (Research Workflow Deployment), currently blocked on user shortlist decision in `Dream\planning\BRANCH_SHORTLIST_DECISION_SURFACE.md`.

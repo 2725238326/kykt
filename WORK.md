@@ -2,6 +2,15 @@
 
 Last updated: 2026-04-06
 
+> ⚠️ **此文档已过期，仅作历史保留。** 当前权威同步文档：
+>
+> - `E:\kykt\KYKT.md`（英文 sync，最新 2026-05-03）
+> - `E:\kykt\PROJECT_PROGRESS_2026-05-03.md`（中文工作历程，最新里程碑）
+> - `E:\kykt\PROJECT_PROGRESS_2026-04-23.md`（中文上一版）
+> - 研究主线现在在 `E:\kykt\Dream\`，入口 `E:\kykt\Dream\AGENT_MASTER_PROMPT.md`。
+>
+> 本文件停留在 MVP 时代的 MVSNet / SfMLearner / DUSt3R 三线，**不要据此判断当前模型矩阵或工程现状**。
+
 ## 1. Project Overview
 
 This workspace currently contains several parallel 3D vision lines. They are related, but they are **not the same task** and should not be mixed together:
