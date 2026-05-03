@@ -1,6 +1,6 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 008.5 inventory-sync sub-pass closed; gating on user cycle 009 launch authorization)
+Last updated: 2026-05-04 (cycle 008.5 inventory-sync sub-pass closed; mandatory-load + sync-rule integration completed; "Working rules to avoid F-001" section added; gating on user cycle 009 launch authorization)
 
 Status: **idle, awaiting user decision**
 
@@ -129,6 +129,21 @@ F-001  32 MB request-limit failure (2026-05-04, prior session)
 ```
 
 Add new entries here as new failure modes are discovered. Do not delete entries; supersede via a "superseded by F-NNN" note (Discipline rule 5 Honesty Override).
+
+## Working rules to avoid F-001 (anti-32MB request-limit)
+
+These rules apply to every agent operating in this workspace, including humans driving an agent. Violating them is the most common cause of multi-edit pass failures.
+
+1. Do not re-Read a file already read earlier in the same conversation. The content is still in context. Cite line numbers from the prior Read; if a slice is needed, use Read with `offset`+`limit`.
+2. For lookup, prefer `Grep -n` with `-C` / `-A` / `-B` for context. Reserve full Read for files under ~300 lines OR when the whole file is genuinely needed.
+3. Prefer `Edit` (old_string / new_string, diff-only payload) over `Write` (full file payload) for any file that already exists. Use `Write` only for new files.
+4. Cap "large" files (>300 lines OR >20 KB) in active context at <=2 simultaneously. When starting a new sync sub-pass, treat earlier large files as evicted; rely on `TASK_SNAPSHOT.md` and the most recent cycle log summary instead of re-Reading.
+5. If a single Edit's old_string / new_string would exceed ~200 lines, split into multiple smaller Edits anchored at stable section headers, not in the middle of paragraphs.
+6. Sync `TASK_SNAPSHOT.md` FIRST in any Guidance File Sync Rule chain pass, so an interrupt mid-pass still leaves a valid resume pointer (this is the rule already restated in `WORKFLOW_STATUS.md` "Guidance File Sync Rule").
+7. Do not run multi-file Read fan-outs in parallel just to "have everything"; pull files in only when the next concrete edit demands them.
+8. If a single tool call returns "Request too large", do NOT retry with the same payload. Switch to: smaller Read window, narrower Grep, or split Edit. Record the trigger in this section's F-NNN list if it represents a new failure mode.
+
+These rules are mandatory-equivalent to the Hard rules below, since violating them tends to lose a session's worth of work.
 
 ## Hard rules (carried from AGENT_MASTER_PROMPT.md, restated for safety)
 
