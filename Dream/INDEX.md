@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-03 (cycle 008 added specs/ subdirectory after user-approved option B finalist set)
+Last updated: 2026-05-04 (cycle 008.5 added literature/ board, paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md, paradigm/TEACHER_AUDIENCE_PROFILE.md, planning/WORK_RISK_REGISTER.md, templates/demo_storyboard.md, and SPEC-20260504-001 for Composer finalist)
 
 Quick navigation for humans and agents. For full operating rules, read `AGENT_MASTER_PROMPT.md` first.
 
@@ -33,6 +33,8 @@ Quick navigation for humans and agents. For full operating rules, read `AGENT_MA
 | `RESEARCH_SKILL_RULES_DRAFT.md` | Evolving rules for a future Codex skill |
 | `RESEARCH_CODE_DISCIPLINE.md` | Behavior rules for synthesis and Dream-driven code (Karpathy-adapted + honesty override) |
 | `RESEARCH_CONTENT_ROADMAP.md` | Research-content-first roadmap and axes |
+| `CROSS_SPEC_SIGNAL_CONTRACT.md` | Formal contract for read-only / handoff signals between finalist specs; v1 covers Critic / Memory / Permanence / Composer |
+| `TEACHER_AUDIENCE_PROFILE.md` | Placeholder file for the user to populate; gates D3 (first teacher demo target) |
 
 ### `planning/` - Active Research Planning
 
@@ -46,6 +48,7 @@ Quick navigation for humans and agents. For full operating rules, read `AGENT_MA
 | `ACTION_TAXONOMY_AND_PROXY_METRICS.md` | Compact A1-A8 actions and P1-P8 proxy validation protocols |
 | `DREAM3R_THESIS_STRESS_TEST.md` | Stress test for the Dream3R / GEM-3R candidate branch |
 | `MINIMAL_DEMO_CANDIDATES.md` | Teacher-demo candidate analysis |
+| `WORK_RISK_REGISTER.md` | Consolidated cross-spec risk view across the four finalist specs and the cross-spec contract |
 
 ### `sources/` - Source Mining
 
@@ -101,9 +104,10 @@ Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branc
 
 | File | Role |
 |---|---|
-| `SPEC-20260503-001-geometry-critic.md` | Geometry Critic / System-2 3R finalist spec (A4 + A5; P1 + P5) |
+| `SPEC-20260503-001-geometry-critic.md` | Geometry Critic / System-2 3R finalist spec (A4 + A5 repair facet; P1 + P5) |
 | `SPEC-20260503-002-executive-memory.md` | Executive Memory / State Governance finalist spec (A1 + A2 + A3; P2 + P3) |
 | `SPEC-20260503-003-dynamic-object-permanence.md` | Dynamic Object Permanence / 4D Memory finalist spec (A6; P4 + identity_consistency) |
+| `SPEC-20260504-001-3r-composer.md` | 3R Composer / Unified Model Ecology finalist spec (A5 routing facet; P5 route_regret + capability_match) |
 
 ### `registry/` - Lightweight Indexes
 
