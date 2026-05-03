@@ -1,6 +1,6 @@
 # Frontier Source Map
 
-Last updated: 2026-05-02 (cycle 005)
+Last updated: 2026-05-04 (cycle 008.5: SPINE Anchor Map appended at end for symmetric navigation with `registry/source_registry.md`)
 
 This is the first-pass source map for Dream Phase 1. It prioritizes primary sources: arXiv, CVF/OpenReview, official project pages, and official GitHub repositories.
 
@@ -237,3 +237,25 @@ All arXiv IDs in this section were verified by web search in CYCLE-20260502-005.
 - VLM / scene-regime classification for composer L2
 
 These gaps are noted, not scheduled. They should be filled only when a branch that owns them is chosen for mechanism spec drafting.
+
+## Cycle 008.5 SPINE Anchor Map
+
+Status: navigation overlay, not a new evidence claim. Added in cycle 008.5 to give a reader of this full source map a direct pointer to the curated reading order in `literature/SPINE_*.md`. Symmetric counterpart lives in `registry/source_registry.md` (`Cycle 008.5 SPINE Anchor Map` section).
+
+Rule: this section maps inventory rows above to `literature/SPINE_*.md` files. It does NOT change any evidence label or readiness above. Per `literature/INDEX.md` Usage Rules, evidence-label edits happen in this inventory and in cycle logs, not silently in the SPINE files.
+
+| Finalist SPINE | Linked spec | Required-reading anchors (titles as listed above) | Advanced-reading anchors |
+|---|---|---|---|
+| `literature/SPINE_CRITIC.md` | `specs/SPEC-20260503-001-geometry-critic.md` | Test3R; TTT3R; CTRL (cross-domain analog); MASt3R-SfM | G-CUT3R |
+| `literature/SPINE_MEMORY.md` | `specs/SPEC-20260503-002-executive-memory.md` | CUT3R; STream3R; LONG3R; LoGeR; Mem3R; OVGGT | PAS3R; FILT3R; LongStream |
+| `literature/SPINE_PERMANENCE.md` | `specs/SPEC-20260503-003-dynamic-object-permanence.md` | MonST3R; POMATO; D^2USt3R; Easi3R; RayMap3R | SAM 2; SpatialTracker; CoTracker |
+| `literature/SPINE_COMPOSER.md` | `specs/SPEC-20260504-001-3r-composer.md` | DUSt3R; MASt3R; Fast3R; Spann3R | CUT3R; OVGGT; cross-domain MoE / routing literature (cited as `inferred` per `literature/INDEX.md` evidence discipline) |
+
+Cross-cutting notes:
+
+- CUT3R is required reading for Memory and advanced reading for Composer. The Memory finalist treats CUT3R as the canonical recurrent-state mechanism; the Composer finalist treats CUT3R as a streaming-regime row in the regime card, not as the routing mechanism itself.
+- OVGGT is required reading for Memory and advanced reading for Composer for the symmetric reason (constant-budget cache as a Memory policy lever; long-stream regime row for Composer).
+- Foundation visual / dynamic priors used as inputs to the Permanence pipeline (SAM 2, SpatialTracker, CoTracker) are advanced reading rather than required because they are pipeline inputs, not anchors of the Permanence mechanism claim.
+- Mixture-of-experts and routing literature in the language / vision domains is intentionally left without a registry ID. Its evidence label in `literature/SPINE_COMPOSER.md` is `inferred`, owned by that SPINE file, and is not promoted to inventory rows here.
+
+No new sources are added by this section; no evidence label or Dream-relevance text above is changed by this section.

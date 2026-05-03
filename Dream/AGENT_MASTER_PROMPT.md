@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync: BRANCH_COMPARISON_MATRIX / MULTI_TRACK_RESEARCH_CANVAS / ACTION_TAXONOMY_AND_PROXY_METRICS / RESEARCH_GRAPH_AND_PAPER_START aligned to four-finalist posture)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass: BRANCH_COMPARISON_MATRIX / MULTI_TRACK_RESEARCH_CANVAS / ACTION_TAXONOMY_AND_PROXY_METRICS / RESEARCH_GRAPH_AND_PAPER_START aligned to four-finalist posture; source_registry / FRONTIER_SOURCE_MAP / REPRODUCTION_READINESS_MATRIX / QUESTION_LOG synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10)
 
 Status: canonical entry prompt for Dream research agents.
 

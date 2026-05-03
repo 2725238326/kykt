@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync: planning/ files aligned to four-finalist posture)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass: planning/ files aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10)
 
 ## User Intent
 
@@ -1165,3 +1165,70 @@ cycles/CYCLE-20260504-001.md - "Post-Closeout Planning Sync" section
 ```
 
 This planning-layer sync does NOT add new artifacts; it only aligns existing planning files. Status of locked / open / blocked items is unchanged from the cycle 008.5 closeout above.
+
+### Inventory-Sync Sub-Pass (Cycle 008.5 Post-Closeout)
+
+After the planning-layer sync above, the agent performed a second sub-pass to align the registries / inventories / readiness matrix / question log with the cycle 008.5 closeout state. This sub-pass closes the symmetric-navigation gap noted in `literature/INDEX.md` (the literature board cites inventory rows but inventories did not point back at the literature board) and brings two stale inventory files (REPRODUCTION_READINESS_MATRIX.md last updated 2026-05-01; QUESTION_LOG.md last updated 2026-05-01) up to current cycle 008.5 state without violating Surgical Edits.
+
+Files updated under Surgical Edits + Honesty Override:
+
+```text
+registry/source_registry.md
+  - last updated stamp
+  - "Cycle 008.5 SPINE Anchor Map" section appended at end
+    (navigation overlay; no evidence-label changes; symmetric to
+    sources/FRONTIER_SOURCE_MAP.md)
+
+sources/FRONTIER_SOURCE_MAP.md
+  - last updated stamp
+  - "Cycle 008.5 SPINE Anchor Map" section appended at end
+    (navigation overlay; no evidence-label changes; symmetric to
+    registry/source_registry.md)
+
+units/REPRODUCTION_READINESS_MATRIX.md
+  - last updated stamp
+  - Status note: "Dormant during Phase 1.5 + cycle 008.5"
+  - "Cycle 008.5 Finalist-To-Candidate Mapping" section appended
+    (read-only mapping from finalist specs to natural smoke-test
+    candidates; does NOT auto-promote any rank)
+  - "Cycle 008 Source-Mining Additions (Research Background, P3)"
+    section appended (cycle 008 mined sources listed as P3
+    research-background; no rank promotions)
+  - "Wake-Up Conditions" section appended
+
+logs/QUESTION_LOG.md
+  - last updated stamp
+  - "Catchup Gap Note (2026-05-04)" section appended at top
+    (documents Rounds 4-8 events captured as decision memos rather
+    than dedicated Round entries; no retro-renumbering of existing
+    Round IDs)
+  - "Round 10" section appended at end (cycle 008.5 user direction
+    block as a single collapsed Round with four sub-items: D2
+    upgrade, no-all-in posture, tempo acceleration, literature
+    guidance board)
+```
+
+Surgical Edits compliance:
+
+- No retro-renumbering of pre-existing IDs (Round 1-9 unchanged; SRC-* IDs unchanged; candidate ranks above the new P3 section unchanged).
+- No deletion of historical prose; supersession via appended sections only (Discipline rule 5).
+- No evidence-label changes in either inventory; SPINE Anchor Map is navigation overlay only.
+- No reproduction authorization implied by REPRODUCTION_READINESS_MATRIX additions; "Dormant" status is explicit.
+
+Guidance file sync coverage for this sub-pass:
+
+```text
+AGENT_MASTER_PROMPT.md   - last updated stamp extended with sub-pass note
+README.md                - last updated stamp extended with sub-pass note
+INDEX.md                 - last updated stamp extended with sub-pass note
+WORKFLOW_STATUS.md       - last updated stamp extended with sub-pass note
+RESEARCH_STATE.md        - this subsection
+cycles/CYCLE-20260504-001.md - "Post-Closeout Inventory Sync" section
+                                appended
+```
+
+This inventory-sync sub-pass does NOT add new artifacts beyond the SPINE Anchor Map sections, the readiness-matrix dormancy status / finalist mapping / P3 source-mining additions, and the QUESTION_LOG Catchup Gap Note + Round 10. Status of locked / open / blocked items is unchanged from the cycle 008.5 closeout. Cycle 009 launch authorization remains the gating user decision.
+
+### Note On The Earlier 32 MB Failure
+
+A prior attempt at this inventory-sync sub-pass hit the agent's 32 MB request limit mid-edit. The cause was cumulative context (multiple large file reads in one window) rather than any single oversized file. This sub-pass succeeded because reads were narrowed (offset / limit; targeted Grep) and edits were performed via Edit (precise old / new strings) rather than Write (full-file rewrites). For future syncs touching this set of files, prefer Edit + offset/limit reads over Write + full-file reads, and avoid loading more than two large state files into context simultaneously.

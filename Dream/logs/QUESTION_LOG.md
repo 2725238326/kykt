@@ -1,6 +1,23 @@
 # Dream Question Log
 
-Last updated: 2026-05-01
+Last updated: 2026-05-04 (cycle 008.5: catchup gap note added; Round 10 cycle 008.5 autonomy turn appended)
+
+## Catchup Gap Note (2026-05-04)
+
+This log captures user-facing questions and decisions as numbered Rounds. Between Round 9 (cycle 003 era) and Round 10 (cycle 008.5), several substantive cycles closed without a new Round entry because their decisions were captured in `decisions/DEC-*` memos, cycle logs under `cycles/`, and `RESEARCH_STATE.md` rather than as a single user question.
+
+For audit completeness, the user-direction events between Round 9 and Round 10 are summarized below; each links to the canonical decision memo or cycle file. None of these supersede prior Rounds.
+
+| Cycle | Date | User direction (one-liner) | Canonical artifact |
+|---|---|---|---|
+| 004 | 2026-05-01 | first multi-track-before-bet posture | `decisions/DEC-20260502-001-multi-track-before-bet.md` |
+| 005 | 2026-05-02 | source mining beyond direct 3R; cover visual / depth / active perception / event priors | `sources/FRONTIER_SOURCE_MAP.md` (Cycle 005 Source Mining Pass section) |
+| 006 | 2026-05-02 | workspace reorganization to topical subdirectories + archive/ + INDEX.md | `decisions/DEC-20260502-005-workspace-reorganization.md` |
+| 007 | 2026-05-03 | research and code discipline rulebook | `decisions/DEC-20260503-001-research-code-discipline.md`, `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
+| 008 | 2026-05-03 | finalist shortlist approval (option B; three finalists) | `decisions/DEC-20260503-002-finalist-shortlist-approval.md` |
+| 008.5 | 2026-05-04 | composer upgrade + no-all-in posture + literature board | `decisions/DEC-20260504-001-composer-finalist-upgrade.md`, `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md`, `cycles/CYCLE-20260504-001.md` |
+
+This Catchup Gap Note is documentation-only; no Round numbers are renumbered (per `paradigm/RESEARCH_CODE_DISCIPLINE.md` rule 3, no retro-renumber). Future cycles should add Round entries when the cycle introduces a user-facing question rather than a derivative decision memo.
 
 ## Round 1
 
@@ -192,3 +209,53 @@ Output:
 - `planning/RESEARCH_GRAPH_AND_PAPER_START.md`
 - `planning/BRANCH_COMPARISON_MATRIX.md`
 - updated `AGENT_MASTER_PROMPT.md` short invocation
+
+## Round 10
+
+Question: Cycle 008.5 contains four user direction inputs in one session — D2 upgrade ("决策2改成升格吧，因为确实有效果"), no-all-in posture ("我觉得记忆系统啥的只是我们借鉴优点的一个部分，我觉得不能all in"), tempo acceleration ("全力提速了"), and the literature-guidance-board request. Should these be treated as one collapsed Round, or split into separate Rounds, given they were issued back-to-back in a single autonomy window?
+
+Answer (recorded post-cycle for the audit trail):
+
+- Treat them as one collapsed Round 10 with four sub-items, because they were issued in a single user-direction block and the agent processed them inside a single sub-cycle (008.5).
+- Splitting into four Rounds would break the one-Round-per-user-question convention by inflating numbering on derivative items (no-all-in is derivative of the finalist set; tempo is a process directive, not a research question).
+- The four sub-items are still individually traceable via the canonical decision memos and the cycle 008.5 closeout, so the audit trail is intact.
+
+Decision:
+
+```text
+Round 10 = cycle 008.5 user direction block, captured here as one Round with four
+sub-items. Future cycles return to one-Round-per-user-question. The Catchup Gap
+Note above documents Rounds 4-8 events that happened without dedicated Round
+entries; that approach is acceptable when the cycle is purely derivative.
+```
+
+Sub-items:
+
+1. **D2 upgrade**: Composer SPEC-20260504-001 drafted; finalist set grows from three to four. Canonical: `decisions/DEC-20260504-001-composer-finalist-upgrade.md`.
+2. **No-all-in posture**: D3 (first teacher demo target) deferred until cycle 009 case-card data exists AND `paradigm/TEACHER_AUDIENCE_PROFILE.md` is populated; memory and other finalists are borrowable components, not the thesis spine. Canonical: `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md`.
+3. **Tempo acceleration**: cycle 008.5 closes as a single sub-cycle rather than a multi-cycle plan; supporting infrastructure (cross-spec contract, literature board, demo storyboard template, teacher audience profile placeholder, work risk register) lands in the same pass. Canonical: `cycles/CYCLE-20260504-001.md` Goal section.
+4. **Literature guidance board**: existing source files are inventories, not guidance; the literature directory is created with one INDEX, four SPINE files (one per finalist), one CRITICAL_NOTES, and one PAPER_RELATED_WORK_SKELETON. Canonical: `literature/INDEX.md` (and the four SPINE files alongside it).
+
+Output:
+
+- `decisions/DEC-20260504-001-composer-finalist-upgrade.md`
+- `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md`
+- `specs/SPEC-20260504-001-3r-composer.md`
+- `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md`
+- `paradigm/TEACHER_AUDIENCE_PROFILE.md` (placeholder; user must populate to unblock D3)
+- `literature/INDEX.md`, `literature/SPINE_CRITIC.md`, `literature/SPINE_MEMORY.md`, `literature/SPINE_PERMANENCE.md`, `literature/SPINE_COMPOSER.md`, `literature/CRITICAL_NOTES.md`, `literature/PAPER_RELATED_WORK_SKELETON.md`
+- `templates/demo_storyboard.md`
+- `planning/WORK_RISK_REGISTER.md`
+- `cycles/CYCLE-20260504-001.md`
+- registry / inventory sync: `registry/source_registry.md` (SPINE Anchor Map), `sources/FRONTIER_SOURCE_MAP.md` (SPINE Anchor Map), `units/REPRODUCTION_READINESS_MATRIX.md` (cycle 008.5 dormancy + finalist mapping + cycle 008 source-mining P3 additions)
+
+Open questions surfaced by this Round (not yet user-decided; surfaced in `WORKFLOW_STATUS.md` Recommended Next User Decision):
+
+```text
+1. Cycle 009 ordering: Composer case cards parallel with Critic, or sequential after Critic's first card lands.
+2. Composer capability card source: paper-derived only (default) vs paper-derived + KYKT-job-derived.
+3. Teacher audience profile: user must populate paradigm/TEACHER_AUDIENCE_PROFILE.md to unblock D3.
+4. Cycle 009 launch authorization: confirmation requested before cycle 009 starts.
+```
+
+These four points carry into Round 11 (whenever the user lands the next user-direction block).

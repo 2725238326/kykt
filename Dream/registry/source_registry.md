@@ -1,6 +1,6 @@
 # Source Registry
 
-Last updated: 2026-05-02 (cycle 005)
+Last updated: 2026-05-04 (cycle 008.5: SPINE Anchor Map appended for symmetric navigation between inventory and literature guidance board)
 
 Status: seeded from Phase 1 source map. This file is the lightweight index; detailed notes stay in `sources/FRONTIER_SOURCE_MAP.md` and cycle logs.
 
@@ -68,3 +68,25 @@ linked_units:
 | SRC-2024-017 | FisherRF | https://arxiv.org/abs/2311.17874 | 2023/2024 | architecture_transfer | paper, code, ECCV | Fisher-information active view selection and uncertainty for radiance fields | A8 view-gain anchor | future active-perception unit |
 | SRC-2024-018 | ActiveSplat | https://arxiv.org/abs/2410.21955 | 2024 | architecture_transfer | paper, project, RA-L | active mapping, view selection, path planning on 3DGS | A8 active-3DGS anchor | future active-perception unit, RU-008 |
 | SRC-2024-019 | ActiveGS | https://arxiv.org/abs/2412.17769 | 2024 | architecture_transfer | paper | active scene reconstruction using Gaussian splatting | A8 comparator | future active-perception unit |
+
+## Cycle 008.5 SPINE Anchor Map
+
+Status: navigation overlay, not a new evidence claim. Added in cycle 008.5 so a reader of this lightweight registry can jump to the literature guidance board without re-deriving which sources anchor which finalist. Symmetric counterpart lives at the end of `sources/FRONTIER_SOURCE_MAP.md` (`Cycle 008.5 SPINE Anchor Map` section).
+
+Rule: this section maps inventory rows to `literature/SPINE_*.md` files. It does NOT change any evidence label above. If an evidence label needs to change, edit the row above and log it in a cycle file; do not change it here silently (per `literature/INDEX.md` Usage Rules).
+
+| Finalist SPINE | Linked spec | Required-reading anchors (registry IDs) | Advanced-reading anchors |
+|---|---|---|---|
+| `literature/SPINE_CRITIC.md` | `specs/SPEC-20260503-001-geometry-critic.md` | SRC-2025-007 Test3R; SRC-2025-004 TTT3R; SRC-2025-008 CTRL; SRC-2024-009 MASt3R-SfM | SRC-2025-014 G-CUT3R |
+| `literature/SPINE_MEMORY.md` | `specs/SPEC-20260503-002-executive-memory.md` | SRC-2025-002 CUT3R; SRC-2026-001 STream3R; SRC-2025-012 LONG3R; SRC-2026-002 LoGeR; SRC-2026-003 Mem3R; SRC-2026-007 OVGGT | SRC-2026-004 PAS3R; SRC-2026-005 FILT3R; SRC-2026-006 LongStream |
+| `literature/SPINE_PERMANENCE.md` | `specs/SPEC-20260503-003-dynamic-object-permanence.md` | SRC-2024-003 MonST3R; SRC-2025-010 POMATO; SRC-2025-011 D^2USt3R; SRC-2025-013 Easi3R; SRC-2026-008 RayMap3R | SRC-2024-012 SAM 2; SRC-2024-013 SpatialTracker; SRC-2023-003 CoTracker |
+| `literature/SPINE_COMPOSER.md` | `specs/SPEC-20260504-001-3r-composer.md` | SRC-2024-001 DUSt3R; SRC-2024-002 MASt3R; SRC-2025-001 Fast3R; SRC-2024-011 Spann3R | SRC-2025-002 CUT3R; SRC-2026-007 OVGGT; cross-domain MoE / routing literature (no SRC ID; cited as `inferred` per `literature/INDEX.md` evidence discipline) |
+
+Cross-cutting notes:
+
+- SRC-2025-002 CUT3R appears under MEMORY required and COMPOSER advanced. Required for Memory because state-recurrence is the mechanism; advanced for Composer because CUT3R is a streaming-regime model the regime card must encode, not the routing mechanism itself.
+- SRC-2026-007 OVGGT appears under MEMORY required and COMPOSER advanced. Required for Memory because constant-budget cache compression is a Memory policy lever; advanced for Composer because OVGGT defines a long-stream regime row.
+- Sources used as priors / mask inputs for Permanence (SAM 2, SpatialTracker, CoTracker) are listed under Permanence advanced rather than required because they are inputs to the Permanence pipeline, not anchors of its mechanism claim.
+- Sources without a registry ID (e.g., MoE routing in language models) are intentionally left unmapped here; the SPINE file owns its `inferred` evidence label per `literature/INDEX.md` rules.
+
+No new sources are added by this section; no readiness label is changed by this section.
