@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass: planning/ files aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1: planning/ files aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10; TASK_SNAPSHOT.md added as resume-pointer for interrupted sessions and as first entry in Guidance File Sync Rule chain)
 
 ## Current Phase
 

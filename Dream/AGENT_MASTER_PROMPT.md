@@ -16,31 +16,32 @@ Your job is to advance an architecture-first 3R / spatial intelligence research 
 
 ### 0. Mandatory Load Protocol
 
-Before proposing or doing work, read these files in order:
+Read in this order. Position 1 (`TASK_SNAPSHOT.md`) is the highest-authority entry point and must be read FIRST on every session start, before any other file in this list. If `TASK_SNAPSHOT.md` shows status `in_progress` or `blocked`, do not start new work, resume from its `If interrupted, resume from` block.
 
-1. `E:\kykt\Dream\README.md`
-2. `E:\kykt\Dream\INDEX.md`
-3. `E:\kykt\Dream\WORKFLOW_STATUS.md`
-4. `E:\kykt\Dream\RESEARCH_STATE.md`
-5. `E:\kykt\Dream\paradigm\RESEARCH_WORKFLOW.md`
-6. `E:\kykt\Dream\paradigm\RESEARCH_DATA_MODEL.md`
-7. `E:\kykt\Dream\paradigm\RESEARCH_PARADIGM.md`
-8. `E:\kykt\Dream\paradigm\RESEARCH_SKILL_RULES_DRAFT.md`
-9. `E:\kykt\Dream\paradigm\RESEARCH_CODE_DISCIPLINE.md`
-10. `E:\kykt\Dream\paradigm\RESEARCH_CONTENT_ROADMAP.md`
-11. `E:\kykt\Dream\planning\MULTI_TRACK_RESEARCH_CANVAS.md`
-12. `E:\kykt\Dream\planning\RESEARCH_GRAPH_AND_PAPER_START.md`
-13. `E:\kykt\Dream\planning\BRANCH_COMPARISON_MATRIX.md`
-14. `E:\kykt\Dream\planning\ARCHITECTURE_MECHANISM_INTAKE.md`
-15. `E:\kykt\Dream\planning\ACTION_TAXONOMY_AND_PROXY_METRICS.md`
-16. `E:\kykt\Dream\planning\BRANCH_SHORTLIST_DECISION_SURFACE.md`
-17. `E:\kykt\Dream\registry\decision_registry.md`
-18. `E:\kykt\Dream\registry\research_unit_registry.md`
-19. `E:\kykt\Dream\registry\source_registry.md`
-20. `E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
-21. `E:\kykt\Dream\paradigm\CROSS_SPEC_SIGNAL_CONTRACT.md`
-22. `E:\kykt\Dream\paradigm\TEACHER_AUDIENCE_PROFILE.md`
-23. `E:\kykt\Dream\literature\INDEX.md`
+1. `E:\kykt\Dream\TASK_SNAPSHOT.md`
+2. `E:\kykt\Dream\README.md`
+3. `E:\kykt\Dream\INDEX.md`
+4. `E:\kykt\Dream\WORKFLOW_STATUS.md`
+5. `E:\kykt\Dream\RESEARCH_STATE.md`
+6. `E:\kykt\Dream\paradigm\RESEARCH_WORKFLOW.md`
+7. `E:\kykt\Dream\paradigm\RESEARCH_DATA_MODEL.md`
+8. `E:\kykt\Dream\paradigm\RESEARCH_PARADIGM.md`
+9. `E:\kykt\Dream\paradigm\RESEARCH_SKILL_RULES_DRAFT.md`
+10. `E:\kykt\Dream\paradigm\RESEARCH_CODE_DISCIPLINE.md`
+11. `E:\kykt\Dream\paradigm\RESEARCH_CONTENT_ROADMAP.md`
+12. `E:\kykt\Dream\planning\MULTI_TRACK_RESEARCH_CANVAS.md`
+13. `E:\kykt\Dream\planning\RESEARCH_GRAPH_AND_PAPER_START.md`
+14. `E:\kykt\Dream\planning\BRANCH_COMPARISON_MATRIX.md`
+15. `E:\kykt\Dream\planning\ARCHITECTURE_MECHANISM_INTAKE.md`
+16. `E:\kykt\Dream\planning\ACTION_TAXONOMY_AND_PROXY_METRICS.md`
+17. `E:\kykt\Dream\planning\BRANCH_SHORTLIST_DECISION_SURFACE.md`
+18. `E:\kykt\Dream\registry\decision_registry.md`
+19. `E:\kykt\Dream\registry\research_unit_registry.md`
+20. `E:\kykt\Dream\registry\source_registry.md`
+21. `E:\kykt\Dream\handoff\FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+22. `E:\kykt\Dream\paradigm\CROSS_SPEC_SIGNAL_CONTRACT.md`
+23. `E:\kykt\Dream\paradigm\TEACHER_AUDIENCE_PROFILE.md`
+24. `E:\kykt\Dream\literature\INDEX.md`
 
 Then inspect the most relevant active file for the requested task:
 

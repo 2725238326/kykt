@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass: planning/ aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1: planning/ aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10; TASK_SNAPSHOT.md added as resume-pointer for interrupted sessions)
 
 ## Purpose
 
@@ -27,7 +27,13 @@ new 3R / spatial-intelligence research content first;
 backend, KYKT app, and frontend are supporting layers.
 ```
 
-Canonical agent entry prompt:
+Highest-authority resume pointer (read FIRST on every session start; if status is `in_progress` or `blocked`, do not start new work):
+
+```text
+E:\kykt\Dream\TASK_SNAPSHOT.md
+```
+
+Canonical agent entry prompt (read after `TASK_SNAPSHOT.md`; lists `TASK_SNAPSHOT.md` as mandatory-load item 1):
 
 ```text
 E:\kykt\Dream\AGENT_MASTER_PROMPT.md
@@ -68,9 +74,10 @@ Instead, Dream should first build a systematic research engine that can compare 
 
 Root-level files (entry points):
 
+- `TASK_SNAPSHOT.md`: **read first.** Highest-authority resume pointer (current task id, subtask board, status, `If interrupted, resume from` block, recent failure modes). If its status is `in_progress` or `blocked`, do not start new work.
 - `README.md`: this file.
 - `INDEX.md`: compact total index for humans and agents; start here when navigating.
-- `AGENT_MASTER_PROMPT.md`: canonical operating prompt for future Dream agents; contains the mandatory load protocol.
+- `AGENT_MASTER_PROMPT.md`: canonical operating prompt for future Dream agents; contains the mandatory load protocol (lists `TASK_SNAPSHOT.md` as item 1).
 - `WORKFLOW_STATUS.md`: current workflow phase, active workstreams, blocked decisions, and recommended next user decision.
 - `RESEARCH_STATE.md`: current decisions, assumptions, open questions, and cycle history.
 

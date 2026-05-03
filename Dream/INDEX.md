@@ -1,23 +1,25 @@
 # Dream Index
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass: planning/ aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1: planning/ aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10; TASK_SNAPSHOT.md added as resume-pointer for interrupted sessions)
 
-Quick navigation for humans and agents. For full operating rules, read `AGENT_MASTER_PROMPT.md` first.
+Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
 ## How To Read This Workspace
 
-1. Start with `AGENT_MASTER_PROMPT.md` (entry prompt with mandatory load protocol).
-2. Check `WORKFLOW_STATUS.md` for current phase, blocked decisions, and recommended next user decision.
-3. Check `RESEARCH_STATE.md` for living state and cycle history.
-4. Use this `INDEX.md` to find any specific file by topic.
+1. Start with `TASK_SNAPSHOT.md` (highest-authority resume pointer; tells you whether a task is in flight, what subtask is next, and whether forward motion is gated).
+2. Then `AGENT_MASTER_PROMPT.md` (entry prompt with mandatory load protocol; `TASK_SNAPSHOT.md` is item 1 of that protocol, the rest follows).
+3. Check `WORKFLOW_STATUS.md` for current phase, blocked decisions, and recommended next user decision.
+4. Check `RESEARCH_STATE.md` for living state and cycle history.
+5. Use this `INDEX.md` to find any specific file by topic.
 
 ## Root-Level Files (Always-On Entry Points)
 
 | File | Role |
 |---|---|
+| `TASK_SNAPSHOT.md` | **Read first.** Highest-authority resume pointer: current task id, subtask board, status (`idle` / `in_progress` / `blocked`), `If interrupted, resume from` block, recent failure modes |
 | `README.md` | Workspace overview, purpose, non-negotiables |
 | `INDEX.md` | This file; topic-based navigation |
-| `AGENT_MASTER_PROMPT.md` | Canonical agent operating prompt + mandatory load protocol |
+| `AGENT_MASTER_PROMPT.md` | Canonical agent operating prompt + mandatory load protocol (lists `TASK_SNAPSHOT.md` as item 1) |
 | `WORKFLOW_STATUS.md` | Current phase, active workstreams, blocked decisions, recommended next user decision |
 | `RESEARCH_STATE.md` | Living state log; cycle history; current recommendations |
 
