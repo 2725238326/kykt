@@ -307,6 +307,12 @@ fn find_backend_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
             if is_backend_root(ancestor) {
                 return Ok(ancestor.to_path_buf());
             }
+            // Also accept a sibling `backend/` folder next to the exe so a
+            // portable bundle can ship `kykt_vision_client.exe` + `backend/`.
+            let sibling = ancestor.join("backend");
+            if is_backend_root(&sibling) {
+                return Ok(sibling);
+            }
         }
     }
 
@@ -319,24 +325,82 @@ fn find_backend_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     }
 
     Err(
-        "Could not locate the FastAPI backend. Set KYKT_BACKEND_ROOT to the vision_ui directory."
+        "Could not locate the FastAPI backend. Set KYKT_BACKEND_ROOT to the \
+         vision_ui directory (the folder that contains app.py and job_store.py)."
             .to_string(),
     )
 }
 
 fn is_backend_root(path: &Path) -> bool {
-    path.join("app.py").exists()
-        && path.join("job_store.py").exists()
-        && path.join(".venv").join("Scripts").join("python.exe").exists()
+    // Relaxed in 0.3.x: only require the FastAPI entry-point sources. The
+    // Python interpreter is resolved separately by find_backend_python so a
+    // portable bundle can ship without a project-local venv.
+    path.join("app.py").exists() && path.join("job_store.py").exists()
 }
 
-fn spawn_backend(backend_root: &Path) -> Result<(Child, PathBuf), String> {
-    let python = backend_root
+fn find_backend_python(backend_root: &Path) -> Result<PathBuf, String> {
+    if let Ok(explicit) = env::var("KYKT_BACKEND_PYTHON") {
+        let path = PathBuf::from(explicit);
+        if path.exists() {
+            return Ok(path);
+        }
+        return Err(format!(
+            "KYKT_BACKEND_PYTHON points to a missing file: {}",
+            path.display()
+        ));
+    }
+
+    // 1. Project-local virtualenv (preferred for developer workflow).
+    let venv_python = backend_root
         .join(".venv")
         .join("Scripts")
         .join("python.exe");
+    if venv_python.exists() {
+        return Ok(venv_python);
+    }
+
+    // 2. Backend-relative portable Python (a bundle could ship `python/python.exe`).
+    let portable = backend_root.join("python").join("python.exe");
+    if portable.exists() {
+        return Ok(portable);
+    }
+
+    // 3. Sibling `python/python.exe` next to the exe (root of a portable bundle).
+    if let Ok(exe) = env::current_exe() {
+        for ancestor in exe.ancestors() {
+            let candidate = ancestor.join("python").join("python.exe");
+            if candidate.exists() {
+                return Ok(candidate);
+            }
+        }
+    }
+
+    // 4. Fall back to system PATH `python.exe`. This requires the user to have
+    //    installed the requirements; a portable bundle should avoid this path.
+    if let Ok(output) = Command::new("where").arg("python.exe").output() {
+        if output.status.success() {
+            let text = String::from_utf8_lossy(&output.stdout);
+            if let Some(line) = text.lines().next() {
+                let trimmed = line.trim();
+                if !trimmed.is_empty() {
+                    return Ok(PathBuf::from(trimmed));
+                }
+            }
+        }
+    }
+
+    Err(format!(
+        "Could not locate a Python interpreter for the FastAPI backend. \
+         Looked for {0}\\.venv\\Scripts\\python.exe and {0}\\python\\python.exe. \
+         Set KYKT_BACKEND_PYTHON to a python.exe that has the requirements installed.",
+        backend_root.display()
+    ))
+}
+
+fn spawn_backend(backend_root: &Path) -> Result<(Child, PathBuf), String> {
+    let python = find_backend_python(backend_root)?;
     if !python.exists() {
-        return Err(format!("Python venv was not found: {}", python.display()));
+        return Err(format!("Python interpreter not found: {}", python.display()));
     }
 
     let log_dir = backend_root.join("local_jobs").join("_desktop");
@@ -348,8 +412,12 @@ fn spawn_backend(backend_root: &Path) -> Result<(Child, PathBuf), String> {
         .append(true)
         .open(&log_path)
         .map_err(|err| format!("Failed to open backend log: {err}"))?;
-    writeln!(log_file, "\n=== KYKT desktop backend start ===")
-        .map_err(|err| format!("Failed to write backend log: {err}"))?;
+    writeln!(
+        log_file,
+        "\n=== KYKT desktop backend start ({}) ===",
+        python.display()
+    )
+    .map_err(|err| format!("Failed to write backend log: {err}"))?;
 
     let stdout = Stdio::from(
         log_file

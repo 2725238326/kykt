@@ -225,10 +225,33 @@ def cancel_remote_job(job_id: str) -> None:
     cleanup_message = "已请求取消任务。"
     if remote_job_dir:
         try:
-            _kill_remote_job_processes(config, remote_job_dir)
-            cleanup_message = "已请求取消任务，并尝试清理远端进程。"
+            cleanup = _kill_remote_job_processes(config, remote_job_dir)
         except Exception as exc:
             cleanup_message = f"已在本地取消任务；远端清理未确认成功，可稍后检查 GPU 进程。原因：{exc}"
+            _write_debug_log(job_id, f"Cancel cleanup failed: {exc!r}")
+        else:
+            _write_debug_log(
+                job_id,
+                "Cancel cleanup: killed_pids={killed} remaining_pids={remaining}".format(
+                    killed=cleanup.get("killed") or [],
+                    remaining=cleanup.get("remaining") or [],
+                ),
+            )
+            killed = cleanup.get("killed") or []
+            remaining = cleanup.get("remaining") or []
+            if remaining:
+                cleanup_message = (
+                    f"已请求取消任务，已尝试结束 {len(killed)} 个远端进程；"
+                    f"仍有 {len(remaining)} 个进程未消失（PID {','.join(str(pid) for pid in remaining)}），"
+                    "可登录服务器复查 GPU。"
+                )
+            elif killed:
+                cleanup_message = (
+                    f"已请求取消任务，并清理了 {len(killed)} 个远端进程"
+                    f"（PID {','.join(str(pid) for pid in killed)}）。"
+                )
+            else:
+                cleanup_message = "已请求取消任务；远端没有发现需要清理的运行进程。"
 
     update_job(
         job_id,
@@ -396,17 +419,34 @@ def _run_fast3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
     _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
 
 
-def _kill_remote_job_processes(config: ServerConfig, remote_job_dir: str) -> None:
+def _kill_remote_job_processes(config: ServerConfig, remote_job_dir: str) -> dict:
+    """Kill remote runner / model processes for a given job directory.
+
+    Returns a dict with two lists: ``killed`` PIDs that received SIGTERM/SIGKILL
+    and ``remaining`` PIDs that survived the cleanup verification window.
+    """
     script = f"""
 python3 - <<'PY'
+import json
 import os
 import signal
 import subprocess
 import time
 
 job = {remote_job_dir!r}
-needles = ("monst3r_runner.py", "dust3r_runner.py", "mast3r_runner.py", "spann3r_runner.py", "fast3r_runner.py", "demo.py")
+needles = (
+    "monst3r_runner.py",
+    "dust3r_runner.py",
+    "mast3r_runner.py",
+    "spann3r_runner.py",
+    "fast3r_runner.py",
+    "align3r_runner.py",
+    "cut3r_runner.py",
+    "demo.py",
+    "run_job.py",
+)
 current = os.getpid()
+
 
 def matching_pids():
     out = subprocess.check_output(["ps", "-eo", "pid=,args="], text=True, errors="ignore")
@@ -426,24 +466,47 @@ def matching_pids():
             pids.append(pid)
     return sorted(set(pids))
 
-pids = matching_pids()
-for pid in pids:
+
+initial = matching_pids()
+killed = []
+for pid in initial:
     try:
         os.kill(pid, signal.SIGTERM)
+        killed.append(pid)
     except ProcessLookupError:
         pass
 
+# Give processes a moment to terminate gracefully, then escalate.
 time.sleep(2)
-for pid in matching_pids():
+mid = matching_pids()
+for pid in mid:
     try:
         os.kill(pid, signal.SIGKILL)
+        if pid not in killed:
+            killed.append(pid)
     except ProcessLookupError:
         pass
 
-print("cancelled_pids=" + ",".join(map(str, pids)))
+# Final verification window: confirm whether any matching processes survived.
+time.sleep(1)
+remaining = matching_pids()
+print(json.dumps({{"killed": killed, "remaining": remaining}}))
 PY
 """
-    _ssh(config, script)
+    completed = _ssh(config, script)
+    stdout = (completed.stdout or "").strip().splitlines()
+    if not stdout:
+        return {"killed": [], "remaining": []}
+    last_line = stdout[-1].strip()
+    try:
+        parsed = json.loads(last_line)
+    except json.JSONDecodeError:
+        return {"killed": [], "remaining": [], "raw": last_line}
+    if not isinstance(parsed, dict):
+        return {"killed": [], "remaining": []}
+    parsed.setdefault("killed", [])
+    parsed.setdefault("remaining", [])
+    return parsed
 
 
 def _download_results(config: ServerConfig, job_id: str, remote_job_dir: str) -> list[str]:

@@ -24,13 +24,18 @@ def main() -> int:
     if torch.cuda.is_available():
         print(f"  device {torch.cuda.get_device_name(0)} cap {torch.cuda.get_device_capability(0)}")
 
-    try:
-        import curope
-        cls = getattr(curope, "cuRoPE2D", None) or getattr(curope, "cuRoPE", None)
-        print(f"  curope module: {curope.__file__}")
-        print(f"  cuRoPE2D class: {cls}")
-    except Exception as exc:
-        print(f"  curope import FAILED: {type(exc).__name__}: {str(exc)[:240]}")
+    cls = None
+    for module_name in ("croco.models.curope", "src.croco.models.curope", "curope"):
+        try:
+            mod = __import__(module_name, fromlist=["cuRoPE2D", "cuRoPE"])
+            cls = getattr(mod, "cuRoPE2D", None) or getattr(mod, "cuRoPE", None)
+            mod_file = getattr(mod, "__file__", "<no file>")
+            print(f"  imported {module_name} from {mod_file}; class={cls}")
+            if cls is not None:
+                break
+        except Exception as exc:
+            print(f"  import {module_name} FAILED: {type(exc).__name__}: {str(exc)[:200]}")
+    if cls is None:
         return 1
 
     if not torch.cuda.is_available():

@@ -47,6 +47,7 @@ from job_store import (
     load_result_summary,
     load_job,
     query_jobs,
+    recover_orphan_running_jobs,
     save_inputs,
     save_evaluation,
     update_job,
@@ -99,16 +100,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.on_event("startup")
+async def _recover_orphan_running_jobs() -> None:
+    """When the FastAPI process restarts, any prior in-flight job has lost its
+    runner thread. Mark them as failed so the UI does not show ghost-running
+    cards; the user can click retry to redispatch."""
+    try:
+        rehydrated = recover_orphan_running_jobs()
+    except Exception as exc:  # pragma: no cover - defensive
+        LOGGER.warning("Orphan job rehydration failed: %s", exc)
+        return
+    if rehydrated:
+        LOGGER.info(
+            "Rehydrated %d orphan running job(s) on startup: %s",
+            len(rehydrated),
+            ", ".join(rehydrated),
+        )
+
 templates = Jinja2Templates(directory=str(ROOT / "templates"))
 templates.env.globals["asset_version"] = "20260410-2130"
 SAMPLES_MANIFEST_PATH = ROOT / "samples_manifest.json"
 DEPLOYMENT_SCRIPT_PATH = ROOT.parents[2] / "tools" / "check_3r_remote.ps1"
+
+CLIENT_DIST_DIR = ROOT / "client" / "dist"
+CLIENT_INDEX_HTML = CLIENT_DIST_DIR / "index.html"
+CLIENT_ASSETS_DIR = CLIENT_DIST_DIR / "assets"
+REACT_CLIENT_AVAILABLE = CLIENT_INDEX_HTML.exists() and CLIENT_ASSETS_DIR.exists()
 
 (ROOT / "static").mkdir(parents=True, exist_ok=True)
 (ROOT / "local_jobs").mkdir(parents=True, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=str(ROOT / "static")), name="static")
 app.mount("/local_jobs", StaticFiles(directory=str(ROOT / "local_jobs")), name="local_jobs")
+if REACT_CLIENT_AVAILABLE:
+    # Vite-built React client. /assets serves chunked JS/CSS bundles; the SPA
+    # entry point is delivered by the / and /jobs/{id} routes below.
+    app.mount("/assets", StaticFiles(directory=str(CLIENT_ASSETS_DIR)), name="client_assets")
+    LOGGER.info("React client detected at %s; serving as default UI.", CLIENT_DIST_DIR)
+else:
+    LOGGER.info("React client build not found at %s; falling back to Jinja templates.", CLIENT_DIST_DIR)
 
 
 PHASE_FLOW = [
@@ -890,6 +921,12 @@ def _launch_remote_job(job_id: str) -> None:
 
 @app.get("/")
 async def index(request: Request):
+    if REACT_CLIENT_AVAILABLE:
+        return FileResponse(
+            str(CLIENT_INDEX_HTML),
+            media_type="text/html",
+            headers={"Cache-Control": "no-store"},
+        )
     jobs = list_jobs(limit=50)
     summary = build_dashboard_stats(jobs)
     return templates.TemplateResponse(
@@ -958,6 +995,14 @@ async def job_detail(request: Request, job_id: str):
         job = load_job(job_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+    if REACT_CLIENT_AVAILABLE:
+        # React Router renders the matching detail screen client-side.
+        return FileResponse(
+            str(CLIENT_INDEX_HTML),
+            media_type="text/html",
+            headers={"Cache-Control": "no-store"},
+        )
 
     payload = _job_payload(job)
     return templates.TemplateResponse(

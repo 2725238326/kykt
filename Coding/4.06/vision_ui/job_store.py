@@ -545,3 +545,35 @@ def update_job(
             job.progress_message = progress_message
         save_job(job)
         return job
+
+
+def recover_orphan_running_jobs() -> list[str]:
+    """Mark jobs whose ``status == "running"`` as ``failed`` because no runner
+    thread can be holding them across an uvicorn restart.
+
+    Returns the list of job IDs that were rehydrated. Safe to call repeatedly;
+    only jobs whose status is currently ``running`` are touched.
+    """
+    rehydrated: list[str] = []
+    with _JOB_STORE_LOCK:
+        ensure_local_jobs_dir()
+        for job_json in sorted(LOCAL_JOBS_DIR.glob("*/job.json")):
+            try:
+                job = _load_job_record(job_json)
+            except Exception:
+                continue
+            if job.status != "running":
+                continue
+            job.status = "failed"
+            job.phase = "failed"
+            job.error_message = (
+                "本地后端在任务运行中重启或崩溃，调度线程已不存在。"
+                "任务被标记为失败以避免 UI 长期假在跑；可点击重试重新调度。"
+            )
+            job.progress_message = "后端重启后未发现运行线程，已自动标记为失败。"
+            try:
+                save_job(job)
+                rehydrated.append(job.job_id)
+            except Exception:
+                continue
+    return rehydrated
