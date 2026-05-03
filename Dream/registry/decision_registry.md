@@ -1,6 +1,6 @@
 # Decision Registry
 
-Last updated: 2026-05-03 (cycle 008 added DEC-20260503-002 finalist shortlist approval)
+Last updated: 2026-05-04 (cycle 008.5 added DEC-20260504-001 composer finalist upgrade and DEC-20260504-002 no-all-in posture)
 
 Status: seeded.
 
@@ -26,3 +26,5 @@ Status: seeded.
 | DEC-20260502-005 | 2026-05-02 | workspace | Reorganize Dream into topical subdirectories (paradigm/, planning/, sources/, units/, handoff/, logs/, archive/) and add INDEX.md as navigation entry | accepted | yes (user approved Stage A + B + C) | `decisions/DEC-20260502-005-workspace-reorganization.md` |
 | DEC-20260503-001 | 2026-05-03 | paradigm / agent behavior | Adopt `paradigm/RESEARCH_CODE_DISCIPLINE.md` as the active behavior rulebook (Karpathy four principles + Dream-native Honesty Override); wire into mandatory load protocol | accepted | no (prompt/rule refinement) | `decisions/DEC-20260503-001-research-code-discipline.md` |
 | DEC-20260503-002 | 2026-05-03 | thesis shortlist / mechanism-spec authorization | User approved option B (Geometry Critic + Executive Memory + Dynamic Object Permanence as finalists; Composer support; Cross-Modal and Active Perception alive at lower priority); authorize drafting three finalist mechanism specs under `specs/` and reserving L2 case cards for cycle 011; thesis selection remains gated | accepted | yes (this DEC IS the user approval gate) | `decisions/DEC-20260503-002-finalist-shortlist-approval.md` |
+| DEC-20260504-001 | 2026-05-04 | thesis shortlist / mechanism-spec authorization | Upgrade 3R Composer / Unified Model Ecology from supporting layer to a fourth finalist mechanism spec; draft now in cycle 008.5; Composer owns A5 only and reads A3 / A4 / A7 as support; primary proxy P5 route_regret; cross-spec contract with Critic A5 formalized in `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` | accepted | yes (this DEC IS the user approval gate) | `decisions/DEC-20260504-001-composer-finalist-upgrade.md` |
+| DEC-20260504-002 | 2026-05-04 | thesis selection posture | No single finalist (Critic / Memory / Permanence / Composer) is treated as the thesis spine; memory in particular is borrowable as one component, not the headline; cycle 009 runs case cards on parallel tracks with Critic first per cycle 008 D1; D3 (first teacher demo target) deferred until cycle 009 case-card data exists; per-card annotation budget 90 to 120 minutes per cycle 008 D4 | accepted | yes (this DEC IS the user approval gate) | `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md` |

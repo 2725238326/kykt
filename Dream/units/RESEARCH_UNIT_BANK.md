@@ -1,6 +1,6 @@
 # Research Unit Bank
 
-Last updated: 2026-05-03 (cycle 008 promoted RU-003 / RU-011 / RU-013 / RU-015 to `spec_drafted`)
+Last updated: 2026-05-04 (cycle 008.5 appended decision line on RU-002 promoting to `spec_drafted`)
 
 This is an initial bank. Scores and decisions may change after subagent outputs are merged.
 
@@ -114,6 +114,7 @@ Risks:
 Decision:
 
 - Best near-term demo candidate.
+- 2026-05-04 (cycle 008.5): promoted to `spec_drafted` and linked to `specs/SPEC-20260504-001-3r-composer.md` (Composer finalist owns A5 routing facet; primary proxy P5 + capability_match; cross-spec contract with Critic A5 formalized in `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md`). Per DEC-20260504-002, Composer is not the thesis spine; it is one of four parallel finalists. Next action is `CASE-20260505-COMPOSER-01..03` in cycle 009.
 
 ## RU-003: Test-Time Geometry Self-Check
 

@@ -344,8 +344,9 @@ L1_design_cost: low
 
 ```text
 This spec plus three case cards in cycle 009. ~6-8 hours of synthesis work.
-Annotation ceiling per case card: ~60 minutes of human labeling on the
-MonST3R 48-frame job (the longest of the three).
+Annotation budget per case card: 90-120 minutes per cycle 008 D4 (no
+optional uplift; this is the ceiling). The MonST3R 48-frame job is still
+the longest of the three case cards inside that shared cap.
 ```
 
 L2_proxy_cost: medium
@@ -492,9 +493,11 @@ linked_next_artifact:
 Memory is the most ambitious of the three finalists, with the largest
 comparator overlap. Two open user decisions:
 
-  1. Acceptable annotation ceiling on the MonST3R 48-frame job: 60 minutes
-     labels the primary case card; 120 minutes adds anchor-importance
-     ground truth for tighter P2 numbers. Default: 60 minutes.
+  1. Annotation budget on the MonST3R 48-frame job is now 90-120 minutes
+     per case card per cycle 008 D4 (no optional uplift). Inside that cap,
+     do you prefer denser anchor-importance ground truth (closer to the
+     120-minute end) or broader coverage with lighter anchor labels
+     (closer to the 90-minute end)? Default: balanced 90-100 minutes.
   2. Whether to reserve a fourth case card for an MV-DUSt3R+ or Splatt3R
      output once a fresh KYKT job becomes available, or freeze the case
      card list at three. Default: freeze at three for cycle 009; revisit

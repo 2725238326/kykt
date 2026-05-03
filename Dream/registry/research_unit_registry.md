@@ -1,6 +1,6 @@
 # Research Unit Registry
 
-Last updated: 2026-05-03 (cycle 008 promoted RU-003 / RU-011 / RU-013 / RU-015 to `spec_drafted` after DEC-20260503-002)
+Last updated: 2026-05-04 (cycle 008.5 promoted RU-002 to `spec_drafted` after DEC-20260504-001)
 
 Status: seeded from `units/RESEARCH_UNIT_BANK.md`.
 
@@ -9,7 +9,7 @@ Status: seeded from `units/RESEARCH_UNIT_BANK.md`.
 | RU | Name | Track | Current decision | Next workflow action |
 |---|---|---|---|---|
 | RU-001 | Geometry-Gated State-Space 3R | Memory/State | keep as architecture candidate | refine computation graph |
-| RU-002 | 3R Composer Controller | Composer | best near-term demo | define KYKT data contract |
+| RU-002 | 3R Composer Controller | Composer | spec_drafted (linked to SPEC-20260504-001) | fill CASE-20260505-COMPOSER-01..03 in cycle 009 |
 | RU-003 | Test-Time Geometry Self-Check | Reasoning/TTC | spec_drafted (linked to SPEC-20260503-001) | fill CASE-20260504-CRITIC-01..03 in cycle 011 |
 | RU-004 | External Sparse Spatial Memory | Memory/State | foundational design rule | formalize memory boundary |
 | RU-005 | 3R-to-4DGS Bridge | Demo/4D | demo enabler | keep after visual baseline |

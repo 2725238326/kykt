@@ -247,8 +247,8 @@ On the labeled L2 cases:
       confidence regardless of dynamic mask
   AND P4 static_preservation(GEM-3R) >= static_preservation(no-policy)
   AND identity_consistency on the MonST3R 48-frame job is computable for
-      at least one moving object across at least 8 frames within 60 minutes
-      of human annotation effort
+      at least one moving object across at least 8 frames within 120
+      minutes of human annotation effort per cycle 008 D4
   AND CASE-PERMANENCE-02 confirms the static control: GEM-3R does NOT
       generate object tracks on a fully static pair (i.e. the controller
       is not hallucinating motion).
@@ -258,8 +258,9 @@ fail_fast_threshold:
 
 ```text
 If after the cycle 009 case cards:
-  identity_consistency cannot be labeled within 60 minutes of human effort
-      on the MonST3R 48-frame job (annotation cost ceiling exceeded)
+  identity_consistency cannot be labeled within 120 minutes of human
+      effort per cycle 008 D4 on the MonST3R 48-frame job (annotation
+      cost ceiling exceeded)
   OR GEM-3R policy fails to reduce dynamic_pollution vs the no-policy
       baseline on case 01
   OR case 02 (static control) shows GEM-3R minting object tracks where
@@ -346,8 +347,8 @@ L1_design_cost: low
 
 ```text
 This spec plus three case cards in cycle 009. ~5-7 hours of synthesis work.
-Annotation ceiling per case card: 60 minutes for case 01 (the MonST3R
-48-frame job). The 60-minute ceiling is a hard fail-fast condition; if
+Annotation budget per case card: 90-120 minutes per cycle 008 D4. The
+120-minute ceiling is the hard fail-fast condition per cycle 008 D4; if
 annotation overruns it, the spec retires.
 ```
 
@@ -388,7 +389,7 @@ engineering_risk:
 
 ```text
 Low at L1/L2. Annotation cost is the dominant risk, capped by the
-60-minute fail-fast threshold.
+120-minute fail-fast threshold per cycle 008 D4.
 ```
 
 demo_risk:
@@ -504,14 +505,18 @@ linked_next_artifact:
 Permanence is the most labor-heavy of the three finalists due to object
 identity annotation. Three open user decisions:
 
-  1. Annotation ceiling on MonST3R 48-frame job: 60 minutes is the
-     fail-fast threshold; raising it to 90 minutes would buy denser
-     identity labels but breaks the "low cost" framing. Default: 60
-     minutes hard cap.
+  1. Annotation budget on MonST3R 48-frame job is 90-120 minutes per case
+     card per cycle 008 D4 (no optional uplift). The 120-minute mark is
+     a hard fail-fast cap: if identity_consistency cannot be labeled
+     within that budget, Permanence retires to "close reserve". Within
+     the cap, do you want sparser identity labels for more objects, or
+     denser labels on one moving object? Default: dense on one object.
   2. Source of CASE-PERMANENCE-03 dynamic clip: synthetic (cheaper, may
      not generalize) vs labeled public clip (slower to source). Default:
      synthetic for cycle 009; revisit if synthetic confounds the result.
   3. Whether to surface the permanence timeline as the FIRST teacher demo
      candidate (highest visual impact) or hold demo precedence to Critic
-     (cheapest evidence). Default: Critic first; Permanence second.
+     (cheapest evidence). Note: per DEC-20260504-002 the first demo
+     target is deferred until cycle 009 case-card data exists; this item
+     stays open and is not picked unilaterally.
 ```

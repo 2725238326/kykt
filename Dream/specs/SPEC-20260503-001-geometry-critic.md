@@ -314,7 +314,11 @@ L1_design_cost: low
 
 ```text
 This spec file plus three case cards in cycle 009. ~4-6 hours of synthesis
-work. Annotation ceiling per case card: ~30-60 minutes of human labeling.
+work. Annotation budget per case card: 90-120 minutes per cycle 008 D4
+(DEC-20260504-002 implies the same ceiling for parallel tracking). Critic
+remains the cheapest of the four finalists; the 30-60 minute median is
+still the expected actual labeling time, just with headroom inside the
+shared 90-120 minute cap.
 ```
 
 L2_proxy_cost: low
