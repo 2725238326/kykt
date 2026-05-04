@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 009 S2 + S3 + S4 done: three Critic L2 case cards drafted = CASE-20260504-CRITIC-01 / 02 / 03; spec-authoritative IDs; CR-1 + CR-3 + CR-4 + CR-5 + CR-6 collectively exercised across the three cards; ID drift 20260505 -> 20260504 across planning/workflow/cycle log filename still scheduled as separate sub-pass)
+Last updated: 2026-05-04 (cycle 009 S2..S5 done = full case-card portfolio drafted: 3 Critic + 3 Composer = 6 cards; Critic uses spec-reserved 20260504 IDs; Composer uses spec-reserved 20260505 IDs; CASE-20260505-COMPOSER-03 surfaced a v1 -> v2 route_regret cost-axis candidate; S6..S8 + Critic-side ID-drift cleanup outstanding)
 
-Status: **in_progress** (Critic case-card portfolio complete; cycle 009 S5..S8 + ID-drift cleanup outstanding)
+Status: **in_progress** (case-card portfolio complete; cycle 009 S6/S7/S8 + ID-drift cleanup outstanding)
 
 ## Why this file exists
 
