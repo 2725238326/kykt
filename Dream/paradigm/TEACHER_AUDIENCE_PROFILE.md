@@ -54,7 +54,12 @@ A teacher may be more than one. Order them by weight if so.
 ### Prior Expectations On This Work
 
 ```text
-[user has not specified; deferred until user supplies signal]
+[user input 2026-05-04, verbatim paraphrase]
+"老师不知道我们要做Dream"
+
+Recorded as: cold start. The teacher has not seen Dream framing or
+Dream content; first impression of the Dream line will be whatever
+demo lands first.
 ```
 
 Examples:
@@ -66,7 +71,14 @@ Examples:
 ### Demo Precedent
 
 ```text
-[user has not specified; deferred until user supplies signal]
+[user input 2026-05-04, implied by Prior Expectations statement]
+"老师不知道我们要做Dream" -> first impression.
+
+Recorded as: first impression. Whatever demo lands first defines the
+teacher's baseline for the Dream line. Sequencing per cycle 008 D1
+(Critic-first technically) still applies; that is execution order,
+not demo precedence — D3 (which finalist to actually demo first)
+remains deferred per DEC-20260504-002.
 ```
 
 Examples:
@@ -78,19 +90,16 @@ Examples:
 ### What The Teacher Has Previously Praised In Similar Work
 
 ```text
-[user did not name specific examples in 2026-05-04 input]
+[user input 2026-05-04, verbatim paraphrase]
+"老师是对3R方向都没啥具体贬褒"
 
-[agent inference, NOT user statement, flagged for user correction]
-By implication of the Research Taste priorities above, work that lands
-well per this teacher is likely to share these properties:
-- visible novel framing (新范式, not incremental delta)
-- demonstrably crafted writing (clear claims, motivated structure)
-- a tellable story arc (motivation -> tension -> resolution)
-- evidence of research methodology, not only final numbers
+Recorded as: no specific praise stated on the 3R direction. Teacher
+has not, to user's knowledge, named specific 3R-line papers / demos /
+phrases approvingly. The Research Taste field above remains the only
+positive signal to design against.
 
-User: please overwrite with specific past papers / demos / phrases the
-teacher has cited approvingly when convenient. Until then, treat the
-above as inference, not fact.
+[Earlier agent inference about "novel framing + story arc + writing
+craft" is superseded by this explicit user statement and removed.]
 ```
 
 Examples (the user fills with specifics, not categories):
@@ -102,12 +111,12 @@ Examples (the user fills with specifics, not categories):
 ### What The Teacher Has Previously Criticized In Similar Work
 
 ```text
-[user has not specified; deferred until user supplies signal]
+[user input 2026-05-04, verbatim paraphrase]
+"老师是对3R方向都没啥具体贬褒"
 
-[agent did NOT invert the Research Taste priorities into criticisms.
-"Teacher values X" does not entail "teacher has criticized not-X"; the
-two are different evidence claims. Leaving this field empty until the
-user names actual past criticisms.]
+Recorded as: no specific criticism stated on the 3R direction.
+Teacher has not, to user's knowledge, named specific 3R-line research
+moves rejectionally. No concrete failure modes to design away from.
 ```
 
 Examples:
@@ -154,7 +163,11 @@ Examples:
   - User stated no hard logistical constraints ("老师没啥要求的"). Recorded as such.
   - Three fields (Prior Expectations, Demo Precedent, Previously Criticized) remain empty by user. Agent did NOT invert priority statements into criticism claims (Honesty Override).
   - Previously Praised contains agent inference flagged for user correction.
-  - Status: placeholder -> populated. D3' (TEACHER_AUDIENCE_PROFILE population) is now resolved; D3 (first demo target choice) remains deferred per `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md`.
+- 2026-05-04 (cycle 009 activation, follow-up): remaining four fields resolved by user input.
+  - "老师不知道我们要做Dream" -> Prior Expectations = cold start; Demo Precedent = first impression.
+  - "老师是对3R方向都没啥具体贬褒" -> Previously Praised = no specific signal on 3R; Previously Criticized = no specific signal on 3R.
+  - Earlier agent-inference block under Previously Praised is superseded and removed; user explicitly stated no specifics, so inference is no longer the right framing.
+  - Profile is now fully populated. Remaining open item is D3 (which finalist to demo first), still deferred per DEC-20260504-002 until case cards land.
 
 ## Companion Files
 

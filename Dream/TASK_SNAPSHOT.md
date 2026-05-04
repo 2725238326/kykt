@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 009 activation pass + D3' resolution: D1'-D4' locked, DEC-20260504-003 + CYCLE-20260505-001 written, TEACHER_AUDIENCE_PROFILE.md populated by user input; CASE-CRITIC-01 draft deferred to next pass per F-001 budget guard)
+Last updated: 2026-05-04 (cycle 009 activation pass + D3' resolution + S2 case-card draft: D1'-D4' locked, DEC-20260504-003 + CYCLE-20260505-001 written, TEACHER_AUDIENCE_PROFILE.md fully populated, CASE-20260504-CRITIC-01.md drafted; ID drift 20260505 -> 20260504 across planning/workflow files scheduled as separate sub-pass)
 
-Status: **in_progress** (cycle 009 launched; D3' resolved; CASE-CRITIC-01 draft outstanding)
+Status: **in_progress** (cycle 009 S2 done; S3..S8 + ID-drift cleanup outstanding)
 
 ## Why this file exists
 
@@ -50,8 +50,8 @@ working rules the draft is deferred to a fresh pass with a clean context.
 | S3 | Write `decisions/DEC-20260504-003-cycle-009-launch.md` recording D1'-D4' verbatim with rationales | done | same file (76 lines) |
 | S4 | Create `cycles/CYCLE-20260505-001.md` with header + subtask board copied from launch package | done | `cycles/CYCLE-20260505-001.md` (50 lines) |
 | S5 | Update this `TASK_SNAPSHOT.md`: status -> in_progress, current task, subtask board, If-interrupted-resume-from, Open user decisions resolution | done | this file |
-| S6 | Read `specs/SPEC-20260503-001.md` (Critic), draft `cases/CASE-20260505-CRITIC-01.md` from `templates/proxy_case_card.md` | deferred | next pass; checkpoint chosen per F-001 budget guard (32 MB limit hit on the same pass) |
-| S7 | Commit + push the cycle-009 activation (DEC-20260504-003 + CYCLE-20260505-001 + this snapshot); brief report | pending | git history |
+| S6 | Read `specs/SPEC-20260503-001.md` (Critic), draft `cases/CASE-20260504-CRITIC-01.md` from `templates/proxy_case_card.md` (spec-authoritative ID per spec line 208; D2' paper-derived) | done | `cases/CASE-20260504-CRITIC-01.md` |
+| S7 | Commit + push the cycle-009 activation + S2 case-card; ID-drift cleanup (20260505 -> 20260504) scheduled as follow-up sub-pass | in_progress | git history |
 
 ## Last completed task pass
 
@@ -107,12 +107,15 @@ If a new agent or new conversation is picking this up cold:
    + rationales).
 3. Read cycles/CYCLE-20260505-001.md (cycle 009 board).
 4. Resume at S5 of the activation board if this snapshot's Status is
-   still in_progress; if S5 already shows done, resume at S6 (draft
-   CASE-20260505-CRITIC-01.md from templates/proxy_case_card.md against
-   specs/SPEC-20260503-001.md, paper-derived per D2').
-5. After S6 lands, S7 = commit + push.
-6. Honor F-001 working rules: do not Read large files already cited in
-   this snapshot; prefer Grep -n + Edit over full-file Read + Write.
+   still in_progress; if S5 already shows done, resume at S6 (now done
+   too: CASE-20260504-CRITIC-01 drafted). Active outstanding work is:
+   (a) S7 commit/push, (b) ID-drift cleanup sub-pass (20260505 ->
+   20260504 across planning/workflow/cycle log filename),
+   (c) cycle 009 S3..S8 (cards 02 / 03, Composer cards, contract audit,
+   closeout).
+5. Honor F-001 working rules throughout: do not Read large files already
+   cited in this snapshot; prefer Grep -n + Edit over full-file Read +
+   Write; cap large files in active context at <=2 simultaneously.
 ```
 
 If this snapshot says `idle` instead of `in_progress`, the cycle 009 activation is fully closed; consult `cycles/CYCLE-20260505-001.md` for the next live cycle-009 subtask.
@@ -141,8 +144,9 @@ D1'-D4' were delegated to the agent by user message "D1-D4 你自己决策吧，
                                        D3' resolved; D3 (first demo
                                        target choice) still deferred per
                                        DEC-20260504-002.
-4. Cycle 009 launch authorization  -> go. CASE-20260505-CRITIC-01 is the
-   (D4')                             first card per cycle 008 D1.
+4. Cycle 009 launch authorization  -> go. CASE-20260504-CRITIC-01 is the
+   (D4')                             first card per cycle 008 D1; drafted
+                                     2026-05-04, paper-derived per D2'.
 ```
 
 Items still blocked on user approval per `AGENT_MASTER_PROMPT.md` section 6 (unchanged from prior cycles): final thesis selection, reproduction, training, checkpoint download, KYKT navigation change, frontend implementation, reusable Codex skill packaging, retiring any non-finalist track, declaring teacher-demo readiness. (D3' previously listed here is now resolved 2026-05-04; D3 demo-target choice remains deferred per DEC-20260504-002.)
