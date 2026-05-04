@@ -1,8 +1,8 @@
 # Teacher Audience Profile
 
-Last updated: 2026-05-04 (cycle 008.5; placeholder; awaits user input)
+Last updated: 2026-05-04 (populated by user input; D3' unblocked for profile-population purposes; D3 demo-target choice itself still deferred per DEC-20260504-002)
 
-Status: **placeholder**. Fields below are intentionally blank. The agent must not fill them without explicit user input. Until populated, decision D3 (first teacher demo target) and `templates/demo_storyboard.md` audience-assumption fields stay open.
+Status: **populated (user input 2026-05-04)**. Substantive priority fields filled from user statement. Logistical fields recorded as "no constraints stated by user". Agent-inferred fields are explicitly labeled as such; user can correct any.
 
 ## Purpose
 
@@ -23,7 +23,24 @@ This file is the user's input surface. When populated, it gates D3 (first teache
 ### Research Taste
 
 ```text
-[blank for user]
+[user input 2026-05-04, verbatim paraphrase]
+"老师主要希望我们能有科研的训练以及写作方面的技巧以及创新范式，
+ 同时也能讲好故事这样"
+
+Decomposed (user-stated priorities, not agent-invented):
+- 科研的训练 -> research methodology / training as a value in itself
+- 写作技巧   -> academic writing craft as a visible skill
+- 创新范式   -> paradigm-level novelty (not incremental tweaks)
+- 讲好故事   -> narrative quality; the work must be tellable
+
+[agent reading, user can correct]
+Closest mapping onto the example axes: the teacher cares about
+research-as-craft - process + framing + narration - more than a clean
+theory-vs-system axis. Novelty (创新范式) and narrative (讲好故事)
+both carry strong weight; principled formulation (writing + research
+methodology) carries strong weight. Pure "module-stacking" or pure
+"benchmark-chasing" demos are unlikely to land well; framing-first
+demos with a clear story arc are.
 ```
 
 Examples of what to capture (the user picks the framing that fits):
@@ -37,7 +54,7 @@ A teacher may be more than one. Order them by weight if so.
 ### Prior Expectations On This Work
 
 ```text
-[blank for user]
+[user has not specified; deferred until user supplies signal]
 ```
 
 Examples:
@@ -49,7 +66,7 @@ Examples:
 ### Demo Precedent
 
 ```text
-[blank for user]
+[user has not specified; deferred until user supplies signal]
 ```
 
 Examples:
@@ -61,7 +78,19 @@ Examples:
 ### What The Teacher Has Previously Praised In Similar Work
 
 ```text
-[blank for user]
+[user did not name specific examples in 2026-05-04 input]
+
+[agent inference, NOT user statement, flagged for user correction]
+By implication of the Research Taste priorities above, work that lands
+well per this teacher is likely to share these properties:
+- visible novel framing (新范式, not incremental delta)
+- demonstrably crafted writing (clear claims, motivated structure)
+- a tellable story arc (motivation -> tension -> resolution)
+- evidence of research methodology, not only final numbers
+
+User: please overwrite with specific past papers / demos / phrases the
+teacher has cited approvingly when convenient. Until then, treat the
+above as inference, not fact.
 ```
 
 Examples (the user fills with specifics, not categories):
@@ -73,7 +102,12 @@ Examples (the user fills with specifics, not categories):
 ### What The Teacher Has Previously Criticized In Similar Work
 
 ```text
-[blank for user]
+[user has not specified; deferred until user supplies signal]
+
+[agent did NOT invert the Research Taste priorities into criticisms.
+"Teacher values X" does not entail "teacher has criticized not-X"; the
+two are different evidence claims. Leaving this field empty until the
+user names actual past criticisms.]
 ```
 
 Examples:
@@ -85,7 +119,17 @@ Examples:
 ### Hard Constraints
 
 ```text
-[blank for user]
+[user input 2026-05-04, verbatim paraphrase]
+"老师没啥要求的" (with respect to logistical constraints).
+
+Recorded as: no hard limits stated by user on
+- timing
+- presentation surface (laptop / projector / shared notebook)
+- live vs offline
+- demo length
+
+Confirm with user before any actual demo step; "no constraints stated"
+is not the same as "infinite latitude".
 ```
 
 Examples:
@@ -105,6 +149,12 @@ Examples:
 ## Change Log
 
 - 2026-05-04 (cycle 008.5): file created as placeholder per `handoff/SESSION-HANDOFF-20260504-001-cycle-008-closeout-and-cycle-009-prep.md` Task 11. No content. Awaiting user input.
+- 2026-05-04 (cycle 009 activation): populated by user input within the cycle 009 activation pass.
+  - User stated Research Taste priorities verbatim: 科研的训练 / 写作技巧 / 创新范式 / 讲好故事. Recorded verbatim + decomposed; agent reading flagged separately.
+  - User stated no hard logistical constraints ("老师没啥要求的"). Recorded as such.
+  - Three fields (Prior Expectations, Demo Precedent, Previously Criticized) remain empty by user. Agent did NOT invert priority statements into criticism claims (Honesty Override).
+  - Previously Praised contains agent inference flagged for user correction.
+  - Status: placeholder -> populated. D3' (TEACHER_AUDIENCE_PROFILE population) is now resolved; D3 (first demo target choice) remains deferred per `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md`.
 
 ## Companion Files
 

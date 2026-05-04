@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 009 activation pass: D1'-D4' locked by user delegation, DEC-20260504-003 + CYCLE-20260505-001 written; CASE-CRITIC-01 draft deferred to next pass per F-001 budget guard)
+Last updated: 2026-05-04 (cycle 009 activation pass + D3' resolution: D1'-D4' locked, DEC-20260504-003 + CYCLE-20260505-001 written, TEACHER_AUDIENCE_PROFILE.md populated by user input; CASE-CRITIC-01 draft deferred to next pass per F-001 budget guard)
 
-Status: **in_progress** (cycle 009 launched; S5 of activation board outstanding)
+Status: **in_progress** (cycle 009 launched; D3' resolved; CASE-CRITIC-01 draft outstanding)
 
 ## Why this file exists
 
@@ -126,21 +126,26 @@ D1'-D4' were delegated to the agent by user message "D1-D4 你自己决策吧，
                                        spec contract v1 is the test path).
 2. Composer card source (D2')      -> paper-derived only; KYKT-job-derived
                                        deferred to cycle 010.
-3. TEACHER_AUDIENCE_PROFILE (D3')  -> unpopulated, deferred. The form
-                                       requires real-teacher facts
-                                       (Research Taste / Hard Constraints
-                                       / Demo Precedent) the agent has no
-                                       source for; agent will not invent.
-                                       Cycle 009 case cards are paper-
-                                       derived under D2', so they do not
-                                       depend on this form. To be filled
-                                       by the user before any teacher-
-                                       facing demo step.
+3. TEACHER_AUDIENCE_PROFILE (D3')  -> populated 2026-05-04 by user input.
+                                       User stated Research Taste:
+                                       科研的训练 / 写作技巧 / 创新范式
+                                       / 讲好故事. User stated no hard
+                                       logistical constraints. Three
+                                       sub-fields (Prior Expectations,
+                                       Demo Precedent, Previously
+                                       Criticized) remain empty by user;
+                                       agent did NOT invert priorities
+                                       into criticism claims. See
+                                       paradigm/TEACHER_AUDIENCE_PROFILE
+                                       .md Change Log 2026-05-04 entry.
+                                       D3' resolved; D3 (first demo
+                                       target choice) still deferred per
+                                       DEC-20260504-002.
 4. Cycle 009 launch authorization  -> go. CASE-20260505-CRITIC-01 is the
    (D4')                             first card per cycle 008 D1.
 ```
 
-Items still blocked on user approval per `AGENT_MASTER_PROMPT.md` section 6 (unchanged from prior cycles): final thesis selection, reproduction, training, checkpoint download, KYKT navigation change, frontend implementation, reusable Codex skill packaging, retiring any non-finalist track, declaring teacher-demo readiness, **populating `paradigm/TEACHER_AUDIENCE_PROFILE.md` (D3' deferred item)**.
+Items still blocked on user approval per `AGENT_MASTER_PROMPT.md` section 6 (unchanged from prior cycles): final thesis selection, reproduction, training, checkpoint download, KYKT navigation change, frontend implementation, reusable Codex skill packaging, retiring any non-finalist track, declaring teacher-demo readiness. (D3' previously listed here is now resolved 2026-05-04; D3 demo-target choice remains deferred per DEC-20260504-002.)
 
 ## Update protocol (highest priority — always honor)
 
