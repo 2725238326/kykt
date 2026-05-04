@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-05 (cycle 011 launched + closed at content level: Critic storyboard draft + G4 closed-by-documentation under v2.1 + G5 closed by formalization + v2.1 contract revision active + DEC-20260505-001 covers (1) D3 = Critic, (2) cycle 011 scope, (3) v2.1 forward-reference null protocol; only S8 user-facing surfacing remains)
+Last updated: 2026-05-05 (cycle 011 fully closed: D3 first teacher demo target = Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active; storyboard is `draft`, showing NOT authorized; sync chain run; S8 user-facing report shipped)
 
-Status: **in_progress** (cycle 011 S1..S7 done; S8 user-facing report remains; after S8 this snapshot flips to idle)
+Status: **idle** (cycle 011 closed; awaiting cycle 012 launch user decisions surfaced in S8 report — storyboard reviewer pass + cycle 012 scope + demo show authorization gate)
 
 ## Why this file exists
 
@@ -54,8 +54,8 @@ user-facing surfacing remains.
 | S4 | v2 -> v2.1 additive contract revision: "Forward-reference null protocol" subsection + v2.1 Change Log entry on `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` | done | CROSS_SPEC_SIGNAL_CONTRACT.md (commit `901f62c`) |
 | S5 | Update DEC-20260505-001 if any cycle-011 deviation needs Honesty Override recording | done (no deviation) | DEC body unchanged; G4 chose form-1 which DEC-001 (2) listed as one of the budget-friendly options |
 | S6 | Cycle 011 contract usage audit under v2.1: confirm v2.1 protocol exercise; G4 + G5 closure status; v2 substance unchanged; storyboard claims labeled | done | `cycles/CYCLE-20260505-002.md` "Contract Usage Audit (S6) under v2.1" |
-| S7 | Cycle 011 closeout: write closeout section in cycle log; sync chain (this snapshot first; then WORKFLOW_STATUS / RESEARCH_STATE / INDEX / AGENT_MASTER_PROMPT / README) | in_progress | `cycles/CYCLE-20260505-002.md` "Closeout (S7)" + this sync pass |
-| S8 | Surface cycle-011 outputs to user; ask for cycle-012 launch decisions (storyboard reviewer pass; cycle 012 scope; demo show authorization gate) | pending | user-facing message (next turn) |
+| S7 | Cycle 011 closeout: write closeout section in cycle log; sync chain (this snapshot first; then WORKFLOW_STATUS / RESEARCH_STATE / INDEX / AGENT_MASTER_PROMPT / README) | done | `cycles/CYCLE-20260505-002.md` "Closeout (S7)" + sync targets (commit `a1ea464`) |
+| S8 | Surface cycle-011 outputs to user; ask for cycle-012 launch decisions (storyboard reviewer pass; cycle 012 scope; demo show authorization gate) | done | user-facing message (this turn) |
 
 ## Last completed task pass
 
