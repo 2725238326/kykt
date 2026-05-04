@@ -119,7 +119,7 @@ The cycle 004 next-action plan above has been executed:
 
 The current next action is:
 
-1. Authorize cycle 009 to start filling L2 case cards (`CASE-20260505-CRITIC-01..03` first per cycle 008 D1).
+1. Authorize cycle 009 to start filling L2 case cards (`CASE-20260504-CRITIC-01..03` first per cycle 008 D1).
 2. Run the four parallel case-card tracks under the per-card 90-120 minute budget (D4) and the cross-spec signal contract v1.
 3. After case-card data lands, re-surface D3 (first teacher demo target) once `paradigm/TEACHER_AUDIENCE_PROFILE.md` is populated.
 4. Re-score this matrix in cycle 010+ with case-card evidence rather than cycle 004 design-only signals.

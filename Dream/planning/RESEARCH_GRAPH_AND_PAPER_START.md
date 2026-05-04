@@ -394,7 +394,7 @@ The cycle 004 next-artifact plan above has been executed across cycles 005-008.5
 - cross-spec read-only / handoff signals formalized in `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` v1
 - literature guidance board v1 in `literature/`
 
-The current next concrete artifact is L2 case-card data, populated via `templates/proxy_case_card.md` against the four finalist specs. First card per cycle 008 D1: `CASE-20260505-CRITIC-01`. Authorization to start cycle 009 is the open user decision.
+The current next concrete artifact is L2 case-card data, populated via `templates/proxy_case_card.md` against the four finalist specs. First card per cycle 008 D1: `CASE-20260504-CRITIC-01`. Authorization to start cycle 009 is the open user decision.
 
 ## Research Rule
 

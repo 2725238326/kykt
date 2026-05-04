@@ -401,5 +401,5 @@ The cycle 006 task above produced `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md
 ```text
 Authorize cycle 009 to start filling L2 case cards on four parallel tracks
 under the cross-spec signal contract v1 (`paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md`).
-First card per cycle 008 D1: CASE-20260505-CRITIC-01.
+First card per cycle 008 D1: CASE-20260504-CRITIC-01.
 ```

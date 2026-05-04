@@ -1103,7 +1103,7 @@ Next discussion points (carried into cycle 009; surfaced in `WORKFLOW_STATUS.md`
 3. User population of paradigm/TEACHER_AUDIENCE_PROFILE.md to unblock D3
    in a future cycle.
 4. Authorize cycle 009 to start filling case cards
-   (CASE-20260505-CRITIC-01..03 first per cycle 008 D1).
+   (CASE-20260504-CRITIC-01..03 first per cycle 008 D1).
 ```
 
 ### Planning-Layer Sync (Cycle 008.5 Post-Closeout)

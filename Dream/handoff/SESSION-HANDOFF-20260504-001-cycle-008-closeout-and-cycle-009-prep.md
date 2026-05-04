@@ -287,7 +287,7 @@ A short summary message containing:
 - list of modified artifacts (with one-line reason each)
 - the still-open decisions the user must make next:
   1. fill `paradigm/TEACHER_AUDIENCE_PROFILE.md` so D3 demo target can be unblocked
-  2. authorize cycle 009 to start filling case cards (CASE-20260505-CRITIC-01..03 first, per D1)
+  2. authorize cycle 009 to start filling case cards (CASE-20260504-CRITIC-01..03 first, per D1)
   3. any literature board content that needs user-side input (e.g. specific papers to add to a SPINE that the agent did not include)
 
 Do not push a recommendation on D3 in the closing summary. The decision was deliberately deferred per DEC-20260504-002.

@@ -112,7 +112,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 Cycle 008.5 closed the cycle 008 follow-up gates. Locked this session:
 
 ```text
-D1 (Critic first): locked; cycle 009 begins with CASE-20260505-CRITIC-01
+D1 (Critic first): locked; cycle 009 begins with CASE-20260504-CRITIC-01
 D2 (Composer L1 vs L2): locked as upgrade; SPEC-20260504-001 drafted
 D4 (annotation budget): locked at 90-120 minutes per case card
 ```
@@ -136,7 +136,7 @@ Open user decisions surfaced by Composer SPEC and the cross-spec contract:
 3. Populate `paradigm/TEACHER_AUDIENCE_PROFILE.md` to unblock D3 in a
    future cycle. The agent will not invent fields.
 4. Authorize cycle 009 to start filling case cards
-   (CASE-20260505-CRITIC-01..03 first, per D1).
+   (CASE-20260504-CRITIC-01..03 first, per D1).
 ```
 
 These four points are also surfaced in `cycles/CYCLE-20260504-001.md` and inside the Composer spec's `Next Discussion Point For The User` block.

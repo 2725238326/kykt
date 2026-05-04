@@ -57,14 +57,14 @@ S1         Open cycles/CYCLE-20260505-001.md cycle log; flip
            TASK_SNAPSHOT.md status to in_progress; copy this subtask
            board into the snapshot board with statuses pending.
 
-S2         Draft CASE-20260505-CRITIC-01: first Critic case card; cite
+S2         Draft CASE-20260504-CRITIC-01: first Critic case card; cite
            SPEC-20260503-001 + cross-spec contract CR-1 / CR-3 / CR-5 /
            CR-6; capture cross-spec signals consumed and published.
 
-S3         Draft CASE-20260505-CRITIC-02: second Critic case card;
-           independent of CASE-20260505-CRITIC-01; same contract anchors.
+S3         Draft CASE-20260504-CRITIC-02: second Critic case card;
+           independent of CASE-20260504-CRITIC-01; same contract anchors.
 
-S4         Draft CASE-20260505-CRITIC-03: third Critic case card;
+S4         Draft CASE-20260504-CRITIC-03: third Critic case card;
            independent of S2 / S3 to test contract under multiple
            instances.
 
