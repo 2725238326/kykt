@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio + cycle 010 activation: cross-spec contract bumped to v2; cycle 010 launched to fill Memory + Permanence L2 cards in parallel; new DEC-004 / DEC-005 + cycle log CYCLE-20260504-002)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio + cycle 010 case-card portfolio closeout: 6 Memory + Permanence cards drafted; full 4-finalist L2 coverage achieved; D3 first-demo-target eligible for user decision after S8)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -111,7 +111,13 @@ Format: `CASE-YYYYMMDD-<SPEC>-NNN.md`. One file per (input, finalist spec) pair 
 | `CASE-20260504-CRITIC-03.md` | SPEC-20260503-001 | MonST3R 48-frame; CR-3 forward-reference read of Memory latent_drift_proxy |
 | `CASE-20260505-COMPOSER-01.md` | SPEC-20260504-001 | Static-collection regime; CR-1 closure paired with CRITIC-02 |
 | `CASE-20260505-COMPOSER-02.md` | SPEC-20260504-001 | Regime-typed route_regret central thesis card |
-| `CASE-20260505-COMPOSER-03.md` | SPEC-20260504-001 | Fast3R vs MASt3R-SfM; v1 -> v2 cost-typed route_regret candidate surfaced |
+| `CASE-20260505-COMPOSER-03.md` | SPEC-20260504-001 | Fast3R vs MASt3R-SfM; v1 -> v2 cost-typed route_regret canonical under v2 (per DEC-20260504-004) |
+| `CASE-20260504-MEMORY-01.md` | SPEC-20260503-002 | MonST3R 48-frame; primary Memory L2; CR-3 producer (closes cycle-009 CRITIC-03 forward-reference null) |
+| `CASE-20260504-MEMORY-02.md` | SPEC-20260503-002 | Spann3R transforms timeline; externalization-of-governance argument |
+| `CASE-20260504-MEMORY-03.md` | SPEC-20260503-002 | MASt3R small-N baseline; non-hallucination boundary on static-pair regime |
+| `CASE-20260504-PERMANENCE-01.md` | SPEC-20260503-003 | MonST3R 48-frame; primary Permanence L2; CR-2 producer (closes cycle-009 gap G1 with MEMORY-01) |
+| `CASE-20260504-PERMANENCE-02.md` | SPEC-20260503-003 | MASt3R static control; mint_object_id rate = 0 (closes PERMANENCE-01 fail_fast c) |
+| `CASE-20260504-PERMANENCE-03.md` | SPEC-20260503-003 | Synthetic dynamic identity-validation; closes PERMANENCE-01 fail_fast b |
 
 ### `literature/` - Literature Guidance Board
 

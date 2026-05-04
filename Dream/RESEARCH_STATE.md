@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + cycle 009 case-card portfolio closeout + cycle 010 activation: cross-spec signal contract promoted to v2 per DEC-20260504-004; cycle 010 launched per DEC-20260504-005 to fill Memory + Permanence L2 cards in parallel; D3 continues deferred per agent decision until cycle 010 closeout; D3' sub-field stale claim corrected)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + cycle 009 case-card portfolio closeout + cycle 010 case-card portfolio closeout: 6 Memory + Permanence cards drafted under v2 contract; cycle 009 contract gaps G1 + G3 + CRITIC-03 forward-reference null all closed; 3 v2 -> v3 candidates surfaced and 3 new gaps G4/G5/G6 recorded for cycle 011; D3 first-demo-target now fully eligible for user decision)
 
 ## User Intent
 
@@ -1359,3 +1359,135 @@ README.md                - last-updated stamp only
 ```
 
 This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, or any thesis selection. Cycle 010 launch is gated on user decisions surfaced in S8.
+
+## Cycle 010 Case-Card Filling Closeout (CYCLE-20260504-002)
+
+Started:
+
+```text
+CYCLE-20260504-002: Cycle 010 Case-Card Filling (Memory + Permanence parallel; v2 contract active)
+```
+
+Authorization:
+
+```text
+decisions/DEC-20260504-005-cycle-010-launch.md (E1 v2 active per
+companion DEC-20260504-004; E2 parallel ordering; E3 D3 continued
+deferral by agent decision; E4 D3' sub-field correction). User authorized
+launch with "进行吧" 2026-05-04.
+```
+
+Artifacts produced this cycle:
+
+```text
+new (case cards):
+  cases/CASE-20260504-MEMORY-01.md       (MonST3R 48-frame; primary L2)
+  cases/CASE-20260504-MEMORY-02.md       (Spann3R timeline; externalization)
+  cases/CASE-20260504-MEMORY-03.md       (MASt3R baseline; non-hallucination)
+  cases/CASE-20260504-PERMANENCE-01.md   (MonST3R 48-frame; primary L2)
+  cases/CASE-20260504-PERMANENCE-02.md   (MASt3R static control)
+  cases/CASE-20260504-PERMANENCE-03.md   (synthetic identity-validation)
+
+new (decision + cycle log):
+  decisions/DEC-20260504-004-cross-spec-contract-v2.md
+  decisions/DEC-20260504-005-cycle-010-launch.md
+  cycles/CYCLE-20260504-002.md
+
+contract version event:
+  paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md  v1 -> v2 (cost_adjusted_match
+                                          axis added; CR-4 routine
+                                          arbitration; v1 prose
+                                          preserved as Superseded)
+  cases/CASE-20260505-COMPOSER-03.md      v2 row promoted to canonical;
+                                          v1 row preserved
+```
+
+Cross-spec contract usage audit summary (full matrix in `cycles/CYCLE-20260504-002.md` "Contract Usage Audit (S6) under v2"):
+
+```text
+CR-1: not exercised in cycle 010 (Memory + Permanence don't own A5);
+      cycle 009 closure unchanged
+CR-2: cycle 009 gap G1 CLOSED via PERMANENCE-01 <-> MEMORY-01 in-cycle
+      cross-pair on KYKT job 20260420-222928 (producer + consumer
+      drafted in same cycle on real data); partial coverage on synthetic
+      identity-validation clip = new gap G4
+CR-3: cycle 009 CRITIC-03 forward-reference null CLOSED via MEMORY-01's
+      published latent_drift_proxy(t) over the same job's 48 windows;
+      qualitative non-monotonic trace consistent with CRITIC-03's
+      predicted A5 sub-action distribution
+CR-4: gap G3 (v1 dormancy) CLOSED by v2 adoption per DEC-004; cycle 010
+      Memory + Permanence cards do not consume cost-axis (trivially
+      honored)
+CR-5: universally enforced across all 6 cards
+CR-6: universally satisfied
+```
+
+v2 -> v3 candidates surfaced for cycle-011 user / agent decision:
+
+```text
+1. 8x8 grid partition formalization (origin: PERMANENCE-01)
+2. forward-reference null protocol formalization (origin: cycle 009
+   CRITIC-03 -> cycle 010 MEMORY-01 closure; could fold into v2.x)
+3. identity_consistency threshold pinning (origin: PERMANENCE-03)
+```
+
+New gaps recorded for cycle 011:
+
+```text
+G4: CR-2 partial on synthetic clip (PERMANENCE-03 producer side;
+    consumer side forward-referenced)
+G5: CR-3 forward-reference protocol works in practice but is not
+    contract-pinned
+G6: Memory governance externalization on Spann3R-internal-memory-
+    equipped models requires L3 prototype work
+```
+
+Status of locked / open / blocked items after cycle 010:
+
+```text
+- Cycle 010 launch authorizations (E1..E4): all honored
+- Cycle 008.5 D1 / D2 / D4: locked; unchanged
+- D3 (first teacher demo target): NOW FULLY ELIGIBLE for user decision.
+  Both deferral conditions per DEC-20260504-002 are met:
+    (i)  TEACHER_AUDIENCE_PROFILE.md populated 2026-05-04
+    (ii) all 4 finalists have L2 case-card coverage:
+         Critic + Composer (cycle 009); Memory + Permanence (cycle 010)
+  S8 user-facing report re-surfaces D3 with the agent's reading of
+  the L2 portfolio.
+- D5..D8 (paper writing, reproduction, KYKT navigation, frontend):
+  unchanged; all blocked on user approval
+```
+
+Surgical Edits compliance:
+
+```text
+- No retro-renumbering of pre-existing IDs.
+- v1 contract prose preserved verbatim under "Superseded versions".
+- Cycle 009 case cards other than COMPOSER-03 unchanged this cycle.
+- F-001 working rules honored: 6 cards drafted in 4 anti-F-001 sub-
+  passes (S2 / S3 / S4 / S5); each sub-pass committed and pushed
+  before the next; no full-file Reads of large state files in the
+  closeout pass.
+```
+
+Guidance file sync coverage for cycle 010 closeout:
+
+```text
+TASK_SNAPSHOT.md         - subtask board flips (S6/S7 done; S8 in
+                           progress); If-interrupted-resume-from
+                           (synced first per anti-F-001 rule 6)
+cycles/CYCLE-20260504-002.md - Contract Usage Audit (S6) section +
+                               Closeout (S7) section + subtask board
+                               flips
+RESEARCH_STATE.md        - this section + last-updated stamp
+WORKFLOW_STATUS.md       - Memory + Permanence rows updated; Recommended
+                           Next User Decision rewritten to cycle-011
+                           launch packet + D3 re-surfacing; last-updated
+                           stamp
+INDEX.md                 - new cases/ subsection rows for cycle-010
+                           cards + last-updated stamp
+AGENT_MASTER_PROMPT.md   - last-updated stamp only
+README.md                - last-updated stamp only
+```
+
+This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, or any thesis selection. Cycle 011 launch is gated on user decisions surfaced in S8.

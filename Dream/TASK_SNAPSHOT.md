@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 010 activation A1..A7 done = snapshot locked + DEC-004 v2 contract + DEC-005 cycle 010 launch + contract bumped to v2 + COMPOSER-03 v2 promoted + cycle 010 cycle log opened + Guidance File Sync Rule chain run; cycle 010 case-card drafting S2..S7 follows in `cycles/CYCLE-20260504-002.md`)
+Last updated: 2026-05-04 (cycle 010 fully closed = 6 case cards drafted (3 Memory + 3 Permanence) + cycle 009 contract gaps G1 + G3 closed + CR-3 forward-reference null closed + 3 v2 -> v3 candidates surfaced + 3 new gaps recorded for cycle 011 + Guidance File Sync Rule chain run; only S8 user-facing surfacing remains, after which D3 first demo target becomes user-eligible for decision)
 
-Status: **in_progress** (cycle 010 activation pass closed; cycle 010 case-card drafting subtask board now lives in `cycles/CYCLE-20260504-002.md`; this snapshot tracks cycle-level activation pass only)
+Status: **in_progress** (cycle 010 case-card portfolio + S6 audit + S7 closeout complete; only S8 user-facing report remains, after which this snapshot flips to idle and D3 first-demo-target re-surfacing happens in S8 message)
 
 ## Why this file exists
 
@@ -21,10 +21,10 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-010-activation
+task_id:    cycle-010
 phase:      Phase 1.5 (Research Workflow Deployment)
 cycle:      010 (case-card filling: Memory + Permanence parallel; v2 cost-typed route_regret active)
-status:     activation done (A1..A7); cycle 010 case-card drafting (S2..S7 in cycle log) is the next live phase
+status:     in_progress; cycle 010 case-card portfolio + S6 audit + S7 closeout done; S8 user-facing surfacing pending; D3 first-demo-target eligible for re-decision after S8
 ```
 
 One-line description:
@@ -42,17 +42,18 @@ line 240) + CASE-20260504-PERMANENCE-01..03 (per SPEC-20260503-003
 line 231). Activation pass A..D running this turn.
 ```
 
-## Subtask board (latest pass: cycle 010 activation, 2026-05-04)
+## Subtask board (latest pass: cycle 010 case-card filling, 2026-05-04)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| A1 | Lock cycle 010 activation in this snapshot (status in_progress; subtask board; current task; If-interrupted-resume-from) | done | this file |
-| A2 | Write `decisions/DEC-20260504-004-cross-spec-contract-v2.md` recording v2 promotion + retained v1 prose | done | `decisions/DEC-20260504-004-cross-spec-contract-v2.md` |
-| A3 | Edit `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` to v2: bump version markers; append v2 change log; preserve v1 prose under "Superseded versions" per Discipline rule 5 | done | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` (current version = v2) |
-| A4 | Edit `cases/CASE-20260505-COMPOSER-03.md` to mark v2 (cost-adjusted) recommendation as canonical; v1 row preserved as superseded | done | `cases/CASE-20260505-COMPOSER-03.md` (Identity status note + CR-4 entry under v2) |
-| A5 | Write `decisions/DEC-20260504-005-cycle-010-launch.md` recording cycle 010 D-decisions (parallel ordering; D3 continued deferral with rationale; v2 active; D3' sub-field correction) | done | `decisions/DEC-20260504-005-cycle-010-launch.md` |
-| A6 | Write `cycles/CYCLE-20260504-002.md` cycle log (cycle 010 header + subtask board G1/S1..S8 for case-card drafting; references DEC-004 + DEC-005) | done | `cycles/CYCLE-20260504-002.md` |
-| A7 | Run Guidance File Sync Rule chain (RESEARCH_STATE / WORKFLOW_STATUS / INDEX / AGENT_MASTER_PROMPT / README) + final subtask board flip on this snapshot | done | sync targets + this file (this row's flip is the closeout marker for the activation pass) |
+| (activation A1..A7) | All cycle 010 activation sub-passes (snapshot lock + v2 contract + DEC-004 + DEC-005 + cycle 010 cycle log + sync chain) | done | commits `8a004dc` / `abf9a1d` / `1c5f5b9` |
+| S2 | Draft `cases/CASE-20260504-MEMORY-01.md` (primary Memory L2; MonST3R 48-frame; CR-3 producer of latent_drift_proxy that closes cycle 009 CRITIC-03 forward-reference null) | done | `cases/CASE-20260504-MEMORY-01.md` (commit `7a18304`) |
+| S3 | Draft `cases/CASE-20260504-PERMANENCE-01.md` (primary Permanence L2; same KYKT job for in-cycle CR-2 cross-pair; producer of suppress_static_write that MEMORY-01 consumes; closes cycle 009 gap G1) | done | `cases/CASE-20260504-PERMANENCE-01.md` (commit `9329704`) |
+| S4 | Draft `cases/CASE-20260504-MEMORY-02.md` + `cases/CASE-20260504-MEMORY-03.md` (Spann3R externalization-of-governance + MASt3R non-hallucination boundary) | done | `cases/CASE-20260504-MEMORY-02.md` + `03.md` (commit `4ad1667`) |
+| S5 | Draft `cases/CASE-20260504-PERMANENCE-02.md` + `cases/CASE-20260504-PERMANENCE-03.md` (MASt3R static control + synthetic identity-validation; closes PERMANENCE-01 fail_fast b + c) | done | `cases/CASE-20260504-PERMANENCE-02.md` + `03.md` (commit `8172f79`) |
+| S6 | Cross-spec contract usage audit under v2: CR-1..CR-6 instance map across cycle-010 cards + closure status of cycle-009 gaps G1 / G2 / G3 + v2 -> v3 candidate enumeration | done | `cycles/CYCLE-20260504-002.md` "Contract Usage Audit (S6) under v2" |
+| S7 | Cycle 010 closeout: write closeout section in cycle log; sync `RESEARCH_STATE.md` / `WORKFLOW_STATUS.md` / `INDEX.md` / `AGENT_MASTER_PROMPT.md` / `README.md`; run Guidance File Sync Rule chain starting from this snapshot | done | `cycles/CYCLE-20260504-002.md` "Closeout (S7)" + sync targets |
+| S8 | Surface cycle-010 outputs to user; re-surface D3 first-demo-target now that all 4 finalists have L2 coverage; ask for cycle-011 launch decisions OR D3 demo-target pick | in_progress | user-facing message (this turn) |
 
 After A1..A7 complete, the next live pass is cycle 010's own S1..S7 case-card drafting (each card = one anti-F-001 sub-pass), tracked in `cycles/CYCLE-20260504-002.md` not here.
 
@@ -118,29 +119,34 @@ If a new agent or new conversation is picking this up cold:
 
 ```text
 1. Read this file (you are here).
-2. Read decisions/DEC-20260504-003-cycle-009-launch.md (cycle 009
-   D1'-D4' locks; cycle 009 authorization).
-3. Read decisions/DEC-20260504-004-cross-spec-contract-v2.md (v2
-   contract upgrade memo; written in sub-pass B of this activation
-   pass; superseded v1 prose preserved per Discipline rule 5).
-4. Read decisions/DEC-20260504-005-cycle-010-launch.md (cycle 010
-   D-decisions: parallel ordering for Memory + Permanence; D3
-   continued deferral with rationale; v2 active; D3'
-   sub-field-empty-claim correction).
-5. Read cycles/CYCLE-20260504-002.md (cycle 010 cycle log; carries
-   case-card drafting subtask board G1/S1..S7 for the 6 cards
-   CASE-20260504-MEMORY-01..03 + CASE-20260504-PERMANENCE-01..03).
-6. Resume at the first non-`done` row in the activation subtask
-   board above (A1..A7). Once A7 is `done` the activation pass is
-   closed; switch to cycle 010's own S1..S7 case-card drafting,
-   tracked in `cycles/CYCLE-20260504-002.md` not in this file.
-7. Honor F-001 working rules throughout: do not Read large files
+2. Read decisions/DEC-20260504-005-cycle-010-launch.md (cycle 010
+   authorization + 4 D-decisions). DEC-20260504-003 / -004 are
+   referenced from DEC-005; consult only if you need their full
+   rationale.
+3. Read cycles/CYCLE-20260504-002.md "Contract Usage Audit (S6) under
+   v2" + "Closeout (S7)" sections — those carry the full cycle-010
+   result summary (6 cards drafted, gaps G1 + G3 + cycle-009 CRITIC-03
+   forward-reference null all closed, 3 v2 -> v3 candidates, 3 new
+   gaps G4/G5/G6 for cycle 011).
+4. Cycle 010 is closed at content level (S2..S7 done); only S8
+   user-facing surfacing remains. After S8: D3 first-demo-target
+   becomes user-eligible for decision (deferral conditions per
+   DEC-20260504-002 are now FULLY satisfied — audience profile
+   populated AND all 4 finalists have L2 case-card coverage).
+5. The four cycle-011 launch decisions to surface in S8 are:
+   (a) D3 first teacher demo target (now eligible);
+   (b) G2 closure path (tau_spread upgrade requires L3 or KYKT-derived
+       work, both have user-approval gates);
+   (c) v2 -> v3 candidates 1-3 (8x8 partition / forward-reference
+       null protocol / identity_consistency threshold);
+   (d) G4 / G5 / G6 closure scope.
+6. Honor F-001 working rules throughout: do not Read large files
    already cited in this snapshot; prefer Grep -n + Edit over
    full-file Read + Write; cap large files in active context at <=2
    simultaneously.
 ```
 
-If this snapshot's Status flips back to `idle`, the cycle 010 activation pass is closed and the next live cycle is cycle 010's own case-card drafting (cycle log is the authoritative artifact for that phase).
+If this snapshot's Status flips back to `idle`, cycle 010 is fully closed and the next live phase is cycle 011 (gated on user decisions surfaced in S8).
 
 ## Open user decisions (resolution status, 2026-05-04)
 

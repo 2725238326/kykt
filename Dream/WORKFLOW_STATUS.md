@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout + cycle 010 activation: cross-spec contract bumped to v2; cycle 010 launched to fill Memory + Permanence L2 cards in parallel; D3 continues deferred per agent decision; D3' sub-field stale claim corrected)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout + cycle 010 case-card portfolio closeout: 6 Memory + Permanence cards drafted under v2 contract; cycle 009 contract gaps G1 + G3 + CRITIC-03 forward-reference null all closed; D3 first-demo-target now FULLY ELIGIBLE for user decision after S8 re-surfacing)
 
 ## Current Phase
 
@@ -78,8 +78,8 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Proxy case-card template | active form; first portfolio populated in cycle 009 (6 cards: 3 Critic + 3 Composer, paper-derived) | `templates/proxy_case_card.md` + `cases/` |
 | Finalist mechanism spec template | populated for three finalists in cycle 008 | `templates/finalist_mechanism_spec.md` |
 | Geometry Critic finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived under v1 contract; v2 contract status: cards continue valid as drafted, no retroactive change) | `specs/SPEC-20260503-001-geometry-critic.md` + `cases/CASE-20260504-CRITIC-01..03.md` |
-| Executive Memory finalist spec | draft (L1); L2 case cards being drafted in cycle 010 under v2 contract | `specs/SPEC-20260503-002-executive-memory.md` |
-| Dynamic Object Permanence finalist spec | draft (L1); L2 case cards being drafted in cycle 010 under v2 contract | `specs/SPEC-20260503-003-dynamic-object-permanence.md` |
+| Executive Memory finalist spec | draft (L1); L2 case cards drafted in cycle 010 under v2 contract (3 cards across MonST3R / Spann3R / MASt3R regimes); CR-3 producer side closes cycle-009 CRITIC-03 forward-reference null | `specs/SPEC-20260503-002-executive-memory.md` + `cases/CASE-20260504-MEMORY-01..03.md` |
+| Dynamic Object Permanence finalist spec | draft (L1); L2 case cards drafted in cycle 010 under v2 contract (3 cards: MonST3R primary + MASt3R static control + synthetic identity-validation); CR-2 producer side closes cycle-009 gap G1 | `specs/SPEC-20260503-003-dynamic-object-permanence.md` + `cases/CASE-20260504-PERMANENCE-01..03.md` |
 | 3R Composer finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived); CASE-COMPOSER-03 v2 row promoted to canonical per DEC-20260504-004 | `specs/SPEC-20260504-001-3r-composer.md` + `cases/CASE-20260505-COMPOSER-01..03.md` |
 | Cross-spec signal contract | **v2 active** (per DEC-20260504-004): adds cost_normalized axis to capability_match; CR-4 arbitrates cost-adjusted ties routinely; v1 prose preserved under "Superseded versions". Cycle 009 cards exercised v1 (audit complete); cycle 010 cards drafted under v2 from day 1 | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` + `decisions/DEC-20260504-004-cross-spec-contract-v2.md` |
 | Literature guidance board | v1 active (INDEX + four SPINE + CRITICAL_NOTES + PAPER_RELATED_WORK_SKELETON) | `literature/INDEX.md` |
@@ -109,33 +109,39 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 010 has been launched (`decisions/DEC-20260504-005-cycle-010-launch.md`) under user authorization "进行吧" 2026-05-04. The cycle 008.5 follow-up gates D1 / D2 / D4 remain locked; the cycle-009-surfaced E1 / E2 / E3 / E4 are now resolved:
+Cycle 010 closed at content level (S2..S7 done in `cycles/CYCLE-20260504-002.md`); only S8 user-facing surfacing remains. With cycle 010 closeout, **all 4 finalists now have L2 case-card coverage** (Critic + Composer in cycle 009; Memory + Permanence in cycle 010), and `paradigm/TEACHER_AUDIENCE_PROFILE.md` was populated 2026-05-04.
+
+D3 deferral conditions per `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md` are now FULLY satisfied. Cycle 011 launch will need user decisions on:
 
 ```text
-E1 (v2 cost-typed route_regret): adopted as v2 per DEC-20260504-004
-E2 (cycle 010 ordering):         parallel (Memory + Permanence)
-E3 (D3 first demo target):       agent-recommended continued deferral
-                                 to cycle 010 closeout
-E4 (D3' sub-field correction):   stale snapshot text fixed; profile
-                                 fully populated as of 2026-05-04
-```
+1. D3 first teacher demo target (now eligible). Agent reading of the
+   L2 portfolio after both cycles will be presented in S8 user-facing
+   report; user picks among the 4 finalists OR confirms continued
+   deferral with explicit rationale.
 
-Active live decisions for the user this cycle: **none gating cycle 010 case-card drafting**. Drafting proceeds autonomously until cycle 010 closeout S8.
+2. G2 closure path: tau_spread = 0.05 in CR-1 closure remains inferred,
+   not measured. Upgrading to demo-observed requires either KYKT-job-
+   derived measured route_regret OR L3 prototype work; both paths have
+   user-approval gates per `AGENT_MASTER_PROMPT.md` section 6.
 
-User decisions surfaced for cycle 010 closeout (re-asked at S8, not now):
+3. v2 -> v3 candidates surfaced in cycle 010 audit:
+   (a) 8x8 grid partition for Permanence regions (formalize in
+       contract or leave per-card)
+   (b) forward-reference null protocol formalization (low-stakes
+       documentation; could fold into v2.x)
+   (c) identity_consistency threshold pinning (currently ~0.7
+       inferred per PERMANENCE-03; v3 promotion premature until
+       measured)
 
-```text
-1. D3 first teacher demo target: cycle 010 closeout will re-surface this
-   once Memory + Permanence L2 cards exist. User can override the agent
-   defer-recommendation at any time by recording an override in
-   `decisions/DEC-20260504-006-d3-demo-target-pick.md` (id reserved in
-   DEC-20260504-005).
-2. Cycle 011 launch: cycle 010 closeout will surface a cycle-011
-   decision packet (likely scope: KYKT-job-derived Composer capability
-   cards if the cycle-010 v2 audit identifies a gap, OR L3 prototype
-   authorization for the strongest L2 finalist if L2 evidence supports
-   that move; the L3 path remains gated on user approval per
-   `AGENT_MASTER_PROMPT.md` section 6).
+4. New gaps from cycle 010 (G4 / G5 / G6):
+   (a) G4: CR-2 partial on synthetic identity-validation clip
+       (consumer side forward-referenced; close in cycle 011 or
+       later)
+   (b) G5: CR-3 forward-reference protocol works in practice but
+       is not contract-pinned (close via candidate 3b above)
+   (c) G6: Memory governance externalization on Spann3R-internal-
+       memory-equipped models needs L3 prototype evidence (research
+       direction; not a contract gap)
 ```
 
 Still blocked on user approval (unchanged from prior cycles):
