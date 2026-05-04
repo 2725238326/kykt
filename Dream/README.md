@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1: planning/ aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10; TASK_SNAPSHOT.md added as resume-pointer for interrupted sessions)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout: 6 cards drafted under D1' parallel + D2' paper-derived; cross-spec contract usage audit recorded; cycle-010 launch decisions surfaced)
 
 ## Purpose
 

@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1: planning/ aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10; TASK_SNAPSHOT.md added as resume-pointer for interrupted sessions)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio: 3 Critic + 3 Composer cards drafted under D1' parallel + D2' paper-derived; new `cases/` subsection added)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -99,6 +99,19 @@ Format: `DEC-YYYYMMDD-NNN-<slug>.md`. Indexed in `registry/decision_registry.md`
 ### `experiments/` - Experiment Plans
 
 Format: `EXP-YYYYMMDD-NNN-<slug>.md`. Filing here does not mean the experiment was run.
+
+### `cases/` - L2 Proxy Case Cards
+
+Format: `CASE-YYYYMMDD-<SPEC>-NNN.md`. One file per (input, finalist spec) pair under `templates/proxy_case_card.md`. Filing a case card does not claim measured performance; the template enforces evidence labels (paper-proven / inferred / demo-observed / code-observed). Cycle 009 populated the first portfolio:
+
+| File | Spec | Role |
+|---|---|---|
+| `CASE-20260504-CRITIC-01.md` | SPEC-20260503-001 | Static pair (MASt3R upstream); A5 = rerun_local_region; CR-1 not exercised |
+| `CASE-20260504-CRITIC-02.md` | SPEC-20260503-001 | Fast3R vs Spann3R; CR-1 reroute_model + Composer agree/veto loop |
+| `CASE-20260504-CRITIC-03.md` | SPEC-20260503-001 | MonST3R 48-frame; CR-3 forward-reference read of Memory latent_drift_proxy |
+| `CASE-20260505-COMPOSER-01.md` | SPEC-20260504-001 | Static-collection regime; CR-1 closure paired with CRITIC-02 |
+| `CASE-20260505-COMPOSER-02.md` | SPEC-20260504-001 | Regime-typed route_regret central thesis card |
+| `CASE-20260505-COMPOSER-03.md` | SPEC-20260504-001 | Fast3R vs MASt3R-SfM; v1 -> v2 cost-typed route_regret candidate surfaced |
 
 ### `literature/` - Literature Guidance Board
 

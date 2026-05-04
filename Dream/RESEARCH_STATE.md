@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass: planning/ files aligned to four-finalist posture; registry / inventory / readiness matrix / question log synced to SPINE Anchor Map and cycle 008.5 dormancy / Round 10)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + cycle 009 case-card portfolio closeout: 6 cards drafted under D1' parallel + D2' paper-derived; cross-spec contract usage audit recorded; 3 v1 -> v2 candidates surfaced and 3 contract gaps recorded for cycle 010)
 
 ## User Intent
 
@@ -1232,3 +1232,130 @@ This inventory-sync sub-pass does NOT add new artifacts beyond the SPINE Anchor 
 ### Note On The Earlier 32 MB Failure
 
 A prior attempt at this inventory-sync sub-pass hit the agent's 32 MB request limit mid-edit. The cause was cumulative context (multiple large file reads in one window) rather than any single oversized file. This sub-pass succeeded because reads were narrowed (offset / limit; targeted Grep) and edits were performed via Edit (precise old / new strings) rather than Write (full-file rewrites). For future syncs touching this set of files, prefer Edit + offset/limit reads over Write + full-file reads, and avoid loading more than two large state files into context simultaneously.
+
+## Cycle 009 Case-Card Filling Closeout (CYCLE-20260505-001)
+
+This section captures the closeout of cycle 009 = case-card filling phase, distinct from the historical "Cycle 009 Research & Code Discipline" section above (line 815, file `CYCLE-20260503-001.md`). The numbering reuse follows from the cycle 008.5 sub-cycle insertion documented above; per Discipline rule 3 (no retro-renumbering) the historical section header is left intact and disambiguation is by cycle log file name.
+
+Started:
+
+```text
+CYCLE-20260505-001: Cycle 009 Case-Card Filling (Critic + Composer parallel)
+```
+
+Authorization:
+
+```text
+decisions/DEC-20260504-003-cycle-009-launch.md
+  - D1' = parallel (Critic + Composer in the same cycle)
+  - D2' = paper-derived (no KYKT-job-derived capability cards)
+  - D3' = unpopulated-deferred -> partially populated 2026-05-04 by user
+          input on TEACHER_AUDIENCE_PROFILE.md (3 sub-fields still empty
+          by user choice)
+  - D4' = go (cycle 009 launched)
+```
+
+Artifacts produced this cycle:
+
+```text
+new (case cards):
+  cases/CASE-20260504-CRITIC-01.md   (static pair; A5 = rerun_local_region)
+  cases/CASE-20260504-CRITIC-02.md   (Fast3R vs Spann3R; CR-1 reroute_model + Composer agree/veto loop)
+  cases/CASE-20260504-CRITIC-03.md   (MonST3R 48-frame; CR-3 read of Memory latent_drift_proxy)
+  cases/CASE-20260505-COMPOSER-01.md (static-collection regime; CR-1 closure paired with CRITIC-02)
+  cases/CASE-20260505-COMPOSER-02.md (regime-typed route_regret central thesis card)
+  cases/CASE-20260505-COMPOSER-03.md (Fast3R vs MASt3R-SfM; v1 -> v2 cost-typed route_regret candidate)
+
+new (cycle log + decision):
+  cycles/CYCLE-20260505-001.md          (cycle log; subtask board + S6 audit + S7 closeout)
+  decisions/DEC-20260504-003-cycle-009-launch.md (D1'-D4' locks)
+
+mid-cycle ID drift cleanup:
+  Critic-side IDs corrected from 20260505-CRITIC-* to 20260504-CRITIC-* across
+  9 files in one commit (spec-authoritative date per
+  specs/SPEC-20260503-001-geometry-critic.md line 208).
+```
+
+Cross-spec contract usage audit summary (full matrix in `cycles/CYCLE-20260505-001.md` "Contract Usage Audit (S6)"):
+
+```text
+CR-1: closed via the CRITIC-02 <-> COMPOSER-01 cross-pair; tau_spread = 0.05
+      inferred, not measured
+CR-2: zero substantive coverage in cycle 009 (no Memory or Permanence card);
+      gap G1 recorded for cycle 010
+CR-3: exercised once (CRITIC-03) under a forward-reference shape; latent_drift
+      _proxy returns null until Memory cards exist
+CR-4: covered as loophole protection (CRITIC-02), as non-binding declaration
+      (COMPOSER-01), and meaningfully exercised only under the v2 cost-typed
+      framing (COMPOSER-03)
+CR-5: universally enforced across all 6 cards
+CR-6: universally satisfied (every card carries a Cross-Spec Contract Usage
+      section)
+```
+
+v1 -> v2 candidates surfaced for cycle-010 user decision:
+
+```text
+1. cost-typed route_regret axis (origin: COMPOSER-03)
+   - v1: regime-typed
+   - v2 candidate: regime-typed AND cost-typed
+   - on COMPOSER-03 input 2 the recommendation flips from "MASt3R-SfM" (v1)
+     to "no binding choice" (v2 tie at alpha = 0.5)
+2. forward-reference null protocol for CR-3 reads (origin: CRITIC-03)
+   - low-stakes documentation-grade promotion; can fold into v1.x
+```
+
+Contract gaps recorded for cycle-010 closure:
+
+```text
+G1: CR-2 zero coverage; need Memory + Permanence case cards
+G2: tau_spread = 0.05 inferred; needs demo-observed grounding
+G3: CR-4 v1 dormancy; only routinely exercised under v2 adoption
+```
+
+Status of locked / open / blocked items after cycle 009:
+
+```text
+- D1' / D2' / D4': closed
+- D3' (TEACHER_AUDIENCE_PROFILE.md): partially populated; 3 sub-fields
+  intentionally left empty by user
+- D3 (first demo target): still deferred per
+  decisions/DEC-20260504-002-no-all-in-on-single-finalist.md
+- D5..D8 (paper writing, reproduction, KYKT navigation, frontend):
+  unchanged; all blocked on user approval
+```
+
+Surgical Edits compliance:
+
+```text
+- No retro-renumbering of pre-existing IDs.
+- The mid-cycle ID-drift cleanup (Critic side, 20260505 -> 20260504)
+  corrected a creation-time labelling error, not a renumbering of
+  previously valid IDs; the commit message records the correction so
+  the history is preserved.
+- No deletion of historical content.
+- Cross-spec contract v1 itself is unchanged this cycle; v1 -> v2
+  candidates are recorded as candidates only.
+- F-001 working rules honored: narrow Reads + Edits across the 6
+  case-card files in S6 audit pass; no full-file Reads of large state
+  files in this closeout pass.
+```
+
+Guidance file sync coverage for cycle 009 closeout:
+
+```text
+TASK_SNAPSHOT.md         - subtask board + Last completed task pass +
+                           If-interrupted-resume-from + last-updated
+                           (synced first per anti-F-001 rule 6)
+cycles/CYCLE-20260505-001.md - Contract Usage Audit (S6) section + Closeout
+                               (S7) section + subtask board flips
+RESEARCH_STATE.md        - this section + last-updated stamp
+WORKFLOW_STATUS.md       - Cycle logs row pointer + Cross-spec contract row
+                           + Critic + Composer rows + Recommended Next User
+                           Decision rewrite + last-updated stamp
+INDEX.md                 - new cases/ subsection + last-updated stamp
+AGENT_MASTER_PROMPT.md   - last-updated stamp only
+README.md                - last-updated stamp only
+```
+
+This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, or any thesis selection. Cycle 010 launch is gated on user decisions surfaced in S8.
