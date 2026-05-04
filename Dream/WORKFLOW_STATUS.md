@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-05 (cycle 012 fully closed: KYKT-metadata-derived COMPOSER-04 case card + 3 finalist demo storyboards (Memory + Permanence + Composer; all draft) per DEC-20260505-002; G2 advanced inferred -> inferred-with-real-inventory-anchor; v2.1 unchanged; all 4 finalists now have draft demo storyboards; D3 = Critic per cycle 011 unchanged)
+Last updated: 2026-05-05 (cycle 013 fully closed: 8 newly-mined sources (7 new SRC IDs SRC-2026-009..015) + paper related-work prose draft (skeleton -> prose; Sections 1-7 prose, Sections 8-9 drafted) + 4 L3 prerequisites briefs (EXP-20260505-001..004) per DEC-20260505-003; v2.1 unchanged; G2 unchanged; G7 paper-related-work-prose-readiness new at inferred-with-prose-draft-anchor; D3 = Critic per cycle 011 unchanged)
 
 ## Current Phase
 
@@ -62,11 +62,11 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Research workflow | active | `paradigm/RESEARCH_WORKFLOW.md` |
 | Collaboration roadmap | active | `handoff/COLLABORATION_ROADMAP.md` |
 | Data model | active | `paradigm/RESEARCH_DATA_MODEL.md` |
-| Source registry | seeded | `registry/source_registry.md` |
+| Source registry | active; cycle 013 mining pass added SRC-2026-009..015 (7 new rows: MapAnything / Julian Ost AAAI-2026 driving permanence / tttLRM / awesome-dust3r curated index / DUSt3R-MASt3R-VGGT MVS evaluation / NTIRE 2026 / VGGT) | `registry/source_registry.md` |
 | Research unit registry | seeded | `registry/research_unit_registry.md` |
 | Decision registry | seeded | `registry/decision_registry.md` |
-| Cycle logs | active | `cycles/CYCLE-20260505-003.md` |
-| Experiment planning | seeded | `experiments/EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` |
+| Cycle logs | active | `cycles/CYCLE-20260505-004.md` (cycle 013 closed; Phase 2 prep + research mining) |
+| Experiment planning | active; cycle 013 added 4 L3 prerequisite briefs (one per finalist; brief-only, NOT L3 authorization) | `experiments/EXP-20260505-001..004-l3-prerequisites-{critic\|memory\|permanence\|composer}.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | Research content roadmap | active | `paradigm/RESEARCH_CONTENT_ROADMAP.md` |
 | Multi-track research canvas | active; cycle 008.5 four-finalist + no-all-in section appended | `planning/MULTI_TRACK_RESEARCH_CANVAS.md` |
@@ -82,7 +82,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Dynamic Object Permanence finalist spec | draft (L1); L2 case cards drafted in cycle 010 under v2 contract (3 cards: MonST3R primary + MASt3R static control + synthetic identity-validation); CR-2 producer side closes cycle-009 gap G1 | `specs/SPEC-20260503-003-dynamic-object-permanence.md` + `cases/CASE-20260504-PERMANENCE-01..03.md` |
 | 3R Composer finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived); CASE-COMPOSER-03 v2 row promoted to canonical per DEC-20260504-004; CASE-COMPOSER-04 KYKT-metadata-derived added in cycle 012 (advances G2 inferred -> inferred-with-real-inventory-anchor; G2 NOT closed); demo storyboard `STORY-20260505-004-composer.md` drafted cycle 012 | `specs/SPEC-20260504-001-3r-composer.md` + `cases/CASE-20260505-COMPOSER-01..04.md` + `storyboards/STORY-20260505-004-composer.md` |
 | Cross-spec signal contract | **v2.1 active** (per DEC-20260505-001): additive revision over v2 — adds "Forward-reference null protocol" subsection formalizing the pattern exercised by cycle-009 + cycle-010 cards; v2 substance unchanged (alpha = 0.5 inferred; signal owner table; CR-1..CR-6; cost_adjusted_match; route_regret cost-typed). v1 + v2 prose preserved. Cycle 011 G5 closed by this revision; cycle 010 G4 closed-by-documentation under the protocol. v2 -> v3 candidates 8x8 grid partition + identity_consistency threshold pinning deferred. | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` + `decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-target.md` |
-| Literature guidance board | v1 active (INDEX + four SPINE + CRITICAL_NOTES + PAPER_RELATED_WORK_SKELETON) | `literature/INDEX.md` |
+| Literature guidance board | v1 active (INDEX + four SPINE + CRITICAL_NOTES); PAPER_RELATED_WORK_SKELETON.md upgraded cycle 013 to prose draft (Sections 1-7 prose; Sections 8-9 drafted; filename retained per Surgical Edits) | `literature/INDEX.md` + `literature/PAPER_RELATED_WORK_SKELETON.md` |
 | Work risk register | v1 active; consolidates per-spec + cross-spec risks | `planning/WORK_RISK_REGISTER.md` |
 | Demo storyboard template | active form; all 4 finalists now have draft storyboards (Critic from cycle 011 = D3 first demo target; Memory + Permanence + Composer from cycle 012); none authorized for showing; promotion to `approved-for-showing` requires a separate per-finalist DEC | `templates/demo_storyboard.md` + `storyboards/STORY-20260505-001..004.md` |
 | Teacher audience profile | placeholder; awaits user input to unblock D3 | `paradigm/TEACHER_AUDIENCE_PROFILE.md` |
@@ -109,53 +109,71 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 012 closed at content level (S2..S7 done in `cycles/CYCLE-20260505-003.md`); only S8 user-facing surfacing remains. Cycle 012 locked three decisions per DEC-20260505-002:
+Cycle 013 fully closed (S2..S7 done in `cycles/CYCLE-20260505-004.md`). Cycle 013 was a Phase 2 preparation + research mining cycle per DEC-20260505-003 (user delegated planning: "好了，请你做实际的研究部署吧" + clarification "Phase 2 准备 + 资料调研"). Three locked sub-passes:
 
 ```text
-(1) Storyboard reviewer pass: NOT done in cycle 012. Deferred to
-    demo-show-authorization moment. All 4 storyboards remain `draft`.
-(2) Cycle 012 scope = (c) KYKT-metadata-derived COMPOSER-04 + (e) 3
-    finalist demo storyboards (Memory + Permanence + Composer; all
-    draft). G6 + G2 + L3 prototype + paper writing all deferred.
-(3) v2.1 -> v2.2 = NO revision. Both cycle-011 deferred candidates
-    remain deferred. COMPOSER-04 fits cleanly into v2 schema.
+(S2) Source mining: 8 newly-mined sources; 7 new SRC IDs SRC-2026-009
+     ..015. Targets cycle-013 coverage gaps.
+(S3) Paper related-work prose draft: literature/PAPER_RELATED_WORK_
+     SKELETON.md upgraded from skeleton to prose draft. Sections 1-7
+     are prose anchored to L2 case cards + SRC-* IDs; Sections 8-9
+     drafted as prose enumerating non-claims (7) + parallel additions
+     (4 finalists + integrating layer + L2 case-card methodology).
+(S4) 4 L3 prerequisites briefs under experiments/ (Critic / Memory /
+     Permanence / Composer). Each lists repos + checkpoints + GPU /
+     disk / time budget (all `inferred`, not measured) + smoke-test
+     path + minimum code change. Brief-only, NOT L3 authorization.
 ```
 
-Cycle 013 launch will need user decisions on:
+Cycle 014 launch will need user decisions on:
 
 ```text
-1. D3 reconsideration with full storyboard portfolio visible: D3 first
-   teacher demo target = Critic locked in cycle 011. With all 4
-   finalist storyboards now drafted in parallel, does the user want
-   to (a) keep Critic as D3 unchanged, (b) reconsider D3 in light of
-   the Memory / Permanence / Composer storyboards now visible side-
-   by-side, (c) hold and decide later?
+1. Cycle 014 scope options (pick one or hold):
+   (a) close G6 — gated; L3 prototype on Memory-equipped backbone.
+       Path now inventoried in EXP-20260505-002. Authorization
+       required for clone / download / install / run per
+       AGENT_MASTER_PROMPT.md section 6.
+   (b) close G2 — gated; measured route_regret. Path now inventoried
+       in EXP-20260505-004. Same authorization required.
+   (c) close one of the other inventoried L3 paths (Critic
+       EXP-20260505-001 or Permanence EXP-20260505-003). Same
+       authorization.
+   (d) request demo show authorization for one finalist (separate
+       per-finalist DEC; reviewer pass on chosen storyboard happens
+       in that DEC's drafting; no storyboard advances past `draft`
+       without the DEC).
+   (e) Phase 2 paper writing continuation: Sections 1-7 are prose;
+       Sections 8-9 are drafted. Full paper (intro / methods /
+       results / discussion) requires user direction on venue /
+       length / scope.
+   (f) hold; no cycle 014 action; archive current state. Acceptable
+       outcome — current state has 4-finalist L2 portfolio (13
+       cards) + 4-finalist storyboard portfolio (4 storyboards,
+       draft) + KYKT-metadata anchor on Composer + paper related-
+       work prose draft + 4 L3 prerequisites briefs + 7 newly-mined
+       sources is a coherent stop-state.
 
-2. Cycle 013 scope options (pick one or hold):
-   (a) close G6 — gated; L3 prototype on Spann3R-equipped Memory
-       regime; user must authorize L3 + reproduction + install +
-       checkpoint download per `AGENT_MASTER_PROMPT.md` section 6.
-   (b) close G2 — gated; measured route_regret (L3 OR KYKT runner
-       log access); user must authorize.
-   (c) request demo show authorization for one finalist (separate
-       DEC required; reviewer pass on chosen storyboard happens in
-       that DEC drafting; live inference build path also gated).
-   (d) start paper related-work writing on the L2 portfolio — Phase
-       2 work; gated.
-   (e) draft cross-modal / active-perception finalist storyboards
-       if those tracks promote — premature; tracks not retired but
-       shortlist did not include them.
-   (f) hold; no cycle 013 action; archive current state (acceptable
-       outcome — current state has 4-finalist L2 portfolio + 4-
-       finalist storyboard portfolio + KYKT-metadata anchor on
-       Composer; project is in a coherent stop-state).
+2. SPINE refresh fold-in: cycle-013 mining surfaced new entries that
+   should fold into SPINE files at next refresh (Mem3R into
+   SPINE_MEMORY required; tttLRM into SPINE_CRITIC + SPINE_MEMORY;
+   MapAnything + DUSt3R-MASt3R-VGGT MVS evaluation + VGGT into
+   SPINE_COMPOSER; Julian Ost into SPINE_PERMANENCE advanced +
+   CRITICAL_NOTES.md deconfusion). Markdown only. User direction on
+   whether this is a cycle-014 line item or rolled into a larger
+   cycle.
 
-3. v2.2 candidates: none surfaced in cycle 012. Two deferred from
-   cycle 011 (8x8 grid partition; identity_consistency threshold)
-   remain deferred until measured anchors exist.
+3. v2.2 candidates: still none surfaced. Both cycle-011 deferred
+   candidates (8x8 grid partition; identity_consistency threshold)
+   remain deferred until measured anchors exist. VGGT capability-
+   card gap is per-card, not contract.
 
-4. Blocked items: showing any of the 4 demo storyboards is explicitly
-   blocked until per-finalist showing-authorization DEC; rest unchanged.
+4. D3 first demo target: Critic remains locked per
+   DEC-20260505-001. No change in cycle 013. Reconsideration option
+   (keep / reconsider / hold) remains open.
+
+5. Blocked items: showing any of the 4 demo storyboards is explicitly
+   blocked until per-finalist showing-authorization DEC; rest
+   unchanged from cycle 012 closeout.
 ```
 
 Still blocked on user approval (one extension from cycle 011):

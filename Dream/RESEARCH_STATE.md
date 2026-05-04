@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-05 (cycle 012 fully closed: KYKT-metadata-derived COMPOSER-04 case card + 3 finalist demo storyboards (Memory + Permanence + Composer; all draft) per DEC-20260505-002; G2 advanced inferred -> inferred-with-real-inventory-anchor; v2.1 unchanged; all 4 finalists now have draft demo storyboards; D3 = Critic per cycle 011 unchanged)
+Last updated: 2026-05-05 (cycle 013 fully closed: 8 newly-mined sources (7 new SRC IDs SRC-2026-009..015) + paper related-work prose draft (skeleton -> prose; Sections 1-7 prose, Sections 8-9 drafted) + 4 L3 prerequisites briefs (EXP-20260505-001..004) per DEC-20260505-003; v2.1 unchanged; G2 unchanged; G7 paper-related-work-prose-readiness new at inferred-with-prose-draft-anchor; D3 = Critic per cycle 011 unchanged)
 
 ## User Intent
 
@@ -1689,3 +1689,98 @@ F-001 working rules:           snapshot-first sync; Edit over Write for sync tar
 cycle 013 launch decisions surfaced in S8 user-facing total-work report (D3 reconsideration option / cycle 013 scope a..f / v2.2 candidates none / blocked items with demo-showing extended to all 4 storyboards). Cycle 013 is gated on user decisions OR user may hold the project at this state.
 
 This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, demo showing of any of the 4 storyboards, or any thesis selection.
+
+## Cycle 013 Launch + Closeout (CYCLE-20260505-004)
+
+Cycle 013 launched 2026-05-05 on user delegation "好了，请你做实际的研究部署吧，无论是准备工作还是调研和资料搜集等" + clarification "Phase 2 准备 + 资料调研 (推荐)". Closed the same day across two contiguous conversation segments (the second resumed from `TASK_SNAPSHOT.md` per F-001 rule 6 after a session interrupt mid-S3).
+
+DEC-20260505-003 locked the cycle as a Phase 2 preparation + research mining cycle with three sub-passes: (S2) source mining; (S3) paper related-work prose draft; (S4) L3 prerequisites briefs. Explicitly excluded from cycle 013: L3 prototype, checkpoint download, KYKT runner log access, model touching, retroactive edits, contract revision.
+
+Cycle 013 outputs:
+
+```text
+new artifacts (6):
+  decisions/DEC-20260505-003-cycle-013-launch.md
+  cycles/CYCLE-20260505-004.md
+  experiments/EXP-20260505-001-l3-prerequisites-critic.md
+  experiments/EXP-20260505-002-l3-prerequisites-memory.md
+  experiments/EXP-20260505-003-l3-prerequisites-permanence.md
+  experiments/EXP-20260505-004-l3-prerequisites-composer.md
+
+in-place edits (3):
+  sources/FRONTIER_SOURCE_MAP.md (Cycle 013 Source Mining Pass
+    appended; 8 newly mined sources)
+  registry/source_registry.md (7 new SRC rows: SRC-2026-009 MapAnything;
+    SRC-2026-010 Julian Ost AAAI-2026 driving permanence;
+    SRC-2026-011 tttLRM; SRC-2026-012 awesome-dust3r curated index;
+    SRC-2026-013 DUSt3R/MASt3R/VGGT MVS evaluation;
+    SRC-2026-014 NTIRE 2026; SRC-2026-015 VGGT)
+  literature/PAPER_RELATED_WORK_SKELETON.md (skeleton -> prose draft;
+    Sections 1-7 prose anchored to L2 case cards + SRC-* IDs;
+    Sections 8-9 drafted as prose; filename retained per Surgical Edits)
+
+commits (5):
+  96b38c5  cycle 013 activation: DEC-20260505-003 + cycle log
+  b4fb43f  cycle 013 S2: source-mining pass (8 sources; 7 new SRC entries)
+  fd5557f  cycle 013 S3: paper related-work skeleton -> prose draft
+  f8bbe32  cycle 013 S4: L3 prerequisites briefs (4 finalists)
+  [next]   cycle 013 closeout: S5 audit + S6 sync chain
+```
+
+Goal status changes:
+
+```text
+G2 (route_regret closure): unchanged. EXP-20260505-004 inventories the
+  closure path; cycle did not execute it. Closure remains gated on L3
+  prototype OR KYKT runner log access; both require separate user
+  authorization.
+G6 (L3 prototype on Memory-equipped backbone): unchanged.
+  EXP-20260505-002 inventories the closure path; cycle did not execute.
+G7 (paper-related-work-prose-readiness): NEW. Status =
+  inferred-with-prose-draft-anchor. Sections 1-7 prose; Sections 8-9
+  drafted. Closure: full Phase-2 paper writing (intro / methods /
+  results / discussion); gated on user direction on venue / length /
+  scope.
+```
+
+Discipline compliance:
+
+```text
+rule 1 (Falsifiability):       cycle-013 fail-fast condition recorded
+                               in CYCLE-20260505-004.md "Discipline-
+                               Required Header" with 6 conditions
+                               (a)-(f); none triggered.
+rule 2 (Min Viable Mechanism): no new finalists / specs / proxy
+                               metrics. Source mining + prose drafting
+                               + L3 prereq briefs are research support,
+                               not new mechanism claims.
+rule 3 (Surgical Edits):       every cycle-013 artifact traces to
+                               DEC-003 (S2/S3/S4) or Sync Rule. No
+                               retroactive edits to prior cycle
+                               artifacts; SPINE refresh fold-in is
+                               deferred queue, not silent in-cycle edit.
+rule 4 (Falsifiable Goals):    fail-fast conditions on artifact
+                               integrity (URL verifiability; paper-
+                               result fidelity; L3 brief realism;
+                               GPU/disk/time labeled `inferred` not
+                               `measured`); no failure mode is
+                               "primary".
+rule 5 (Honesty Override):     every newly mined source URL-verifiable;
+                               every prose paragraph cites CASE-* /
+                               SPEC-* / SRC-*; every L3 brief
+                               GPU/disk/time number labeled `inferred`;
+                               explicit "this brief does not constitute
+                               L3 authorization" on each EXP file; G2
+                               not advanced; storyboards still `draft`;
+                               no `approved-for-showing` smuggled.
+F-001 working rules:           snapshot-first sync (TASK_SNAPSHOT.md
+                               edited FIRST in S6 sync chain); Edit
+                               over Write for sync targets; per-phase
+                               commits evicted heavy context between
+                               S2 / S3 / S4 / S6; no "Request too
+                               large" trigger.
+```
+
+cycle 014 launch packet surfaced in CYCLE-20260505-004.md "Cycle 014 launch packet (deferred to user)" with 6 scope options (a..f) + cycle-014-specific decisions (SPINE refresh fold-in; v2.2 candidates none; D3 reconsideration option). Cycle 014 is gated on user direction OR user may hold the project at this state.
+
+This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, demo showing of any of the 4 storyboards, L3 execution of any of the 4 inventoried prerequisite briefs, or any thesis selection.

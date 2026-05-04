@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-05 (cycle 012 fully closed: KYKT-metadata-derived COMPOSER-04 case card + 3 finalist demo storyboards (Memory + Permanence + Composer; all draft) per DEC-20260505-002; G2 advanced inferred -> inferred-with-real-inventory-anchor; v2.1 unchanged; all 4 finalists now have draft demo storyboards; D3 = Critic per cycle 011 unchanged)
+Last updated: 2026-05-05 (cycle 013 fully closed: 8 newly-mined sources (7 new SRC IDs SRC-2026-009..015) + paper related-work prose draft (skeleton -> prose; Sections 1-7 prose, Sections 8-9 drafted) + 4 L3 prerequisites briefs (EXP-20260505-001..004) per DEC-20260505-003; v2.1 unchanged; G2 unchanged; G7 paper-related-work-prose-readiness new at inferred-with-prose-draft-anchor; D3 = Critic per cycle 011 unchanged)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -98,7 +98,15 @@ Format: `DEC-YYYYMMDD-NNN-<slug>.md`. Indexed in `registry/decision_registry.md`
 
 ### `experiments/` - Experiment Plans
 
-Format: `EXP-YYYYMMDD-NNN-<slug>.md`. Filing here does not mean the experiment was run.
+Format: `EXP-YYYYMMDD-NNN-<slug>.md`. Filing here does not mean the experiment was run. Cycle 013 added 4 L3 prerequisites briefs (one per finalist; brief-only, NOT L3 authorization).
+
+| File | Finalist | Role |
+|---|---|---|
+| `EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` | Phase 1 baseline | First reproducibility plan; planned only, do not run until user confirms |
+| `EXP-20260505-001-l3-prerequisites-critic.md` | Geometry Critic (SPEC-20260503-001) | L3 prerequisites brief: repos + checkpoints + GPU/disk/time (`inferred`) + smoke-test path + minimum code change. Brief-only; not L3 authorization |
+| `EXP-20260505-002-l3-prerequisites-memory.md` | Executive Memory (SPEC-20260503-002) | L3 prerequisites brief; same structure |
+| `EXP-20260505-003-l3-prerequisites-permanence.md` | Dynamic Object Permanence (SPEC-20260503-003) | L3 prerequisites brief; same structure |
+| `EXP-20260505-004-l3-prerequisites-composer.md` | 3R Composer (SPEC-20260504-001) | L3 prerequisites brief; same structure; closure of G2 inventoried but not executed |
 
 ### `cases/` - L2 Proxy Case Cards
 
@@ -132,7 +140,7 @@ Curated guidance, not inventory. Inventories live in `sources/FRONTIER_SOURCE_MA
 | `SPINE_PERMANENCE.md` | Same structure for the Dynamic Object Permanence finalist (SPEC-20260503-003) |
 | `SPINE_COMPOSER.md` | Same structure for the Composer finalist (SPEC-20260504-001); MoE routing as cross-domain analog |
 | `CRITICAL_NOTES.md` | Running log of "looks like X is X' but actually" insights; deconfusion of commonly-confused mechanisms |
-| `PAPER_RELATED_WORK_SKELETON.md` | Section list mapped to F1-F6 failure modes; populated from SPINE files; updates as case cards land |
+| `PAPER_RELATED_WORK_SKELETON.md` | Cycle 013 upgraded from skeleton to **prose draft** (Sections 1-7 prose anchored to L2 case cards + SRC-* IDs; Sections 8-9 drafted as prose). Filename retained per Surgical Edits |
 
 ### `specs/` - Finalist Mechanism Specs
 
