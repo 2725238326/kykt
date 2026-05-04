@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (pre-cycle-009 prep sub-pass: launch package + audit recorded; cycle 009 itself still gated on user D4'; mandatory-load + sync-rule integration completed; "Working rules to avoid F-001" section added)
+Last updated: 2026-05-04 (cycle 009 activation pass: D1'-D4' locked by user delegation, DEC-20260504-003 + CYCLE-20260505-001 written; CASE-CRITIC-01 draft deferred to next pass per F-001 budget guard)
 
-Status: **idle, awaiting user decision**
+Status: **in_progress** (cycle 009 launched; S5 of activation board outstanding)
 
 ## Why this file exists
 
@@ -21,70 +21,80 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-008.5-closeout-and-cycle-009-prep
+task_id:    cycle-009-activation
 phase:      Phase 1.5 (Research Workflow Deployment)
-cycle:      008.5 (sub-cycle within cycle 008)
-status:     idle, awaiting user authorization for cycle 009 launch
+cycle:      009 (case-card filling: Critic + Composer parallel, paper-derived)
+status:     in_progress; S5 outstanding; S6 deferred to next pass; S7 pending
 ```
 
 One-line description:
 
 ```text
-Cycle 008.5 closed: 4 finalist specs drafted at L1, cross-spec contract v1,
-literature board v1, planning-layer aligned, inventory-sync sub-pass complete.
-Cycle 009 (case-card filling) is gated on user "go" + the four open decision
-points listed in WORKFLOW_STATUS.md "Recommended Next User Decision".
+User delegated D1'-D4' to agent ("D1-D4 你自己决策吧，有问题我们商讨").
+Agent locked: D1'=parallel, D2'=paper-derived, D3'=unpopulated-deferred
+(TEACHER_AUDIENCE_PROFILE.md requires real-teacher facts the agent has no
+source for; case cards are paper-derived under D2' so they do not depend
+on it), D4'=go. DEC-20260504-003 records the four locks with rationales.
+CYCLE-20260505-001.md opens cycle 009 with S1 done (launch) and S2 in
+progress (CASE-CRITIC-01 draft). The earlier cycle-009 case-card draft
+attempt in this same pass tripped the 32 MB request limit; per F-001
+working rules the draft is deferred to a fresh pass with a clean context.
 ```
 
-## Subtask board (latest pass: pre-cycle-009 launch package prep, 2026-05-04)
+## Subtask board (latest pass: cycle 009 activation, 2026-05-04)
 
 | ID | Subtask | Status | Canonical artifact |
-|---|---|---|---|
-| S1 | Pre-launch audit: scan `specs/`, `paradigm/`, `planning/` for `TODO` / `TBD` / `FIXME` / `XXX` | done | 0 hits; recorded in `planning/CYCLE_009_LAUNCH_PACKAGE.md` "Pre-launch audit findings" |
-| S2 | Cross-spec contract v1 structural sanity check | done | Purpose / Scope / Signal Owner Table / Per-SPEC Published Signals (all 4) / 6 Conflict Resolution Rules / Versioning all present; recorded in same file |
-| S3 | Spec -> contract back-reference scan; record asymmetry as cosmetic note CR-A1 | done | Composer spec links back; Critic / Memory / Permanence (drafted before contract) do not; recorded in same file as cosmetic, not blocking |
-| S4 | Verify `paradigm/TEACHER_AUDIENCE_PROFILE.md` is a complete fill-in form (not invented content) | done | 7 user-input sections with example option menus already in place; agent must not populate |
-| S5 | Draft cycle 009 subtask board skeleton under default D1'/D2' (parallel Composer + Critic, paper-derived) with conditional branches for sequential and paper+job-derived | done | `planning/CYCLE_009_LAUNCH_PACKAGE.md` "Cycle 009 subtask board skeleton" |
-| S6 | Document activation procedure for the moment user `go` on D4' arrives | done | same file, "Activation procedure when user `go` arrives" |
-| S7 | Update this `TASK_SNAPSHOT.md`: Last updated stamp + Last completed task pass + this subtask board | done | this file |
+| --- | --- | --- | --- |
+| S1 | Lock D1'-D4' values under user delegation, with rationales | done | `decisions/DEC-20260504-003-cycle-009-launch.md` |
+| S2 | Discover where case cards live (`templates/proxy_case_card.md` is the 138-line skeleton; `cases/` directory does not yet exist) | done | confirmed via Grep + Read; recorded in DEC-20260504-003 |
+| S3 | Write `decisions/DEC-20260504-003-cycle-009-launch.md` recording D1'-D4' verbatim with rationales | done | same file (76 lines) |
+| S4 | Create `cycles/CYCLE-20260505-001.md` with header + subtask board copied from launch package | done | `cycles/CYCLE-20260505-001.md` (50 lines) |
+| S5 | Update this `TASK_SNAPSHOT.md`: status -> in_progress, current task, subtask board, If-interrupted-resume-from, Open user decisions resolution | done | this file |
+| S6 | Read `specs/SPEC-20260503-001.md` (Critic), draft `cases/CASE-20260505-CRITIC-01.md` from `templates/proxy_case_card.md` | deferred | next pass; checkpoint chosen per F-001 budget guard (32 MB limit hit on the same pass) |
+| S7 | Commit + push the cycle-009 activation (DEC-20260504-003 + CYCLE-20260505-001 + this snapshot); brief report | pending | git history |
 
 ## Last completed task pass
 
 ```text
-pass_name:        Pre-cycle-009 launch package prep sub-pass
+pass_name:        Cycle 009 activation pass (partial; S5 in progress, S6
+                  deferred, S7 pending)
 date:             2026-05-04
-trigger:          continuation immediately after the cycle 008.5
-                  inventory-sync sub-pass closed; user asked for "next
-                  step" but explicitly deferred decisions D1'..D4', so
-                  this sub-pass executed only the work that does NOT
-                  require those decisions
-files_modified:   TASK_SNAPSHOT.md (this file; subtask board + Last
-                  completed task pass + Last updated)
-new_artifacts:    planning/CYCLE_009_LAUNCH_PACKAGE.md
-                    - pre-launch audit (TODO/TBD scan clean across
-                      specs and paradigm; cross-spec contract v1
-                      structurally complete; spec -> contract back-
-                      reference asymmetry recorded as cosmetic note
-                      CR-A1, not blocking)
-                    - cycle 009 subtask board skeleton under default
-                      D1'/D2' (parallel Composer + Critic, paper-
-                      derived only); branches for sequential and for
-                      paper+job-derived recorded
-                    - activation procedure for when user `go` arrives
-discipline:       Surgical Edits + Honesty Override; no spec edits;
-                  no cycle 009 case-card filling; no
-                  TEACHER_AUDIENCE_PROFILE invention; no decision-
-                  packet duplication beyond pointers
+trigger:          User message "D1-D4 你自己决策吧，有问题我们商讨"
+                  delegating the four open decisions to the agent, with
+                  an open consultation channel for any genuinely
+                  blocking issue
+files_modified:   TASK_SNAPSHOT.md (this file; header + subtask board +
+                  last completed task pass + open user decisions)
+new_artifacts:    decisions/DEC-20260504-003-cycle-009-launch.md
+                    - locks D1'=parallel, D2'=paper-derived,
+                      D3'=unpopulated-deferred, D4'=go
+                    - records why D3' is the only "agent flagged for
+                      user" item: TEACHER_AUDIENCE_PROFILE.md needs
+                      Research Taste / Hard Constraints / Demo
+                      Precedent for a specific real teacher; agent has
+                      no factual source so leaves it unpopulated and
+                      proceeds with paper-derived cards (consistent
+                      with D2')
+                  cycles/CYCLE-20260505-001.md
+                    - cycle 009 header (Last updated, status: launched)
+                    - subtask board: S1 done, S2 in progress (CASE-
+                      CRITIC-01 draft)
+discipline:       Surgical Edits + Honesty Override; D3' explicitly
+                  flagged as "unpopulated, deferred" rather than
+                  invented (Discipline rule 5 Honesty Override); F-001
+                  working rule honored by switching to checkpoint when
+                  the 32 MB ceiling was hit mid-pass instead of
+                  retrying the same payload
+budget_event:     32 MB request-too-large fired during this pass on a
+                  Write attempt that followed multiple full-file Reads;
+                  this is exactly F-001. Switched to Edit-only mode and
+                  deferred CASE-CRITIC-01 draft. No new failure mode;
+                  no new F-NNN entry needed.
 
-prior_pass_name:  Cycle 008.5 inventory-sync sub-pass
+prior_pass_name:  Pre-cycle-009 launch package prep sub-pass
 prior_pass_date:  2026-05-04
-prior_pass_files: AGENT_MASTER_PROMPT.md, INDEX.md, README.md,
-                  RESEARCH_STATE.md, WORKFLOW_STATUS.md,
-                  cycles/CYCLE-20260504-001.md, logs/QUESTION_LOG.md,
-                  registry/source_registry.md,
-                  sources/FRONTIER_SOURCE_MAP.md,
-                  units/REPRODUCTION_READINESS_MATRIX.md,
-                  TASK_SNAPSHOT.md (introduced)
+prior_pass_files: planning/CYCLE_009_LAUNCH_PACKAGE.md (introduced),
+                  TASK_SNAPSHOT.md
 ```
 
 ## If interrupted, resume from
@@ -93,33 +103,44 @@ If a new agent or new conversation is picking this up cold:
 
 ```text
 1. Read this file (you are here).
-2. Read cycles/CYCLE-20260504-001.md "Post-Closeout Inventory Sync" section.
-3. Read RESEARCH_STATE.md "Inventory-Sync Sub-Pass (Cycle 008.5
-   Post-Closeout)" subsection.
-4. Read WORKFLOW_STATUS.md "Recommended Next User Decision" block.
-5. Stop. Do NOT start cycle 009 case-card filling without the user's
-   explicit "go" on the four open decision points below.
+2. Read decisions/DEC-20260504-003-cycle-009-launch.md (D1'-D4' locks
+   + rationales).
+3. Read cycles/CYCLE-20260505-001.md (cycle 009 board).
+4. Resume at S5 of the activation board if this snapshot's Status is
+   still in_progress; if S5 already shows done, resume at S6 (draft
+   CASE-20260505-CRITIC-01.md from templates/proxy_case_card.md against
+   specs/SPEC-20260503-001.md, paper-derived per D2').
+5. After S6 lands, S7 = commit + push.
+6. Honor F-001 working rules: do not Read large files already cited in
+   this snapshot; prefer Grep -n + Edit over full-file Read + Write.
 ```
 
-If this snapshot says `in_progress` instead of `idle` (i.e. a future task got interrupted again), treat the listed subtask board as the source of truth and resume from the first non-`done` row.
+If this snapshot says `idle` instead of `in_progress`, the cycle 009 activation is fully closed; consult `cycles/CYCLE-20260505-001.md` for the next live cycle-009 subtask.
 
-## Open user decisions (currently blocking next forward motion)
+## Open user decisions (resolution status, 2026-05-04)
 
-These are duplicated from `WORKFLOW_STATUS.md` "Recommended Next User Decision" so that this single file is enough to know what the user owes the project. Canonical wording lives in WORKFLOW_STATUS.md.
+D1'-D4' were delegated to the agent by user message "D1-D4 你自己决策吧，有问题我们商讨" and locked in `decisions/DEC-20260504-003-cycle-009-launch.md`. Summary:
 
 ```text
-1. Cycle 009 ordering: Composer case cards in parallel with Critic
-   (default; cross-spec contract is the test path) vs sequential after
-   Critic's first card lands.
-2. Composer capability card source: paper-derived only (default) vs
-   paper-derived + KYKT-job-derived (deferred to cycle 010 under default).
-3. paradigm/TEACHER_AUDIENCE_PROFILE.md population (user input required;
-   agent will not invent fields).
-4. Cycle 009 launch authorization: confirm cycle 009 starts case-card
-   filling (CASE-20260505-CRITIC-01..03 first per cycle 008 D1).
+1. Cycle 009 ordering (D1')        -> parallel (Composer + Critic; cross-
+                                       spec contract v1 is the test path).
+2. Composer card source (D2')      -> paper-derived only; KYKT-job-derived
+                                       deferred to cycle 010.
+3. TEACHER_AUDIENCE_PROFILE (D3')  -> unpopulated, deferred. The form
+                                       requires real-teacher facts
+                                       (Research Taste / Hard Constraints
+                                       / Demo Precedent) the agent has no
+                                       source for; agent will not invent.
+                                       Cycle 009 case cards are paper-
+                                       derived under D2', so they do not
+                                       depend on this form. To be filled
+                                       by the user before any teacher-
+                                       facing demo step.
+4. Cycle 009 launch authorization  -> go. CASE-20260505-CRITIC-01 is the
+   (D4')                             first card per cycle 008 D1.
 ```
 
-Items still blocked on user approval per `AGENT_MASTER_PROMPT.md` section 6 (unchanged from prior cycles): final thesis selection, reproduction, training, checkpoint download, KYKT navigation change, frontend implementation, reusable Codex skill packaging, retiring any non-finalist track, declaring teacher-demo readiness.
+Items still blocked on user approval per `AGENT_MASTER_PROMPT.md` section 6 (unchanged from prior cycles): final thesis selection, reproduction, training, checkpoint download, KYKT navigation change, frontend implementation, reusable Codex skill packaging, retiring any non-finalist track, declaring teacher-demo readiness, **populating `paradigm/TEACHER_AUDIENCE_PROFILE.md` (D3' deferred item)**.
 
 ## Update protocol (highest priority — always honor)
 
