@@ -1,6 +1,6 @@
 # CASE-20260504-PERMANENCE-03
 
-Last updated: 2026-05-04 (cycle 010 S5 second half; secondary Permanence L2 case card; synthetic / public dynamic example with labeled object identity; closes CASE-20260504-PERMANENCE-01 fail_fast condition (b) "identity_consistency labeling within 120-minute budget per cycle 008 D4")
+Last updated: 2026-05-05 (cycle 011 S3 G4 closure: CR-2 consumer-side forward-reference null documented under v2.1 protocol; G4 closed-by-documentation, not by new Memory card; cycle 010 closeout content unchanged)
 
 ## Identity
 
@@ -129,6 +129,11 @@ Recorded per Cross-Spec Signal Contract rule CR-6 v2.
 
 - CR-1 / CR-3 / CR-4: trivial.
 - CR-2: this card publishes suppress_static_write on the dynamic region union. No Memory cross-pair partner on this synthetic clip in cycle 010 (Memory cards are on MonST3R / Spann3R / MASt3R real KYKT jobs). CR-2 is structurally present from the producer side; the consumer side is forward-referenced to a hypothetical future Memory card on the same clip.
+  - **Forward-reference null protocol (per v2.1, formalized in cycle 011)**: this card uses the protocol with the following declared fields:
+    - fallback path: in absence of a Memory consumer card on this synthetic clip, no Memory state writes are issued for the clip; the synthetic clip is identity-validation only and does not exercise long-context drift, so the null fallback is benign (Memory's `latent_drift_proxy(t)` is not consumed downstream because no Memory card reads from the synthetic clip; no anchor write happens that would need suppression).
+    - expected close-out cycle: cycle 012 or later, only if a Memory card is later drafted on a synthetic identity-validation clip. If no such card is drafted, the consumer side is retired with the stated reason "synthetic identity-validation clip is producer-only by design; CR-2 consumer is N/A on this regime" and the audit closes G4 by retirement, not by closure.
+    - producer card id: this card (`cases/CASE-20260504-PERMANENCE-03.md`).
+  - This documentation closes cycle-010 gap G4 ("CR-2 partial on synthetic identity-validation clip") under cycle-011 DEC-20260505-001 (2). Status: **closed-by-documentation under v2.1 protocol**, not by drafting a new Memory card. The choice is recorded in `cycles/CYCLE-20260505-002.md` S3.
 - CR-5: honored. Per-object identity scores carry inferred evidence_labels; dataset identity labels carry paper-proven (assumed; the "public clip with labels" framing is paper-derived).
 - CR-6: satisfied.
 

@@ -1,6 +1,6 @@
 # Cross-Spec Signal Contract
 
-Last updated: 2026-05-04 (cycle 008.5; v1; not yet exercised by case cards)
+Last updated: 2026-05-05 (cycle 011 S4; v2 -> v2.1 additive revision: forward-reference null protocol formalized; v2 substance unchanged; alpha unchanged at 0.5 inferred; 8x8 grid partition + identity_consistency threshold pinning deferred, not promoted)
 
 Status: active contract; revision policy below.
 
@@ -154,7 +154,7 @@ Each cycle 009 case card must list which cross-spec signals it consumed and what
 
 ## Versioning
 
-This contract is versioned. The current version is **v2**.
+This contract is versioned. The current version is **v2.1**.
 
 Revision rules:
 
@@ -171,6 +171,36 @@ Each version records:
 - which case cards exercised the change
 
 When a new version supersedes an older one, the older version is preserved in this file under a "Superseded versions" section rather than deleted. Discipline rule 5 (Honesty Override): retracted contract clauses must be visible, not silently overwritten.
+
+### Forward-reference null protocol (added in v2.1)
+
+A reading card MAY return `null` for a CR-X read when the producer card has not yet been drafted within the current cycle. This is a **deferred read**, not a missing read.
+
+When a card uses this protocol, it MUST document on the card body:
+
+1. **fallback path**: what the consumer card does in the absence of the signal. The fallback must be stated as a concrete behavior, not as "the result is unknown".
+2. **expected close-out cycle**: the cycle in which the producer card is expected to land. If the producer card is in the same cycle as the consumer card (in-cycle cross-pair, e.g. cycle 010 PERMANENCE-01 <-> MEMORY-01), state the cycle id; the close-out is in the same cycle's S6 audit. If the producer card is in a later cycle, state the cycle id and the gap entry that tracks it.
+3. **producer card id (or reservation)**: the case card that will publish the signal. If the case card id is reserved but not yet drafted, cite the reservation site (spec line, DEC entry, or cycle log entry).
+
+When the producer card lands, the cycle closeout audit (S6 in cycle log) MUST verify:
+
+1. the consumer card's documented fallback is consistent with the producer card's actual published value, OR
+2. the consumer card is updated to consume the actual value, with a Surgical Edit (Discipline rule 3) recording the diff.
+
+If neither is achievable (producer card retired, or consumer fallback proven wrong), the consumer card's CR-X usage is retired with a stated reason in the closeout audit. Forward-reference null is NOT an excuse to leave a CR-X read unresolved across cycles; the protocol is a rendering of the deferred read, not a permanent placeholder.
+
+This protocol formalizes a pattern already exercised in:
+
+- `cases/CASE-20260504-CRITIC-02.md` line 210 (CR-1 forward reference; closed by `cases/CASE-20260505-COMPOSER-01.md` in cycle 009)
+- `cases/CASE-20260504-CRITIC-03.md` line 147 (CR-3 forward reference on Memory `latent_drift_proxy`; closed by `cases/CASE-20260504-MEMORY-01.md` in cycle 010)
+- `cases/CASE-20260504-MEMORY-02.md` lines 110, 113 (CR-2 + Critic forward-reference null on a Spann3R-regime card; documented as gap, not closed retroactively)
+- `cases/CASE-20260504-MEMORY-01.md` line 85 (Critic forward-reference null; closed by reading cycle-009 CRITIC-03 fallback path)
+
+Existing case cards that use the pattern are NOT retroactively edited to match v2.1 wording. Per Discipline rule 3 (Surgical Edits), v2.1 documents the protocol, not changes the cards. Future case cards drafted after 2026-05-05 use the v2.1 wording above.
+
+## v2.1 Change Log
+
+- 2026-05-05 (cycle 011 launch, sub-pass S4): contract promoted from v2 to v2.1 per `decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-target.md`. v2.1 is **additive only**: adds the "Forward-reference null protocol" subsection above. v2.1 does NOT touch alpha (still 0.5 inferred), the signal owner table, CR-1..CR-6 substantive rules, or evidence-label propagation. The other two cycle-010 v3 candidates (8x8 grid partition for Permanence regions; identity_consistency threshold pinning at ~0.7) are deferred and not promoted in v2.1; rationale recorded in DEC-20260505-001 (3). First case card drafted natively under v2.1: any cycle-011-or-later card; existing cycle-009 + cycle-010 cards remain v1 / v2 native and are not retroactively edited (Surgical Edits rule).
 
 ## v2 Change Log
 
