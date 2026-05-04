@@ -1,6 +1,6 @@
 # SPINE_COMPOSER: 3R Composer / Unified Model Ecology
 
-Last updated: 2026-05-04 (cycle 008.5; v1; created with the Composer finalist upgrade DEC-20260504-001)
+Last updated: 2026-05-05 (cycle 013 refresh: VGGT SRC-2026-015 / MapAnything SRC-2026-009 / DUSt3R-MASt3R-VGGT MVS evaluation SRC-2026-013 / awesome-dust3r index SRC-2026-012 added to Advanced Reading; VGGT capability-card gap explicitly noted as cycle-014+ per-card candidate)
 
 Linked spec: `specs/SPEC-20260504-001-3r-composer.md`
 
@@ -78,6 +78,30 @@ Sparse-view multiview pose-free RGB reconstruction. Capability card under "spars
 
 Asset-path comparators. Their capability cards apply to the "asset_output" regime; Composer routes asset-path samples to them. They are not 3R-only models; they include Gaussian asset generation.
 
+### SRC-2026-015 VGGT (paper-proven; comparator gap)
+
+Feed-forward visual-geometry transformer (Meta open-source). What it actually claims: a direct feed-forward 3R model operating over multiple views without iterative optimization; published as code + paper under the DUSt3R / MASt3R / Fast3R family.
+
+What people often misread it as: a one-shot replacement for the whole family. VGGT is strong in several regimes but its regime-conditioned capability profile is not yet encoded in Composer capability cards (CASE-20260505-COMPOSER-01..04 do NOT include a VGGT row). This is a cycle-014+ per-card revision candidate, not a contract revision. See `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` v2 schema note in cycle 013 closeout.
+
+### SRC-2026-009 MapAnything (paper-proven)
+
+Universal feed-forward metric 3D reconstruction (v3 Jan 2026). What it actually claims: a feed-forward 3R that targets "regime-agnostic" coverage; references spatial-memory 3R as neighbor work.
+
+What people often misread it as: a Composer-style router inside one model. MapAnything compresses regime-conditioning into a single model's input handling; Composer's argument is that such compression leaves a measurable `route_regret` signature. Useful comparator for L3 regime-label verification (EXP-20260505-004).
+
+### SRC-2026-013 DUSt3R-MASt3R-VGGT MVS evaluation (paper-proven)
+
+Empirical MVS evaluation across DUSt3R + MASt3R + VGGT on high-resolution + multi-camera videos. What it actually claims: per-model MVS results on a shared evaluation; useful as a published capability_card sanity check.
+
+What people often misread it as: a Composer result. It is a comparison paper, not a routing paper; the per-model rows serve as ground truth for capability_card entries when L3 measurements are not yet available. Cycle-014+ per-card revision can pull from this directly.
+
+### SRC-2026-012 awesome-dust3r curated index (code-curated)
+
+Regularly-updated DUSt3R / MASt3R follow-up index (VGGT, MASt3R-SLAM, Light3R-SfM, pi3, MoGe-2, STream3R, Dens3R, ViPE, etc.). Meta-resource, not a paper.
+
+Use pattern: pull individual rows when a specific capability-card gap appears. Do not cite the index itself as a Composer comparator; cite the underlying paper, and log an evidence label per source row on the paper's registry entry.
+
 ## Skip With Reason
 
 - robotics / VLA / active perception papers: out of scope; Composer routes 3R inputs, not embodied actions. Active perception A8 is a separate spec.
@@ -99,7 +123,8 @@ Asset-path comparators. Their capability cards apply to the "asset_output" regim
 
 ## Evidence Labels Summary
 
-- DUSt3R, MASt3R, MASt3R-SfM, Fast3R, Spann3R, MonST3R, CUT3R, STream3R, SLAM3R, MV-DUSt3R+, Splatt3R, InstantSplat, NoPoSplat: paper-proven for their published per-regime claims.
+- DUSt3R, MASt3R, MASt3R-SfM, Fast3R, Spann3R, MonST3R, CUT3R, STream3R, SLAM3R, MV-DUSt3R+, Splatt3R, InstantSplat, NoPoSplat, VGGT, MapAnything, DUSt3R-MASt3R-VGGT MVS evaluation: paper-proven for their published per-regime claims.
+- awesome-dust3r: code-curated index (meta-resource); evidence labels propagate from the underlying registry rows it links to.
 - Composer regime taxonomy (static_pair / many_view / dynamic_video / streaming / sparse_view / asset_output): inferred.
 - capability_match weights, regime probability weights, epsilon_tie: inferred.
 - MoE routing borrowed pattern: inferred for 3R use.

@@ -1,6 +1,6 @@
 # SPINE_MEMORY: Executive Memory / State Governance
 
-Last updated: 2026-05-04 (cycle 008.5; v1)
+Last updated: 2026-05-05 (cycle 013 refresh: tttLRM SRC-2026-011 added to Advanced Reading as long-context state-update successor to TTT3R; Mem3R SRC-2026-003 already in Required Reading, re-confirmed)
 
 Linked spec: `specs/SPEC-20260503-002-executive-memory.md`
 
@@ -76,6 +76,14 @@ What people often misread it as: equivalent to Mem3R. Point3R is *external point
 
 Gauge-decoupled streaming visual geometry with cache refresh. Useful when the case card asks about cache refresh policy specifically.
 
+### SRC-2026-011 tttLRM (paper-proven)
+
+Test-time training for long-context autoregressive 3D reconstruction. What it actually claims: TTT applied at the *long-context* scale, with a state-update rule that targets long-sequence regression errors rather than per-pair residuals.
+
+What people often misread it as: an upgrade of TTT3R-the-same. The compute scope is different: TTT3R (SRC-2025-004) updates CUT3R's recurrent state on hard *pairs*; tttLRM updates a long-context reconstructor's state on *sequence-level* drift. In SPEC-20260503-002 terms, tttLRM is a candidate for A1 full_update under long-sequence regimes; the action choice vs PAS3R / FILT3R is an explicit comparator question, not a given.
+
+Cite under A1 long-sequence regime comparator, not as a replacement for TTT3R / Test3R in the Critic pipeline.
+
 ### Sparse / linear attention background (SRC-2024-006 Mamba-2, etc.)
 
 Architecture-transfer mechanisms. Useful for the related-work section when the paper cites architecture pressure beyond 3R proper. Do not cite as direct comparators.
@@ -102,6 +110,6 @@ Architecture-transfer mechanisms. Useful for the related-work section when the p
 
 ## Evidence Labels Summary
 
-- CUT3R, STream3R, LONG3R, LoGeR, Mem3R, OVGGT, PAS3R, FILT3R, Point3R, LongStream: paper-proven for their published memory claims.
+- CUT3R, STream3R, LONG3R, LoGeR, Mem3R, OVGGT, PAS3R, FILT3R, Point3R, LongStream, tttLRM: paper-proven for their published memory / state-update claims.
 - Dream policy bank (selecting among the above on evidence vector): inferred.
 - theta_write, theta_context, anchor_budget thresholds: inferred.

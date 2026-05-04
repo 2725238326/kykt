@@ -1,6 +1,6 @@
 # SPINE_CRITIC: Geometry Critic / System-2 3R
 
-Last updated: 2026-05-04 (cycle 008.5; v1)
+Last updated: 2026-05-05 (cycle 013 refresh: tttLRM SRC-2026-011 added to Advanced Reading as long-context successor that extends the Test3R / TTT3R axis)
 
 Linked spec: `specs/SPEC-20260503-001-geometry-critic.md`
 
@@ -60,6 +60,14 @@ Sparse-view multiview reconstruction. Useful as a counter-example: not every Cri
 
 Training-free dynamic correction. Easi3R operates per-frame on dynamic regions; it is not a Critic. Listing here as a counter-example to clarify Critic's scope: Critic is per-window cross-model verification, not per-frame dynamic correction.
 
+### SRC-2026-011 tttLRM (paper-proven)
+
+Test-time training for long-context autoregressive 3D reconstruction. What it actually claims: scaling the TTT3R idea from CUT3R-scale state to long-context 3D reconstructor state; TTT is the repair mechanism, not the verification mechanism.
+
+What people often misread it as: a long-context Test3R. tttLRM does update state at test time (TTT3R side), whereas Test3R scores consistency without state update. Placed in Advanced Reading because it strengthens the Test3R-vs-TTT3R disagreement axis at a new compute scale, but does not change Critic SPEC-20260503-001's Test3R-side scope decision (Critic still does not update state at verify time).
+
+Cross-note: tttLRM also surfaces in SPINE_MEMORY because the mechanism lives in A1 (state update) under Memory; Critic reads the *evidence residuals* tttLRM computes, not the update itself.
+
 ## Skip With Reason
 
 - 4DGS variants: out of scope for Critic; Critic does not own visual asset generation. Demo paths through 4DGS are explicitly excluded by SPEC-20260503-003 and not relevant here.
@@ -81,6 +89,6 @@ Training-free dynamic correction. Easi3R operates per-frame on dynamic regions; 
 
 ## Evidence Labels Summary
 
-- Test3R, TTT3R, CTRL, MASt3R-SfM, G-CUT3R, SLAM3R, MV-DUSt3R+, Easi3R: paper-proven for their published claims.
+- Test3R, TTT3R, CTRL, MASt3R-SfM, G-CUT3R, SLAM3R, MV-DUSt3R+, Easi3R, tttLRM: paper-proven for their published claims.
 - Cross-model A5 reroute action set: inferred.
 - Critic case-card thresholds (theta_conflict, repair_budget): inferred.

@@ -1,6 +1,6 @@
 # Literature Guidance Board
 
-Last updated: 2026-05-04 (cycle 008.5; v1)
+Last updated: 2026-05-05 (cycle 013 refresh pass: SPINE_MEMORY / SPINE_CRITIC / SPINE_COMPOSER / SPINE_PERMANENCE / CRITICAL_NOTES all folded in cycle-013-mined sources per the closeout deferred queue; PAPER_RELATED_WORK_SKELETON.md was upgraded to prose draft in cycle 013 S3; v1 structure unchanged)
 
 Status: literature **guidance**, not literature **inventory**.
 

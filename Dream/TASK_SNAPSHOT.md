@@ -1,6 +1,6 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-05 (cycle 013 fully closed: 8 newly-mined sources (7 new SRC IDs SRC-2026-009..015) + paper related-work prose draft (skeleton -> prose; Sections 1-7 prose, Sections 8-9 drafted) + 4 L3 prerequisites briefs (EXP-20260505-001..004) per DEC-20260505-003; v2.1 unchanged; G2 unchanged at inferred-with-real-inventory-anchor; G7 paper-related-work-prose-readiness new; sync chain run)
+Last updated: 2026-05-05 (cycle 013 fully closed: 8 newly-mined sources (7 new SRC IDs SRC-2026-009..015) + paper related-work prose draft (skeleton -> prose; Sections 1-7 prose, Sections 8-9 drafted) + 4 L3 prerequisites briefs (EXP-20260505-001..004) per DEC-20260505-003; v2.1 unchanged; G2 unchanged at inferred-with-real-inventory-anchor; G7 paper-related-work-prose-readiness new; sync chain run; post-closeout SPINE refresh fold-in pass done 2026-05-05: tttLRM into SPINE_MEMORY + SPINE_CRITIC; VGGT + MapAnything + DUSt3R-MASt3R-VGGT MVS evaluation + awesome-dust3r into SPINE_COMPOSER; Julian Ost AAAI-2026 into SPINE_PERMANENCE advanced + CRITICAL_NOTES.md 3 new deconfusion entries (Julian Ost name-collision / tttLRM vs Test3R / VGGT capability-card gap); markdown-only; cycle 013 closed state preserved)
 
 Status: **idle** (cycle 013 closed; awaiting user direction for cycle 014 OR project hold)
 

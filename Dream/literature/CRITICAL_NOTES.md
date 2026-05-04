@@ -1,6 +1,6 @@
 # Critical Notes: Common Confusions And Deconfusions
 
-Last updated: 2026-05-04 (cycle 008.5; v1)
+Last updated: 2026-05-05 (cycle 013 refresh: Julian Ost AAAI-2026 driving permanence name-collision deconfusion added)
 
 Status: running log of "looks like X is X' but actually" insights.
 
@@ -63,6 +63,32 @@ The "4D" qualifier on RayMap3R refers to temporal coverage of dynamic scenes, no
 Linked sources: SRC-2026-008 RayMap3R, 4DGS variants (cited in SPINE_PERMANENCE).
 
 Last-updated: 2026-05-04.
+
+## Cycle 013 Refresh Entries
+
+### Julian Ost AAAI-2026 "object permanence" is driving-NVS, not Dream Permanence
+
+The shared phrase "object permanence" names two unrelated contributions. Julian Ost's AAAI-2026 paper uses **scene-graph driving generation with explicit object permanence + causal NVS**, where each vehicle is maintained as a persistent node in a scene graph to make generated novel views temporally consistent in the *driving-NVS generative* pipeline. Dream SPEC-20260503-003 Permanence operates on MonST3R's dynamic-mask outputs in a 3R *reconstruction* pipeline and owns `suppress_static_write(r)` handoffs to Memory. The pipelines, evaluation metrics, and signal contracts do not overlap. Cite Julian Ost only as a positioning anchor in related-work (a driving-domain peer that also uses the term); never fold its metrics into Permanence's `identity_consistency` proxy.
+
+Linked sources: SRC-2026-010 Julian Ost AAAI-2026 driving permanence, SPEC-20260503-003, SPINE_PERMANENCE.md Advanced Reading.
+
+Last-updated: 2026-05-05.
+
+### tttLRM is a long-context A1 comparator, not a long-context Test3R
+
+tttLRM (cycle-013-mined) extends the TTT3R axis at the *long-context* reconstructor scale: state updates at inference time on sequence-level drift. Readers who know Test3R + TTT3R may collapse tttLRM into "long-context Test3R", but the Test3R-vs-TTT3R distinction still applies: tttLRM sits on the TTT3R side (state is updated at inference), whereas Test3R sits on the inference-only consistency-scoring side. Critic SPEC-20260503-001 still takes the Test3R-side scope (no state update at verify time); tttLRM enters through SPINE_MEMORY as an A1 long-sequence regime comparator and is cross-noted in SPINE_CRITIC. Conflating tttLRM with Test3R misplaces which spec owns the mechanism.
+
+Linked sources: SRC-2026-011 tttLRM, SRC-2025-007 Test3R, SRC-2025-004 TTT3R, SPEC-20260503-001, SPEC-20260503-002.
+
+Last-updated: 2026-05-05.
+
+### VGGT is a comparator gap in the current Composer capability cards
+
+VGGT (cycle-013-mined) is a feed-forward visual-geometry transformer in the DUSt3R / MASt3R / Fast3R family, but `cases/CASE-20260505-COMPOSER-01..04.md` were all authored before VGGT was surfaced in cycle 013 and do **not** include a VGGT capability_card row. Readers who see the Composer L2 portfolio may assume VGGT was evaluated and omitted; it was not. This is a cycle-014+ per-card revision candidate, not a contract revision — the v2 `capability_card` schema already accommodates a new model row, so no contract change is needed.
+
+Linked sources: SRC-2026-015 VGGT, CASE-20260505-COMPOSER-01..04, SPINE_COMPOSER.md Advanced Reading, `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` v2.
+
+Last-updated: 2026-05-05.
 
 ## Adding New Entries
 

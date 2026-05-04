@@ -1,6 +1,6 @@
 # SPINE_PERMANENCE: Dynamic Object Permanence / 4D Memory
 
-Last updated: 2026-05-04 (cycle 008.5; v1)
+Last updated: 2026-05-05 (cycle 013 refresh: Julian Ost AAAI-2026 driving permanence SRC-2026-010 added to Advanced Reading as driving-domain comparator; name-collision with Dream Permanence finalist deconfusion added to CRITICAL_NOTES.md)
 
 Linked spec: `specs/SPEC-20260503-003-dynamic-object-permanence.md`
 
@@ -64,6 +64,14 @@ Guided pointmap with depth / pose / calibration priors. Useful when Permanence n
 
 These are not required reading for cycle 009 case cards (MonST3R's existing 96 masks are sufficient), but they define the upgrade path for cycle 010+.
 
+### SRC-2026-010 Julian Ost AAAI-2026 driving permanence (paper-proven for the driving-NVS domain)
+
+Scene-graph driving generation with **explicit object permanence** + causal novel-view synthesis (driving domain). What it actually claims: in the autonomous-driving generative-NVS setting, representing each vehicle as a persistent object in a scene graph improves temporal consistency and causal plausibility of generated views.
+
+What people often misread it as: the same "object permanence" concept that Dream SPEC-20260503-003 owns. **The name collides; the scope does not.** Julian Ost's paper operates in the driving-NVS *generative* pipeline where object identity is maintained *inside a scene graph for synthesis*; Dream Permanence operates on MonST3R's dynamic-mask outputs and owns the `suppress_static_write(r)` handoff to Memory. The shared phrase "object permanence" names two different contributions in two different pipelines. See `CRITICAL_NOTES.md` for the deconfusion.
+
+Cite as a *positioning* anchor in the related-work section (driving-domain peer that also uses the term), not as a Permanence comparator. Do not fold its metrics into `identity_consistency` proxy evaluation.
+
 ## Skip With Reason
 
 - 4DGS variants for asset rendering: out of scope per SPEC-003.
@@ -87,5 +95,6 @@ These are not required reading for cycle 009 case cards (MonST3R's existing 96 m
 ## Evidence Labels Summary
 
 - MonST3R, POMATO, D2USt3R, Easi3R, RayMap3R: paper-proven for their published dynamic-3R claims.
+- Julian Ost AAAI-2026 driving permanence: paper-proven for the driving-NVS domain; cited as positioning anchor only, NOT as Permanence comparator (see CRITICAL_NOTES.md).
 - Object permanence + static-map immunity policy as a single contribution: inferred.
 - theta_dynamic, theta_static, theta_flow, dynamic_horizon, mint_rate: inferred.
