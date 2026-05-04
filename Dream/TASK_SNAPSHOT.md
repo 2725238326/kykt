@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 009 fully closed = case-card portfolio drafted + Critic-side ID drift cleaned up + S6 cross-spec contract usage audit recorded + S7 closeout written + Guidance File Sync Rule chain run + S8 user-facing report shipped to user; snapshot flipped to idle)
+Last updated: 2026-05-04 (cycle 010 activation in flight: user authorized v2 contract upgrade + cycle 010 parallel ordering + agent-recommended D3 continued deferral; cycle 009 closed; cycle 010 case-card portfolio for Memory + Permanence to be drafted next)
 
-Status: **idle** (cycle 009 closed; awaiting user decision on the cycle-010 launch packet that S8 surfaced; consult `cycles/CYCLE-20260505-001.md` "Closeout (S7)" for the next live cycle-010 subtask once user authorizes)
+Status: **in_progress** (cycle 010 activation pass running across 4 sub-passes A..D; case-card drafting S2..S7 follows)
 
 ## Why this file exists
 
@@ -21,41 +21,40 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-009-activation
+task_id:    cycle-010-activation
 phase:      Phase 1.5 (Research Workflow Deployment)
-cycle:      009 (case-card filling: Critic + Composer parallel, paper-derived)
-status:     closed; user-facing cycle-010 launch packet shipped via S8
+cycle:      010 (case-card filling: Memory + Permanence parallel; v2 cost-typed route_regret active)
+status:     in_progress; sub-pass A done (snapshot locked); sub-pass B/C/D following
 ```
 
 One-line description:
 
 ```text
-User delegated D1'-D4' to agent ("D1-D4 你自己决策吧，有问题我们商讨").
-Agent locked: D1'=parallel, D2'=paper-derived, D3'=unpopulated-deferred
-(TEACHER_AUDIENCE_PROFILE.md requires real-teacher facts the agent has no
-source for; case cards are paper-derived under D2' so they do not depend
-on it), D4'=go. DEC-20260504-003 records the four locks with rationales.
-CYCLE-20260505-001.md opens cycle 009 with S1 done (launch) and S2 in
-progress (CASE-CRITIC-01 draft). The earlier cycle-009 case-card draft
-attempt in this same pass tripped the 32 MB request limit; per F-001
-working rules the draft is deferred to a fresh pass with a clean context.
+Cycle 009 closed with 6 paper-derived case cards (3 Critic + 3 Composer) +
+cross-spec contract usage audit + 1 v1 -> v2 cost-typed route_regret
+candidate (CASE-COMPOSER-03). User authorized cycle 010 launch:
+(1) v2 contract upgrade -> adopt; (2) cycle 010 ordering -> Memory +
+Permanence in parallel (cross-pair pattern from cycle 009 reused);
+(3) D3 (first demo target) -> agent recommends continued deferral until
+cycle 010 closeout (M+P L2 evidence still missing). cycle 010 will
+fill 6 case cards: CASE-20260504-MEMORY-01..03 (per SPEC-20260503-002
+line 240) + CASE-20260504-PERMANENCE-01..03 (per SPEC-20260503-003
+line 231). Activation pass A..D running this turn.
 ```
 
-## Subtask board (latest pass: cycle 009 activation, 2026-05-04)
+## Subtask board (latest pass: cycle 010 activation, 2026-05-04)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Lock D1'-D4' values under user delegation, with rationales | done | `decisions/DEC-20260504-003-cycle-009-launch.md` |
-| S2 | Discover where case cards live (`templates/proxy_case_card.md` is the 138-line skeleton; `cases/` directory does not yet exist) | done | confirmed via Grep + Read; recorded in DEC-20260504-003 |
-| S3 | Write `decisions/DEC-20260504-003-cycle-009-launch.md` recording D1'-D4' verbatim with rationales | done | same file (76 lines) |
-| S4 | Create `cycles/CYCLE-20260505-001.md` with header + subtask board copied from launch package | done | `cycles/CYCLE-20260505-001.md` (50 lines) |
-| S5 | Update this `TASK_SNAPSHOT.md`: status -> in_progress, current task, subtask board, If-interrupted-resume-from, Open user decisions resolution | done | this file |
-| S6 | Read `specs/SPEC-20260503-001.md` (Critic), draft `cases/CASE-20260504-CRITIC-01.md` from `templates/proxy_case_card.md` (spec-authoritative ID per spec line 208; D2' paper-derived) | done | `cases/CASE-20260504-CRITIC-01.md` |
-| S6.5 | Critic-side ID-drift cleanup sub-pass: rename `CASE-20260505-CRITIC-*` -> `CASE-20260504-CRITIC-*` across 9 files (cycle 009 D2' paper-derived cards inherit spec-authoritative date 20260504, not the cycle-log file date 20260505) | done | git history (commit `clean up Critic case-card ID drift: 20260505 -> 20260504 across 9 files`) |
-| S6.6 | Draft remaining Critic + Composer case cards: `CASE-20260504-CRITIC-02`, `CASE-20260504-CRITIC-03`, `CASE-20260505-COMPOSER-01`, `CASE-20260505-COMPOSER-02`, `CASE-20260505-COMPOSER-03`; surface v1 -> v2 cost-axis route_regret candidate from CASE-COMPOSER-03 | done | `cases/CASE-20260504-CRITIC-02.md` + `03.md`; `cases/CASE-20260505-COMPOSER-01.md` + `02.md` + `03.md` |
-| S6.7 | Cross-spec contract usage audit (cycle 009 S6): CR-1..CR-6 instance map across the 6 case cards; v1 -> v2 candidate enumeration; contract gaps identified | done | `cycles/CYCLE-20260505-001.md` "Contract Usage Audit" section |
-| S7 | Cycle 009 closeout: write closeout section in cycle log; sync `RESEARCH_STATE.md` / `WORKFLOW_STATUS.md` / `INDEX.md`; run Guidance File Sync Rule chain starting from this snapshot (per anti-F-001 rule 6) | done | `cycles/CYCLE-20260505-001.md` "Closeout" section + sync targets |
-| S8 | Surface cycle-009 outputs to user (case cards drafted / contract gaps found / D-decisions surfaced for cycle 010 launch); flip this snapshot to `idle` after the message lands | done | user-facing message (delivered this turn); snapshot flipped to idle |
+| A1 | Lock cycle 010 activation in this snapshot (status in_progress; subtask board; current task; If-interrupted-resume-from) | done | this file |
+| A2 | Write `decisions/DEC-20260504-004-cross-spec-contract-v2.md` recording v2 promotion + retained v1 prose | pending | `decisions/DEC-20260504-004-cross-spec-contract-v2.md` |
+| A3 | Edit `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` to v2: bump version markers; append v2 change log; preserve v1 prose under "Superseded versions" per Discipline rule 5 | pending | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` |
+| A4 | Edit `cases/CASE-20260505-COMPOSER-03.md` to mark v2 (cost-adjusted) recommendation as canonical; v1 row preserved as superseded | pending | `cases/CASE-20260505-COMPOSER-03.md` |
+| A5 | Write `decisions/DEC-20260504-005-cycle-010-launch.md` recording cycle 010 D-decisions (parallel ordering; D3 continued deferral with rationale; v2 active; D3' sub-field correction) | pending | `decisions/DEC-20260504-005-cycle-010-launch.md` |
+| A6 | Write `cycles/CYCLE-20260504-002.md` cycle log (cycle 010 header + subtask board G1/S1..S7 for case-card drafting; references DEC-004 + DEC-005) | pending | `cycles/CYCLE-20260504-002.md` |
+| A7 | Run Guidance File Sync Rule chain (RESEARCH_STATE / WORKFLOW_STATUS / INDEX / AGENT_MASTER_PROMPT / README) + final subtask board flip on this snapshot | pending | sync targets + this file |
+
+After A1..A7 complete, the next live pass is cycle 010's own S1..S7 case-card drafting (each card = one anti-F-001 sub-pass), tracked in `cycles/CYCLE-20260504-002.md` not here.
 
 ## Last completed task pass
 
@@ -119,27 +118,29 @@ If a new agent or new conversation is picking this up cold:
 
 ```text
 1. Read this file (you are here).
-2. Read decisions/DEC-20260504-003-cycle-009-launch.md (D1'-D4' locks
-   + rationales; cycle 009 authorization).
-3. Read cycles/CYCLE-20260505-001.md "Contract Usage Audit (S6)" +
-   "Closeout (S7)" sections — those carry the full cycle-009 result
-   summary, the v1 -> v2 candidates, and the cycle-010 launch packet
-   preconditions.
-4. Cycle 009 is closed; this snapshot's Status is `idle`. Do NOT
-   start cycle-010 work without the user-facing decisions surfaced
-   in S8 being resolved by the user. The four cycle-010 launch
-   decisions are: (a) v2 cost-typed route_regret (adopt / defer /
-   fold into v1.x); (b) cycle 010 ordering (Memory + Permanence
-   parallel vs Memory first); (c) D3 demo target (still deferrable);
-   (d) TEACHER_AUDIENCE_PROFILE.md remaining sub-fields (populate or
-   keep empty).
-5. Honor F-001 working rules throughout: do not Read large files
+2. Read decisions/DEC-20260504-003-cycle-009-launch.md (cycle 009
+   D1'-D4' locks; cycle 009 authorization).
+3. Read decisions/DEC-20260504-004-cross-spec-contract-v2.md (v2
+   contract upgrade memo; written in sub-pass B of this activation
+   pass; superseded v1 prose preserved per Discipline rule 5).
+4. Read decisions/DEC-20260504-005-cycle-010-launch.md (cycle 010
+   D-decisions: parallel ordering for Memory + Permanence; D3
+   continued deferral with rationale; v2 active; D3'
+   sub-field-empty-claim correction).
+5. Read cycles/CYCLE-20260504-002.md (cycle 010 cycle log; carries
+   case-card drafting subtask board G1/S1..S7 for the 6 cards
+   CASE-20260504-MEMORY-01..03 + CASE-20260504-PERMANENCE-01..03).
+6. Resume at the first non-`done` row in the activation subtask
+   board above (A1..A7). Once A7 is `done` the activation pass is
+   closed; switch to cycle 010's own S1..S7 case-card drafting,
+   tracked in `cycles/CYCLE-20260504-002.md` not in this file.
+7. Honor F-001 working rules throughout: do not Read large files
    already cited in this snapshot; prefer Grep -n + Edit over
    full-file Read + Write; cap large files in active context at <=2
    simultaneously.
 ```
 
-If this snapshot's Status flips back to `in_progress` or `blocked`, follow the active subtask board above; the cycle log is the authoritative artifact for cycle-009 / cycle-010 cross-cycle context.
+If this snapshot's Status flips back to `idle`, the cycle 010 activation pass is closed and the next live cycle is cycle 010's own case-card drafting (cycle log is the authoritative artifact for that phase).
 
 ## Open user decisions (resolution status, 2026-05-04)
 
@@ -151,23 +152,77 @@ D1'-D4' were delegated to the agent by user message "D1-D4 你自己决策吧，
 2. Composer card source (D2')      -> paper-derived only; KYKT-job-derived
                                        deferred to cycle 010.
 3. TEACHER_AUDIENCE_PROFILE (D3')  -> populated 2026-05-04 by user input.
-                                       User stated Research Taste:
-                                       科研的训练 / 写作技巧 / 创新范式
-                                       / 讲好故事. User stated no hard
-                                       logistical constraints. Three
-                                       sub-fields (Prior Expectations,
-                                       Demo Precedent, Previously
-                                       Criticized) remain empty by user;
-                                       agent did NOT invert priorities
-                                       into criticism claims. See
-                                       paradigm/TEACHER_AUDIENCE_PROFILE
-                                       .md Change Log 2026-05-04 entry.
-                                       D3' resolved; D3 (first demo
-                                       target choice) still deferred per
-                                       DEC-20260504-002.
+                                       Earlier snapshot text claimed
+                                       three sub-fields remained empty;
+                                       this was a stale read. The user
+                                       2026-05-04 input populated all 6
+                                       fields explicitly: Research Taste
+                                       = 科研的训练 / 写作技巧 /
+                                       创新范式 / 讲好故事; Prior
+                                       Expectations = "老师不知道我们
+                                       要做 Dream" -> cold start; Demo
+                                       Precedent -> first impression
+                                       (implied by Prior Expectations);
+                                       Previously Praised = "老师对 3R
+                                       方向都没啥具体贬褒" -> no specific
+                                       3R praise; Previously Criticized
+                                       = same statement -> no specific
+                                       3R criticism; Hard Constraints =
+                                       no constraints stated. Profile
+                                       is fully populated; D3' resolved;
+                                       D3 (first demo target choice)
+                                       still deferred per DEC-20260504-
+                                       002 because cycle 010 case-card
+                                       data for Memory + Permanence is
+                                       still pending (agent
+                                       recommendation per DEC-20260504-
+                                       005 cycle 010 launch memo).
 4. Cycle 009 launch authorization  -> go. CASE-20260504-CRITIC-01 is the
    (D4')                             first card per cycle 008 D1; drafted
                                      2026-05-04, paper-derived per D2'.
+```
+
+Cycle 010 launch decisions (locked 2026-05-04 from user message "1 a 吧 / 2 并行是不是好点儿 / 3 我觉得你决定就好 / 4 这个啥意思" plus agent confirmation; recorded in `decisions/DEC-20260504-005-cycle-010-launch.md`):
+
+```text
+1. v2 cost-typed route_regret (E1)  -> adopt. Contract bumped to v2;
+                                       capability_match adds
+                                       cost_normalized axis; alpha = 0.5
+                                       initial (inferred). v1 prose
+                                       preserved as Superseded per
+                                       Discipline rule 5. CASE-COMPOSER-
+                                       03 v2 row promoted to canonical
+                                       recommendation; v1 row preserved.
+                                       Memo: DEC-20260504-004.
+2. Cycle 010 ordering (E2)          -> Memory + Permanence in parallel.
+                                       Cross-pair pattern from cycle 009
+                                       (CRITIC-02 <-> COMPOSER-01) reused;
+                                       CR-2 binding closed via in-cycle
+                                       cross-pair (Permanence publishes
+                                       suppress_static_write, Memory
+                                       consumes; both drafted in cycle
+                                       010). Forward-reference null
+                                       protocol from CRITIC-03 covers
+                                       any timing gap.
+3. D3 first demo target (E3)        -> agent decision: continued deferral
+                                       to cycle 010 closeout. Two
+                                       deferral conditions per
+                                       DEC-20260504-002 are now both met
+                                       (audience profile populated +
+                                       cycle 009 case-card data exists),
+                                       but Memory + Permanence still have
+                                       no L2 evidence; picking now would
+                                       violate Discipline rule 5
+                                       (Honesty Override) by selecting on
+                                       partial portfolio coverage. Re-
+                                       surface at cycle 010 closeout when
+                                       all 4 finalists have L2 cards.
+4. D3' sub-field correction (E4)    -> stale snapshot text saying "three
+                                       sub-fields remain empty" was
+                                       wrong; profile is fully populated
+                                       (see corrected entry in section 3
+                                       above). User asked "这个啥意思"
+                                       triggered the correction.
 ```
 
 Items still blocked on user approval per `AGENT_MASTER_PROMPT.md` section 6 (unchanged from prior cycles): final thesis selection, reproduction, training, checkpoint download, KYKT navigation change, frontend implementation, reusable Codex skill packaging, retiring any non-finalist track, declaring teacher-demo readiness. (D3' previously listed here is now resolved 2026-05-04; D3 demo-target choice remains deferred per DEC-20260504-002.)

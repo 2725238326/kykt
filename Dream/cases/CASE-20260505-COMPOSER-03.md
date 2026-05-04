@@ -8,6 +8,8 @@ This card is the **cost-asymmetric route_regret carrier**. Unlike cards 01 and 0
 
 case_id: CASE-20260505-COMPOSER-03
 
+**Status note (2026-05-04, cycle 010 launch)**: per `decisions/DEC-20260504-004-cross-spec-contract-v2.md`, the cross-spec signal contract was promoted from v1 to v2 at cycle 010 launch. v2 makes `route_regret` regime-typed AND cost-typed by adding a `cost_normalized` axis to `capability_match` and exposing `cost_adjusted_match` as an additional output (alpha = 0.5 initial; inferred). On this card, the **v2 (cost-adjusted) recommendation is the canonical reading**: input 1 -> Fast3R (cost-leaning); input 2 -> tied at alpha = 0.5, surfaces to Advisor via CR-4. The **v1 (capability-only) recommendation is preserved** in the Comparator Policies table (`dream_policy v1` row) and in this card's "Predicted Proxy Outcome" -> `predicted_dream_value` block, per Discipline rule 5 (Honesty Override); v1 picked MASt3R-SfM unconditionally on input 2. Below text is unchanged from the cycle 009 draft except for this status note and the CR-4 entry in "Cross-Spec Contract Usage (CR-6)" (updated to v2-canonical).
+
 proxy_id: P5
 
 scenario_name: Fast3R vs MASt3R-SfM capability_card pair across many-view-batch and sparse-view-pair regimes; KYKT job 20260425-113002 (Fast3R many-view) + paper example for MASt3R-SfM (no fresh job per spec line 280)
@@ -194,7 +196,7 @@ Recorded per Cross-Spec Signal Contract rule CR-6 (`paradigm/CROSS_SPEC_SIGNAL_C
 - CR-1 (Critic A5 reroute_model requires Composer agreement on capability_match spread): not exercised; this card is not the Critic-paired card. CR-1 closure for this regime would happen in a future Critic card targeting Fast3R-on-pair or MASt3R-SfM-on-many-view, neither of which is in cycle 009 scope.
 - CR-2: trivially honored.
 - CR-3: not Composer-owned; trivially honored.
-- CR-4 (Composer route_recommendation does not bind Critic on capability_match ties): **exercised in v2 framing**. The cost_adjusted spread at alpha = 0.5 is exactly 0 on input 2; CR-4 prevents Critic from binding on this tie. Under v1 framing, the recommendation is MASt3R-SfM by capability-only spread of 0.325 - no tie - and CR-4 does not need to fire. The card's CR-4 exercise is conditional on adopting v2.
+- CR-4 (Composer route_recommendation does not bind Critic on capability_match ties): **exercised under v2 (canonical)**. Per `decisions/DEC-20260504-004-cross-spec-contract-v2.md`, the contract was promoted to v2 at cycle 010 launch; CR-4 now arbitrates ties on the cost_adjusted spread routinely, and on this card the tie at alpha = 0.5 on input 2 is the canonical CR-4 firing. The v1 framing — where CR-4 only protected against rare exact ties on capability-only spread — is preserved in this card's "Comparator Policies" table (the `dream_policy v1` row) and in `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` "Superseded versions" section, but is no longer the canonical interpretation.
 - CR-5 (All cross-spec signals carry producer evidence label): honored. The proposed cost_normalized axis is recorded as a separate axis precisely to preserve its independent evidence_label (paper-proven from cost claims in respective papers; not flattened into the capability score).
 - CR-6 (cycle 009 case cards record contract usage): satisfied by this section + the v1 -> v2 candidate enumeration above.
 

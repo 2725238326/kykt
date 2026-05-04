@@ -101,11 +101,11 @@ What Permanence does NOT publish:
 
 ### Composer SPEC-20260504-001 publishes
 
-- `capability_card(model_id)`: per-model capability profile across input regimes (static pair, many-view, streaming, dynamic, sparse-view, etc.)
+- `capability_card(model_id)`: per-model capability profile across input regimes (static pair, many-view, streaming, dynamic, sparse-view, etc.). v2 adds a `cost_normalized` axis (paper-derived from per-paper cost claims; relative-ordering paper-proven, absolute scaling inferred).
 - `sample_regime_card(input)`: per-input regime classification
-- `capability_match(model_id, input)`: scalar match score in [0, 1] from card join
-- `route_recommendation(input)`: ordered list of model_ids from best to worst expected capability_match
-- `route_regret(chosen, input)`: gap between chosen model's match and best-known model's match
+- `capability_match(model_id, input)`: scalar match score in [0, 1] from card join. **v2**: now exposes both a capability-only spread and a `cost_adjusted_match` formed by weighting the capability-only spread with `cost_normalized` at `alpha = 0.5` (initial value, inferred). Consumers may use either; CR-4 arbitrates ties on the cost-adjusted spread under v2.
+- `route_recommendation(input)`: ordered list of model_ids from best to worst expected capability_match. Under v2, the ordering may flip vs v1 in cost-asymmetric regimes.
+- `route_regret(chosen, input)`: gap between chosen model's match and best-known model's match. Regime-typed AND cost-typed under v2 (was regime-typed only in v1).
 
 What Composer does NOT publish:
 
@@ -140,7 +140,9 @@ Rationale: Memory and Critic must remain falsifiable independently. If drift cou
 
 If Composer's top-1 and top-2 `capability_match` are within `epsilon_tie` (default 0.05; inferred), Composer publishes both as candidates. Critic's A5 reroute_model picks among them by Critic-internal preference (e.g. preference for already-cached models, or for models whose route_history has not been tried this window). Composer does not force the choice.
 
-Rationale: route_regret is informative as a spread, not as a forced ranking under noise.
+Under v2 (per `decisions/DEC-20260504-004-cross-spec-contract-v2.md`), CR-4 is the routine arbitration trigger for ties on `cost_adjusted_match` (the v2 cost-normalized spread). v1 framing — where CR-4 only protected against rare exact ties on capability-only spread — remains valid as a fallback, but the canonical CR-4 firing condition under v2 is a tie on the cost-adjusted spread within `epsilon_tie`.
+
+Rationale: route_regret is informative as a spread, not as a forced ranking under noise. Cost asymmetry produces ties in the cost-adjusted spread routinely (paper-derived; see `cases/CASE-20260505-COMPOSER-03.md` v2 row); CR-4 must arbitrate those, not just rare exact ties on capability alone.
 
 ### Rule CR-5: All cross-spec signals carry their producer's evidence label
 
@@ -152,7 +154,7 @@ Each cycle 009 case card must list which cross-spec signals it consumed and what
 
 ## Versioning
 
-This contract is versioned. The current version is **v1**.
+This contract is versioned. The current version is **v2**.
 
 Revision rules:
 
@@ -170,13 +172,41 @@ Each version records:
 
 When a new version supersedes an older one, the older version is preserved in this file under a "Superseded versions" section rather than deleted. Discipline rule 5 (Honesty Override): retracted contract clauses must be visible, not silently overwritten.
 
-## v1 Change Log
+## v2 Change Log
 
-- 2026-05-04 (cycle 008.5): initial contract drafted alongside `decisions/DEC-20260504-001-composer-finalist-upgrade.md`. v1 covers Critic / Memory / Permanence / Composer published signals and six conflict resolution rules. Not yet exercised. Cycle 009 case cards will be the first exercise.
+- 2026-05-04 (cycle 010 launch, sub-pass B): contract promoted from v1 to v2 per `decisions/DEC-20260504-004-cross-spec-contract-v2.md`. v2 adds a `cost_normalized` sub-axis to Composer's `capability_card` and exposes `cost_adjusted_match` as an additional output of `capability_match`. CR-4 commentary extended to record cost-adjusted ties as the canonical arbitration trigger. `route_regret` reframed from regime-typed to regime-typed AND cost-typed. v1 prose preserved verbatim under "Superseded versions". First exercising case card under v2: `cases/CASE-20260505-COMPOSER-03.md` (v2 row promoted to canonical recommendation; v1 row preserved). alpha = 0.5 is the initial inferred weight; future cycles may surface a v2.1 with a different alpha if paper-derived cost claims diverge from the assumed proxy.
+
+## v1 Change Log (closed; superseded by v2)
+
+- 2026-05-04 (cycle 008.5): initial contract drafted alongside `decisions/DEC-20260504-001-composer-finalist-upgrade.md`. v1 covers Critic / Memory / Permanence / Composer published signals and six conflict resolution rules. First exercise: cycle 009 case cards (`cycles/CYCLE-20260505-001.md` "Contract Usage Audit (S6)").
 
 ## Superseded Versions
 
-(none yet)
+### v1 (cycle 008.5 to cycle 009 closeout)
+
+The two text blocks that v2 modified are preserved here verbatim per Discipline rule 5 (Honesty Override). The rest of the v1 contract body — Purpose, Scope, Signal Owner Table, Per-SPEC Published Signals (Critic / Memory / Permanence rows), CR-1, CR-2, CR-3, CR-5, CR-6, Versioning rules, Out Of Scope, Companion Files — is identical between v1 and v2 and is not duplicated below.
+
+#### v1: Composer SPEC-20260504-001 publishes (capability_match line, before v2)
+
+```text
+- `capability_card(model_id)`: per-model capability profile across input regimes (static pair, many-view, streaming, dynamic, sparse-view, etc.)
+- `sample_regime_card(input)`: per-input regime classification
+- `capability_match(model_id, input)`: scalar match score in [0, 1] from card join
+- `route_recommendation(input)`: ordered list of model_ids from best to worst expected capability_match
+- `route_regret(chosen, input)`: gap between chosen model's match and best-known model's match
+```
+
+#### v1: CR-4 wording (before v2 routine-arbitration extension)
+
+```text
+### Rule CR-4: Composer route_recommendation does not bind Critic when capability_match is tied
+
+If Composer's top-1 and top-2 `capability_match` are within `epsilon_tie` (default 0.05; inferred), Composer publishes both as candidates. Critic's A5 reroute_model picks among them by Critic-internal preference (e.g. preference for already-cached models, or for models whose route_history has not been tried this window). Composer does not force the choice.
+
+Rationale: route_regret is informative as a spread, not as a forced ranking under noise.
+```
+
+v1 was active from 2026-05-04 (cycle 008.5 closeout) through 2026-05-04 (cycle 010 launch). All cycle 009 case cards (`cases/CASE-20260504-CRITIC-01..03.md` + `cases/CASE-20260505-COMPOSER-01..03.md`) were drafted under v1. The audit recording v1's full coverage is `cycles/CYCLE-20260505-001.md` "Contract Usage Audit (S6)".
 
 ## Out Of Scope For This Contract
 
