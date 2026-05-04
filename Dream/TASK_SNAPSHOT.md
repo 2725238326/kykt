@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 010 activation in flight: user authorized v2 contract upgrade + cycle 010 parallel ordering + agent-recommended D3 continued deferral; cycle 009 closed; cycle 010 case-card portfolio for Memory + Permanence to be drafted next)
+Last updated: 2026-05-04 (cycle 010 activation A1..A7 done = snapshot locked + DEC-004 v2 contract + DEC-005 cycle 010 launch + contract bumped to v2 + COMPOSER-03 v2 promoted + cycle 010 cycle log opened + Guidance File Sync Rule chain run; cycle 010 case-card drafting S2..S7 follows in `cycles/CYCLE-20260504-002.md`)
 
-Status: **in_progress** (cycle 010 activation pass running across 4 sub-passes A..D; case-card drafting S2..S7 follows)
+Status: **in_progress** (cycle 010 activation pass closed; cycle 010 case-card drafting subtask board now lives in `cycles/CYCLE-20260504-002.md`; this snapshot tracks cycle-level activation pass only)
 
 ## Why this file exists
 
@@ -24,7 +24,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 task_id:    cycle-010-activation
 phase:      Phase 1.5 (Research Workflow Deployment)
 cycle:      010 (case-card filling: Memory + Permanence parallel; v2 cost-typed route_regret active)
-status:     in_progress; sub-pass A done (snapshot locked); sub-pass B/C/D following
+status:     activation done (A1..A7); cycle 010 case-card drafting (S2..S7 in cycle log) is the next live phase
 ```
 
 One-line description:
@@ -47,12 +47,12 @@ line 231). Activation pass A..D running this turn.
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
 | A1 | Lock cycle 010 activation in this snapshot (status in_progress; subtask board; current task; If-interrupted-resume-from) | done | this file |
-| A2 | Write `decisions/DEC-20260504-004-cross-spec-contract-v2.md` recording v2 promotion + retained v1 prose | pending | `decisions/DEC-20260504-004-cross-spec-contract-v2.md` |
-| A3 | Edit `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` to v2: bump version markers; append v2 change log; preserve v1 prose under "Superseded versions" per Discipline rule 5 | pending | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` |
-| A4 | Edit `cases/CASE-20260505-COMPOSER-03.md` to mark v2 (cost-adjusted) recommendation as canonical; v1 row preserved as superseded | pending | `cases/CASE-20260505-COMPOSER-03.md` |
-| A5 | Write `decisions/DEC-20260504-005-cycle-010-launch.md` recording cycle 010 D-decisions (parallel ordering; D3 continued deferral with rationale; v2 active; D3' sub-field correction) | pending | `decisions/DEC-20260504-005-cycle-010-launch.md` |
-| A6 | Write `cycles/CYCLE-20260504-002.md` cycle log (cycle 010 header + subtask board G1/S1..S7 for case-card drafting; references DEC-004 + DEC-005) | pending | `cycles/CYCLE-20260504-002.md` |
-| A7 | Run Guidance File Sync Rule chain (RESEARCH_STATE / WORKFLOW_STATUS / INDEX / AGENT_MASTER_PROMPT / README) + final subtask board flip on this snapshot | pending | sync targets + this file |
+| A2 | Write `decisions/DEC-20260504-004-cross-spec-contract-v2.md` recording v2 promotion + retained v1 prose | done | `decisions/DEC-20260504-004-cross-spec-contract-v2.md` |
+| A3 | Edit `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` to v2: bump version markers; append v2 change log; preserve v1 prose under "Superseded versions" per Discipline rule 5 | done | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` (current version = v2) |
+| A4 | Edit `cases/CASE-20260505-COMPOSER-03.md` to mark v2 (cost-adjusted) recommendation as canonical; v1 row preserved as superseded | done | `cases/CASE-20260505-COMPOSER-03.md` (Identity status note + CR-4 entry under v2) |
+| A5 | Write `decisions/DEC-20260504-005-cycle-010-launch.md` recording cycle 010 D-decisions (parallel ordering; D3 continued deferral with rationale; v2 active; D3' sub-field correction) | done | `decisions/DEC-20260504-005-cycle-010-launch.md` |
+| A6 | Write `cycles/CYCLE-20260504-002.md` cycle log (cycle 010 header + subtask board G1/S1..S8 for case-card drafting; references DEC-004 + DEC-005) | done | `cycles/CYCLE-20260504-002.md` |
+| A7 | Run Guidance File Sync Rule chain (RESEARCH_STATE / WORKFLOW_STATUS / INDEX / AGENT_MASTER_PROMPT / README) + final subtask board flip on this snapshot | done | sync targets + this file (this row's flip is the closeout marker for the activation pass) |
 
 After A1..A7 complete, the next live pass is cycle 010's own S1..S7 case-card drafting (each card = one anti-F-001 sub-pass), tracked in `cycles/CYCLE-20260504-002.md` not here.
 

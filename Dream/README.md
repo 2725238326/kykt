@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout: 6 cards drafted under D1' parallel + D2' paper-derived; cross-spec contract usage audit recorded; cycle-010 launch decisions surfaced)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout + cycle 010 activation: cross-spec contract v2; cycle 010 launched for Memory + Permanence parallel L2 case-card drafting)
 
 ## Purpose
 

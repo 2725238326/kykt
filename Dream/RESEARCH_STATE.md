@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + cycle 009 case-card portfolio closeout: 6 cards drafted under D1' parallel + D2' paper-derived; cross-spec contract usage audit recorded; 3 v1 -> v2 candidates surfaced and 3 contract gaps recorded for cycle 010)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + cycle 009 case-card portfolio closeout + cycle 010 activation: cross-spec signal contract promoted to v2 per DEC-20260504-004; cycle 010 launched per DEC-20260504-005 to fill Memory + Permanence L2 cards in parallel; D3 continues deferred per agent decision until cycle 010 closeout; D3' sub-field stale claim corrected)
 
 ## User Intent
 

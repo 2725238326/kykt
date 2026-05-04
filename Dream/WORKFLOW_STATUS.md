@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout: 6 case cards drafted under D1' parallel + D2' paper-derived; cross-spec contract usage audit recorded; v1 -> v2 cost-typed route_regret candidate surfaced; 3 contract gaps recorded for cycle 010)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout + cycle 010 activation: cross-spec contract bumped to v2; cycle 010 launched to fill Memory + Permanence L2 cards in parallel; D3 continues deferred per agent decision; D3' sub-field stale claim corrected)
 
 ## Current Phase
 
@@ -65,7 +65,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Source registry | seeded | `registry/source_registry.md` |
 | Research unit registry | seeded | `registry/research_unit_registry.md` |
 | Decision registry | seeded | `registry/decision_registry.md` |
-| Cycle logs | active | `cycles/CYCLE-20260505-001.md` |
+| Cycle logs | active | `cycles/CYCLE-20260504-002.md` |
 | Experiment planning | seeded | `experiments/EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | Research content roadmap | active | `paradigm/RESEARCH_CONTENT_ROADMAP.md` |
@@ -77,11 +77,11 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Action taxonomy / proxy metrics | first compact pass (cycle 006); cycle 008.5 A5 split + supersede annotations applied | `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md` |
 | Proxy case-card template | active form; first portfolio populated in cycle 009 (6 cards: 3 Critic + 3 Composer, paper-derived) | `templates/proxy_case_card.md` + `cases/` |
 | Finalist mechanism spec template | populated for three finalists in cycle 008 | `templates/finalist_mechanism_spec.md` |
-| Geometry Critic finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived) | `specs/SPEC-20260503-001-geometry-critic.md` + `cases/CASE-20260504-CRITIC-01..03.md` |
-| Executive Memory finalist spec | draft (L1); L2 case cards scheduled for cycle 010 | `specs/SPEC-20260503-002-executive-memory.md` |
-| Dynamic Object Permanence finalist spec | draft (L1); L2 case cards scheduled for cycle 010 | `specs/SPEC-20260503-003-dynamic-object-permanence.md` |
-| 3R Composer finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived); v1 -> v2 cost-typed route_regret candidate surfaced from CASE-COMPOSER-03 | `specs/SPEC-20260504-001-3r-composer.md` + `cases/CASE-20260505-COMPOSER-01..03.md` |
-| Cross-spec signal contract | v1 active; first exercise complete in cycle 009 case cards (CR-1 closure via CRITIC-02 <-> COMPOSER-01 cross-pair; CR-3 forward-reference shape; CR-2 zero coverage recorded as gap G1) | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` + `cycles/CYCLE-20260505-001.md` "Contract Usage Audit (S6)" |
+| Geometry Critic finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived under v1 contract; v2 contract status: cards continue valid as drafted, no retroactive change) | `specs/SPEC-20260503-001-geometry-critic.md` + `cases/CASE-20260504-CRITIC-01..03.md` |
+| Executive Memory finalist spec | draft (L1); L2 case cards being drafted in cycle 010 under v2 contract | `specs/SPEC-20260503-002-executive-memory.md` |
+| Dynamic Object Permanence finalist spec | draft (L1); L2 case cards being drafted in cycle 010 under v2 contract | `specs/SPEC-20260503-003-dynamic-object-permanence.md` |
+| 3R Composer finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived); CASE-COMPOSER-03 v2 row promoted to canonical per DEC-20260504-004 | `specs/SPEC-20260504-001-3r-composer.md` + `cases/CASE-20260505-COMPOSER-01..03.md` |
+| Cross-spec signal contract | **v2 active** (per DEC-20260504-004): adds cost_normalized axis to capability_match; CR-4 arbitrates cost-adjusted ties routinely; v1 prose preserved under "Superseded versions". Cycle 009 cards exercised v1 (audit complete); cycle 010 cards drafted under v2 from day 1 | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` + `decisions/DEC-20260504-004-cross-spec-contract-v2.md` |
 | Literature guidance board | v1 active (INDEX + four SPINE + CRITICAL_NOTES + PAPER_RELATED_WORK_SKELETON) | `literature/INDEX.md` |
 | Work risk register | v1 active; consolidates per-spec + cross-spec risks | `planning/WORK_RISK_REGISTER.md` |
 | Demo storyboard template | active form; populated per finalist after demo authorization | `templates/demo_storyboard.md` |
@@ -109,41 +109,33 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 009 closed the case-card portfolio for Critic + Composer (6 cards under D1' parallel + D2' paper-derived). The cycle 008.5 follow-up gates D1 / D2 / D4 are locked; D3 remains deferred per `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md`.
-
-The cycle 009 closeout (`cycles/CYCLE-20260505-001.md` "Contract Usage Audit (S6)" + "Closeout (S7)") surfaces four cycle-010 launch decisions for the user:
+Cycle 010 has been launched (`decisions/DEC-20260504-005-cycle-010-launch.md`) under user authorization "进行吧" 2026-05-04. The cycle 008.5 follow-up gates D1 / D2 / D4 remain locked; the cycle-009-surfaced E1 / E2 / E3 / E4 are now resolved:
 
 ```text
-1. v2 cost-typed route_regret (CASE-COMPOSER-03 surfaced this candidate)
-   - adopt as v2 (regime-typed AND cost-typed; CR-4 starts firing routinely
-     in cost-asymmetric regimes; route_recommendation can flip vs v1)
-   - defer (keep v1; cost-axis remains an open research direction)
-   - fold into v1.x (treat the cost_normalized axis as a v1 documentation
-     extension rather than a versioned change)
-2. Cycle 010 ordering: Memory + Permanence cards in parallel, or Memory
-   first (Permanence's suppress_static_write originates from Permanence-
-   side, so Memory-first means CR-2 binding is read across cycle
-   boundaries).
-3. D3 (first teacher demo target): still deferrable. Cycle 009 paper-
-   derived case cards do not force D3; the user can lift the deferral
-   if desired, or keep it deferred until cycle 010 case-card data
-   exists.
-4. paradigm/TEACHER_AUDIENCE_PROFILE.md remaining sub-fields (Prior
-   Expectations / Demo Precedent / Previously Criticized) are still
-   empty by user choice. Populate, or keep empty (agent will not
-   invent).
+E1 (v2 cost-typed route_regret): adopted as v2 per DEC-20260504-004
+E2 (cycle 010 ordering):         parallel (Memory + Permanence)
+E3 (D3 first demo target):       agent-recommended continued deferral
+                                 to cycle 010 closeout
+E4 (D3' sub-field correction):   stale snapshot text fixed; profile
+                                 fully populated as of 2026-05-04
 ```
 
-Contract gaps recorded for cycle-010 closure (full list in `cycles/CYCLE-20260505-001.md` "Contract Usage Audit (S6)"):
+Active live decisions for the user this cycle: **none gating cycle 010 case-card drafting**. Drafting proceeds autonomously until cycle 010 closeout S8.
+
+User decisions surfaced for cycle 010 closeout (re-asked at S8, not now):
 
 ```text
-G1: CR-2 (Permanence suppress_static_write binding on Memory) has zero
-    coverage in cycle 009 by design (no Memory or Permanence card).
-    Cycle 010 Memory + Permanence cards are the closure path.
-G2: tau_spread = 0.05 in CR-1 closure is inferred, not measured.
-    Demo-observed grounding is a future-cycle question.
-G3: CR-4 only routinely exercises under v2 adoption; under v1 alone,
-    the cycle-009 portfolio shows no live tie to resolve.
+1. D3 first teacher demo target: cycle 010 closeout will re-surface this
+   once Memory + Permanence L2 cards exist. User can override the agent
+   defer-recommendation at any time by recording an override in
+   `decisions/DEC-20260504-006-d3-demo-target-pick.md` (id reserved in
+   DEC-20260504-005).
+2. Cycle 011 launch: cycle 010 closeout will surface a cycle-011
+   decision packet (likely scope: KYKT-job-derived Composer capability
+   cards if the cycle-010 v2 audit identifies a gap, OR L3 prototype
+   authorization for the strongest L2 finalist if L2 evidence supports
+   that move; the L3 path remains gated on user approval per
+   `AGENT_MASTER_PROMPT.md` section 6).
 ```
 
 Still blocked on user approval (unchanged from prior cycles):

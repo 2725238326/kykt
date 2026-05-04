@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout: 6 case cards drafted under D1' parallel + D2' paper-derived; cross-spec contract usage audit recorded; v1 -> v2 cost-typed route_regret candidate surfaced; cycle-010 launch decisions surfaced for the user)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout + cycle 010 activation: cross-spec contract bumped to v2 per DEC-20260504-004; cycle 010 launched per DEC-20260504-005 for Memory + Permanence parallel L2 case-card drafting; D3 continues deferred per agent decision)
 
 Status: canonical entry prompt for Dream research agents.
 

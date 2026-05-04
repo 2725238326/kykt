@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio: 3 Critic + 3 Composer cards drafted under D1' parallel + D2' paper-derived; new `cases/` subsection added)
+Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio + cycle 010 activation: cross-spec contract bumped to v2; cycle 010 launched to fill Memory + Permanence L2 cards in parallel; new DEC-004 / DEC-005 + cycle log CYCLE-20260504-002)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
