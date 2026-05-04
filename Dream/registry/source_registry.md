@@ -1,6 +1,6 @@
 # Source Registry
 
-Last updated: 2026-05-04 (cycle 008.5: SPINE Anchor Map appended for symmetric navigation between inventory and literature guidance board)
+Last updated: 2026-05-05 (cycle 013 source mining pass: 7 new SRC entries SRC-2026-009..015 covering MapAnything / Julian Ost AAAI-2026 driving permanence / tttLRM / awesome-dust3r / DUSt3R-MASt3R-VGGT MVS evaluation / NTIRE 2026 / VGGT)
 
 Status: seeded from Phase 1 source map. This file is the lightweight index; detailed notes stay in `sources/FRONTIER_SOURCE_MAP.md` and cycle logs.
 
@@ -68,6 +68,13 @@ linked_units:
 | SRC-2024-017 | FisherRF | https://arxiv.org/abs/2311.17874 | 2023/2024 | architecture_transfer | paper, code, ECCV | Fisher-information active view selection and uncertainty for radiance fields | A8 view-gain anchor | future active-perception unit |
 | SRC-2024-018 | ActiveSplat | https://arxiv.org/abs/2410.21955 | 2024 | architecture_transfer | paper, project, RA-L | active mapping, view selection, path planning on 3DGS | A8 active-3DGS anchor | future active-perception unit, RU-008 |
 | SRC-2024-019 | ActiveGS | https://arxiv.org/abs/2412.17769 | 2024 | architecture_transfer | paper | active scene reconstruction using Gaussian splatting | A8 comparator | future active-perception unit |
+| SRC-2026-009 | MapAnything | https://arxiv.org/abs/2509.13414 | 2026 | direct_3r | paper (v3 Jan 2026) | universal feed-forward metric 3D reconstruction; references spatial-memory 3R | Composer regime comparator; verify regime label compression at L3 | RU-002, RU-014 |
+| SRC-2026-010 | Julian Ost AAAI-2026 driving permanence | https://www.ostjul.com/ | 2026 | dynamic_4d | paper, project page | scene-graph driving generation with explicit object permanence + causal NVS | Permanence positioning anchor; deconfuse name-collision in CRITICAL_NOTES.md | RU-013 |
+| SRC-2026-011 | tttLRM | https://github.com/cwchenwang/tttLRM | 2026 | architecture_transfer | paper, code, project page (CVPR 2026) | test-time training for long-context autoregressive 3D reconstruction | Critic + Memory bridge; long-context successor to Test3R / TTT3R | RU-001, RU-003, RU-011, RU-012 |
+| SRC-2026-012 | awesome-dust3r curated index | https://github.com/ruili3/awesome-dust3r | 2025/2026 | meta-index | code-curated index | regularly-updated DUSt3R/MASt3R follow-up index (VGGT, MASt3R-SLAM, Light3R-SfM, π³, MoGe-2, STream3R, Dens3R, ViPE, ...) | meta-resource for ongoing mining; pull individual rows when specific gap appears | n/a |
+| SRC-2026-013 | DUSt3R/MASt3R/VGGT MVS evaluation | https://www.tandfonline.com/doi/full/10.1080/10095020.2025.2597491 | 2025 | benchmark / evaluation | paper | empirical MVS evaluation across DUSt3R + MASt3R + VGGT on high-res + multi-camera videos | Composer capability_card sanity check at L3 | RU-002, RU-014 |
+| SRC-2026-014 | NTIRE 2026 3D Restoration and Reconstruction Challenge | https://www.codabench.org/competitions/13854/ | 2026 | benchmark / challenge | challenge page | CVPR NTIRE 2026 challenge track | venue-positioning anchor for Phase 2 paper writing; no Dream commitment to participate | n/a |
+| SRC-2026-015 | VGGT | https://github.com/facebookresearch/vggt | 2025 | direct_3r | code (Meta open-source) | feed-forward visual-geometry transformer | Composer comparator gap (cycle 009 + 012 cards do NOT include VGGT row); v2.2 capability_card schema candidate for cycle 014+ | RU-002, RU-014 |
 
 ## Cycle 008.5 SPINE Anchor Map
 

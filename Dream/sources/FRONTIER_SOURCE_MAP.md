@@ -1,6 +1,6 @@
 # Frontier Source Map
 
-Last updated: 2026-05-04 (cycle 008.5: SPINE Anchor Map appended at end for symmetric navigation with `registry/source_registry.md`)
+Last updated: 2026-05-05 (cycle 013 source mining pass appended at end: 8 newly mined sources covering Mem3R / MapAnything / Julian Ost AAAI-2026 driving permanence / tttLRM CVPR-2026 / awesome-dust3r curated index / DUSt3R-MASt3R-VGGT MVS evaluation / NTIRE 2026 challenge / VGGT comparator)
 
 This is the first-pass source map for Dream Phase 1. It prioritizes primary sources: arXiv, CVF/OpenReview, official project pages, and official GitHub repositories.
 
@@ -259,3 +259,65 @@ Cross-cutting notes:
 - Mixture-of-experts and routing literature in the language / vision domains is intentionally left without a registry ID. Its evidence label in `literature/SPINE_COMPOSER.md` is `inferred`, owned by that SPINE file, and is not promoted to inventory rows here.
 
 No new sources are added by this section; no evidence label or Dream-relevance text above is changed by this section.
+
+## Cycle 013 Source Mining Pass (2026-05-05)
+
+Targeted mining for cycle-013 Phase-2 prep. Focus on coverage gaps not already covered by SPINE files: (i) the most recent 2026 streaming-memory + dynamic-permanence + test-time-training papers, (ii) external curated indexes that catch what individual searches miss, (iii) benchmarks / challenges Dream may want to position against. Web-derived; URL-verified at mining time.
+
+### Cycle 013 newly mined sources
+
+| Source | Year | Tag | Mechanism | Evidence | Dream relevance |
+|---|---:|---|---|---|---|
+| [Mem3R](https://arxiv.org/abs/2604.07279) | 2026 | direct_3r / memory | Hybrid memory streaming 3R: implicit MLP fast-weight memory (camera tracking via Test-Time Training, LaCT-inspired) decoupled from explicit token memory (geometry); 793M -> 644M params; outperforms CUT3R on long sequences | paper | **High**: directly relevant to Memory finalist (SPEC-20260503-002) — concrete instance of "decouple tracking-state from mapping-state", a candidate Memory L3 ablation axis; supersedes some claims in `cases/CASE-20260504-MEMORY-02.md` Spann3R-vs-Dream framing because Mem3R is a closer contemporaneous comparator. Add to SPINE_MEMORY required reading at next SPINE refresh. |
+| [MapAnything (v3 Jan 2026)](https://arxiv.org/abs/2509.13414) | 2026 | direct_3r | Universal feed-forward metric 3D reconstruction; references spatial-memory 3R approaches | paper | **Medium**: comparator for Composer's regime classification (it claims universal coverage; if true that compresses regime axes Composer relies on; needs careful regime label re-check at L3 time). Add to SPINE_COMPOSER advanced reading. |
+| [Julian Ost AAAI-2026 (driving scenes)](https://www.ostjul.com/) | 2026 | dynamic_4d | Generates large-scale 3D driving scenes with explicit object permanence + causal NVS; scene-graph decomposition with object transforms | paper, project page | **Medium**: directly cites "object permanence" terminology — name-collision with Permanence finalist, useful for related-work positioning ("explicit-permanence in driving generation vs. action-set permanence in Dream"). Add to SPINE_PERMANENCE advanced reading; deconfuse in `literature/CRITICAL_NOTES.md`. |
+| [tttLRM (CVPR 2026)](https://cwchenwang.github.io/tttLRM/) / [GitHub](https://github.com/cwchenwang/tttLRM) | 2026 | architecture_transfer | Test-time training for long-context autoregressive 3D reconstruction | paper, code | **High**: bridges Memory + Critic finalist concerns. Cycle-009 CRITIC-03 cites Test3R / TTT3R as anchors; tttLRM is the long-context successor. Add to SPINE_CRITIC + SPINE_MEMORY at next refresh. |
+| [awesome-dust3r](https://github.com/ruili3/awesome-dust3r) | 2025/2026 | meta-index | Curated, regularly updated list of DUSt3R/MASt3R follow-ups (VGGT, MASt3R-SLAM, Light3R-SfM, π³, MoGe-2, STream3R, Dens3R, ViPE, ...) | code-curated index | **High**: meta-resource for ongoing source mining. Cycle-013 does NOT inline-cite all entries (would violate Discipline rule 3 Surgical Edits); instead cite the index as the inventory anchor and let cycle-014+ pull individual rows when a specific gap appears. |
+| [DUSt3R / MASt3R / VGGT MVS evaluation (Taylor & Francis 2025)](https://www.tandfonline.com/doi/full/10.1080/10095020.2025.2597491) | 2025 | benchmark / evaluation | Empirical evaluation of DUSt3R + MASt3R + VGGT on a multi-view stereo benchmark with high-res images and multi-camera videos | paper | **Medium**: external comparator-evaluation work; useful for Composer's capability_card sanity check at L3 time. Add to SPINE_COMPOSER advanced reading. |
+| [NTIRE 2026 3D Restoration and Reconstruction Challenge](https://www.codabench.org/competitions/13854/) | 2026 | benchmark / challenge | CVPR NTIRE 2026 challenge track | challenge page | **Low/Medium**: positioning anchor — a public benchmark Dream may target if Phase 2 paper writing aims for venue alignment. Recorded as inventory; no Dream commitment to participate. |
+| [VGGT](https://github.com/facebookresearch/vggt) | 2025 | direct_3r | Feed-forward visual-geometry transformer; named in DUSt3R/MASt3R/VGGT evaluation paper above as a current SOTA comparator | code (Meta open-source; not Read by agent in cycle 013) | **Medium**: comparator the existing Composer capability_card may have undercounted (cycle 009 + 012 Composer cards do NOT include VGGT row). Surface as a v2.2 capability_card schema gap candidate for cycle 014+. |
+
+### Cycle 013 mining methodology + boundary
+
+```text
+methodology:
+  - Web search with queries scoped to 2026 + finalist-relevant
+    keywords (streaming pointmap memory; dynamic scene + object
+    permanence; test-time training + critic; DUSt3R follow-up
+    benchmark).
+  - Filter: keep results that name a specific paper / repo / page
+    URL + a concrete mechanism claim. Drop blog posts, marketing
+    pages, single-tweet announcements.
+  - Cross-check: avoid duplicating any source already in cycle-005
+    or cycle-008.5 SPINE Anchor Map sections above.
+  - Time-bound: cycle 013 was a single mining pass within the cycle.
+    Comprehensive coverage is NOT claimed; this is a targeted top-up,
+    not a re-do of cycle 005.
+
+boundary:
+  - Each newly mined source is `paper` / `code` / `code-curated index` /
+    `challenge page` evidence-labeled. None is `demo-observed` or
+    `measured` because the agent did not run any of them.
+  - Dream-relevance text reflects positioning judgment, not
+    measurement; per Discipline rule 5 (Honesty Override) those
+    text values are themselves `inferred`.
+  - SPINE files are NOT retroactively edited in cycle 013 to fold in
+    the new sources. The "add at next refresh" pointer is a deferred
+    queue, not a closed action. Surgical Edits rule.
+  - `registry/source_registry.md` gets new SRC-* rows for the cycle-013
+    sources via a separate sync-pass Edit.
+```
+
+### Coverage gaps cycle 013 did NOT close
+
+```text
+- Active perception (F4): cycle 013 did not mine; consistent with
+  Active Perception finalist still un-promoted.
+- Cross-modal (F5) beyond what cycle 005 already mined: cycle 013
+  did not extend; Cross-Modal finalist also un-promoted.
+- Real-time / latency benchmarks: not surfaced (no targeted query;
+  Composer's cost_normalized axis remains paper-derived per
+  COMPOSER-04).
+- Code-execution-derived evidence: out of scope by cycle-013
+  authorization (markdown + inventory only).
+```
