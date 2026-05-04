@@ -1,6 +1,6 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 008.5 inventory-sync sub-pass closed; mandatory-load + sync-rule integration completed; "Working rules to avoid F-001" section added; gating on user cycle 009 launch authorization)
+Last updated: 2026-05-04 (pre-cycle-009 prep sub-pass: launch package + audit recorded; cycle 009 itself still gated on user D4'; mandatory-load + sync-rule integration completed; "Working rules to avoid F-001" section added)
 
 Status: **idle, awaiting user decision**
 
@@ -36,33 +36,55 @@ Cycle 009 (case-card filling) is gated on user "go" + the four open decision
 points listed in WORKFLOW_STATUS.md "Recommended Next User Decision".
 ```
 
-## Subtask board (latest pass: inventory-sync sub-pass, 2026-05-04)
+## Subtask board (latest pass: pre-cycle-009 launch package prep, 2026-05-04)
 
 | ID | Subtask | Status | Canonical artifact |
 |---|---|---|---|
-| S1 | Append Cycle 008.5 SPINE Anchor Map to `registry/source_registry.md` | done | section at end of file |
-| S2 | Append symmetric SPINE Anchor Map to `sources/FRONTIER_SOURCE_MAP.md` | done | section at end of file |
-| S3 | Update `units/REPRODUCTION_READINESS_MATRIX.md`: dormancy + finalist mapping + cycle 008 source-mining P3 additions + wake-up conditions | done | sections appended after Subagent Merge Notes |
-| S4 | Update `logs/QUESTION_LOG.md`: Catchup Gap Note + Round 10 (cycle 008.5 user direction block) | done | top + bottom of file |
-| S5 | Sync timestamps + sub-pass section in `AGENT_MASTER_PROMPT.md` / `README.md` / `INDEX.md` / `WORKFLOW_STATUS.md` / `RESEARCH_STATE.md` / `cycles/CYCLE-20260504-001.md` | done | last-updated lines + new subsections |
-| S6 | Verify SPINE map symmetry; no orphan files; no duplicate Round IDs; no fabricated evidence labels | done | manual + grep verification recorded in cycle log |
+| S1 | Pre-launch audit: scan `specs/`, `paradigm/`, `planning/` for `TODO` / `TBD` / `FIXME` / `XXX` | done | 0 hits; recorded in `planning/CYCLE_009_LAUNCH_PACKAGE.md` "Pre-launch audit findings" |
+| S2 | Cross-spec contract v1 structural sanity check | done | Purpose / Scope / Signal Owner Table / Per-SPEC Published Signals (all 4) / 6 Conflict Resolution Rules / Versioning all present; recorded in same file |
+| S3 | Spec -> contract back-reference scan; record asymmetry as cosmetic note CR-A1 | done | Composer spec links back; Critic / Memory / Permanence (drafted before contract) do not; recorded in same file as cosmetic, not blocking |
+| S4 | Verify `paradigm/TEACHER_AUDIENCE_PROFILE.md` is a complete fill-in form (not invented content) | done | 7 user-input sections with example option menus already in place; agent must not populate |
+| S5 | Draft cycle 009 subtask board skeleton under default D1'/D2' (parallel Composer + Critic, paper-derived) with conditional branches for sequential and paper+job-derived | done | `planning/CYCLE_009_LAUNCH_PACKAGE.md` "Cycle 009 subtask board skeleton" |
+| S6 | Document activation procedure for the moment user `go` on D4' arrives | done | same file, "Activation procedure when user `go` arrives" |
+| S7 | Update this `TASK_SNAPSHOT.md`: Last updated stamp + Last completed task pass + this subtask board | done | this file |
 
 ## Last completed task pass
 
 ```text
-pass_name:        Cycle 008.5 inventory-sync sub-pass
+pass_name:        Pre-cycle-009 launch package prep sub-pass
 date:             2026-05-04
-trigger:          continuation after a 32 MB request-limit failure in the
-                  prior session interrupted the same sub-pass mid-edit
-files_modified:   AGENT_MASTER_PROMPT.md, INDEX.md, README.md,
+trigger:          continuation immediately after the cycle 008.5
+                  inventory-sync sub-pass closed; user asked for "next
+                  step" but explicitly deferred decisions D1'..D4', so
+                  this sub-pass executed only the work that does NOT
+                  require those decisions
+files_modified:   TASK_SNAPSHOT.md (this file; subtask board + Last
+                  completed task pass + Last updated)
+new_artifacts:    planning/CYCLE_009_LAUNCH_PACKAGE.md
+                    - pre-launch audit (TODO/TBD scan clean across
+                      specs and paradigm; cross-spec contract v1
+                      structurally complete; spec -> contract back-
+                      reference asymmetry recorded as cosmetic note
+                      CR-A1, not blocking)
+                    - cycle 009 subtask board skeleton under default
+                      D1'/D2' (parallel Composer + Critic, paper-
+                      derived only); branches for sequential and for
+                      paper+job-derived recorded
+                    - activation procedure for when user `go` arrives
+discipline:       Surgical Edits + Honesty Override; no spec edits;
+                  no cycle 009 case-card filling; no
+                  TEACHER_AUDIENCE_PROFILE invention; no decision-
+                  packet duplication beyond pointers
+
+prior_pass_name:  Cycle 008.5 inventory-sync sub-pass
+prior_pass_date:  2026-05-04
+prior_pass_files: AGENT_MASTER_PROMPT.md, INDEX.md, README.md,
                   RESEARCH_STATE.md, WORKFLOW_STATUS.md,
                   cycles/CYCLE-20260504-001.md, logs/QUESTION_LOG.md,
                   registry/source_registry.md,
                   sources/FRONTIER_SOURCE_MAP.md,
-                  units/REPRODUCTION_READINESS_MATRIX.md
-new_artifacts:    none (this pass appends sections only)
-discipline:       Surgical Edits + Honesty Override; no retro-renumbering;
-                  no evidence-label changes; no reproduction authorization
+                  units/REPRODUCTION_READINESS_MATRIX.md,
+                  TASK_SNAPSHOT.md (introduced)
 ```
 
 ## If interrupted, resume from
