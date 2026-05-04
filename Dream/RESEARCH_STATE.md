@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-05 (cycle 011 launched + closed at content level: D3 first teacher demo target locked to Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active with forward-reference null protocol formalized; Critic demo storyboard STORY-20260505-001 drafted; showing NOT authorized)
+Last updated: 2026-05-05 (cycle 012 fully closed: KYKT-metadata-derived COMPOSER-04 case card + 3 finalist demo storyboards (Memory + Permanence + Composer; all draft) per DEC-20260505-002; G2 advanced inferred -> inferred-with-real-inventory-anchor; v2.1 unchanged; all 4 finalists now have draft demo storyboards; D3 = Critic per cycle 011 unchanged)
 
 ## User Intent
 
@@ -1585,3 +1585,107 @@ F-001 working rules:           snapshot-first sync chain; narrow Reads; Edit ove
 cycle 012 launch decisions to surface in S8 are recorded in `cycles/CYCLE-20260505-002.md` "Closeout (S7)" cycle-012 launch packet (storyboard reviewer pass; cycle 012 scope with 6 options; v2.1 -> v2.2 candidates — none this cycle; blocked items with demo-showing added). Cycle 012 is gated on user decisions.
 
 This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, Critic demo showing, or any thesis selection.
+
+## Cycle 012 Launch + Closeout (CYCLE-20260505-003)
+
+Cycle 012 launched 2026-05-05 on user delegation "你给我规划吧，然后弄完后告诉我我们的工作做了哪些？" and closed the same day (S2..S8 done in one continuous pass).
+
+Three launch decisions locked in `decisions/DEC-20260505-002-cycle-012-launch.md`:
+
+```text
+(1) Storyboard reviewer pass = NOT done in cycle 012. Deferred to demo-
+    show-authorization moment. All 4 storyboards remain `draft`
+    unchanged.
+
+(2) Cycle 012 scope = (c) KYKT-metadata-derived COMPOSER-04 + (e) 3
+    finalist demo storyboards (Memory + Permanence + Composer; all
+    markdown only; all draft). Options (a) close G6 / (b) close G2 /
+    (d) request demo show authorization / (f) start paper related-
+    work writing all deferred (gated or premature).
+
+(3) v2.1 -> v2.2 = NO revision. Both deferred candidates from cycle 011
+    (8x8 grid partition for Permanence regions; identity_consistency
+    threshold pinning at ~0.7) remain deferred. COMPOSER-04 fits
+    cleanly into existing v2 schema; no new sub-axis needed.
+```
+
+artifacts produced (6 new):
+
+```text
+new:
+  decisions/DEC-20260505-002-cycle-012-launch.md
+  cycles/CYCLE-20260505-003.md
+  cases/CASE-20260505-COMPOSER-04.md  (KYKT-metadata-derived; first
+                                       non-paper-derived Composer
+                                       L2 card; advances G2 toward
+                                       inferred-with-real-inventory-
+                                       anchor; does NOT close G2)
+  storyboards/STORY-20260505-002-memory.md      (status: draft)
+  storyboards/STORY-20260505-003-permanence.md  (status: draft)
+  storyboards/STORY-20260505-004-composer.md    (status: draft)
+in-place:
+  (none in cycle 012; cycle 011 artifacts unchanged)
+sync-pass:
+  TASK_SNAPSHOT.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md (this
+  section), INDEX.md (storyboards rows + COMPOSER-04 row),
+  AGENT_MASTER_PROMPT.md, README.md, registry/decision_registry.md
+  (DEC-20260505-002 row added)
+```
+
+storyboard portfolio after cycle 012:
+
+```text
+STORY-20260505-001-critic.md       (cycle 011; D3 first demo target; draft)
+STORY-20260505-002-memory.md       (cycle 012; draft)
+STORY-20260505-003-permanence.md   (cycle 012; draft)
+STORY-20260505-004-composer.md     (cycle 012; draft)
+All 4 finalists now have markdown demo storyboards. None authorized
+for showing. Critic remains the D3 first demo target per cycle 011
+DEC-001.
+```
+
+gap status after cycle 012:
+
+```text
+G1 (CR-2 zero coverage)                              : closed cycle 010
+G2 (tau_spread = 0.05 in CR-1 closure inferred)      : ADVANCED cycle 012
+                                                       inferred ->
+                                                       inferred-with-
+                                                       real-inventory-
+                                                       anchor (NOT
+                                                       closed; closure
+                                                       still gated on
+                                                       measured
+                                                       route_regret)
+G3 (CR-4 v1 dormancy)                                : closed cycle 010
+G4 (CR-2 partial on synthetic clip)                  : closed cycle 011
+G5 (forward-reference null protocol not pinned)      : closed cycle 011
+G6 (Memory governance on Spann3R internal-memory)    : deferred (gated)
+```
+
+contract version trajectory (unchanged from cycle 011):
+
+```text
+v1     (cycle 008.5)  : initial
+v2     (cycle 010)    : cost_normalized + cost_adjusted_match
+v2.1   (cycle 011)    : forward-reference null protocol formalized
+                        (no v2.2 candidates surfaced in cycle 012)
+```
+
+discipline rollup:
+
+```text
+rule 1 (Falsifiability):       cycle 012 fail-fast (a)..(f) checked; none triggered.
+rule 2 (Minimum Viable Mechanism): no new finalists / specs / proxy metrics.
+rule 3 (Surgical Edits):       every cycle-012 artifact traces to DEC-002 (1)/(2)/(3) or Sync Rule.
+rule 4 (Falsifiable Goals):    F6 primary (Composer); F1/F2/F3 carry forward via storyboards.
+rule 5 (Honesty Override):     KYKT-metadata-derived label distinct from measured;
+                               G2 advanced not closed; storyboards `draft`; no smuggled
+                               showing authorization.
+F-001 working rules:           snapshot-first sync; Edit over Write for sync targets;
+                               4 large new artifacts batched into 1 commit.
+```
+
+cycle 013 launch decisions surfaced in S8 user-facing total-work report (D3 reconsideration option / cycle 013 scope a..f / v2.2 candidates none / blocked items with demo-showing extended to all 4 storyboards). Cycle 013 is gated on user decisions OR user may hold the project at this state.
+
+This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, demo showing of any of the 4 storyboards, or any thesis selection.

@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-05 (cycle 011 launched + closed at content level: D3 first teacher demo target = Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active; storyboards/ subdir created with STORY-20260505-001-critic.md as draft; showing NOT authorized)
+Last updated: 2026-05-05 (cycle 012 fully closed: KYKT-metadata-derived COMPOSER-04 case card + 3 finalist demo storyboards (Memory + Permanence + Composer; all draft) per DEC-20260505-002; G2 advanced inferred -> inferred-with-real-inventory-anchor; v2.1 unchanged; all 4 finalists now have draft demo storyboards; D3 = Critic per cycle 011 unchanged)
 
 ## Purpose
 

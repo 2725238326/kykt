@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-05 (cycle 011 fully closed: D3 first teacher demo target = Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active; storyboard is `draft`, showing NOT authorized; sync chain run; S8 user-facing report shipped)
+Last updated: 2026-05-05 (cycle 012 fully closed: COMPOSER-04 KYKT-metadata-derived case card + 3 finalist demo storyboards (Memory + Permanence + Composer; all draft) per DEC-20260505-002; G2 advanced inferred -> inferred-with-real-inventory-anchor; v2.1 unchanged; all 4 finalists now have draft demo storyboards; sync chain run; S8 total-work report shipped)
 
-Status: **idle** (cycle 011 closed; awaiting cycle 012 launch user decisions surfaced in S8 report — storyboard reviewer pass + cycle 012 scope + demo show authorization gate)
+Status: **idle** (cycle 012 closed; awaiting user direction for cycle 013 OR project hold)
 
 ## Why this file exists
 
@@ -21,95 +21,90 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-011
+task_id:    cycle-012
 phase:      Phase 1.5 (Research Workflow Deployment)
-cycle:      011 (Critic demo storyboard draft + G4/G5 closure + v2.1 forward-reference null protocol formalization)
-status:     in_progress; cycle 011 S1..S7 done; S8 user-facing surfacing pending
+cycle:      012 (KYKT-metadata-derived COMPOSER-04 + 3 finalist demo storyboards Memory/Permanence/Composer)
+status:     idle (cycle 012 closed; awaiting user direction for cycle 013 OR project hold)
 ```
 
 One-line description:
 
 ```text
-User delegated cycle-011 launch decisions (1)(2)(3) to the agent on
-2026-05-05 ("你给我决定吧，（1）（2）（3）"). Agent locked: (1) D3 first
-teacher demo target = Geometry Critic; (2) cycle 011 scope = G4 + G5
-closure (primary) + Critic demo storyboard draft (secondary); (3) v2 ->
-v2.1 additive contract revision (forward-reference null protocol
-formalization). G6 + G2 + KYKT-derived Composer card + L3 prototype +
-paper writing all explicitly deferred. Cycle 011 produced 3 new
-artifacts (DEC-001 + cycle log + storyboard) + 1 contract revision
-(v2.1 additive) + 1 in-place case-card edit (PERMANENCE-03 G4 closure).
-Storyboard status: draft only; no showing authorization. S8
-user-facing surfacing remains.
+User delegated cycle-012 planning to the agent on 2026-05-05 ("你给我
+规划吧，然后弄完后告诉我我们的工作做了哪些？"). Agent locked: (1)
+storyboard reviewer pass NOT done in cycle 012 (deferred to demo-show-
+authorization moment); (2) cycle 012 scope = (c) KYKT-metadata-derived
+COMPOSER-04 + (e) 3 finalist demo storyboards Memory/Permanence/
+Composer; (3) v2.1 -> v2.2 NO revision. Cycle 012 produced 6 new
+artifacts (DEC-002 + cycle log + 1 case card + 3 storyboards). G2
+advanced from `inferred` to `inferred-with-real-inventory-anchor`
+(NOT closed; closure still gated). All 4 finalists now have draft
+demo storyboards (Critic from cycle 011; Memory/Permanence/Composer
+from cycle 012); none authorized for showing. D3 first demo target
+remains Critic per cycle 011 DEC-001.
 ```
 
-## Subtask board (latest pass: cycle 011 launch + closeout, 2026-05-05)
+## Subtask board (latest pass: cycle 012 launch + closeout, 2026-05-05)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| A | Activation pass: write `decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-target.md` + `cycles/CYCLE-20260505-002.md` + checkpoint commit | done | commit `da7b3b1` |
-| S1 | Skim `templates/demo_storyboard.md` + cycle-009 CRITIC-01..03 to confirm storyboard panel candidates (CRITIC-02 Fast3R-vs-Spann3R locked as Panel A primary) | done | (in-context only) |
-| S2 | Draft `storyboards/STORY-20260505-001-critic.md` (status: draft; functional vs placeholder labeled; acceptance-for-showing left unchecked) | done | `storyboards/STORY-20260505-001-critic.md` (commit `901f62c`) |
-| S3 | G4 closure: in-place edit on `cases/CASE-20260504-PERMANENCE-03.md` documenting CR-2 consumer-side forward-reference null under v2.1 protocol | done | PERMANENCE-03 CR-2 entry (commit `901f62c`) |
-| S4 | v2 -> v2.1 additive contract revision: "Forward-reference null protocol" subsection + v2.1 Change Log entry on `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` | done | CROSS_SPEC_SIGNAL_CONTRACT.md (commit `901f62c`) |
-| S5 | Update DEC-20260505-001 if any cycle-011 deviation needs Honesty Override recording | done (no deviation) | DEC body unchanged; G4 chose form-1 which DEC-001 (2) listed as one of the budget-friendly options |
-| S6 | Cycle 011 contract usage audit under v2.1: confirm v2.1 protocol exercise; G4 + G5 closure status; v2 substance unchanged; storyboard claims labeled | done | `cycles/CYCLE-20260505-002.md` "Contract Usage Audit (S6) under v2.1" |
-| S7 | Cycle 011 closeout: write closeout section in cycle log; sync chain (this snapshot first; then WORKFLOW_STATUS / RESEARCH_STATE / INDEX / AGENT_MASTER_PROMPT / README) | done | `cycles/CYCLE-20260505-002.md` "Closeout (S7)" + sync targets (commit `a1ea464`) |
-| S8 | Surface cycle-011 outputs to user; ask for cycle-012 launch decisions (storyboard reviewer pass; cycle 012 scope; demo show authorization gate) | done | user-facing message (this turn) |
+| A | Activation pass: write `decisions/DEC-20260505-002-cycle-012-launch.md` + `cycles/CYCLE-20260505-003.md` + checkpoint commit | done | commit `526577e` |
+| S2 | Draft `cases/CASE-20260505-COMPOSER-04.md` (KYKT-metadata-derived; advances G2 toward inferred-with-real-inventory-anchor; does NOT close G2) | done | commit `6ab113f` |
+| S3 | Draft `storyboards/STORY-20260505-002-memory.md` (status: draft) | done | commit `6ab113f` |
+| S4 | Draft `storyboards/STORY-20260505-003-permanence.md` (status: draft) | done | commit `6ab113f` |
+| S5 | Draft `storyboards/STORY-20260505-004-composer.md` (status: draft) | done | commit `6ab113f` |
+| S6 | Cycle 012 contract usage audit under v2.1: COMPOSER-04 contract usage + storyboards' linked_artifacts trace + G2 status update + v2.2 candidate enumeration + Honesty Override check | done | `cycles/CYCLE-20260505-003.md` "Contract Usage Audit (S6) under v2.1" |
+| S7 | Cycle 012 closeout: write closeout section in cycle log; sync chain (this snapshot first; then WORKFLOW_STATUS / RESEARCH_STATE / INDEX / AGENT_MASTER_PROMPT / README / decision_registry) | done | `cycles/CYCLE-20260505-003.md` "Closeout (S7)" + this sync pass |
+| S8 | Surface cycle-012 outputs to user as a total-work report covering all cycles done in this conversation | done | user-facing message (this turn) |
 
 ## Last completed task pass
 
 ```text
-pass_name:        Cycle 011 launch + closeout pass (A + S1..S7 done in
-                  one resumed conversation; S8 user-facing surfacing
-                  remains)
+pass_name:        Cycle 012 launch + closeout pass (A + S2..S7 done in
+                  one continuous conversation; S8 user-facing total-work
+                  report shipped)
 date:             2026-05-05
-trigger:          User message "你给我决定吧，（1）（2）（3）" delegating
-                  the three cycle-011 launch decisions surfaced in
-                  cycle 010 S8 to the agent.
+trigger:          User message "你给我规划吧，然后弄完后告诉我我们的
+                  工作做了哪些？" — delegated cycle-012 planning to the
+                  agent and asked for a total-work report.
 files_modified:   TASK_SNAPSHOT.md (this file; subtask board + last
                   completed task pass + If interrupted resume from +
                   Open user decisions)
-                  cycles/CYCLE-20260505-002.md (S6 audit + S7 closeout
+                  cycles/CYCLE-20260505-003.md (S6 audit + S7 closeout
                   + subtask board flips + header bump)
-                  cases/CASE-20260504-PERMANENCE-03.md (G4 closure CR-2
-                  consumer-side under v2.1 protocol; header bump)
-                  paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md (v2 -> v2.1
-                  additive: "Forward-reference null protocol" subsection
-                  + "v2.1 Change Log" entry; header bump)
-                  RESEARCH_STATE.md (cycle 011 closeout section
-                  appended; header bump) [pending in this sync pass]
-                  WORKFLOW_STATUS.md (header bump; Cycle logs row
-                  pointer; Cross-spec contract row -> v2.1 active;
-                  Recommended Next User Decision rewritten to cycle
-                  012 launch packet + storyboard reviewer pass + demo
-                  show authorization gate) [pending in this sync pass]
-                  INDEX.md (storyboards/ section new; header bump)
-                  [pending in this sync pass]
-                  AGENT_MASTER_PROMPT.md (header bump only; mandatory-
-                  load list grows by storyboards/ if needed)
-                  [pending in this sync pass]
-                  README.md (header bump only; storyboards/ subdir
-                  noted in Directory Map) [pending in this sync pass]
-new_artifacts:    decisions/DEC-20260505-001-cycle-011-launch-and-d3-
-                  demo-target.md
-                  cycles/CYCLE-20260505-002.md
-                  storyboards/STORY-20260505-001-critic.md
+                  WORKFLOW_STATUS.md (header bump + Cycle logs row +
+                  3R Composer row + Demo storyboard template row +
+                  Recommended Next User Decision rewritten to cycle-013
+                  launch packet)
+                  RESEARCH_STATE.md (cycle 012 closeout section
+                  appended; header bump)
+                  INDEX.md (storyboards/ section adds 3 new rows +
+                  cases/ section adds COMPOSER-04 row + header bump)
+                  AGENT_MASTER_PROMPT.md (header bump only)
+                  README.md (header bump only)
+                  registry/decision_registry.md (DEC-20260505-002 row
+                  added)
+new_artifacts:    decisions/DEC-20260505-002-cycle-012-launch.md
+                  cycles/CYCLE-20260505-003.md
+                  cases/CASE-20260505-COMPOSER-04.md (KYKT-metadata-
+                  derived; first non-paper-derived Composer L2 card)
+                  storyboards/STORY-20260505-002-memory.md
+                  storyboards/STORY-20260505-003-permanence.md
+                  storyboards/STORY-20260505-004-composer.md
 discipline:       Surgical Edits (no SPEC body changes; no retro-
-                  renumber; PERMANENCE-03 G4 closure traces directly to
-                  DEC-001 (2); v2.1 revision additive only) +
-                  Honesty Override (storyboard `draft` only; all panels
-                  labeled placeholder; no measured claims; no
-                  "approved-for-showing" status; v2 substance audit
-                  shows zero changes).
+                  renumber; no edits to prior cycle artifacts; v2.1
+                  contract substance unchanged) + Honesty Override
+                  (KYKT-metadata-derived label distinct from measured;
+                  G2 advanced not closed; storyboards `draft` only;
+                  no `approved-for-showing` smuggled in).
 budget_event:     None this pass.
 
-prior_pass_name:  Cycle 010 case-card portfolio + S6 audit + S7
-                  closeout + S8 user-facing report pass
-prior_pass_date:  2026-05-04
-prior_pass_files: TASK_SNAPSHOT.md, cycles/CYCLE-20260504-002.md, six
-                  case cards under cases/, RESEARCH_STATE.md,
-                  WORKFLOW_STATUS.md, INDEX.md
+prior_pass_name:  Cycle 011 launch + closeout pass
+prior_pass_date:  2026-05-05
+prior_pass_files: TASK_SNAPSHOT.md, cycles/CYCLE-20260505-002.md,
+                  storyboards/STORY-20260505-001-critic.md,
+                  cases/CASE-20260504-PERMANENCE-03.md (G4 closure),
+                  paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md (v2 -> v2.1)
 ```
 
 ## If interrupted, resume from
@@ -118,36 +113,35 @@ If a new agent or new conversation is picking this up cold:
 
 ```text
 1. Read this file (you are here).
-2. Read decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-
-   target.md (cycle 011 launch + D3 = Critic + cycle 011 scope +
-   v2.1 forward-reference null protocol formalization).
-   DEC-20260504-005 + -004 + -002 are referenced from DEC-001;
-   consult only if you need their full rationale.
-3. Read cycles/CYCLE-20260505-002.md "Contract Usage Audit (S6)
-   under v2.1" + "Closeout (S7)" sections — those carry the full
-   cycle-011 result summary (3 new artifacts + v2.1 active + G4
-   closed-by-documentation + G5 closed by formalization +
-   G2/G6 still deferred + cycle 012 launch packet).
-4. Cycle 011 is closed at content level (S1..S7 done); only S8
-   user-facing surfacing remains. After S8: cycle 012 launch
-   decisions become user-facing (storyboard reviewer pass; cycle 012
-   scope; demo show authorization gate; G6/G2 closure paths gated).
-5. The four cycle-012 launch decisions to surface in S8 are listed
-   in cycles/CYCLE-20260505-002.md "Closeout (S7)". Copy them into
-   the S8 user message verbatim with one-line agent reading per
-   decision.
-6. Storyboard storyboards/STORY-20260505-001-critic.md is `draft`
-   ONLY. Do NOT promote to `approved-for-showing` without a
-   separate DEC. Do NOT start a Gemini CLI frontend handoff for
-   storyboard rendering without user approval per
+2. Read decisions/DEC-20260505-002-cycle-012-launch.md (cycle 012
+   launch: storyboard reviewer pass deferred + (c) KYKT-metadata-
+   derived COMPOSER-04 + (e) 3 finalist demo storyboards). DEC-
+   20260505-001 (cycle 011, D3 = Critic + v2.1) + DEC-20260504-005
+   (cycle 010) + DEC-20260504-004 (v2) referenced from DEC-002;
+   consult only if you need full rationale.
+3. Read cycles/CYCLE-20260505-003.md "Contract Usage Audit (S6) under
+   v2.1" + "Closeout (S7)" sections — those carry the full cycle-012
+   result summary (6 new artifacts; G2 advanced inferred -> inferred-
+   with-real-inventory-anchor; v2.1 unchanged; all 4 finalists now
+   have draft demo storyboards; cycle 013 launch packet).
+4. Cycle 012 is fully closed; status is `idle`. The next live phase
+   is cycle 013 (gated on user direction OR user may hold the
+   project at this state).
+5. The four cycle-013 launch decisions are listed in cycles/CYCLE-
+   20260505-003.md "Closeout (S7)" cycle-013 launch packet (D3
+   reconsideration option / cycle 013 scope options a..f / v2.2
+   candidates none / blocked items).
+6. All 4 finalist demo storyboards are markdown `draft` ONLY. Do NOT
+   promote any to `approved-for-showing` without a separate DEC. Do
+   NOT start a Gemini CLI frontend handoff without user approval per
    AGENT_MASTER_PROMPT.md section 6.
 7. Honor F-001 working rules throughout: do not Read large files
-   already cited in this snapshot; prefer Grep -n + Edit over
-   full-file Read + Write; cap large files in active context at <=2
+   already cited in this snapshot; prefer Grep -n + Edit over full-
+   file Read + Write; cap large files in active context at <=2
    simultaneously.
 ```
 
-If this snapshot's Status flips back to `idle`, cycle 011 is fully closed and the next live phase is cycle 012 (gated on user decisions surfaced in S8).
+If this snapshot's Status is `idle`, cycle 012 is fully closed and the next live phase is cycle 013 (gated on user decisions surfaced in `cycles/CYCLE-20260505-003.md` Closeout (S7) cycle-013 launch packet).
 
 ## Open user decisions (resolution status, 2026-05-04)
 
@@ -282,7 +276,57 @@ Cycle 011 launch decisions (locked 2026-05-05 from user message "你给我决定
    declaring teacher-demo readiness; demo SHOWING also blocked).
 ```
 
-Items still blocked on user approval per `AGENT_MASTER_PROMPT.md` section 6 (unchanged from prior cycles): final thesis selection, reproduction, training, checkpoint download, KYKT navigation change, frontend implementation, reusable Codex skill packaging, retiring any non-finalist track, declaring teacher-demo readiness, **showing the Critic demo (storyboard remains `draft`; promotion to `approved-for-showing` requires a separate DEC)**.
+Items still blocked on user approval per `AGENT_MASTER_PROMPT.md` section 6 (unchanged from prior cycles): final thesis selection, reproduction, training, checkpoint download, KYKT navigation change, frontend implementation, reusable Codex skill packaging, retiring any non-finalist track, declaring teacher-demo readiness, **showing any of the 4 demo storyboards (Critic / Memory / Permanence / Composer; all remain `draft`; promotion to `approved-for-showing` requires a separate DEC per finalist)**.
+
+Cycle 012 launch decisions (locked 2026-05-05 from user message "你给我规划吧，然后弄完后告诉我我们的工作做了哪些？" delegating to agent; recorded in `decisions/DEC-20260505-002-cycle-012-launch.md`):
+
+```text
+1. Storyboard reviewer pass (1)      -> NOT done in cycle 012. Deferred
+                                        to demo-show-authorization
+                                        moment when functional-vs-
+                                        placeholder tradeoffs become
+                                        concrete. Critic storyboard +
+                                        the 3 new storyboards all
+                                        remain `draft` unchanged in
+                                        future agent passes (no silent
+                                        revisions).
+2. Cycle 012 scope (2)               -> (c) KYKT-metadata-derived
+                                        COMPOSER-04 + (e) 3 finalist
+                                        demo storyboards (Memory +
+                                        Permanence + Composer; all
+                                        markdown only; all `draft`).
+                                        Options (a) close G6 / (b)
+                                        close G2 / (d) request demo
+                                        show authorization / (f) start
+                                        paper related-work writing all
+                                        deferred (gated or premature).
+3. v2.1 -> v2.2 candidates (3)       -> NO revision. Both deferred
+                                        candidates from cycle 011
+                                        (8x8 grid partition for
+                                        Permanence regions;
+                                        identity_consistency threshold
+                                        pinning at ~0.7) remain
+                                        deferred. COMPOSER-04 fits
+                                        cleanly into existing v2
+                                        schema; no new sub-axis needed.
+4. (4) blocked items unchanged from cycle 011 closeout; "showing the
+   Critic demo" extended to "showing any of the 4 demo storyboards"
+   (all 4 finalists now have draft storyboards as of cycle 012).
+```
+
+Cycle 012 G2 status update:
+
+```text
+Before cycle 012: G2 = inferred (tau_spread = 0.05 paper-derived;
+                                 capability_match paper-derived).
+After cycle 012:  G2 = inferred-with-real-inventory-anchor
+                       (capability_match values now KYKT-metadata-
+                        derived per COMPOSER-04; tau_spread itself
+                        still inferred; closure still requires
+                        measured route_regret; gated).
+G2 NOT closed. Closure remains gated on L3 prototype OR KYKT runner
+log access.
+```
 
 ## Update protocol (highest priority — always honor)
 

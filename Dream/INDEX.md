@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-05 (cycle 011 launched + closed at content level: D3 first teacher demo target = Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active; STORY-20260505-001-critic.md drafted as status `draft`; showing NOT authorized)
+Last updated: 2026-05-05 (cycle 012 fully closed: KYKT-metadata-derived COMPOSER-04 case card + 3 finalist demo storyboards (Memory + Permanence + Composer; all draft) per DEC-20260505-002; G2 advanced inferred -> inferred-with-real-inventory-anchor; v2.1 unchanged; all 4 finalists now have draft demo storyboards; D3 = Critic per cycle 011 unchanged)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -112,6 +112,7 @@ Format: `CASE-YYYYMMDD-<SPEC>-NNN.md`. One file per (input, finalist spec) pair 
 | `CASE-20260505-COMPOSER-01.md` | SPEC-20260504-001 | Static-collection regime; CR-1 closure paired with CRITIC-02 |
 | `CASE-20260505-COMPOSER-02.md` | SPEC-20260504-001 | Regime-typed route_regret central thesis card |
 | `CASE-20260505-COMPOSER-03.md` | SPEC-20260504-001 | Fast3R vs MASt3R-SfM; v1 -> v2 cost-typed route_regret canonical under v2 (per DEC-20260504-004) |
+| `CASE-20260505-COMPOSER-04.md` | SPEC-20260504-001 | KYKT-metadata-derived capability_card grounded to 4 KYKT job inventory (cycle 012; advances G2 inferred -> inferred-with-real-inventory-anchor; G2 NOT closed; first non-paper-derived Composer L2 card) |
 | `CASE-20260504-MEMORY-01.md` | SPEC-20260503-002 | MonST3R 48-frame; primary Memory L2; CR-3 producer (closes cycle-009 CRITIC-03 forward-reference null) |
 | `CASE-20260504-MEMORY-02.md` | SPEC-20260503-002 | Spann3R transforms timeline; externalization-of-governance argument |
 | `CASE-20260504-MEMORY-03.md` | SPEC-20260503-002 | MASt3R small-N baseline; non-hallucination boundary on static-pair regime |
@@ -151,6 +152,9 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | File | Finalist | Status | Role |
 |---|---|---|---|
 | `STORY-20260505-001-critic.md` | Geometry Critic (SPEC-20260503-001) | draft | D3 first teacher demo target per DEC-20260505-001 (1); three placeholder panels on CRITIC-02 Fast3R-vs-Spann3R regime; locked surprise hook "Catch a near-failure and repair it on the spot"; showing NOT authorized |
+| `STORY-20260505-002-memory.md` | Executive Memory (SPEC-20260503-002) | draft | cycle 012 (e); three placeholder panels on MEMORY-01 MonST3R 48-frame regime; locked surprise hook "Memory that knows what to drop survives a walk where memory that keeps everything drowns"; showing NOT authorized |
+| `STORY-20260505-003-permanence.md` | Dynamic Object Permanence (SPEC-20260503-003) | draft | cycle 012 (e); three placeholder panels on PERMANENCE-01 + 02 + 03 portfolio; locked surprise hook "Watch the static map stay clean while the scene moves"; showing NOT authorized |
+| `STORY-20260505-004-composer.md` | 3R Composer (SPEC-20260504-001) | draft | cycle 012 (e); three placeholder panels using COMPOSER-04 KYKT-metadata-derived capability_card scoreboard; locked surprise hook "Same reconstruction, less compute — when two models tie, pick the cheaper one"; showing NOT authorized |
 
 ### `registry/` - Lightweight Indexes
 
