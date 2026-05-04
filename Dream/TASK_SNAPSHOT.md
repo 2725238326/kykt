@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-04 (cycle 009 S2..S7 done = full case-card portfolio drafted + Critic-side ID drift cleaned up + S6 cross-spec contract usage audit recorded + S7 cycle 009 closeout + Guidance File Sync Rule chain run; only S8 user-facing surfacing remains)
+Last updated: 2026-05-04 (cycle 009 fully closed = case-card portfolio drafted + Critic-side ID drift cleaned up + S6 cross-spec contract usage audit recorded + S7 closeout written + Guidance File Sync Rule chain run + S8 user-facing report shipped to user; snapshot flipped to idle)
 
-Status: **in_progress** (case-card portfolio + audit + closeout complete; only S8 user-facing report remains, after which this snapshot flips to idle)
+Status: **idle** (cycle 009 closed; awaiting user decision on the cycle-010 launch packet that S8 surfaced; consult `cycles/CYCLE-20260505-001.md` "Closeout (S7)" for the next live cycle-010 subtask once user authorizes)
 
 ## Why this file exists
 
@@ -24,7 +24,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 task_id:    cycle-009-activation
 phase:      Phase 1.5 (Research Workflow Deployment)
 cycle:      009 (case-card filling: Critic + Composer parallel, paper-derived)
-status:     in_progress; case-card portfolio + S6 audit + S7 closeout done; S8 user-facing surfacing pending
+status:     closed; user-facing cycle-010 launch packet shipped via S8
 ```
 
 One-line description:
@@ -55,7 +55,7 @@ working rules the draft is deferred to a fresh pass with a clean context.
 | S6.6 | Draft remaining Critic + Composer case cards: `CASE-20260504-CRITIC-02`, `CASE-20260504-CRITIC-03`, `CASE-20260505-COMPOSER-01`, `CASE-20260505-COMPOSER-02`, `CASE-20260505-COMPOSER-03`; surface v1 -> v2 cost-axis route_regret candidate from CASE-COMPOSER-03 | done | `cases/CASE-20260504-CRITIC-02.md` + `03.md`; `cases/CASE-20260505-COMPOSER-01.md` + `02.md` + `03.md` |
 | S6.7 | Cross-spec contract usage audit (cycle 009 S6): CR-1..CR-6 instance map across the 6 case cards; v1 -> v2 candidate enumeration; contract gaps identified | done | `cycles/CYCLE-20260505-001.md` "Contract Usage Audit" section |
 | S7 | Cycle 009 closeout: write closeout section in cycle log; sync `RESEARCH_STATE.md` / `WORKFLOW_STATUS.md` / `INDEX.md`; run Guidance File Sync Rule chain starting from this snapshot (per anti-F-001 rule 6) | done | `cycles/CYCLE-20260505-001.md` "Closeout" section + sync targets |
-| S8 | Surface cycle-009 outputs to user (case cards drafted / contract gaps found / D-decisions surfaced for cycle 010 launch); flip this snapshot to `idle` after the message lands | in_progress | user-facing message (this turn) |
+| S8 | Surface cycle-009 outputs to user (case cards drafted / contract gaps found / D-decisions surfaced for cycle 010 launch); flip this snapshot to `idle` after the message lands | done | user-facing message (delivered this turn); snapshot flipped to idle |
 
 ## Last completed task pass
 
@@ -120,26 +120,26 @@ If a new agent or new conversation is picking this up cold:
 ```text
 1. Read this file (you are here).
 2. Read decisions/DEC-20260504-003-cycle-009-launch.md (D1'-D4' locks
-   + rationales).
-3. Read cycles/CYCLE-20260505-001.md (cycle 009 board, including the
-   "Contract Usage Audit" section and "Closeout" section). The cycle
-   009 case-card portfolio is complete (3 Critic + 3 Composer = 6
-   cards), the cross-spec contract usage audit is recorded, and the
-   guidance file sync chain (RESEARCH_STATE, WORKFLOW_STATUS, INDEX,
-   AGENT_MASTER_PROMPT, README) has been run.
-4. Resume at S8 of the activation board (only outstanding subtask):
-   surface a 3-section user-facing report (case cards drafted /
-   contract gaps found / cycle-010 launch decisions for the user),
-   then flip this snapshot's Status to `idle`. The next live cycle
-   (010) inherits the open contract gaps + the v1 -> v2 cost-typed
-   route_regret candidate from CASE-20260505-COMPOSER-03.
+   + rationales; cycle 009 authorization).
+3. Read cycles/CYCLE-20260505-001.md "Contract Usage Audit (S6)" +
+   "Closeout (S7)" sections — those carry the full cycle-009 result
+   summary, the v1 -> v2 candidates, and the cycle-010 launch packet
+   preconditions.
+4. Cycle 009 is closed; this snapshot's Status is `idle`. Do NOT
+   start cycle-010 work without the user-facing decisions surfaced
+   in S8 being resolved by the user. The four cycle-010 launch
+   decisions are: (a) v2 cost-typed route_regret (adopt / defer /
+   fold into v1.x); (b) cycle 010 ordering (Memory + Permanence
+   parallel vs Memory first); (c) D3 demo target (still deferrable);
+   (d) TEACHER_AUDIENCE_PROFILE.md remaining sub-fields (populate or
+   keep empty).
 5. Honor F-001 working rules throughout: do not Read large files
    already cited in this snapshot; prefer Grep -n + Edit over
    full-file Read + Write; cap large files in active context at <=2
    simultaneously.
 ```
 
-If this snapshot says `idle` instead of `in_progress`, the cycle 009 activation is fully closed; consult `cycles/CYCLE-20260505-001.md` for the next live cycle-009 subtask.
+If this snapshot's Status flips back to `in_progress` or `blocked`, follow the active subtask board above; the cycle log is the authoritative artifact for cycle-009 / cycle-010 cross-cycle context.
 
 ## Open user decisions (resolution status, 2026-05-04)
 
