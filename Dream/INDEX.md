@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio + cycle 010 case-card portfolio closeout: 6 Memory + Permanence cards drafted; full 4-finalist L2 coverage achieved; D3 first-demo-target eligible for user decision after S8)
+Last updated: 2026-05-05 (cycle 011 launched + closed at content level: D3 first teacher demo target = Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active; STORY-20260505-001-critic.md drafted as status `draft`; showing NOT authorized)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -143,6 +143,14 @@ Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branc
 | `SPEC-20260503-002-executive-memory.md` | Executive Memory / State Governance finalist spec (A1 + A2 + A3; P2 + P3) |
 | `SPEC-20260503-003-dynamic-object-permanence.md` | Dynamic Object Permanence / 4D Memory finalist spec (A6; P4 + identity_consistency) |
 | `SPEC-20260504-001-3r-composer.md` | 3R Composer / Unified Model Ecology finalist spec (A5 routing facet; P5 route_regret + capability_match) |
+
+### `storyboards/` - Teacher Demo Storyboards
+
+Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Created via `templates/demo_storyboard.md`. Drafting a storyboard does NOT authorize showing; showing requires a separate DEC per `AGENT_MASTER_PROMPT.md` section 6.
+
+| File | Finalist | Status | Role |
+|---|---|---|---|
+| `STORY-20260505-001-critic.md` | Geometry Critic (SPEC-20260503-001) | draft | D3 first teacher demo target per DEC-20260505-001 (1); three placeholder panels on CRITIC-02 Fast3R-vs-Spann3R regime; locked surprise hook "Catch a near-failure and repair it on the spot"; showing NOT authorized |
 
 ### `registry/` - Lightweight Indexes
 

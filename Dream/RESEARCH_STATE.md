@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + cycle 009 case-card portfolio closeout + cycle 010 case-card portfolio closeout: 6 Memory + Permanence cards drafted under v2 contract; cycle 009 contract gaps G1 + G3 + CRITIC-03 forward-reference null all closed; 3 v2 -> v3 candidates surfaced and 3 new gaps G4/G5/G6 recorded for cycle 011; D3 first-demo-target now fully eligible for user decision)
+Last updated: 2026-05-05 (cycle 011 launched + closed at content level: D3 first teacher demo target locked to Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active with forward-reference null protocol formalized; Critic demo storyboard STORY-20260505-001 drafted; showing NOT authorized)
 
 ## User Intent
 
@@ -1491,3 +1491,97 @@ README.md                - last-updated stamp only
 ```
 
 This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, or any thesis selection. Cycle 011 launch is gated on user decisions surfaced in S8.
+
+## Cycle 011 Launch + Closeout (CYCLE-20260505-002)
+
+Cycle 011 launched 2026-05-05 on user delegation "你给我决定吧，（1）（2）（3）" and closed at content level the same day (S1..S7 done; only S8 user-facing surfacing remains).
+
+Three launch decisions locked in `decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-target.md`:
+
+```text
+(1) D3 first teacher demo target = Geometry Critic (SPEC-20260503-001).
+    Five-axis comparison across the 4 finalists (surprise hook / mechanism
+    legibility for cold-start audience / connection to Dream3R thesis /
+    L2 portfolio depth / demo failure-mode robustness / "looks like paper
+    X" collapse risk) selected Critic. Locked surprise hook: "Catch a
+    near-failure that other 3R systems silently accept, and repair it on
+    the spot." D3 = "first demo target", not retiring of other finalists;
+    DEC-20260504-002 remains in force. Showing NOT authorized by DEC-001;
+    storyboard remains `draft`.
+
+(2) Cycle 011 scope = G4 (CR-2 partial on synthetic identity-validation
+    clip) + G5 (forward-reference null protocol formalization) closure
+    primary; Critic demo storyboard draft secondary. G6 (Memory
+    governance externalization on Spann3R) + G2 (tau_spread = 0.05
+    inferred) + KYKT-derived Composer capability card + L3 prototype +
+    paper writing all explicitly deferred.
+
+(3) v2 -> v2.1 additive contract revision. Forward-reference null
+    protocol formalized as contract-pinned subsection + v2.1 Change Log
+    entry. v2 substance unchanged: alpha = 0.5 inferred; signal owner
+    table; CR-1..CR-6 substantive rules; cost_adjusted_match;
+    route_regret cost-typed. Other two v3 candidates (8x8 grid partition
+    for Permanence regions; identity_consistency threshold pinning at
+    ~0.7) deferred. Rationale: grid partition is Permanence
+    implementation detail; threshold pinning needs measured anchors that
+    don't yet exist.
+```
+
+artifacts produced (3 new + 2 in-place edits):
+
+```text
+new:
+  decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-target.md
+  cycles/CYCLE-20260505-002.md
+  storyboards/STORY-20260505-001-critic.md  (status: draft)
+in-place:
+  cases/CASE-20260504-PERMANENCE-03.md      (G4 closure CR-2 consumer-side)
+  paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md    (v2 -> v2.1 additive)
+sync-pass:
+  TASK_SNAPSHOT.md  - subtask board + last completed task pass + If
+                      interrupted resume from + Open user decisions
+                      (cycle 011 locked decisions)
+  WORKFLOW_STATUS.md - header + Cycle logs row + Geometry Critic row +
+                       Cross-spec contract row (v2.1) + Demo storyboard
+                       template row + Recommended Next User Decision
+                       rewritten to cycle-012 launch packet
+  RESEARCH_STATE.md - this section appended + last-updated stamp
+  INDEX.md          - new storyboards/ subsection + last-updated stamp
+  AGENT_MASTER_PROMPT.md - last-updated stamp only
+  README.md         - last-updated stamp only
+```
+
+gap status after cycle 011 closeout:
+
+```text
+G1 (CR-2 zero coverage)                    : closed cycle 010 via in-cycle cross-pair
+G2 (tau_spread = 0.05 inferred)            : deferred (L3 or KYKT-derived measurement required; gated)
+G3 (CR-4 v1 dormancy)                      : closed cycle 010 by v2 adoption
+G4 (CR-2 partial on synthetic clip)        : closed cycle 011 by documentation under v2.1 protocol
+G5 (forward-reference null protocol not pinned) : closed cycle 011 by v2.1 formalization
+G6 (Memory governance on Spann3R internal-memory models) : deferred (L3 prototype required; gated)
+```
+
+contract version trajectory:
+
+```text
+v1     (cycle 008.5)  : initial; Critic / Memory / Permanence / Composer signals
+v2     (cycle 010)    : cost_normalized axis + cost_adjusted_match; alpha = 0.5 inferred
+v2.1   (cycle 011)    : additive; forward-reference null protocol formalized; v2 substance unchanged
+```
+
+discipline rollup:
+
+```text
+rule 1 (Falsifiability):       cycle 011 fail-fast (a)..(f) checked; none triggered.
+rule 2 (Minimum Viable Mechanism): no new finalists / specs / proxy metrics.
+rule 3 (Surgical Edits):       every cycle-011 edit traces to DEC-001 (1)/(2)/(3) or Sync Rule.
+rule 4 (Falsifiable Goals):    F3 primary (Critic storyboard); F1/F2/F6 carry forward.
+rule 5 (Honesty Override):     storyboard `draft`; all panels placeholder; no measured claims;
+                               no "approved-for-showing"; v2 substance untouched in v2.1.
+F-001 working rules:           snapshot-first sync chain; narrow Reads; Edit over Write.
+```
+
+cycle 012 launch decisions to surface in S8 are recorded in `cycles/CYCLE-20260505-002.md` "Closeout (S7)" cycle-012 launch packet (storyboard reviewer pass; cycle 012 scope with 6 options; v2.1 -> v2.2 candidates — none this cycle; blocked items with demo-showing added). Cycle 012 is gated on user decisions.
+
+This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, Critic demo showing, or any thesis selection.

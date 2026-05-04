@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 + cycle 010 case-card portfolio closeouts: full 4-finalist L2 coverage achieved under v2 contract; D3 first-demo-target now eligible for user decision after S8 surfacing)
+Last updated: 2026-05-05 (cycle 011 launched + closed at content level: D3 first teacher demo target = Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active; forward-reference null protocol formalized; storyboards/ subdir created with STORY-20260505-001-critic.md as draft; showing NOT authorized)
 
 Status: canonical entry prompt for Dream research agents.
 
@@ -59,6 +59,7 @@ Then inspect the most relevant active file for the requested task:
 - reproduction readiness: `units/REPRODUCTION_READINESS_MATRIX.md`
 - frontend design handoff: `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 - finalist specs (one per user-approved finalist): files under `specs/`, including `SPEC-20260504-001-3r-composer.md`
+- teacher demo storyboards (one per finalist demo target; drafting does NOT authorize showing): files under `storyboards/`, currently `STORY-20260505-001-critic.md` (Critic; draft only)
 - cross-spec signal contract: `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md`
 - teacher audience profile (gates D3): `paradigm/TEACHER_AUDIENCE_PROFILE.md`
 - consolidated risk view: `planning/WORK_RISK_REGISTER.md`
@@ -292,6 +293,7 @@ When you make durable progress, update the relevant files:
 - experiment plan: `experiments/`
 - prompt/rules: `AGENT_MASTER_PROMPT.md` and `paradigm/RESEARCH_SKILL_RULES_DRAFT.md`
 - frontend handoff: `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`
+- teacher demo storyboards: files under `storyboards/` (draft-only unless a separate DEC grants `approved-for-showing`)
 
 If you add a new kind of repeated artifact, add a template under `templates/`.
 

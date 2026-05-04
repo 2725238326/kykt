@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 case-card portfolio closeout + cycle 010 case-card portfolio closeout: 6 Memory + Permanence cards drafted under v2 contract; cycle 009 contract gaps G1 + G3 + CRITIC-03 forward-reference null all closed; D3 first-demo-target now FULLY ELIGIBLE for user decision after S8 re-surfacing)
+Last updated: 2026-05-05 (cycle 011 launched + closed at content level: D3 first teacher demo target = Critic; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive revision active = forward-reference null protocol formalized; storyboards/ subdir created with STORY-20260505-001-critic.md as draft; only S8 user-facing surfacing remains)
 
 ## Current Phase
 
@@ -65,7 +65,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Source registry | seeded | `registry/source_registry.md` |
 | Research unit registry | seeded | `registry/research_unit_registry.md` |
 | Decision registry | seeded | `registry/decision_registry.md` |
-| Cycle logs | active | `cycles/CYCLE-20260504-002.md` |
+| Cycle logs | active | `cycles/CYCLE-20260505-002.md` |
 | Experiment planning | seeded | `experiments/EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | Research content roadmap | active | `paradigm/RESEARCH_CONTENT_ROADMAP.md` |
@@ -77,14 +77,14 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Action taxonomy / proxy metrics | first compact pass (cycle 006); cycle 008.5 A5 split + supersede annotations applied | `planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md` |
 | Proxy case-card template | active form; first portfolio populated in cycle 009 (6 cards: 3 Critic + 3 Composer, paper-derived) | `templates/proxy_case_card.md` + `cases/` |
 | Finalist mechanism spec template | populated for three finalists in cycle 008 | `templates/finalist_mechanism_spec.md` |
-| Geometry Critic finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived under v1 contract; v2 contract status: cards continue valid as drafted, no retroactive change) | `specs/SPEC-20260503-001-geometry-critic.md` + `cases/CASE-20260504-CRITIC-01..03.md` |
+| Geometry Critic finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived under v1 contract); D3 first teacher demo target = Critic per cycle 011 DEC-20260505-001; demo storyboard `STORY-20260505-001-critic.md` drafted in cycle 011 (status: draft only; showing not authorized) | `specs/SPEC-20260503-001-geometry-critic.md` + `cases/CASE-20260504-CRITIC-01..03.md` + `storyboards/STORY-20260505-001-critic.md` |
 | Executive Memory finalist spec | draft (L1); L2 case cards drafted in cycle 010 under v2 contract (3 cards across MonST3R / Spann3R / MASt3R regimes); CR-3 producer side closes cycle-009 CRITIC-03 forward-reference null | `specs/SPEC-20260503-002-executive-memory.md` + `cases/CASE-20260504-MEMORY-01..03.md` |
 | Dynamic Object Permanence finalist spec | draft (L1); L2 case cards drafted in cycle 010 under v2 contract (3 cards: MonST3R primary + MASt3R static control + synthetic identity-validation); CR-2 producer side closes cycle-009 gap G1 | `specs/SPEC-20260503-003-dynamic-object-permanence.md` + `cases/CASE-20260504-PERMANENCE-01..03.md` |
 | 3R Composer finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived); CASE-COMPOSER-03 v2 row promoted to canonical per DEC-20260504-004 | `specs/SPEC-20260504-001-3r-composer.md` + `cases/CASE-20260505-COMPOSER-01..03.md` |
-| Cross-spec signal contract | **v2 active** (per DEC-20260504-004): adds cost_normalized axis to capability_match; CR-4 arbitrates cost-adjusted ties routinely; v1 prose preserved under "Superseded versions". Cycle 009 cards exercised v1 (audit complete); cycle 010 cards drafted under v2 from day 1 | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` + `decisions/DEC-20260504-004-cross-spec-contract-v2.md` |
+| Cross-spec signal contract | **v2.1 active** (per DEC-20260505-001): additive revision over v2 — adds "Forward-reference null protocol" subsection formalizing the pattern exercised by cycle-009 + cycle-010 cards; v2 substance unchanged (alpha = 0.5 inferred; signal owner table; CR-1..CR-6; cost_adjusted_match; route_regret cost-typed). v1 + v2 prose preserved. Cycle 011 G5 closed by this revision; cycle 010 G4 closed-by-documentation under the protocol. v2 -> v3 candidates 8x8 grid partition + identity_consistency threshold pinning deferred. | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` + `decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-target.md` |
 | Literature guidance board | v1 active (INDEX + four SPINE + CRITICAL_NOTES + PAPER_RELATED_WORK_SKELETON) | `literature/INDEX.md` |
 | Work risk register | v1 active; consolidates per-spec + cross-spec risks | `planning/WORK_RISK_REGISTER.md` |
-| Demo storyboard template | active form; populated per finalist after demo authorization | `templates/demo_storyboard.md` |
+| Demo storyboard template | active form; first storyboard `STORY-20260505-001-critic.md` drafted in cycle 011 (status: draft only; demo showing not authorized; further finalist storyboards remain optional cycle-012-or-later work) | `templates/demo_storyboard.md` + `storyboards/STORY-20260505-001-critic.md` |
 | Teacher audience profile | placeholder; awaits user input to unblock D3 | `paradigm/TEACHER_AUDIENCE_PROFILE.md` |
 | Source mining (cycle 005 pass) | complete for visual priors, depth priors, active perception, event VO | `sources/FRONTIER_SOURCE_MAP.md` (Cycle 005 Source Mining Pass section) |
 | Workspace reorganization (cycle 006) | complete; topical subdirectories + archive/ + INDEX.md | `cycles/CYCLE-20260502-006.md` |
@@ -109,42 +109,54 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 010 closed at content level (S2..S7 done in `cycles/CYCLE-20260504-002.md`); only S8 user-facing surfacing remains. With cycle 010 closeout, **all 4 finalists now have L2 case-card coverage** (Critic + Composer in cycle 009; Memory + Permanence in cycle 010), and `paradigm/TEACHER_AUDIENCE_PROFILE.md` was populated 2026-05-04.
-
-D3 deferral conditions per `decisions/DEC-20260504-002-no-all-in-on-single-finalist.md` are now FULLY satisfied. Cycle 011 launch will need user decisions on:
+Cycle 011 closed at content level (S1..S7 done in `cycles/CYCLE-20260505-002.md`); only S8 user-facing surfacing remains. Cycle 011 locked three decisions per DEC-20260505-001:
 
 ```text
-1. D3 first teacher demo target (now eligible). Agent reading of the
-   L2 portfolio after both cycles will be presented in S8 user-facing
-   report; user picks among the 4 finalists OR confirms continued
-   deferral with explicit rationale.
-
-2. G2 closure path: tau_spread = 0.05 in CR-1 closure remains inferred,
-   not measured. Upgrading to demo-observed requires either KYKT-job-
-   derived measured route_regret OR L3 prototype work; both paths have
-   user-approval gates per `AGENT_MASTER_PROMPT.md` section 6.
-
-3. v2 -> v3 candidates surfaced in cycle 010 audit:
-   (a) 8x8 grid partition for Permanence regions (formalize in
-       contract or leave per-card)
-   (b) forward-reference null protocol formalization (low-stakes
-       documentation; could fold into v2.x)
-   (c) identity_consistency threshold pinning (currently ~0.7
-       inferred per PERMANENCE-03; v3 promotion premature until
-       measured)
-
-4. New gaps from cycle 010 (G4 / G5 / G6):
-   (a) G4: CR-2 partial on synthetic identity-validation clip
-       (consumer side forward-referenced; close in cycle 011 or
-       later)
-   (b) G5: CR-3 forward-reference protocol works in practice but
-       is not contract-pinned (close via candidate 3b above)
-   (c) G6: Memory governance externalization on Spann3R-internal-
-       memory-equipped models needs L3 prototype evidence (research
-       direction; not a contract gap)
+(1) D3 first teacher demo target = Critic (Geometry Critic / System-2
+    3R; SPEC-20260503-001). Storyboard STORY-20260505-001-critic.md
+    drafted; status = draft only; showing NOT authorized by DEC-001.
+(2) Cycle 011 scope = G4 + G5 closure (primary) + Critic storyboard
+    draft (secondary). G6 + G2 + KYKT-derived Composer card + L3
+    prototype + paper writing all explicitly deferred.
+(3) v2 -> v2.1 additive revision. Forward-reference null protocol
+    formalized (G5 closure). Other two v3 candidates (8x8 grid
+    partition; identity_consistency threshold pinning) deferred.
 ```
 
-Still blocked on user approval (unchanged from prior cycles):
+Cycle 012 launch will need user decisions on:
+
+```text
+1. Storyboard reviewer pass: does the user want to refine the Critic
+   storyboard panels / beats / hook before any showing-authorization
+   DEC, or accept the draft as-is for cycle 012's potential showing-
+   authorization gate?
+
+2. Cycle 012 scope options (pick one or a bundle):
+   (a) close G6 — gated; L3 prototype on Spann3R-equipped Memory
+       regime; user must authorize L3 + reproduction + install +
+       checkpoint download per `AGENT_MASTER_PROMPT.md` section 6.
+   (b) close G2 — gated; L3 OR KYKT-derived measured route_regret on
+       Composer; user must authorize.
+   (c) draft KYKT-derived Composer capability card — not gated; reads
+       actual KYKT job logs; one new case card.
+   (d) request demo show authorization (DEC-YYYYMMDD-NNN-critic-demo-
+       show-authorization.md) — gated; user must authorize showing
+       and any rendering / live inference build the showing requires.
+   (e) draft other-finalist demo storyboards (Memory / Permanence /
+       Composer) for parallel demo-target capacity — markdown only;
+       not gated.
+   (f) start paper related-work writing on the L2 portfolio — Phase 2
+       work; gated.
+
+3. v2.1 -> v2.2 candidates: none surfaced this cycle. The two
+   deferred v3 candidates (8x8 grid partition; identity_consistency
+   threshold) remain deferred until measured anchors exist.
+
+4. Blocked items unchanged; showing the Critic demo is explicitly
+   added to the blocked list until a separate DEC authorizes it.
+```
+
+Still blocked on user approval (unchanged from prior cycles, one addition):
 
 - final thesis selection
 - moving any finalist from L2 proxy evidence to L3 prototype code
@@ -156,6 +168,7 @@ Still blocked on user approval (unchanged from prior cycles):
 - packaging a reusable Codex skill
 - declaring teacher-demo readiness
 - discarding any non-finalist track (Cross-Modal, Active Perception)
+- **showing the Critic demo** (`storyboards/STORY-20260505-001-critic.md` is `draft` only; promoting to `approved-for-showing` requires a separate DEC per DEC-20260505-001 (2))
 
 ## Guidance File Sync Rule
 

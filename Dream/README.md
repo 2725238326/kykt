@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-04 (cycle 008.5 closeout + planning-layer sync + inventory-sync sub-pass + TASK_SNAPSHOT.md introduced as mandatory-load #1 + cycle 009 + cycle 010 case-card portfolio closeouts: full 4-finalist L2 coverage; D3 first-demo-target eligible for user decision)
+Last updated: 2026-05-05 (cycle 011 launched + closed at content level: D3 first teacher demo target = Critic per DEC-20260505-001; cycle 011 scope = G4 + G5 closure + Critic storyboard draft; v2 -> v2.1 additive contract revision active; storyboards/ subdir created with STORY-20260505-001-critic.md as draft; showing NOT authorized)
 
 ## Purpose
 
@@ -95,6 +95,7 @@ Subdirectories:
 - `experiments/`: experiment plans; a file here does not mean the experiment has been run.
 - `literature/`: literature guidance board (curated reading order, deconfusion notes, paper-related-work skeleton); not a duplicate inventory.
 - `specs/`: finalist mechanism specs (one per user-approved finalist branch; created via `templates/finalist_mechanism_spec.md`).
+- `storyboards/`: teacher demo storyboards (one per finalist demo target; created via `templates/demo_storyboard.md`; drafting does NOT authorize showing).
 - `registry/`: lightweight indexes for sources, research units, and decisions.
 - `templates/`: reusable forms (source card, research unit, decision memo, cycle log, experiment plan, frontend design handoff, proxy case card, finalist mechanism spec, demo storyboard).
 
