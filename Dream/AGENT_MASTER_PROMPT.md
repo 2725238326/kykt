@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-05 (cycle 014 closed: paper Phase 2 blueprint + VGGT Composer addendum + L3 pilot selection; Critic recommended first L3 pilot, Composer backup; v2.1 unchanged; all L3 execution gates remain in force)
+Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot SCOPE per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required before any operational step; v2.1 unchanged; all L3 execution operational gates remain in force as per-step user gos)
 
 Status: canonical entry prompt for Dream research agents.
 

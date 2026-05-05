@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-05 (cycle 014 closed: paper Phase 2 blueprint + VGGT Composer addendum CASE-20260505-COMPOSER-05 + L3 pilot selection; Critic recommended first L3 pilot, Composer backup; v2.1 unchanged; G2/G6 unchanged; G7 advanced to blueprint anchor but not closed)
+Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot scope per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required; v2.1 unchanged; G2/G6/G7 unchanged at launch)
 
 ## Current Phase
 
@@ -65,8 +65,8 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Source registry | active; cycle 013 mining pass added SRC-2026-009..015 (7 new rows: MapAnything / Julian Ost AAAI-2026 driving permanence / tttLRM / awesome-dust3r curated index / DUSt3R-MASt3R-VGGT MVS evaluation / NTIRE 2026 / VGGT) | `registry/source_registry.md` |
 | Research unit registry | seeded | `registry/research_unit_registry.md` |
 | Decision registry | seeded | `registry/decision_registry.md` |
-| Cycle logs | active | `cycles/CYCLE-20260505-005.md` (cycle 014 closed; Phase 2 convergence + execution selection) |
-| Experiment planning | active; cycle 013 added 4 L3 prerequisite briefs (one per finalist; brief-only, NOT L3 authorization); cycle 014 added L3 pilot downselect recommending Critic first and Composer backup | `experiments/EXP-20260505-001..004-l3-prerequisites-{critic\|memory\|permanence\|composer}.md` + `planning/L3_PILOT_SELECTION.md` |
+| Cycle logs | active | `cycles/CYCLE-20260505-006.md` (cycle 015 in progress; Critic L3 pilot scope authorized per DEC-20260505-005; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required) |
+| Experiment planning | active; cycle 013 added 4 L3 prerequisite briefs (one per finalist; brief-only, NOT L3 authorization); cycle 014 added L3 pilot downselect recommending Critic first and Composer backup; cycle 015 launched Critic L3 pilot scope authorization (DEC-20260505-005) — clone / install / download / run still gated per micro gates | `experiments/EXP-20260505-001..004-l3-prerequisites-{critic\|memory\|permanence\|composer}.md` + `planning/L3_PILOT_SELECTION.md` + `decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | Research content roadmap | active | `paradigm/RESEARCH_CONTENT_ROADMAP.md` |
 | Multi-track research canvas | active; cycle 008.5 four-finalist + no-all-in section appended | `planning/MULTI_TRACK_RESEARCH_CANVAS.md` |
@@ -98,8 +98,8 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Blocked Until User Decision
 
-- first local reproduction target
-- large checkpoint downloads
+- first local reproduction target (NARROW EXCEPTION cycle 015 only: Critic L3 pilot smoke loop authorized at scope level per DEC-20260505-005; each operational step still per-step gated via G_clone / G_install / G_download / G_run / G_log_use; "reproduction" in the strict sense of paper-result re-runs / training remains blocked)
+- large checkpoint downloads (NARROW EXCEPTION cycle 015 only: minimum checkpoints required for the Critic smoke loop authorized at scope level per DEC-20260505-005; each download per-step gated via G_download)
 - KYKT Dream page or navigation change
 - Codex direct frontend implementation
 - major Gemini CLI frontend redesign instruction
@@ -109,25 +109,46 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 014 fully closed (S1..S5 done in `cycles/CYCLE-20260505-005.md`).
-The recommended cycle 015 choice is:
+Cycle 015 launched (DEC-20260505-005 + CYCLE-20260505-006). User
+authorized Critic L3 pilot scope per planning/L3_PILOT_SELECTION.md
+"Recommended first-pilot scope". Cycle 015 is `in_progress`.
+
+The next user decision is the first per-step micro gate, **G_clone**:
 
 ```text
-(a) Authorize Critic L3 pilot only:
-    clone / install / download / run the minimum EXP-20260505-001 stack
-    for one hard-case smoke loop, with no training, no KYKT navigation,
-    no frontend, no storyboard promotion, and no G2 closure claim.
+G_clone: "Go to clone Test3R + CTRL + DUSt3R + MASt3R under
+          E:\kykt\Dream\experiments\runs\cycle-015-critic-l3-pilot\?
+          Or redirect path / repo set?"
 
+If user replies "go": cycle 015 enters S6 (clone). Each subsequent
+step (install / checkpoint download / run / log commit) is its own
+gate; do not chain silently.
+
+If user replies "redirect" or "no": cycle 015 stays gated at S5;
+agent records the gate result in the cycle log and waits.
+```
+
+After G_clone (whichever way it goes), the remaining cycle 015 micro
+gates surface in order: G_install -> G_download -> G_run -> G_log_use.
+Out-of-scope alternatives (that the user can pick instead of G_clone
+go):
+
+```text
 (b) Continue markdown paper writing:
-    expand PAPER_PHASE2_BLUEPRINT.md into introduction + method sections,
-    keeping L3 sections as planned validation.
+    expand PAPER_PHASE2_BLUEPRINT.md into introduction + method
+    sections, keeping L3 sections as planned validation. Cycle 015
+    can pause Critic L3 work to do this (no DEC change required;
+    DEC-005 scope authorization is not an obligation to execute).
 
-(c) Prepare Composer L3 sweep design:
-    add VGGT / optional MapAnything rows to a concrete route_policies /
-    capability_match schema before any execution.
+(c) Prepare Composer L3 sweep design (out-of-scope for cycle 015):
+    add VGGT / optional MapAnything rows to a concrete route_policies
+    / capability_match schema before any execution. Would require a
+    separate cycle-015' or cycle 016 DEC.
 
 (d) Hold:
-    keep current state as Phase 2 convergence stop-state.
+    keep current state as Phase 2 execution-prep stop-state. The
+    DEC-005 authorization remains valid; user can resume G_clone
+    later without re-authorizing the scope.
 ```
 
 Still blocked on user approval:

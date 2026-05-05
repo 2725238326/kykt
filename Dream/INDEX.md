@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-05 (cycle 014 closed: paper Phase 2 blueprint + VGGT Composer addendum CASE-20260505-COMPOSER-05 + L3 pilot selection; Critic recommended first L3 pilot, Composer backup; v2.1 unchanged; G2/G6 unchanged; G7 advanced to blueprint anchor but not closed)
+Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot scope per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required; v2.1 unchanged; G2/G6/G7 unchanged at launch)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -51,7 +51,7 @@ Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is
 | `DREAM3R_THESIS_STRESS_TEST.md` | Stress test for the Dream3R / GEM-3R candidate branch |
 | `MINIMAL_DEMO_CANDIDATES.md` | Teacher-demo candidate analysis |
 | `WORK_RISK_REGISTER.md` | Consolidated cross-spec risk view across the four finalist specs and the cross-spec contract |
-| `L3_PILOT_SELECTION.md` | Cycle 014 L3 downselect: recommends Critic as first pilot and Composer as backup; planning only, not L3 authorization |
+| `L3_PILOT_SELECTION.md` | Cycle 014 L3 downselect: recommends Critic as first pilot and Composer as backup; planning only, not L3 authorization. Cycle 015 acted on this recommendation: DEC-20260505-005 authorized the Critic L3 pilot SCOPE (per-step micro gates still required) |
 
 ### `sources/` - Source Mining
 
@@ -104,7 +104,7 @@ Format: `EXP-YYYYMMDD-NNN-<slug>.md`. Filing here does not mean the experiment w
 | File | Finalist | Role |
 |---|---|---|
 | `EXP-20260501-001-dust3r-splatt3r-smoke-plan.md` | Phase 1 baseline | First reproducibility plan; planned only, do not run until user confirms |
-| `EXP-20260505-001-l3-prerequisites-critic.md` | Geometry Critic (SPEC-20260503-001) | L3 prerequisites brief: repos + checkpoints + GPU/disk/time (`inferred`) + smoke-test path + minimum code change. Brief-only; not L3 authorization |
+| `EXP-20260505-001-l3-prerequisites-critic.md` | Geometry Critic (SPEC-20260503-001) | L3 prerequisites brief: repos + checkpoints + GPU/disk/time (`inferred`) + smoke-test path + minimum code change. Cycle 015 SCOPE authorized per DEC-20260505-005; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required before any operational step |
 | `EXP-20260505-002-l3-prerequisites-memory.md` | Executive Memory (SPEC-20260503-002) | L3 prerequisites brief; same structure |
 | `EXP-20260505-003-l3-prerequisites-permanence.md` | Dynamic Object Permanence (SPEC-20260503-003) | L3 prerequisites brief; same structure |
 | `EXP-20260505-004-l3-prerequisites-composer.md` | 3R Composer (SPEC-20260504-001) | L3 prerequisites brief; same structure; closure of G2 inventoried but not executed |
@@ -202,7 +202,7 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | What can Dream do without asking the user? | `AGENT_MASTER_PROMPT.md` section 6 |
 | What requires user approval? | `AGENT_MASTER_PROMPT.md` section 6 + `WORKFLOW_STATUS.md` Blocked Until User Decision |
 | How should I behave when synthesizing or editing files? | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
-| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260505-005.md` |
+| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260505-006.md` (cycle 015 in progress; Critic L3 pilot scope authorized) |
 | What did we decide? | `registry/decision_registry.md` and files under `decisions/` |
 | What experiments are planned? | files under `experiments/`; first-pilot recommendation in `planning/L3_PILOT_SELECTION.md` |
 | How should the frontend agent work? | `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` |

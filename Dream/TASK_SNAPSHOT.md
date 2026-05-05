@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-05 (cycle 014 closed: DEC-20260505-004 + CYCLE-20260505-005; paper Phase 2 blueprint added; VGGT Composer capability-card gap addendum added as CASE-20260505-COMPOSER-05; L3 pilot selection added with Critic recommended first and Composer backup; v2.1 unchanged; G2/G6 unchanged; G7 advanced to blueprint anchor but not closed; no L3 execution / clone / download / install / run authorized)
+Last updated: 2026-05-06 (cycle 015 S9 done: G_download was degenerate — Test3R hardcodes HF id `naver/DUSt3R_ViTLarge_BaseDecoder_512_dpt` but huggingface.co blocked from server; user chose patch-launch.py path; one-line `sed -i` patch on /hdd3/kykt26/code/Test3R/eval/mv_recon/launch.py:103 to point at existing /hdd3/kykt26/models/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth (2.2 GB; pre-existing for dust3r runner); `.cycle015.bak` backup kept; verified `AsymmetricCroCo3DStereo.from_pretrained(local_path)` loads 571.2M params with all keys matched, CUDA transfer OK; no HF network call; G_run / G_log_use still required as separate per-step gates; v2.1 unchanged; G2/G6/G7 unchanged; F-002 + memory persisted)
 
-Status: **idle** (cycle 014 closed; awaiting user direction for cycle 015 OR project hold)
+Status: **in_progress** (cycle 015 S10 next: surface G_run)
 
 ## Why this file exists
 
@@ -21,36 +21,46 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-014
-phase:      Phase 2 convergence prep (markdown-only; execution selection, not execution)
-cycle:      014 (paper blueprint + VGGT Composer addendum + L3 pilot downselect)
-status:     idle (cycle 014 closed; awaiting user direction for cycle 015 OR project hold)
+task_id:    cycle-015
+phase:      Phase 2 execution prep (markdown-only launch + sync; per-step execution gated)
+cycle:      015 (Critic L3 pilot scope authorized; clone / download / install / run still gated)
+status:     in_progress (S1..S2 done; S3..S5 active; S6+ gated on G_clone / G_install / G_download / G_run / G_log_use)
 ```
 
 One-line description:
 
 ```text
-User said "继续" after the agent recommended a cycle-014 route:
-paper blueprint, VGGT Composer capability-card gap handling, and L3
-pilot downselect. Cycle 014 produced the planned markdown-only
-convergence artifacts and closed cleanly. The new recommendation is:
-Critic is the first L3 pilot if the user later authorizes execution;
-Composer is the backup / second pilot after VGGT is included or
-explicitly excluded in the route-regret sweep design. Cycle 014 did
-NOT authorize L3 execution, clone, download, install, run, checkpoint
-access, KYKT runner access, frontend work, storyboard showing, or final
-thesis selection.
+User selected "授权 Critic L3 窄域 pilot" as the cycle 015 entry, in
+response to the agent's recommendation surfaced after cycle 014 closeout
+in cycles/CYCLE-20260505-005.md "Cycle 015 launch packet (deferred to
+user)". This satisfied the open user decision phrased in
+planning/L3_PILOT_SELECTION.md line 167-171. DEC-20260505-005 records the
+scope-level authorization (clone Test3R + CTRL + DUSt3R + MASt3R; download
+required checkpoints; install minimum env; run one smoke loop on one hard
+case; emit one JSONL log; write thin orchestration wrapper). Each
+operational step (clone, install, checkpoint download, run, log commit)
+is a per-step micro gate that requires a separate user go in the active
+conversation; the DEC alone does NOT authorize them. Cycle 015 launch did
+NOT authorize: full sweep, training, KYKT navigation change, frontend,
+storyboard promotion, G2 closure claim, retroactive case-card edits,
+system-level changes, silent upstream patches, teacher-demo readiness
+claim, final thesis selection, retiring of any non-finalist track.
 ```
 
-## Subtask board (active pass: cycle 014 launch + convergence, 2026-05-05)
+## Subtask board (active pass: cycle 015 launch + Critic L3 pilot scope authorization, 2026-05-05)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Activation pass: write `decisions/DEC-20260505-004-cycle-014-launch.md` + `cycles/CYCLE-20260505-005.md` | done | `decisions/DEC-20260505-004-cycle-014-launch.md` + `cycles/CYCLE-20260505-005.md` |
-| S2 | Paper blueprint: convert related-work prose state into Phase 2 paper blueprint without claiming full paper readiness | done | `literature/PAPER_PHASE2_BLUEPRINT.md` |
-| S3 | VGGT Composer gap: add a per-card addendum for VGGT / MapAnything / DUSt3R-MASt3R-VGGT MVS evaluation, no contract revision | done | `cases/CASE-20260505-COMPOSER-05.md` |
-| S4 | L3 pilot downselect: compare four EXP briefs and recommend first execution target, with all execution gates preserved | done | `planning/L3_PILOT_SELECTION.md` |
-| S5 | Audit + sync: update cycle log, `TASK_SNAPSHOT.md` first, then workflow / state / index / prompt / README / decision registry | done | `cycles/CYCLE-20260505-005.md` + sync chain |
+| S1 | Write DEC-20260505-005 (cycle 015 launch + Critic L3 pilot scope authorization; locks allowed / not-allowed; lists 5 per-step micro gates and stop conditions) | done | `decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md` |
+| S2 | Write cycles/CYCLE-20260505-006.md (cycle 015 cycle log; subtask board; gate roadmap) | done | `cycles/CYCLE-20260505-006.md` |
+| S3 | Update this file FIRST per F-001 rule 6 (Status -> in_progress; cycle 015 board; resume pointer; cycle 015 launch decision under Open user decisions) | done | `TASK_SNAPSHOT.md` |
+| S4 | Sync chain: WORKFLOW_STATUS.md + RESEARCH_STATE.md + INDEX.md + registry/decision_registry.md + AGENT_MASTER_PROMPT.md + README.md (cycle 015 pointer + DEC-20260505-005 row + last-updated stamp bumps) | done | sync chain |
+| S5 | Surface G_clone micro gate to user (proposed pilot path under experiments/runs/cycle-015-critic-l3-pilot; proposed hard-case input candidate; GPU/env confirmation request) | done | this snapshot + user message |
+| S6 | G_clone returned `go` (default path + 4 repos). Executed: pilot path created; `git clone --depth 1` Test3R + CTRL + DUSt3R + MASt3R; sizes + HEAD + license recorded in cycle log. License finding: CC BY-NC-SA 4.0 on Test3R/DUSt3R/MASt3R + Apache 2.0 on critic-rl; research use OK, NonCommercial constraint recorded for future commercial-path DEC. NO install / NO checkpoint / NO run took place. | done | `experiments/runs/cycle-015-critic-l3-pilot/` + `cycles/CYCLE-20260505-006.md` |
+| S7 | Surface G_install micro gate (revised, server-side framing). S7 corrigendum + F-002 + feedback memory persisted; server coords resolved by reading ssh_runner.py:22-44; revised proposal: install only Test3R server-side; reuse DUSt3R / MASt3R / MonST3R / Spann3R / Fast3R envs already on server. User reply: `Go (server-side install Test3R only)`. | done | this snapshot + user message + `cycles/CYCLE-20260505-006.md` |
+| S8 | G_install (revised) returned `go`. Initial server `git clone` failed (github.com unreachable from KYKT-UI: GnuTLS recv error / curl timeout); user redirected to scp local clone. Executed: scp local Test3R (18 MB, HEAD a2eb94b) -> /hdd3/kykt26/code/Test3R; verified size + HEAD match. conda env `test3r` created (Python 3.11.15); first conda-style pytorch install hit MKL `iJIT_NotifyEvent` symbol error (defaults channel mkl 2025.0.0 vs older pytorch build); within-scope fixup: dropped conda pytorch + pip-installed torch 2.5.1+cu121 from `https://download.pytorch.org/whl/cu121` (mirrors dust3r env approach on same server); torch sanity passed (4x TITAN RTX 24GB; CUDA 12.1). pip install -r Test3R/requirements.txt completed; all 11 direct deps import cleanly. EXP-001 inferred numbers upgraded to `measured` for GPU class / clone disk / install wall-clock. NO checkpoint download / NO run / NO KYKT runner change. | done | server `/hdd3/kykt26/code/Test3R/` + `/home/kykt26/.conda/envs/test3r/` + `cycles/CYCLE-20260505-006.md` |
+| S9 | Surface G_download micro gate (Test3R checkpoint URL + size + landing path; DUSt3R + MASt3R checkpoints already on server, reused unchanged; HF reachability check needed; if any checkpoint comes from github releases, re-trigger network blocker -> fallback to local-download + scp) | in_progress | this snapshot + user message |
+| S10+ | Reserved for execution sub-passes; each entered ONLY after the matching micro gate returns "go" (G_run -> S10; G_log_use -> S11) | not started | TBD |
 
 ## Last completed task pass
 
@@ -102,28 +112,42 @@ If a new agent or new conversation is picking this up cold:
 
 ```text
 1. Read this file (you are here).
-2. Read cycles/CYCLE-20260505-005.md "Cycle 014 audit (S5)" and
-   "Cycle 015 launch packet (deferred to user)".
-3. Cycle 014 is closed; status is `idle`. The next live phase is
-   cycle 015, gated on user direction OR project hold.
-4. The recommended next action is to ask whether to authorize the
-   narrow Critic L3 pilot described in planning/L3_PILOT_SELECTION.md.
-   Do NOT execute it without a separate user-approved DEC.
-5. All 4 finalist demo storyboards (STORY-20260505-001..004) remain
+2. Read cycles/CYCLE-20260505-006.md (cycle 015 in progress; S1..S2
+   done; S3..S5 active) and decisions/DEC-20260505-005-cycle-015-
+   launch-critic-l3-pilot.md (Critic L3 pilot scope locked; 10
+   "not allowed" items; 5 per-step micro gates; 7 inherited + 3
+   cycle-015-specific stop conditions; 7 acceptance criteria).
+3. Cycle 015 is `in_progress`. Next action depends on which row in
+   the Subtask board above is the latest non-`done` row.
+4. If S3 is in_progress, finish the TASK_SNAPSHOT.md sync first per
+   F-001 rule 6 (this file FIRST). Then S4 sync chain (WORKFLOW_
+   STATUS / RESEARCH_STATE / INDEX / registry/decision_registry).
+   Then S5 surface G_clone gate to user.
+5. If S5 already surfaced and user has NOT replied "go", the cycle
+   is gated. Do NOT clone / download / install / run anything; wait.
+6. If user has replied "go" to G_clone, S6 starts: clone the 4
+   primary repos (Test3R, CTRL, DUSt3R, MASt3R) at the agreed pilot
+   path (proposed: experiments/runs/cycle-015-critic-l3-pilot/).
+   Each subsequent step (G_install, G_download, G_run, G_log_use)
+   is its own gate; do not chain them silently. If any micro gate
+   returns "no" or "redirect", stop and surface to user; do not
+   proceed to the next step.
+7. All 4 finalist demo storyboards (STORY-20260505-001..004) remain
    markdown `draft` ONLY. Do NOT promote any to `approved-for-
-   showing` without a separate DEC. Do NOT start any L3 / clone /
-   download / install / run / training / KYKT navigation change /
-   frontend implementation without explicit user approval per
-   AGENT_MASTER_PROMPT.md section 6. The 4 L3 prerequisite briefs
-   under experiments/ are inventory; filing them was NOT
-   authorization to execute them.
-6. Honor F-001 working rules throughout: do not Read large files
+   showing` without a separate DEC. Do NOT start any non-Critic L3
+   pilot (Memory / Permanence / Composer L3) / training / KYKT
+   navigation change / frontend implementation without explicit
+   user approval per AGENT_MASTER_PROMPT.md section 6. The 4 L3
+   prerequisite briefs under experiments/ are inventory; filing
+   them was NOT authorization to execute them; only Critic
+   (EXP-20260505-001) is in cycle-015 scope per DEC-20260505-005.
+8. Honor F-001 working rules throughout: do not Read large files
    already cited in this snapshot; prefer Grep -n + Edit over full-
    file Read + Write; cap large files in active context at <=2
    simultaneously.
 ```
 
-If this snapshot's Status is `idle`, cycle 013 is fully closed and the next live phase is cycle 014 (gated on user decisions surfaced in `cycles/CYCLE-20260505-004.md` "Cycle 014 launch packet").
+If this snapshot's Status is `idle`, cycle 015 is closed and the next live phase is cycle 016 (gated on cycle 015 closeout + a separate user direction).
 
 ## Open user decisions (resolution status, 2026-05-04)
 
@@ -378,6 +402,73 @@ G2 NOT closed. Closure remains gated on L3 prototype OR KYKT runner
 log access.
 ```
 
+Cycle 015 launch decisions (locked 2026-05-05 from user message "授权 Critic L3 窄域 pilot" delegating cycle 015 entry to the Critic L3 pilot scope; recorded in `decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md`):
+
+```text
+1. Cycle 015 entry (D5)              -> authorize Critic L3 pilot scope
+                                        per planning/L3_PILOT_SELECTION.md
+                                        "Recommended first-pilot scope" +
+                                        EXP-20260505-001 prerequisite
+                                        inventory. Allowed: clone Test3R
+                                        + CTRL + DUSt3R + MASt3R; download
+                                        required checkpoints; install
+                                        minimum env on a single box; run
+                                        one smoke loop on one hard-case
+                                        input; emit one JSONL log;
+                                        write thin wrapper
+                                        dream_critic_loop.py + hand-
+                                        derived capability_match YAML.
+2. Per-step micro gates (D5')        -> 5 gates, each a separate
+                                        user go in active conversation:
+                                        G_clone, G_install, G_download,
+                                        G_run, G_log_use. DEC-005 alone
+                                        does NOT authorize any of these
+                                        steps; each surfaces individually
+                                        with proposed path / repos /
+                                        checkpoints / hard-case input
+                                        before execution.
+3. v2.1 -> v2.2 candidates (D5'')    -> NO revision in cycle 015. Both
+                                        cycle-011 deferred candidates
+                                        (8x8 grid partition; identity_
+                                        consistency threshold pinning)
+                                        remain deferred. VGGT capability-
+                                        card gap remains per-card
+                                        (CASE-20260505-COMPOSER-05),
+                                        not contract-level.
+4. Composer second-pilot precondition (D5''') -> unchanged from
+                                        L3_PILOT_SELECTION.md: VGGT row
+                                        must be included or explicitly
+                                        excluded with reason before any
+                                        Composer route_regret sweep is
+                                        frozen. Cycle 015 does not act on
+                                        this; Composer pilot is OUT of
+                                        cycle 015 scope.
+5. Blocked items unchanged from cycle 014 closeout, with one tightening:
+   the cycle-015 authorization is Critic-L3-only. Memory / Permanence /
+   Composer L3 prototypes remain blocked. Final thesis selection,
+   reproduction (in the sense of paper-result re-runs), training,
+   KYKT navigation change, frontend implementation, reusable Codex
+   skill packaging, retiring any non-finalist track, declaring
+   teacher-demo readiness, and showing any of the 4 demo storyboards
+   all remain blocked.
+```
+
+Cycle 015 G2 / G6 / G7 status update at launch:
+
+```text
+G2 (route_regret closure):  unchanged. inferred-with-real-inventory-
+                            anchor (cycle 012 anchor). Critic smoke
+                            does NOT close G2; G2 closure remains
+                            gated on multi-regime measured
+                            route_regret OR KYKT runner log access.
+G6 (memory governance):     unchanged.
+G7 (paper related-work
+     prose readiness):      unchanged. inferred-with-blueprint-anchor
+                            (cycle 014 anchor). Closure still gated
+                            on user direction on venue / length /
+                            scope of Phase 2 paper.
+```
+
 ## Update protocol (highest priority — always honor)
 
 This file MUST be updated at every meaningful task transition. The transitions are:
@@ -405,6 +496,32 @@ F-001  32 MB request-limit failure (2026-05-04, prior session)
                keep <=2 large state files in context simultaneously;
                cite already-drafted content from cycle log + SPINE files
                instead of re-deriving it
+
+F-002  agent assumed local Windows execution for KYKT 3R model work
+       (2026-05-05, cycle 015 S7 G_install pre-flight)
+       cause:  agent probed local GPU/Python/conda and proposed creating
+               a conda env on the local Windows box and pip-installing
+               dust3r/mast3r/Test3R locally. Did NOT consult
+               E:\kykt\WORK.md or
+               E:\kykt\.omx\plans\kykt-app-backend-model-integration-plan.md,
+               both of which document a canonical server-side topology:
+               KYKT 3R models live on /hdd3/kykt26 on a remote server,
+               reached via system ssh + scp. Existing runners
+               (dust3r_runner.py, mast3r_runner.py, monst3r_runner.py,
+               spann3r_runner.py, fast3r_runner.py) already provide envs
+               + checkpoints for 4 of the 5 inventoried backbones.
+               EXP-20260505-001 was paper-derived and did NOT anchor to
+               the production runner inventory; the agent inherited the
+               paper-derived framing without re-checking topology.
+       avoid:  before any L3 / training / heavy-compute G_install /
+               G_download / G_run gate proposal, read E:\kykt\WORK.md +
+               E:\kykt\.omx\plans\kykt-app-backend-model-integration-plan.md
+               first; default to SERVER-side execution; reuse existing
+               runners before installing new ones; ask the user for
+               SSH host / path when topology details are missing rather
+               than improvising. Local Windows box = markdown + shallow
+               code-reading clones + orchestration + result inspection
+               only; not the model execution target.
 ```
 
 Add new entries here as new failure modes are discovered. Do not delete entries; supersede via a "superseded by F-NNN" note (Discipline rule 5 Honesty Override).

@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-05 (cycle 014 closed: paper Phase 2 blueprint + VGGT Composer addendum + L3 pilot selection; Critic recommended first L3 pilot, Composer backup; v2.1 unchanged; G2/G6 unchanged; G7 advanced to blueprint anchor but not closed)
+Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot scope per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required; v2.1 unchanged; G2/G6/G7 unchanged at launch; clone / download / install / run NOT yet authorized — each is a separate per-step user go)
 
 ## User Intent
 
@@ -1841,3 +1841,149 @@ This closeout does NOT authorize reproduction, L3 execution, clone,
 download, install, run, training, checkpoint download, KYKT navigation
 change, frontend implementation, demo showing, paper finalization, or
 thesis selection.
+
+## Cycle 015 Launch (CYCLE-20260505-006)
+
+Cycle 015 launched 2026-05-05 on user message "授权 Critic L3 窄域
+pilot" (selected from a 4-option entry menu after the agent surfaced
+cycle 014 closeout). DEC-20260505-005 locks the cycle as a Critic L3
+pilot scope authorization, written verbatim against
+planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope" plus
+EXP-20260505-001 prerequisite inventory. Cycle is `in_progress` at
+markdown-launch time.
+
+Authorization shape:
+
+```text
+DEC-20260505-005 authorizes the SCOPE of the Critic L3 pilot.
+It does NOT authorize any operational step. Each of the 5 micro
+gates below is a separate user go in the active conversation,
+surfaced one at a time before that step is taken:
+
+  G_clone     : clone Test3R + CTRL + DUSt3R + MASt3R under the
+                proposed pilot path
+  G_install   : create env (conda / venv) and pip install
+  G_download  : download required checkpoints (size + URLs
+                surfaced)
+  G_run       : run smoke loop on the proposed hard-case input
+  G_log_use   : commit smoke JSONL log under experiments/runs/...
+                and update CRITIC-01 evidence label
+```
+
+Allowed by DEC-005 at the scope level:
+
+```text
+clone Test3R + CTRL + DUSt3R + MASt3R; download required
+checkpoints; install minimum env on a single box; run one smoke
+loop on one hard-case input; emit one JSONL log line per (input,
+S, reroute decision, revised output, delta); write thin wrapper
+dream_critic_loop.py + hand-derived capability_match YAML.
+```
+
+NOT allowed by DEC-005:
+
+```text
+no full benchmark sweep beyond DUSt3R / MASt3R + Test3R-style
+consistency; no training or fine-tuning of any kind; no KYKT
+navigation change; no frontend; no reusable Codex skill packaging;
+no promotion of STORY-20260505-001 past `draft`; no G2 closure
+claim; no retroactive case-card edits; no system-level changes
+(no driver downgrade, no system-wide CUDA reinstall, no kernel
+module change); no silent upstream patches to Test3R / CTRL /
+DUSt3R / MASt3R; no teacher-demo readiness claim; no final
+thesis selection; no retiring of any non-finalist track.
+```
+
+Stop conditions inherited from EXP-20260505-001 + cycle-015-specific
+additions:
+
+```text
+(a) URL 404 on any prerequisite; (b) license blocks intended use;
+(c) wall-clock blow-out (10x inferred); (d) privileged system
+change required; (e) any micro gate "no" or "redirect" stops the
+relevant step and the cycle waits; (f) output path drift from
+agreed pilot path; (g) smoke produces no signed delta -> recorded
+as env smoke, not L3 evidence pilot; CRITIC-01 evidence label
+NOT upgraded.
+```
+
+Acceptance criteria for L3 evidence (vs. env smoke): all 7 of the
+EXP-20260505-001 items must exist (reproducible input reference;
+baseline output reference; logged conflict_score or equivalent;
+logged Composer-backed reroute rationale; revised output reference;
+signed delta metric; stop-condition note if delta is not positive).
+
+Goal status at cycle 015 launch:
+
+```text
+G2 (route_regret closure):                unchanged. Critic smoke
+                                           does NOT close G2.
+G6 (memory governance externalization):   unchanged.
+G7 (paper related-work prose readiness):  unchanged. Closure still
+                                           gated on user direction
+                                           on venue / length / scope.
+```
+
+Artifacts produced at launch:
+
+```text
+new (markdown-only):
+  decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md
+  cycles/CYCLE-20260505-006.md
+
+sync-pass (in-place edits):
+  TASK_SNAPSHOT.md (FIRST per F-001 rule 6)
+  WORKFLOW_STATUS.md
+  RESEARCH_STATE.md (this section)
+  registry/decision_registry.md
+  INDEX.md (pending at write-time of this section)
+```
+
+Cycle 015 subtask board (live at launch):
+
+```text
+S1  Write DEC-20260505-005                     done
+S2  Write cycles/CYCLE-20260505-006.md         done
+S3  Update TASK_SNAPSHOT.md FIRST (sync chain) done
+S4  Sync chain (WORKFLOW / RESEARCH_STATE /
+    INDEX / decision_registry)                 in_progress
+S5  Surface G_clone micro gate to user         pending
+S6+ Reserved for execution sub-passes; each
+    entered ONLY after the matching micro
+    gate returns "go"                          not started
+```
+
+Discipline compliance at launch:
+
+```text
+rule 1 (Falsifiability):       cycle-015 stop conditions (a)..(g)
+                               recorded; none triggered at launch.
+rule 2 (Min Viable Mechanism): no new finalists / specs / proxy
+                               metrics. Critic L3 pilot exercises
+                               existing CRITIC-01..03 + COMPOSER-
+                               01..04 cards; no new mechanisms.
+rule 3 (Surgical Edits):       every cycle-015 launch artifact
+                               traces to DEC-005 or Sync Rule.
+                               No retroactive edits to prior cycle
+                               artifacts. v2.1 contract unchanged.
+                               No prior case cards rewritten.
+rule 4 (Falsifiable Goals):    fail-fast condition (g) requires
+                               signed delta or no L3 evidence
+                               claim; failure to obtain delta does
+                               NOT silently upgrade CRITIC-01
+                               evidence label.
+rule 5 (Honesty Override):     all operational numbers `inferred`;
+                               authorization itself `user-decided`;
+                               NO measurement claim produced by
+                               this launch.
+F-001 working rules:           snapshot-first sync (TASK_SNAPSHOT.md
+                               edited FIRST in S3); diff-only Edits
+                               on existing files; no full-file Reads
+                               of already-cited large files; large
+                               files in active context capped at <=2.
+```
+
+This launch does NOT authorize clone, install, checkpoint download,
+run, training, KYKT navigation change, frontend, paper finalization,
+storyboard promotion, G2 closure claim, or thesis selection. Each
+operational step is a separate per-step user go.
