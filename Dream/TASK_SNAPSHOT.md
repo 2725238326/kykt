@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-06 (cycle 015 S9 done: G_download was degenerate — Test3R hardcodes HF id `naver/DUSt3R_ViTLarge_BaseDecoder_512_dpt` but huggingface.co blocked from server; user chose patch-launch.py path; one-line `sed -i` patch on /hdd3/kykt26/code/Test3R/eval/mv_recon/launch.py:103 to point at existing /hdd3/kykt26/models/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth (2.2 GB; pre-existing for dust3r runner); `.cycle015.bak` backup kept; verified `AsymmetricCroCo3DStereo.from_pretrained(local_path)` loads 571.2M params with all keys matched, CUDA transfer OK; no HF network call; G_run / G_log_use still required as separate per-step gates; v2.1 unchanged; G2/G6/G7 unchanged; F-002 + memory persisted)
+Last updated: 2026-05-06 (STRATEGIC REDIRECT: user redefined Dream mainline as architecture-first per DEC-20260506-001 + feedback_dream_mainline_architecture_first.md; cycle 015 paused at S9 done is correct posture (NOT abandoned); cycle 016 next = draft Dream3R architecture spec + ablation plan + comparator map (markdown only; no training); paper Phase 2 blueprint demoted to support artifact; v2.1 contract / 4 finalist specs / 4 storyboards all unchanged and become INPUTS to architecture spec; no-all-in (DEC-504-002) + Dream3R-candidate-not-final (DEC-501-004) still in force; G2/G6/G7 unchanged; F-002 + 2 memories persisted)
 
-Status: **in_progress** (cycle 015 S10 next: surface G_run)
+Status: **in_progress** (cycle 015 paused at S9 done; cycle 016 architecture-spec drafting deferred to next session per user "今日进度到此为止")
 
 ## Why this file exists
 
@@ -113,42 +113,79 @@ If a new agent or new conversation is picking this up cold:
 
 ```text
 1. Read this file (you are here).
-2. Read cycles/CYCLE-20260505-006.md (cycle 015 in progress; S1..S2
-   done; S3..S5 active) and decisions/DEC-20260505-005-cycle-015-
-   launch-critic-l3-pilot.md (Critic L3 pilot scope locked; 10
-   "not allowed" items; 5 per-step micro gates; 7 inherited + 3
-   cycle-015-specific stop conditions; 7 acceptance criteria).
-3. Cycle 015 is `in_progress`. Next action depends on which row in
-   the Subtask board above is the latest non-`done` row.
-4. If S3 is in_progress, finish the TASK_SNAPSHOT.md sync first per
-   F-001 rule 6 (this file FIRST). Then S4 sync chain (WORKFLOW_
-   STATUS / RESEARCH_STATE / INDEX / registry/decision_registry).
-   Then S5 surface G_clone gate to user.
-5. If S5 already surfaced and user has NOT replied "go", the cycle
-   is gated. Do NOT clone / download / install / run anything; wait.
-6. If user has replied "go" to G_clone, S6 starts: clone the 4
-   primary repos (Test3R, CTRL, DUSt3R, MASt3R) at the agreed pilot
-   path (proposed: experiments/runs/cycle-015-critic-l3-pilot/).
-   Each subsequent step (G_install, G_download, G_run, G_log_use)
-   is its own gate; do not chain them silently. If any micro gate
-   returns "no" or "redirect", stop and surface to user; do not
-   proceed to the next step.
-7. All 4 finalist demo storyboards (STORY-20260505-001..004) remain
-   markdown `draft` ONLY. Do NOT promote any to `approved-for-
-   showing` without a separate DEC. Do NOT start any non-Critic L3
-   pilot (Memory / Permanence / Composer L3) / training / KYKT
-   navigation change / frontend implementation without explicit
-   user approval per AGENT_MASTER_PROMPT.md section 6. The 4 L3
-   prerequisite briefs under experiments/ are inventory; filing
-   them was NOT authorization to execute them; only Critic
-   (EXP-20260505-001) is in cycle-015 scope per DEC-20260505-005.
-8. Honor F-001 working rules throughout: do not Read large files
-   already cited in this snapshot; prefer Grep -n + Edit over full-
-   file Read + Write; cap large files in active context at <=2
-   simultaneously.
+2. Read decisions/DEC-20260506-001-mainline-architecture-first.md
+   FIRST — this is the most recent strategic decision and it
+   redefines the project mainline. Without reading it, you'll
+   inherit the wrong inference (framework-first) and propose work
+   in the wrong direction.
+3. Read C:\Users\27252\.claude\projects\e--kykt\memory\
+   feedback_dream_mainline_architecture_first.md for the
+   cross-session feedback memory restating the same redirect.
+   Plus C:\Users\27252\.claude\projects\e--kykt\memory\
+   feedback_kykt_server_topology.md for F-002 server topology
+   (still load-bearing if cycle 015 G_run is ever resumed).
+4. Read cycles/CYCLE-20260505-006.md "S6 execution log" through
+   "S10 hold" — full cycle 015 execution record from G_clone
+   through the deliberate pause at S9 done. Still load-bearing
+   as the L3 infrastructure anchor for the architecture spec.
+5. Read decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md
+   if cycle 015 G_run is going to be resumed (otherwise skip to 6).
+
+Project state at this snapshot:
+   Cycle 015 PAUSED at S9 done (NOT closed; NOT abandoned;
+                                infrastructure is reusable).
+   Cycle 016 SEEDED but not yet launched at S2..S5
+                                (only S1 done: this DEC + memory +
+                                this snapshot block).
+
+Mainline redirect summary:
+   - Old implicit framing: framework-first paper output.
+   - New explicit framing: architecture-first; Dream3R architecture
+     spec is the PRIMARY output; paper is SUPPORT.
+   - Cycle 015 L3 measurement work is SUPPORT / prereq for the
+     architecture spec, NOT mainline.
+   - Train-first remains deferred / blocked.
+   - DEC-501-004 (Dream3R candidate-not-final) and DEC-504-002
+     (no-all-in) still in force.
+
+Resume action when user returns:
+   Primary path (recommended): launch cycle 016 S2 — start drafting
+     the Dream3R architecture spec. First step is a markdown design
+     pass synthesizing the 4 finalist specs + v2.1 contract + A1-A8
+     actions into a coherent architecture proposal, with per-section
+     evidence labels per Discipline rule 5. User will pick the
+     artifact location at S2 (proposed: specs/SPEC-20260506-001-
+     dream3r-architecture.md OR planning/DREAM3R_ARCHITECTURE_DRAFT.md).
+   Secondary path (only if user explicitly asks): resume cycle 015
+     G_run with the 5 design choices listed in cycles/
+     CYCLE-20260505-006.md "What S10 will surface".
+   Do NOT execute anything beyond markdown drafting without
+   explicit user `Go`. Do NOT propose training. Do NOT propose
+   thesis finalization.
+
+Hard rules still in force:
+   - All 4 finalist demo storyboards (STORY-20260505-001..004)
+     remain markdown `draft`. Do NOT promote any to `approved-for-
+     showing` without a separate DEC.
+   - Do NOT start any non-Critic L3 pilot (Memory / Permanence /
+     Composer L3) / training / KYKT navigation change / frontend
+     implementation without explicit user approval per
+     AGENT_MASTER_PROMPT.md section 6.
+   - Cycle 015 has narrow exceptions ONLY for the Critic L3 pilot
+     scope; everything else stays gated.
+   - DEC-20260506-001 authorizes architecture-spec DESIGN +
+     ablation PLANNING; NOT training, NOT GPU runs, NOT checkpoint
+     creation.
+
+Honor F-001 working rules throughout: do not Read large files
+already cited in this snapshot; prefer Grep -n + Edit over full-
+file Read + Write; cap large files in active context at <=2
+simultaneously. Honor F-002: KYKT 3R model work runs server-side;
+default to ssh + reuse before installing; check ssh_runner.py:22-44
+ServerConfig before asking for SSH details.
 ```
 
-If this snapshot's Status is `idle`, cycle 015 is closed and the next live phase is cycle 016 (gated on cycle 015 closeout + a separate user direction).
+If this snapshot's Status is `idle`, both cycle 015 (Critic L3 measurement) and cycle 016 (Dream3R architecture spec drafting) are closed; the next live phase requires a separate user direction.
 
 ## Open user decisions (resolution status, 2026-05-04)
 
@@ -468,6 +505,82 @@ G7 (paper related-work
                             (cycle 014 anchor). Closure still gated
                             on user direction on venue / length /
                             scope of Phase 2 paper.
+```
+
+Cycle 016 mainline redirect (locked 2026-05-06 from user message "所以现在我们做的和新模型有啥关系？或者说什么时候能开始推进主线了？" + selection of "B. Architecture-first" from a 3-option strategic question; recorded in `decisions/DEC-20260506-001-mainline-architecture-first.md`):
+
+```text
+1. Mainline definition (D6)         -> Dream's mainline is
+                                       **architecture-first**: design a
+                                       new 3R architecture (transformer
+                                       / SSM / state-space / hybrid) as
+                                       a markdown spec + ablation plan
+                                       + comparator map. NOT framework-
+                                       first paper writing.
+
+2. Cycle 015 posture (D6')          -> stays paused at S9 done. NOT
+                                       closed. NOT abandoned. The L3
+                                       infrastructure (test3r conda env
+                                       on server; launch.py patch; F-002
+                                       memory; 4 local shallow clones)
+                                       is reusable as evidence anchor
+                                       for the architecture spec's
+                                       Critic-module section. G_run can
+                                       be resumed later if the
+                                       architecture spec needs measured
+                                       evidence; until then, no G_run.
+
+3. Paper Phase 2 blueprint (D6'')   -> demoted from primary output to
+                                       SUPPORT artifact. Still useful
+                                       (control-graph theory becomes
+                                       the THEORY behind the
+                                       architecture); but the
+                                       architecture spec is the
+                                       PRIMARY output of the project.
+
+4. Past decisions still in force (D6''') -> DEC-20260501-004 (Dream3R
+                                       candidate-not-final) and
+                                       DEC-20260504-002 (no-all-in any
+                                       single finalist) both still
+                                       apply. Architecture spec must
+                                       (a) remain a candidate that can
+                                       be revised/replaced/merged, and
+                                       (b) preserve all 4 finalist
+                                       mechanisms as composable
+                                       modules, not collapse into one.
+
+5. Train-first (option C) NOT authorized. Architecture-first
+   authorizes design + ablation planning, NOT training, NOT GPU
+   ablation runs, NOT checkpoint creation. Train-first remains
+   deferred / blocked.
+
+6. Blocked items unchanged from prior cycles. Hard rules carried from
+   AGENT_MASTER_PROMPT.md section 6 unchanged: no reproduction / no
+   checkpoint download / no training / no KYKT navigation change / no
+   frontend / no thesis finalization / no retiring of any non-finalist
+   track / no demo storyboard promotion past `draft`.
+
+7. Cycle 016 launch deferred. S1 of cycle 016 = this DEC + feedback
+   memory + this snapshot block (done 2026-05-06). S2..S5 (architecture
+   spec draft + ablation plan + comparator map + sync chain) deferred
+   to next session per user "今日进度到此为止".
+```
+
+Cycle 016 G2 / G6 / G7 status update at redirect:
+
+```text
+G2 (route_regret closure):  unchanged. Architecture spec drafting does
+                            NOT close G2 (still gated on measured
+                            route_regret OR KYKT runner log access).
+G6 (memory governance):     unchanged.
+G7 (paper related-work
+     prose readiness):      unchanged. Paper output is now SUPPORT,
+                            not primary; G7 closure is no longer the
+                            project's main milestone. The new primary
+                            milestone is "Dream3R architecture spec
+                            v1 draft" (call it G8 if/when formalized).
+                            Whether G7 stays open vs is retired is a
+                            separate cycle-016 decision.
 ```
 
 ## Update protocol (highest priority — always honor)
