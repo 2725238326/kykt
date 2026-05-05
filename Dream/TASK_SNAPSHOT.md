@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-05 (cycle 013 fully closed: 8 newly-mined sources (7 new SRC IDs SRC-2026-009..015) + paper related-work prose draft (skeleton -> prose; Sections 1-7 prose, Sections 8-9 drafted) + 4 L3 prerequisites briefs (EXP-20260505-001..004) per DEC-20260505-003; v2.1 unchanged; G2 unchanged at inferred-with-real-inventory-anchor; G7 paper-related-work-prose-readiness new; sync chain run; post-closeout SPINE refresh fold-in pass done 2026-05-05: tttLRM into SPINE_MEMORY + SPINE_CRITIC; VGGT + MapAnything + DUSt3R-MASt3R-VGGT MVS evaluation + awesome-dust3r into SPINE_COMPOSER; Julian Ost AAAI-2026 into SPINE_PERMANENCE advanced + CRITICAL_NOTES.md 3 new deconfusion entries (Julian Ost name-collision / tttLRM vs Test3R / VGGT capability-card gap); markdown-only; cycle 013 closed state preserved)
+Last updated: 2026-05-05 (cycle 014 closed: DEC-20260505-004 + CYCLE-20260505-005; paper Phase 2 blueprint added; VGGT Composer capability-card gap addendum added as CASE-20260505-COMPOSER-05; L3 pilot selection added with Critic recommended first and Composer backup; v2.1 unchanged; G2/G6 unchanged; G7 advanced to blueprint anchor but not closed; no L3 execution / clone / download / install / run authorized)
 
-Status: **idle** (cycle 013 closed; awaiting user direction for cycle 014 OR project hold)
+Status: **idle** (cycle 014 closed; awaiting user direction for cycle 015 OR project hold)
 
 ## Why this file exists
 
@@ -21,116 +21,79 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-013
-phase:      Phase 1.5 -> Phase 2 transition (Phase 2 prep authorized; full Phase 2 still gated)
-cycle:      013 (Phase 2 preparation + research mining: source mining + paper related-work prose + L3 prerequisites briefs)
-status:     idle (cycle 013 closed; awaiting user direction for cycle 014 OR project hold)
+task_id:    cycle-014
+phase:      Phase 2 convergence prep (markdown-only; execution selection, not execution)
+cycle:      014 (paper blueprint + VGGT Composer addendum + L3 pilot downselect)
+status:     idle (cycle 014 closed; awaiting user direction for cycle 015 OR project hold)
 ```
 
 One-line description:
 
 ```text
-User delegated cycle-013 planning to the agent on 2026-05-05 ("好了，
-请你做实际的研究部署吧，无论是准备工作还是调研和资料搜集等" +
- clarification "Phase 2 准备 + 资料调研 (推荐)"). Agent locked three
-sub-passes per DEC-20260505-003: (1) source-mining cycle-013 pass
-(8 newly-mined sources; 7 new SRC IDs SRC-2026-009..015 covering
-MapAnything / Julian Ost AAAI-2026 driving permanence / tttLRM /
-awesome-dust3r curated index / DUSt3R-MASt3R-VGGT MVS evaluation /
-NTIRE 2026 / VGGT); (2) paper related-work prose draft (replace
-literature/PAPER_RELATED_WORK_SKELETON.md skeleton bullets with prose
-in Sections 1-7; draft Sections 8-9 as prose); (3) 4 L3 prerequisites
-briefs under experiments/ (EXP-20260505-001 Critic / 002 Memory / 003
-Permanence / 004 Composer). Cycle 013 produced 6 new artifacts (DEC-
-003 + cycle log + 4 L3 briefs) and 3 in-place edits (FRONTIER_SOURCE_
-MAP + source_registry + PAPER_RELATED_WORK_SKELETON). v2.1 contract
-unchanged. G2 unchanged. New tracking goal G7 (paper-related-work-
-prose-readiness; inferred-with-prose-draft-anchor). All 4 demo
-storyboards remain `draft`. AGENT_MASTER_PROMPT.md section 6 gates
-remain in force; no L3 / clone / download / install / run authorized.
+User said "继续" after the agent recommended a cycle-014 route:
+paper blueprint, VGGT Composer capability-card gap handling, and L3
+pilot downselect. Cycle 014 produced the planned markdown-only
+convergence artifacts and closed cleanly. The new recommendation is:
+Critic is the first L3 pilot if the user later authorizes execution;
+Composer is the backup / second pilot after VGGT is included or
+explicitly excluded in the route-regret sweep design. Cycle 014 did
+NOT authorize L3 execution, clone, download, install, run, checkpoint
+access, KYKT runner access, frontend work, storyboard showing, or final
+thesis selection.
 ```
 
-## Subtask board (latest pass: cycle 013 launch + closeout, 2026-05-05)
+## Subtask board (active pass: cycle 014 launch + convergence, 2026-05-05)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| A | Activation pass: write `decisions/DEC-20260505-003-cycle-013-launch.md` + `cycles/CYCLE-20260505-004.md` + checkpoint commit | done | commit `96b38c5` |
-| S2 | Source-mining cycle-013 pass: append "Cycle 013 Source Mining Pass" to `sources/FRONTIER_SOURCE_MAP.md` + add SRC-2026-009..015 rows to `registry/source_registry.md` (8 new sources; 7 new SRC IDs) | done | commit `b4fb43f` |
-| S3 | Paper related-work prose draft: replace `literature/PAPER_RELATED_WORK_SKELETON.md` skeleton bullets with prose in Sections 1-7; draft Sections 8-9 as prose | done | commit `fd5557f` |
-| S4 | L3 prerequisites briefs: 4 markdown files under `experiments/` (EXP-20260505-001 Critic / 002 Memory / 003 Permanence / 004 Composer); each lists repos / checkpoints / GPU / smoke-test path / minimum code change; brief-only, NOT L3 authorization | done | commit `f8bbe32` |
-| S5 | Cycle 013 audit: artifact integrity for S2/S3/S4; URL verifiability; CASE-* + SPEC-* + SRC-* citation; v2.1 contract substance unchanged; no retroactive edits; Honesty Override check | done | `cycles/CYCLE-20260505-004.md` "Cycle 013 Audit (S5) under v2.1" |
-| S6 | Cycle 013 closeout: write closeout section in cycle log; sync chain (this snapshot first; then WORKFLOW_STATUS / RESEARCH_STATE / INDEX / AGENT_MASTER_PROMPT / README / decision_registry) | done | `cycles/CYCLE-20260505-004.md` "Closeout (S6)" + this sync pass |
-| S7 | Surface cycle-013 outputs to user as a Phase 2 prep + research mining report and ask for cycle-014 direction | done | user-facing message (this turn) |
+| S1 | Activation pass: write `decisions/DEC-20260505-004-cycle-014-launch.md` + `cycles/CYCLE-20260505-005.md` | done | `decisions/DEC-20260505-004-cycle-014-launch.md` + `cycles/CYCLE-20260505-005.md` |
+| S2 | Paper blueprint: convert related-work prose state into Phase 2 paper blueprint without claiming full paper readiness | done | `literature/PAPER_PHASE2_BLUEPRINT.md` |
+| S3 | VGGT Composer gap: add a per-card addendum for VGGT / MapAnything / DUSt3R-MASt3R-VGGT MVS evaluation, no contract revision | done | `cases/CASE-20260505-COMPOSER-05.md` |
+| S4 | L3 pilot downselect: compare four EXP briefs and recommend first execution target, with all execution gates preserved | done | `planning/L3_PILOT_SELECTION.md` |
+| S5 | Audit + sync: update cycle log, `TASK_SNAPSHOT.md` first, then workflow / state / index / prompt / README / decision registry | done | `cycles/CYCLE-20260505-005.md` + sync chain |
 
 ## Last completed task pass
 
 ```text
-pass_name:        Cycle 013 launch + closeout pass (A + S2..S7 done in
-                  one continuous conversation; Phase 2 prep + research
-                  mining; resumed from interrupt at S3 in this session)
+pass_name:        Cycle 014 launch + convergence pass (S1..S5 done;
+                  markdown-only Phase 2 convergence and execution
+                  selection)
 date:             2026-05-05
-trigger:          User message "好了，请你做实际的研究部署吧，无论是
-                  准备工作还是调研和资料搜集等" + clarification
-                  "Phase 2 准备 + 资料调研 (推荐)" — delegated cycle-013
-                  planning to the agent. Then resumed in a follow-up
-                  conversation per user message "请你读取 TASK_SNAPSHOT
-                  来继续我们的任务" with the prior session having
-                  committed up through S2.
+trigger:          User message "继续" after the agent recommended cycle
+                  014 scope: paper blueprint, VGGT Composer gap addendum,
+                  and L3 pilot downselect.
 files_modified:   TASK_SNAPSHOT.md (this file; subtask board + last
                   completed task pass + If interrupted resume from +
-                  Open user decisions; FIRST in sync chain per F-001
-                  rule 6)
-                  cycles/CYCLE-20260505-004.md (S5 audit + S6 closeout
-                  + subtask board flips + status closed + header bump)
-                  WORKFLOW_STATUS.md (header bump + Cycle logs row +
-                  Experiment planning row + Literature guidance board
-                  row updated; Recommended Next User Decision
-                  rewritten as cycle-014 launch packet)
-                  RESEARCH_STATE.md (cycle 013 closeout section
-                  appended; header bump)
-                  INDEX.md (experiments/ section lists 4 new L3
-                  briefs; literature/ row marks PAPER_RELATED_WORK_
-                  SKELETON.md as prose draft; header bump)
-                  AGENT_MASTER_PROMPT.md (header bump only)
-                  README.md (header bump only)
-                  registry/decision_registry.md (DEC-20260505-003 row
-                  added)
-new_artifacts:    decisions/DEC-20260505-003-cycle-013-launch.md
-                  cycles/CYCLE-20260505-004.md
-                  experiments/EXP-20260505-001-l3-prerequisites-critic.md
-                  experiments/EXP-20260505-002-l3-prerequisites-memory.md
-                  experiments/EXP-20260505-003-l3-prerequisites-permanence.md
-                  experiments/EXP-20260505-004-l3-prerequisites-composer.md
-in_place_edits:   sources/FRONTIER_SOURCE_MAP.md (Cycle 013 Source
-                  Mining Pass appended; 8 newly mined sources)
-                  registry/source_registry.md (7 new SRC rows
-                  SRC-2026-009..015)
-                  literature/PAPER_RELATED_WORK_SKELETON.md (skeleton
-                  -> prose draft; Sections 1-7 prose; Sections 8-9
-                  drafted; filename retained per Surgical Edits)
-discipline:       Surgical Edits (no retroactive case-card / spec /
-                  storyboard / contract / prior-cycle-log edits;
-                  v2.1 contract substance unchanged; SPINE refresh
-                  fold-in deferred as queue items) + Honesty Override
-                  (every newly-mined source URL-verifiable; every
-                  prose paragraph cites a CASE-* or SPEC-* or SRC-*;
-                  every L3 brief GPU / disk / time number labeled
-                  `inferred`; explicit "this brief does not constitute
-                  L3 authorization" on each EXP file; G2 not advanced;
-                  storyboards still `draft`; no `approved-for-showing`
-                  smuggled in).
-budget_event:     None this pass. Source map + paper skeleton +
-                  4 L3 briefs followed F-001 budgeting plan; per-phase
-                  commits evicted heavy context; no "Request too
-                  large" trigger.
+                  hard-rule date-prefix stale sentence corrected;
+                  FIRST in sync chain per F-001 rule 6)
+                  cycles/CYCLE-20260505-005.md (audit + closeout +
+                  subtask board flips)
+                  WORKFLOW_STATUS.md, RESEARCH_STATE.md, INDEX.md,
+                  AGENT_MASTER_PROMPT.md, README.md,
+                  registry/decision_registry.md (cycle 014 sync)
+new_artifacts:    decisions/DEC-20260505-004-cycle-014-launch.md
+                  cycles/CYCLE-20260505-005.md
+                  literature/PAPER_PHASE2_BLUEPRINT.md
+                  cases/CASE-20260505-COMPOSER-05.md
+                  planning/L3_PILOT_SELECTION.md
+in_place_edits:   guidance sync files only; no prior case cards, specs,
+                  storyboards, contract, or experiment briefs rewritten
+discipline:       Surgical Edits (new synthesis in new artifacts;
+                  existing Composer cards not retroactively rewritten;
+                  v2.1 contract unchanged) + Honesty Override (paper
+                  blueprint is draft; VGGT rows inferred; L3 pilot is
+                  recommendation only; no execution authorization;
+                  G2/G6 unchanged; G7 not closed; storyboards draft).
+budget_event:     None this pass. No large source maps or case-card
+                  portfolios were re-read in full.
 
-prior_pass_name:  Cycle 012 launch + closeout pass
+prior_pass_name:  Cycle 013 launch + closeout pass
 prior_pass_date:  2026-05-05
-prior_pass_files: TASK_SNAPSHOT.md, cycles/CYCLE-20260505-003.md,
-                  cases/CASE-20260505-COMPOSER-04.md (KYKT-metadata-
-                  derived; first non-paper-derived Composer L2 card),
-                  storyboards/STORY-20260505-002..004.md (Memory /
-                  Permanence / Composer; all draft).
+prior_pass_files: TASK_SNAPSHOT.md, cycles/CYCLE-20260505-004.md,
+                  sources/FRONTIER_SOURCE_MAP.md,
+                  registry/source_registry.md,
+                  literature/PAPER_RELATED_WORK_SKELETON.md,
+                  experiments/EXP-20260505-001..004-l3-prerequisites-*.md
 ```
 
 ## If interrupted, resume from
@@ -139,25 +102,14 @@ If a new agent or new conversation is picking this up cold:
 
 ```text
 1. Read this file (you are here).
-2. Read decisions/DEC-20260505-003-cycle-013-launch.md (cycle 013
-   launch: Phase 2 prep + research mining: source-mining + paper
-   related-work prose + L3 prerequisites briefs). DEC-20260505-002
-   (cycle 012) + DEC-20260505-001 (cycle 011) + DEC-20260504-002
-   (no-all-in) + DEC-20260504-004 (contract v2) referenced from
-   DEC-003; consult only if you need full rationale.
-3. Read cycles/CYCLE-20260505-004.md "Cycle 013 Audit (S5) under v2.1"
-   + "Closeout (S6)" + "Cycle 014 launch packet" sections — those
-   carry the full cycle-013 result summary (6 new artifacts + 3
-   in-place edits; G2 unchanged; G7 new; v2.1 unchanged; cycle 014
-   launch packet with 6 options + cycle-014-specific decisions).
-4. Cycle 013 is fully closed; status is `idle`. The next live phase
-   is cycle 014 (gated on user direction OR user may hold the
-   project at this state).
-5. The four cycle-014 launch decisions are listed in cycles/CYCLE-
-   20260505-004.md "Cycle 014 launch packet (deferred to user)"
-   (scope options a..f / SPINE refresh fold-in / v2.2 candidates
-   none / D3 reconsideration / blocked items).
-6. All 4 finalist demo storyboards (STORY-20260505-001..004) remain
+2. Read cycles/CYCLE-20260505-005.md "Cycle 014 audit (S5)" and
+   "Cycle 015 launch packet (deferred to user)".
+3. Cycle 014 is closed; status is `idle`. The next live phase is
+   cycle 015, gated on user direction OR project hold.
+4. The recommended next action is to ask whether to authorize the
+   narrow Critic L3 pilot described in planning/L3_PILOT_SELECTION.md.
+   Do NOT execute it without a separate user-approved DEC.
+5. All 4 finalist demo storyboards (STORY-20260505-001..004) remain
    markdown `draft` ONLY. Do NOT promote any to `approved-for-
    showing` without a separate DEC. Do NOT start any L3 / clone /
    download / install / run / training / KYKT navigation change /
@@ -165,7 +117,7 @@ If a new agent or new conversation is picking this up cold:
    AGENT_MASTER_PROMPT.md section 6. The 4 L3 prerequisite briefs
    under experiments/ are inventory; filing them was NOT
    authorization to execute them.
-7. Honor F-001 working rules throughout: do not Read large files
+6. Honor F-001 working rules throughout: do not Read large files
    already cited in this snapshot; prefer Grep -n + Edit over full-
    file Read + Write; cap large files in active context at <=2
    simultaneously.
@@ -477,5 +429,5 @@ These rules are mandatory-equivalent to the Hard rules below, since violating th
 1. No reproduction. No checkpoint download. No training. No KYKT navigation change. No frontend implementation. No thesis finalization. No retiring of any non-finalist track. None of these without explicit user approval **in the active conversation**.
 2. Apply Surgical Edits (Discipline rule 3): every changed line traces to a user request, decision memo, or Sync Rule trigger.
 3. Apply Honesty Override (Discipline rule 5): every mechanism claim carries an evidence label; user approval cannot be invented.
-4. ID conventions are fixed: `SPEC-YYYYMMDD-NNN`, `DEC-YYYYMMDD-NNN`, `CYCLE-YYYYMMDD-NNN`, `CASE-YYYYMMDD-NNN`. Today's date prefix is `20260504` for new artifacts produced in this session.
+4. ID conventions are fixed: `SPEC-YYYYMMDD-NNN`, `DEC-YYYYMMDD-NNN`, `CYCLE-YYYYMMDD-NNN`, `CASE-YYYYMMDD-NNN`. Use the current session date prefix for new artifacts.
 5. Sentence case headers. No em-dashes.

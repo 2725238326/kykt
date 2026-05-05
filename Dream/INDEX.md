@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-05 (cycle 013 fully closed: 8 newly-mined sources (7 new SRC IDs SRC-2026-009..015) + paper related-work prose draft (skeleton -> prose; Sections 1-7 prose, Sections 8-9 drafted) + 4 L3 prerequisites briefs (EXP-20260505-001..004) per DEC-20260505-003; v2.1 unchanged; G2 unchanged; G7 paper-related-work-prose-readiness new at inferred-with-prose-draft-anchor; D3 = Critic per cycle 011 unchanged)
+Last updated: 2026-05-05 (cycle 014 closed: paper Phase 2 blueprint + VGGT Composer addendum CASE-20260505-COMPOSER-05 + L3 pilot selection; Critic recommended first L3 pilot, Composer backup; v2.1 unchanged; G2/G6 unchanged; G7 advanced to blueprint anchor but not closed)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -51,6 +51,7 @@ Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is
 | `DREAM3R_THESIS_STRESS_TEST.md` | Stress test for the Dream3R / GEM-3R candidate branch |
 | `MINIMAL_DEMO_CANDIDATES.md` | Teacher-demo candidate analysis |
 | `WORK_RISK_REGISTER.md` | Consolidated cross-spec risk view across the four finalist specs and the cross-spec contract |
+| `L3_PILOT_SELECTION.md` | Cycle 014 L3 downselect: recommends Critic as first pilot and Composer as backup; planning only, not L3 authorization |
 
 ### `sources/` - Source Mining
 
@@ -121,6 +122,7 @@ Format: `CASE-YYYYMMDD-<SPEC>-NNN.md`. One file per (input, finalist spec) pair 
 | `CASE-20260505-COMPOSER-02.md` | SPEC-20260504-001 | Regime-typed route_regret central thesis card |
 | `CASE-20260505-COMPOSER-03.md` | SPEC-20260504-001 | Fast3R vs MASt3R-SfM; v1 -> v2 cost-typed route_regret canonical under v2 (per DEC-20260504-004) |
 | `CASE-20260505-COMPOSER-04.md` | SPEC-20260504-001 | KYKT-metadata-derived capability_card grounded to 4 KYKT job inventory (cycle 012; advances G2 inferred -> inferred-with-real-inventory-anchor; G2 NOT closed; first non-paper-derived Composer L2 card) |
+| `CASE-20260505-COMPOSER-05.md` | SPEC-20260504-001 | Cycle 014 VGGT capability-card gap addendum; per-card gap, no v2.2 contract revision; G2 NOT closed |
 | `CASE-20260504-MEMORY-01.md` | SPEC-20260503-002 | MonST3R 48-frame; primary Memory L2; CR-3 producer (closes cycle-009 CRITIC-03 forward-reference null) |
 | `CASE-20260504-MEMORY-02.md` | SPEC-20260503-002 | Spann3R transforms timeline; externalization-of-governance argument |
 | `CASE-20260504-MEMORY-03.md` | SPEC-20260503-002 | MASt3R small-N baseline; non-hallucination boundary on static-pair regime |
@@ -141,6 +143,7 @@ Curated guidance, not inventory. Inventories live in `sources/FRONTIER_SOURCE_MA
 | `SPINE_COMPOSER.md` | Same structure for the Composer finalist (SPEC-20260504-001); MoE routing as cross-domain analog |
 | `CRITICAL_NOTES.md` | Running log of "looks like X is X' but actually" insights; deconfusion of commonly-confused mechanisms |
 | `PAPER_RELATED_WORK_SKELETON.md` | Cycle 013 upgraded from skeleton to **prose draft** (Sections 1-7 prose anchored to L2 case cards + SRC-* IDs; Sections 8-9 drafted as prose). Filename retained per Surgical Edits |
+| `PAPER_PHASE2_BLUEPRINT.md` | Cycle 014 claim-safe paper blueprint; separates current L2 / inferred claims from L3-required claims; not full paper readiness |
 
 ### `specs/` - Finalist Mechanism Specs
 
@@ -199,9 +202,9 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | What can Dream do without asking the user? | `AGENT_MASTER_PROMPT.md` section 6 |
 | What requires user approval? | `AGENT_MASTER_PROMPT.md` section 6 + `WORKFLOW_STATUS.md` Blocked Until User Decision |
 | How should I behave when synthesizing or editing files? | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
-| What is the latest research result? | newest file under `cycles/` |
+| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260505-005.md` |
 | What did we decide? | `registry/decision_registry.md` and files under `decisions/` |
-| What experiments are planned? | files under `experiments/` |
+| What experiments are planned? | files under `experiments/`; first-pilot recommendation in `planning/L3_PILOT_SELECTION.md` |
 | How should the frontend agent work? | `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` |
 | How do humans and agents cooperate? | `handoff/COLLABORATION_ROADMAP.md` |
 

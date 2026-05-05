@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-05 (cycle 013 fully closed: 8 newly-mined sources (7 new SRC IDs SRC-2026-009..015) + paper related-work prose draft (skeleton -> prose; Sections 1-7 prose, Sections 8-9 drafted) + 4 L3 prerequisites briefs (EXP-20260505-001..004) per DEC-20260505-003; v2.1 unchanged; G2 unchanged; G7 paper-related-work-prose-readiness new at inferred-with-prose-draft-anchor; D3 = Critic per cycle 011 unchanged)
+Last updated: 2026-05-05 (cycle 014 closed: paper Phase 2 blueprint + VGGT Composer addendum + L3 pilot selection; Critic recommended first L3 pilot, Composer backup; v2.1 unchanged; G2/G6 unchanged; G7 advanced to blueprint anchor but not closed)
 
 ## User Intent
 
@@ -1784,3 +1784,60 @@ F-001 working rules:           snapshot-first sync (TASK_SNAPSHOT.md
 cycle 014 launch packet surfaced in CYCLE-20260505-004.md "Cycle 014 launch packet (deferred to user)" with 6 scope options (a..f) + cycle-014-specific decisions (SPINE refresh fold-in; v2.2 candidates none; D3 reconsideration option). Cycle 014 is gated on user direction OR user may hold the project at this state.
 
 This closeout does NOT authorize reproduction, paper finalization, KYKT navigation change, frontend implementation, training, checkpoint download, demo showing of any of the 4 storyboards, L3 execution of any of the 4 inventoried prerequisite briefs, or any thesis selection.
+
+## Cycle 014 Launch + Closeout (CYCLE-20260505-005)
+
+Cycle 014 launched 2026-05-05 on user message "继续" after the agent
+recommended a Phase 2 convergence route. DEC-20260505-004 locked the
+scope as markdown-only: paper blueprint, VGGT Composer capability-card
+gap addendum, and L3 pilot downselect.
+
+Artifacts produced:
+
+```text
+new:
+  decisions/DEC-20260505-004-cycle-014-launch.md
+  cycles/CYCLE-20260505-005.md
+  literature/PAPER_PHASE2_BLUEPRINT.md
+  cases/CASE-20260505-COMPOSER-05.md
+  planning/L3_PILOT_SELECTION.md
+
+in-place:
+  guidance sync files only (TASK_SNAPSHOT.md, WORKFLOW_STATUS.md,
+  RESEARCH_STATE.md, INDEX.md, AGENT_MASTER_PROMPT.md, README.md,
+  registry/decision_registry.md)
+```
+
+Main outcomes:
+
+```text
+1. PAPER_PHASE2_BLUEPRINT.md reframes the paper as a control-graph
+   framework, not a trained Dream3R model. It separates source-level
+   paper-proven claims from Dream-specific inferred claims.
+2. CASE-20260505-COMPOSER-05 records VGGT as a Composer capability-card
+   coverage gap. It is per-card, not a v2.1 contract gap; no v2.2
+   revision recommended.
+3. L3_PILOT_SELECTION.md recommends Critic as the first L3 pilot and
+   Composer as backup / second pilot. Memory and Permanence remain
+   valuable but are deferred because their first smoke paths carry higher
+   dependency and workload risk.
+```
+
+Goal status after cycle 014:
+
+```text
+G2 route_regret closure: unchanged; still inferred-with-real-inventory-
+  anchor. Composer remains the direct closure path, but VGGT should be
+  included or explicitly excluded before paper-facing G2 closure.
+G6 Memory L3 prototype: unchanged; deferred and gated.
+G7 paper-related-work-prose-readiness: advanced to blueprint anchor, not
+  closed. Full paper writing still requires user direction and measured-
+  result boundaries.
+D3 first teacher demo target: unchanged; Critic remains first target;
+  all storyboards remain draft.
+```
+
+This closeout does NOT authorize reproduction, L3 execution, clone,
+download, install, run, training, checkpoint download, KYKT navigation
+change, frontend implementation, demo showing, paper finalization, or
+thesis selection.
