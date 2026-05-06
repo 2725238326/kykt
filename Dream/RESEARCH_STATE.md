@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-06 (cycle 018 v0.2 architecture deltas: DEC-20260506-002 v0.2 scope lock + 3 planning artifacts (Composer capability descriptors / NSA × C2 Memory / DINOv3 × C1 Perceiver) + specs/SPEC-20260506-004 v0.2 delta spec (741 lines, six numbered deltas); main-claim narrowed to A Verification-as-architecture + D Heterogeneous best-of-N Composer; B/C demoted to discipline/future; E supporting; v0.1 spec body unmodified; RU-007 status updated to "rejected for v0.2 scope; LM-to-3R transfer not pursued")
+Last updated: 2026-05-06 (cycle 019 ablation plan v0.2 addendum: DEC-20260506-003 cycle 019 launch + specs/SPEC-20260506-005 NEW (991 lines; 9 ABL-v02 anchored to SPEC-004 v0.2 architecture deltas; per-ABL review checklist subsection added per user request "其他agent审阅修改" for other-agent handoff; tier placement: ABL-v02-1+4+6 in Tier 1 load-bearing; 2+3+7+8 in Tier 2; 5+9 in Tier 3; falsification mapping covers A+D pillars; ~1237 GPU-hours compute budget addendum on TITAN RTX); cycle 018 closed; SPEC-002 v0.1 body unmodified per DEC-20260506-003; main-claim narrowing to A+D unchanged; B/C demoted; E supporting; RU-007 status remains "rejected for v0.2 scope")
 
 ## User Intent
 

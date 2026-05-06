@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-06 (cycle 018 v0.2 architecture deltas: DEC-20260506-002 v0.2 scope lock + planning/COMPOSER_CAPABILITY_DESCRIPTORS.md (7 admitted experts) + planning/NSA_MEMORY_INTEGRATION_MEMO.md + planning/DINOV3_C1_INTEGRATION_MEMO.md + specs/SPEC-20260506-004 v0.2 delta spec (741 lines, six numbered deltas; main-claim narrowed to A+D); v0.1 spec body unmodified per DEC-20260506-002; mainline = architecture-first per DEC-20260506-001; paper is SUPPORT; cycle 015 paused at S9 done; G2/G6/G7 unchanged)
+Last updated: 2026-05-06 (cycle 019 ablation plan v0.2 addendum: DEC-20260506-003 cycle 019 launch + scope lock + post-019 trajectory enumeration + review surface for other-agent handoff per user request "其他agent审阅修改" + specs/SPEC-20260506-005 NEW (991 lines; 9 ABL-v02 anchored to SPEC-004 v0.2 deltas; per-ABL review checklist subsection; falsification mapping for A+D pillars; benchmark B1-B6 mapping; ~1237 GPU-hours compute budget addendum); SPEC-002 v0.1 body unmodified per DEC-20260506-003; cycle 018 closed; mainline = architecture-first per DEC-20260506-001; paper is SUPPORT; cycle 015 paused at S9 done; G2/G6/G7 unchanged)
 
 ## Current Phase
 

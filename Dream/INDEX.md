@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-06 (cycle 018 v0.2 architecture deltas: SPEC-20260506-004 v0.2 delta spec + 3 planning artifacts under planning/; main-claim narrowed to A+D; v0.1 spec body unmodified; mainline = architecture-first per DEC-20260506-001)
+Last updated: 2026-05-06 (cycle 019 ablation plan v0.2 addendum: SPEC-20260506-005 NEW (991 lines; 9 ABL-v02; per-ABL review checklist for other-agent handoff); SPEC-002 v0.1 body unmodified per DEC-20260506-003; cycle 018 closed; mainline = architecture-first per DEC-20260506-001)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -175,6 +175,7 @@ Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branc
 | `SPEC-20260506-002-dream3r-ablation-plan.md` | Dream3R ablation plan v0.1: 10 ablations in 3 tiers; falsification table per architectural claim; benchmark categories B1-B6; dependency graph (cycle 016 S3) |
 | `SPEC-20260506-003-dream3r-comparator-map.md` | Dream3R comparator map v0.1: 14+ models across 7 groups; 8 comparison axes; threat ranking; architecture-novel elements with no comparator (cycle 016 S4) |
 | `SPEC-20260506-004-dream3r-architecture-v02.md` | Dream3R architecture v0.2 delta spec: six numbered deltas on v0.1 (frame budget 30-50 ms/frame; C1 DINOv3-S replaces ViT-L; C2 bounded anchor bank + NSA-style retrieval A+B; sparse attention as engineering optimization; C5 Composer pool admits 7 lightweight experts; main-claim narrowed to A Verification-as-architecture + D Heterogeneous best-of-N Composer); v0.1 body unmodified per DEC-20260506-002 (cycle 018 S4) |
+| `SPEC-20260506-005-dream3r-ablation-plan-v02.md` | Dream3R ablation plan v0.2 delta addendum: nine v0.2 ablations (ABL-v02-1..9) anchored to SPEC-20260506-004 v0.2 architecture deltas — NSA-removal / DINOv3 backbone tier (-S/-B/-L) / frozen vs partial-unfreeze / Composer best-of-N vs single-expert / capability_match measurement / selection-gate signal subsetting / head training schedule / frame-budget benchmark / NSA kernel decomposition. Tier 1 load-bearing: ABL-v02-1+4+6. Falsification mapping for main-claim A + D + E. Per-ABL review checklist subsection for other-agent handoff per user request "其他agent审阅修改". v0.1 body unmodified per DEC-20260506-003 (cycle 019 S2) |
 
 ### `storyboards/` - Teacher Demo Storyboards
 
@@ -222,7 +223,7 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | What can Dream do without asking the user? | `AGENT_MASTER_PROMPT.md` section 6 |
 | What requires user approval? | `AGENT_MASTER_PROMPT.md` section 6 + `WORKFLOW_STATUS.md` Blocked Until User Decision |
 | How should I behave when synthesizing or editing files? | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
-| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260506-003.md` (cycle 018 v0.2 architecture deltas; SPEC-20260506-004 written; main-claim narrowed to A+D) |
+| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260506-004.md` (cycle 019 ablation plan v0.2 addendum; SPEC-20260506-005 written; per-ABL review checklist for other-agent handoff) |
 | What did we decide? | `registry/decision_registry.md` and files under `decisions/` |
 | What experiments are planned? | files under `experiments/`; first-pilot recommendation in `planning/L3_PILOT_SELECTION.md` |
 | How should the frontend agent work? | `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` |

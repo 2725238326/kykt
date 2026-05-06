@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-06 (CYCLE 019 IN PROGRESS: ablation plan v0.2 addendum per DEC-20260506-003; S1 DEC + S2 SPEC-20260506-005 (991 lines; 9 ABL-v02 with per-ABL review checklist for other-agent handoff) done; S3 sync chain in progress — TASK_SNAPSHOT first per F-001 rule 6 done this commit; SPEC-002 v0.1 Version history pointer + decision_registry append + DEC-002 stale-status backfill + WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync + cycle log NEW remaining)
+Last updated: 2026-05-06 (CYCLE 019 CLOSED: ablation plan v0.2 addendum done; S1-S3 closed in single session; SPEC-20260506-005 written 991 lines covering 9 ABL-v02 with per-ABL review checklist for other-agent handoff; full sync chain complete; bundled honesty backfill on DEC-20260506-002 row in decision_registry done; cycle 019 outcome + next-cycle candidates 020-025 documented in CYCLE-20260506-004)
 
-Status: **in_progress** (cycle 019 ablation plan v0.2 addendum; S1-S2 done; S3 sync chain in progress — TASK_SNAPSHOT mid-pass anchor done; 5 sync items remaining)
+Status: **idle** (cycle 019 closed; no active task; pending user direction on next-cycle candidates 020-025 in CYCLE-20260506-004 §"Cycle 019 outcome (closed)" — comparator map v0.2 addendum / code structure planning / implementation roadmap / paper Phase 2 rewrite for A+D / cycle 015 G_run resumption / capability_match measurement pass)
 
 ## Why this file exists
 
@@ -22,9 +22,9 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 
 ```text
 task_id:    cycle-019
-phase:      Architecture-first mainline; v0.2 ablation plan addendum (markdown only; no training, no GPU, no checkpoint creation)
+phase:      Architecture-first mainline; v0.2 ablation plan addendum (markdown only; no training, no GPU, no checkpoint creation) — CLOSED
 cycle:      019 (Dream3R ablation plan v0.2 addendum; per DEC-20260506-003)
-status:     in_progress (S1 DEC + S2 SPEC-005 done; S3 sync chain in progress — TASK_SNAPSHOT mid-pass anchor done; SPEC-002 v0.1 Version history pointer + decision_registry append + DEC-002 stale-status backfill + WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync + cycle log NEW remaining)
+status:     done (S1-S3 closed in single session 2026-05-06; SPEC-20260506-005 written 991 lines; full sync chain complete; bundled DEC-20260506-002 stale-status backfill done; cycle 019 outcome + next-cycle candidates 020-025 documented in CYCLE-20260506-004)
 ```
 
 One-line description:
@@ -80,7 +80,7 @@ No training authorized. No GPU runs. No code touch. Markdown only.
 | --- | --- | --- | --- |
 | S1 | Write DEC-20260506-003 (cycle 019 launch + ablation plan v0.2 addendum scope lock; locks 9 ABL-v02 surfaces; enumerates post-019 trajectory cycles 020-025; defines review surface for other-agent handoff) | done | `decisions/DEC-20260506-003-cycle-019-launch-ablation-plan-v02-addendum.md` |
 | S2 | Write SPEC-20260506-005 v0.2 ablation plan addendum (NEW; references SPEC-002 v0.1; nine ABL-v02 ablations anchored to SPEC-004 v0.2 deltas; v0.1 ABL traceability matrix; per-ABL review checklist for other agents; falsification mapping table for A+D pillars; benchmark mapping to B1-B6; dependency graph; compute budget addendum ~1237 GPU-hours) | done | `specs/SPEC-20260506-005-dream3r-ablation-plan-v02.md` (991 lines; nine ABL-v02; per-ABL review checklist subsection) |
-| S3 | Sync chain: TASK_SNAPSHOT first per F-001 rule 6 (mid-pass anchor + final flip); SPEC-002 v0.1 Version history pointer; decision_registry append DEC-003 row + DEC-002 stale-status backfill (S1-S5 closed); WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync; INDEX adds SPEC-005 row + latest cycle log pointer; cycles/CYCLE-20260506-004.md NEW cycle log | **IN PROGRESS** (mid-pass anchor done; 5 sync items remaining this session) | `cycles/CYCLE-20260506-004.md` + sync chain |
+| S3 | Sync chain: TASK_SNAPSHOT first per F-001 rule 6 (mid-pass anchor + final flip); SPEC-002 v0.1 Version history pointer; decision_registry append DEC-003 row + DEC-002 stale-status backfill (S1-S5 closed); WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync; INDEX adds SPEC-005 row + latest cycle log pointer; cycles/CYCLE-20260506-004.md NEW cycle log | done (all 7 sync items closed in single session) | `cycles/CYCLE-20260506-004.md` + sync chain |
 
 S2 deliverable summary (for resume context):
 
@@ -135,70 +135,91 @@ specs/SPEC-20260506-001-dream3r-architecture.md sections:
 ## Last completed task pass
 
 ```text
-pass_name:        Cycle 018 close pass (S1-S5 done across two
-                  sessions; v0.2 architecture deltas locked +
-                  documented + synced; SPEC-20260506-004 written)
+pass_name:        Cycle 019 close pass (S1-S3 done in single session;
+                  v0.2 ablation plan addendum locked + documented +
+                  synced; SPEC-20260506-005 written; bundled DEC-
+                  20260506-002 stale-status backfill)
 date:             2026-05-06
-trigger:          User authorization "嗯嗯，你全面推进吧" in resume
-                  session, after handoff prompt + first-session
-                  S1-S3 work + first-session S5 mid-pass anchor.
+trigger:          User authorization "嗯嗯好的按你的来，不要忘记我们的
+                  工作规范，而且在你后续建立代码结构和任务安排后我还需要
+                  其他agent审阅修改，你文档更新清楚哈" approving option 1
+                  (SPEC-002 v0.2 ablation plan addendum) from agent's
+                  prioritized post-cycle-018 next-cycle list; explicit
+                  instruction to honor working discipline + set up
+                  artifacts for other-agent review/modification.
 files_modified:   TASK_SNAPSHOT.md (this file; header + Status +
-                  Current task block + Subtask board + If
-                  interrupted resume from + Last completed task
-                  pass; FIRST in sync chain per F-001 rule 6 — both
-                  mid-pass anchor and final flip)
-                  cycles/CYCLE-20260506-003.md (status flip + S4/S5
-                  rows flipped + artifacts table extended + Why
-                  interrupted preserved as historical + Resume
-                  session 2026-05-06 closure block + Cycle 018
-                  outcome block + Resume action when next session
-                  opens block rewritten for idle handoff)
-                  registry/research_unit_registry.md (Last updated +
-                  RU-007 row status update)
-                  specs/SPEC-20260506-001-dream3r-architecture.md
-                  (Version history tail v0.2 entry append; v0.1
-                  body NOT modified)
+                  Current task block + Subtask board + Last completed
+                  task pass + If interrupted resume from; FIRST in
+                  sync chain per F-001 rule 6 — both mid-pass anchor
+                  and final flip)
+                  specs/SPEC-20260506-002-dream3r-ablation-plan.md
+                  (Version history tail v0.2 entry append; v0.1 body
+                  NOT modified)
+                  registry/decision_registry.md (DEC-20260506-003 row
+                  appended; bundled honesty backfill on DEC-20260506-
+                  002 row status from "accepted (S1-S3 done; S4-S5
+                  partial)" to "accepted (S1-S5 closed per cycle 018
+                  closure 2026-05-06)")
                   WORKFLOW_STATUS.md (Last updated)
                   RESEARCH_STATE.md (Last updated)
-                  INDEX.md (Last updated + planning/ table 3 rows
-                  added + specs/ table 1 row added + latest cycle
-                  log pointer updated)
-new_artifacts:    specs/SPEC-20260506-004-dream3r-architecture-
-                  v02.md (NEW; 741 lines; six numbered deltas)
-in_place_edits:   sync chain only; SPEC-001 v0.1 body NOT
+                  INDEX.md (Last updated + specs/ table 1 row added
+                  + latest cycle log pointer updated to CYCLE-20260506
+                  -004)
+new_artifacts:    decisions/DEC-20260506-003-cycle-019-launch-
+                  ablation-plan-v02-addendum.md (NEW; ~360 lines;
+                  cycle 019 scope lock + post-019 trajectory cycles
+                  020-025 + review surface for other-agent handoff)
+                  specs/SPEC-20260506-005-dream3r-ablation-plan-
+                  v02.md (NEW; 991 lines; nine ABL-v02 with per-ABL
+                  review checklist subsection for other-agent
+                  handoff per user request "其他agent审阅修改";
+                  v0.1 ABL traceability matrix; falsification
+                  mapping for A+D+E pillars; benchmark B1-B6
+                  mapping; ~1237 GPU-hours compute budget addendum)
+                  cycles/CYCLE-20260506-004.md (NEW; cycle 019 log;
+                  closed status; cycle 019 outcome + post-019
+                  trajectory + resume action documented)
+in_place_edits:   sync chain only; SPEC-002 v0.1 body NOT
                   rewritten; only Version history tail received
                   v0.2 pointer entry inside existing code fence
-discipline:       Surgical Edits (v0.2 lives in NEW file SPEC-004;
+discipline:       Surgical Edits (v0.2 lives in NEW file SPEC-005;
                   v0.1 body untouched; pre-existing markdown lint
-                  warnings on SPEC-001 line 593 + TASK_SNAPSHOT
-                  historical block + cycle log tables NOT fixed in
-                  this pass per Surgical Edits rule 3) + Honesty
-                  Override (every v0.2 delta carries inline
-                  evidence label: paper-derived for DINOv3-S;
-                  speculative for NSA-to-3R; inferred for frame
-                  budget; paper-known + inferred per Composer
-                  expert row; engineering-judgment for pool
-                  exclusions; agent-recommended/user-accepted for
-                  main-claim narrowing).
-budget_event:     None this pass. F-001 rule 1 honored: v0.1 spec
-                  not re-Read in full; only targeted Grep -n for
-                  Version history tail (lines 1806-1821) +
-                  section header anchor list. F-002 carried:
-                  markdown-only; server untouched.
+                  warnings on SPEC-001 line 593 + SPEC-002 line 633
+                  falsification table + TASK_SNAPSHOT historical
+                  block + cycle log tables + WORKFLOW_STATUS / INDEX
+                  spec-row tables NOT fixed in this pass per
+                  Surgical Edits rule 3) + Honesty Override (every
+                  ABL-v02-N carries inline evidence label: speculative
+                  for NSA-removal + selection-gate signal; paper-
+                  derived for DINOv3 tier + Composer best-of-N;
+                  inferred for frozen-vs-unfreeze + frame budget +
+                  head schedule + NSA kernel decomp; inferred ->
+                  measured-if-executed for capability_match measurement.
+                  SPEC-005 line target overshoot 991 vs 500-700
+                  acknowledged in cycle log; not silently absorbed.
+                  DEC-002 stale-status backfill preserves prior
+                  status string as historical reason inside new
+                  status, not deleted).
+budget_event:     None this pass. F-001 rule 1 honored: SPEC-002
+                  v0.1 (~770 lines) not re-Read; section anchors
+                  cited via Grep -n (B1-B6 line 537; Falsification
+                  summary line 630; Version history line 761).
+                  SPEC-001 / SPEC-004 already in context from cycle
+                  018; no re-Read. F-002 carried: markdown-only;
+                  server untouched.
 
-prior_pass_name:  Cycle 014 launch + convergence pass (S1..S5 done;
-                  markdown-only Phase 2 convergence and execution
-                  selection)
-prior_pass_date:  2026-05-05
-prior_pass_files: TASK_SNAPSHOT.md (this file; subtask board + last
-                  completed task pass + If interrupted resume from +
-                  hard-rule date-prefix stale sentence corrected;
-                  FIRST in sync chain per F-001 rule 6)
-                  cycles/CYCLE-20260505-005.md (audit + closeout +
-                  subtask board flips)
+prior_pass_name:  Cycle 018 close pass (S1-S5 done across two
+                  sessions; v0.2 architecture deltas locked +
+                  documented + synced; SPEC-20260506-004 written)
+prior_pass_date:  2026-05-06
+prior_pass_files: TASK_SNAPSHOT.md, cycles/CYCLE-20260506-003.md,
+                  registry/research_unit_registry.md (RU-007),
+                  specs/SPEC-20260506-001-dream3r-architecture.md
+                  (Version history tail v0.2 entry),
                   WORKFLOW_STATUS.md, RESEARCH_STATE.md, INDEX.md,
-                  AGENT_MASTER_PROMPT.md, README.md,
-                  registry/decision_registry.md (cycle 014 sync)
+                  + new artifact specs/SPEC-20260506-004-dream3r-
+                  architecture-v02.md (741 lines, six numbered
+                  deltas, main-claim narrowed to A+D)
 ```
 
 ## If interrupted, resume from
@@ -245,24 +266,29 @@ Project state at this snapshot:
    Cycle 015 PAUSED at S9 done (NOT closed; NOT abandoned).
    Cycle 016 DONE.
    Cycle 017 DONE (paper draft v1; literature/PAPER_DRAFT_V1.md;
-                   needs v0.2 update later, NOT cycle 018 scope).
-   Cycle 018 DONE (S1-S5 all done across two sessions on
-                   2026-05-06):
-                S1 done (DEC-20260506-002 written first session)
-                S2 done (planning/COMPOSER_CAPABILITY_DESCRIPTORS.md
-                   written first session)
-                S3 done (planning/NSA_MEMORY_INTEGRATION_MEMO.md +
-                   planning/DINOV3_C1_INTEGRATION_MEMO.md written
-                   first session)
-                S4 done (specs/SPEC-20260506-004-dream3r-
-                   architecture-v02.md written resume session;
-                   741 lines; six numbered deltas)
-                S5 done (TASK_SNAPSHOT mid-pass anchor + final
-                   flip; decision_registry append; cycle log
-                   final flip; RU-007 status update; SPEC-001
-                   v0.1 Version history v0.2 pointer; WORKFLOW_
-                   STATUS / RESEARCH_STATE / INDEX light sync;
-                   all 7 sync items closed)
+                   needs v0.2 update later, NOT cycle 019 scope).
+   Cycle 018 DONE (v0.2 architecture deltas; SPEC-20260506-004
+                   written 741 lines; six numbered deltas; main-
+                   claim narrowed to A+D).
+   Cycle 019 DONE (S1-S3 all done in single session 2026-05-06):
+                S1 done (DEC-20260506-003 written; cycle 019
+                   launch + ablation plan v0.2 addendum scope
+                   lock + post-019 trajectory cycles 020-025 +
+                   review surface for other-agent handoff)
+                S2 done (specs/SPEC-20260506-005-dream3r-
+                   ablation-plan-v02.md written; 991 lines; nine
+                   ABL-v02 anchored to SPEC-004 v0.2 deltas;
+                   per-ABL review checklist subsection for other-
+                   agent handoff per user request "其他agent审阅修改";
+                   v0.1 ABL traceability matrix; falsification
+                   mapping for A+D+E pillars; benchmark B1-B6
+                   mapping; ~1237 GPU-hours compute budget addendum)
+                S3 done (TASK_SNAPSHOT mid-pass anchor + final
+                   flip; SPEC-002 v0.1 Version history v0.2
+                   pointer; decision_registry DEC-003 append +
+                   bundled DEC-002 stale-status backfill; cycle
+                   log NEW; WORKFLOW_STATUS / RESEARCH_STATE /
+                   INDEX light sync; all 7 sync items closed)
 
 v0.2 deltas locked summary (per DEC-20260506-002):
    - Backbone: ViT-L -> DINOv3-S (paper-derived; ~14x param
@@ -283,33 +309,58 @@ v0.2 deltas locked summary (per DEC-20260506-002):
      discipline / future work
 
 Resume action when user returns:
-   Cycle 018 is CLOSED. No active task. Status is `idle`.
-   Surface the 5 next-cycle candidates documented in
-   cycles/CYCLE-20260506-003.md §"Cycle 018 outcome (closed)"
+   Cycle 019 is CLOSED. No active task. Status is `idle`.
+   Cycle 018 (v0.2 architecture) and cycle 019 (v0.2 ablation
+   plan addendum) both closed; option 1 from cycle 018 closure
+   resume action consumed by cycle 019. Remaining 4 candidates
+   from cycle 018 plus 2 new candidates surfaced in cycle 019:
+   surface the 6 next-cycle candidates documented in
+   cycles/CYCLE-20260506-004.md §"Cycle 019 outcome (closed)"
    with brief tradeoff framing and let user pick:
-     1. SPEC-20260506-002 v0.2 addendum (ablation plan deltas:
-        NSA-removal ablation, DINOv3-S vs -B vs -L, frozen vs
-        partial-unfreeze, route_regret per-regime sweep,
-        capability_match measurement plan). Markdown only.
-        New cycle launch DEC required.
-     2. SPEC-20260506-003 v0.2 addendum (comparator map
-        narrowing per in-pool / out-of-pool / out-of-scope
-        tiers per SPEC-004 Delta 5). Markdown only.
-     3. PAPER_DRAFT_V1.md Section 3 + Section 6 update for
-        v0.2 main-claim A+D framing. New cycle launch DEC
-        required.
-     4. Cycle 015 G_run resumption (Critic A4 measured anchor)
-        — would benefit v0.2 main-claim A primary demonstration.
-        Paused at S9 done; resumption requires fresh DEC.
-     5. Capability-match measurement pass — promotes Delta 5
-        capability_match values from inferred to measured.
-        New cycle launch DEC + server-side execution gate
-        required.
-   None of (1)..(5) is launched without explicit user direction.
-   Do NOT propose training, checkpoint download, GPU runs,
-   KYKT navigation change, frontend implementation, demo
-   storyboard promotion past `draft`, thesis finalization, or
-   retiring of any non-finalist track. DEC-20260501-004
+     020. SPEC-20260506-003 v0.2 comparator map addendum (NEW;
+          ID candidate SPEC-006). Reorganize comparators per
+          in-pool / out-of-pool / out-of-scope tiers per
+          SPEC-004 Delta 5. Markdown only.
+     021. Code structure planning (NEW; markdown only;
+          planning/DREAM3R_V02_CODE_STRUCTURE.md). Maps v0.2
+          architecture deltas to v0.1 code module changes
+          (existing v0.1 code at E:\kykt\Dream\code\dream3r\
+          + server-side /hdd3/kykt26/code/dream3r/). Planning
+          ONLY; no code touch. Per F-002, eventual code
+          execution goes server-side and requires fresh DEC.
+          NOTE: this is the cycle where other-agent review and
+          modification becomes load-bearing per user 2026-05-06
+          request "其他agent审阅修改 + 文档更新清楚".
+     022. Implementation roadmap + task arrangement (NEW;
+          markdown only; planning/DREAM3R_V02_IMPLEMENTATION_
+          ROADMAP.md). Breaks cycle 021 code structure into
+          reviewable tasks for other agents. Per-task pre-
+          and post-execution review checklists. Authorization
+          for any task requires separate DEC per task.
+     023. PAPER_DRAFT_V1.md Section 3 + Section 6 update for
+          v0.2 main-claim A+D framing. New cycle launch DEC
+          required. Markdown only.
+     024. Cycle 015 G_run resumption (Critic A4 measured
+          anchor; paused at S9 done). Server-side execution
+          per F-002. Cycle launch DEC + per-step micro gates
+          required.
+     025. Capability_match measurement pass per ABL-v02-5
+          (promotes inferred -> measured for 7-expert pool).
+          Server-side execution per F-002. Cycle launch DEC
+          + per-ablation DEC required.
+   Default agent recommendation (revisable):
+     - Cycle 020 (comparator map v0.2 addendum) is the markdown-
+       trio completion (architecture / ablation / comparator
+       all v0.2 in markdown), and is cheap. OR
+     - Cycle 021 (code structure planning) sets up the surface
+       for the user-requested other-agent code review and
+       modification path; this is the cycle where the post-019
+       trajectory's "其他agent审阅修改" lands.
+   None of (020)..(025) is launched without explicit user
+   direction. Do NOT propose training, checkpoint download,
+   GPU runs, KYKT navigation change, frontend implementation,
+   demo storyboard promotion past `draft`, thesis finalization,
+   or retiring of any non-finalist track. DEC-20260501-004
    candidate-not-final + DEC-20260504-002 no-all-in still in
    force; v0.2 demotes B/C in main-claim ordering but preserves
    them as project candidates.
