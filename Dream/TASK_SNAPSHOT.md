@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-06 (STRATEGIC REDIRECT: user redefined Dream mainline as architecture-first per DEC-20260506-001 + feedback_dream_mainline_architecture_first.md; cycle 015 paused at S9 done is correct posture (NOT abandoned); cycle 016 next = draft Dream3R architecture spec + ablation plan + comparator map (markdown only; no training); paper Phase 2 blueprint demoted to support artifact; v2.1 contract / 4 finalist specs / 4 storyboards all unchanged and become INPUTS to architecture spec; no-all-in (DEC-504-002) + Dream3R-candidate-not-final (DEC-501-004) still in force; G2/G6/G7 unchanged; F-002 + 2 memories persisted)
+Last updated: 2026-05-06 (CYCLE 016 S2 DONE: SPEC-20260506-001-dream3r-architecture.md drafted, 1821 lines, 95 KB; comprehensive v0.1 with hybrid substrate (transformer perception + SSM/Mamba executive memory + slot memory for Permanence + cross-spec memory bus); 4 finalist specs synthesized as 4 cores on the bus; v2.1 contract rendered as runtime API; CR-1..CR-6 rendered as gates; A1-A8 mapped to concrete layers; A7/A8 reserved hooks; per-section evidence labels carried; markdown only / no training / no GPU / no checkpoint creation per DEC-20260506-001; cycle 015 still paused at S9 done; G2/G6/G7 unchanged; cycle 016 S3/S4/S5 pending)
 
-Status: **in_progress** (cycle 015 paused at S9 done; cycle 016 architecture-spec drafting deferred to next session per user "今日进度到此为止")
+Status: **in_progress** (cycle 016 S2 done; S3 ablation plan + S4 comparator map + S5 sync chain pending; cycle 015 still paused at S9 done; resume action = launch cycle 016 S3)
 
 ## Why this file exists
 
@@ -21,47 +21,90 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-015
-phase:      Phase 2 execution prep (markdown-only launch + sync; per-step execution gated)
-cycle:      015 (Critic L3 pilot scope authorized; clone / download / install / run still gated)
-status:     in_progress (S1..S2 done; S3..S5 active; S6+ gated on G_clone / G_install / G_download / G_run / G_log_use)
+task_id:    cycle-016
+phase:      Architecture-first mainline (markdown only; no training, no GPU, no checkpoint creation)
+cycle:      016 (Dream3R architecture spec + ablation plan + comparator map; per DEC-20260506-001)
+status:     in_progress (S1 + S2 done; S3 + S4 + S5 pending)
 ```
 
 One-line description:
 
 ```text
-User selected "授权 Critic L3 窄域 pilot" as the cycle 015 entry, in
-response to the agent's recommendation surfaced after cycle 014 closeout
-in cycles/CYCLE-20260505-005.md "Cycle 015 launch packet (deferred to
-user)". This satisfied the open user decision phrased in
-planning/L3_PILOT_SELECTION.md line 167-171. DEC-20260505-005 records the
-scope-level authorization (clone Test3R + CTRL + DUSt3R + MASt3R; download
-required checkpoints; install minimum env; run one smoke loop on one hard
-case; emit one JSONL log; write thin orchestration wrapper). Each
-operational step (clone, install, checkpoint download, run, log commit)
-is a per-step micro gate that requires a separate user go in the active
-conversation; the DEC alone does NOT authorize them. Cycle 015 launch did
-NOT authorize: full sweep, training, KYKT navigation change, frontend,
-storyboard promotion, G2 closure claim, retroactive case-card edits,
-system-level changes, silent upstream patches, teacher-demo readiness
-claim, final thesis selection, retiring of any non-finalist track.
+Per DEC-20260506-001 (mainline architecture-first), cycle 016 produces 3
+new artifacts: (S2) Dream3R architecture spec, (S3) Dream3R ablation plan,
+(S4) Dream3R comparator map; followed by (S5) sync chain. S1 was the DEC
+itself + feedback memory + TASK_SNAPSHOT redirect block. S2 produced
+specs/SPEC-20260506-001-dream3r-architecture.md (1821 lines, 95 KB,
+comprehensive v0.1 with hybrid substrate hypothesis: transformer
+perception + SSM/Mamba executive memory + slot memory for Permanence +
+parameter-free Composer + explicit cross-spec memory bus). 4 finalist
+specs (Critic / Memory / Permanence / Composer) synthesized as 4 cores on
+the bus. v2.1 contract rendered as runtime API; CR-1..CR-6 rendered as
+gates; A1-A8 mapped to concrete layers (A7 / A8 are reserved hooks). All
+sections carry evidence labels per Discipline rule 5. No training / no GPU
+/ no checkpoint authorized; markdown only. S3 ablation plan deferred to
+next sub-pass.
 ```
 
-## Subtask board (active pass: cycle 015 launch + Critic L3 pilot scope authorization, 2026-05-05)
+## Subtask board (active pass: cycle 016 architecture-first mainline; 2026-05-06)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Write DEC-20260505-005 (cycle 015 launch + Critic L3 pilot scope authorization; locks allowed / not-allowed; lists 5 per-step micro gates and stop conditions) | done | `decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md` |
-| S2 | Write cycles/CYCLE-20260505-006.md (cycle 015 cycle log; subtask board; gate roadmap) | done | `cycles/CYCLE-20260505-006.md` |
-| S3 | Update this file FIRST per F-001 rule 6 (Status -> in_progress; cycle 015 board; resume pointer; cycle 015 launch decision under Open user decisions) | done | `TASK_SNAPSHOT.md` |
-| S4 | Sync chain: WORKFLOW_STATUS.md + RESEARCH_STATE.md + INDEX.md + registry/decision_registry.md + AGENT_MASTER_PROMPT.md + README.md (cycle 015 pointer + DEC-20260505-005 row + last-updated stamp bumps) | done | sync chain |
-| S5 | Surface G_clone micro gate to user (proposed pilot path under experiments/runs/cycle-015-critic-l3-pilot; proposed hard-case input candidate; GPU/env confirmation request) | done | this snapshot + user message |
-| S6 | G_clone returned `go` (default path + 4 repos). Executed: pilot path created; `git clone --depth 1` Test3R + CTRL + DUSt3R + MASt3R; sizes + HEAD + license recorded in cycle log. License finding: CC BY-NC-SA 4.0 on Test3R/DUSt3R/MASt3R + Apache 2.0 on critic-rl; research use OK, NonCommercial constraint recorded for future commercial-path DEC. NO install / NO checkpoint / NO run took place. | done | `experiments/runs/cycle-015-critic-l3-pilot/` + `cycles/CYCLE-20260505-006.md` |
-| S7 | Surface G_install micro gate (revised, server-side framing). S7 corrigendum + F-002 + feedback memory persisted; server coords resolved by reading ssh_runner.py:22-44; revised proposal: install only Test3R server-side; reuse DUSt3R / MASt3R / MonST3R / Spann3R / Fast3R envs already on server. User reply: `Go (server-side install Test3R only)`. | done | this snapshot + user message + `cycles/CYCLE-20260505-006.md` |
-| S8 | G_install (revised) returned `go`. Initial server `git clone` failed (github.com unreachable from KYKT-UI: GnuTLS recv error / curl timeout); user redirected to scp local clone. Executed: scp local Test3R (18 MB, HEAD a2eb94b) -> /hdd3/kykt26/code/Test3R; verified size + HEAD match. conda env `test3r` created (Python 3.11.15); first conda-style pytorch install hit MKL `iJIT_NotifyEvent` symbol error (defaults channel mkl 2025.0.0 vs older pytorch build); within-scope fixup: dropped conda pytorch + pip-installed torch 2.5.1+cu121 from `https://download.pytorch.org/whl/cu121` (mirrors dust3r env approach on same server); torch sanity passed (4x TITAN RTX 24GB; CUDA 12.1). pip install -r Test3R/requirements.txt completed; all 11 direct deps import cleanly. EXP-001 inferred numbers upgraded to `measured` for GPU class / clone disk / install wall-clock. NO checkpoint download / NO run / NO KYKT runner change. | done | server `/hdd3/kykt26/code/Test3R/` + `/home/kykt26/.conda/envs/test3r/` + `cycles/CYCLE-20260505-006.md` |
-| S9 | G_download surfaced; Test3R weights = HF id `naver/DUSt3R_ViTLarge_BaseDecoder_512_dpt` but huggingface.co blocked. User chose `Patch launch.py 指向已有 ckpt`. Executed: backed up Test3R/eval/mv_recon/launch.py to .cycle015.bak; sed-patched line 103 to local path /hdd3/kykt26/models/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth (2.2 GB pre-existing dust3r ckpt). Verified end-to-end model load: AsymmetricCroCo3DStereo.from_pretrained() loads 571.2M params, "All keys matched successfully", CUDA transfer to cuda:0 OK, no HF network call. G_download was degenerate (no actual download; ckpt reused). | done | server `/hdd3/kykt26/code/Test3R/eval/mv_recon/launch.py` + cycle log |
-| S10 | Surface G_run micro gate to user (smoke loop scope: hard-case input, Critic conflict score, Composer-backed reroute, before/after delta log; agent will propose specific image-pair input candidate from CRITIC-01 failure taxonomy; thin wrapper dream_critic_loop.py drafted then user-reviewed before run) | in_progress | this snapshot + user message |
-| S11+ | Reserved for execution sub-passes; G_log_use -> S11 | not started | TBD |
+| S1 | Write DEC-20260506-001 (mainline architecture-first; cycle 015 strategic-pause framing closed; cycle 016 scope seeded) + persist feedback memory + update TASK_SNAPSHOT.md "If interrupted, resume from" + Open user decisions block | done | `decisions/DEC-20260506-001-mainline-architecture-first.md` + `C:\Users\27252\.claude\projects\e--kykt\memory\feedback_dream_mainline_architecture_first.md` + this snapshot block (prior pass) |
+| S2 | Write Dream3R architecture spec v0.1 (NEW file; comprehensive draft synthesizing 4 finalist specs + v2.1 contract + A1-A8 actions; user-picked location specs/SPEC-20260506-001-dream3r-architecture.md; user-picked scope comprehensive v0.1; user-picked substrate hypothesis hybrid transformer + SSM + bus). Per-section evidence labels per Discipline rule 5. Markdown only; no training authorized | done | `specs/SPEC-20260506-001-dream3r-architecture.md` (1821 lines; 95 KB) |
+| S3 | Write Dream3R ablation plan (NEW file; specifies which ablations falsify which architectural claims from S2; substrate ablation + bus-as-novelty ablation + state-ownership ablation + per-action proxy losses + per-module load-bearing flags; markdown only). Proposed location: `planning/DREAM3R_ABLATION_PLAN.md` OR `specs/SPEC-20260506-002-dream3r-ablation-plan.md`; user-pickable at S3 launch | not started | TBD |
+| S4 | Write Dream3R comparator map (NEW file or section; full version of the lightweight quick map in S2; vs DUSt3R / MASt3R / MASt3R-SfM / Spann3R / CUT3R / STream3R / VGGT / MapAnything / Test3R / MonST3R / Mamba-3R / 4DGS variants; markdown only). Proposed location: NEW file under planning/ OR appended section to existing planning/RESEARCH_GRAPH_AND_PAPER_START.md; user-pickable at S4 launch | not started | TBD |
+| S5 | Sync chain (TASK_SNAPSHOT first per F-001 rule 6; then WORKFLOW_STATUS.md + RESEARCH_STATE.md + INDEX.md + registry/decision_registry.md + AGENT_MASTER_PROMPT.md + README.md). S5 lands cycle 016 closeout note in cycles/CYCLE-20260506-001.md (NEW cycle log) and updates Open user decisions block | partial (this snapshot edit pass started S5; full sync chain pending S3 + S4 completion) | sync chain |
+
+S2 deliverable summary (for resume context):
+
+```text
+specs/SPEC-20260506-001-dream3r-architecture.md sections:
+  - Identity / Approval (per DEC-20260506-001; candidate per DEC-501-004)
+  - Scope of v0.1 (markdown only; no training)
+  - The architectural claim (control-graph-as-architecture; what is novel
+    vs what is carried from existing work)
+  - Substrate hypothesis (hybrid transformer + SSM/Mamba + slot + bus;
+    per-substrate justification + lineage + evidence labels)
+  - Top-level architecture (ASCII block diagram)
+  - Tokens (T1 frame / T2 pointmap / T3 evidence / T4 regime / T5 anchor +
+    object slot / T6 bus)
+  - State ownership (which module owns which state; cross-module reads
+    are read-only)
+  - Computational cores (C1 Perceiver transformer / C2 Memory SSM / C3
+    Permanence slot / C4 Critic small head / C5 Composer table join /
+    C6 Memory Bus)
+  - The Memory Bus as runtime API (publish + read + handoff + gates)
+  - A1-A8 mapping to concrete layers (A7 / A8 are RESERVED hooks; not
+    designed in v0.1)
+  - Read-write protocol per window (8-step bus tick)
+  - Conflict resolution as architectural elements (CR-1..CR-6 as gates /
+    masks / invariants / ledgers)
+  - Training-objective sketch (NOT a training authorization; INPUT to S3
+    ablation plan)
+  - Module-level evidence labels (aggregate distribution: ~5 paper-proven
+    / ~5 paper-derived / ~10 inferred / ~7 architecture-novel / 2
+    speculative)
+  - Comparator quick map (lightweight; full at S4)
+  - Per-spec cross-reference (each finalist spec re-mapped to architecture)
+  - Risks (R1 substrate falsification / R2 bus-as-novelty collapse / R3
+    state-ownership invariant under training / R4 A7/A8 reserved hook
+    conflict / R5 storytelling-vs-measurement asymmetry / R6 KYKT scope
+    creep / R7 paper writing risk)
+  - Boundaries (13 explicit boundaries; all carried from prior cycles +
+    DEC-20260506-001)
+  - Linked artifacts (decisions, finalist specs as INPUTS, paradigm
+    artifacts, planning artifacts, failure modes, KYKT artifacts as
+    future evidence anchors, storyboards remain `draft`, paper Phase 2
+    now SUPPORT)
+  - Next step (cycle 016 S3 ablation plan)
+  - Open questions for next session (Q1 substrate ablation priority / Q2
+    bus falsifying experiment design / Q3 A7/A8 concretization timing /
+    Q4 v0.1 -> v0.2 trigger / Q5 KYKT integration for evidence anchoring
+    / Q6 paper integration path)
+  - Discipline notes
+  - Version history
+```
 
 ## Last completed task pass
 
@@ -124,19 +167,34 @@ If a new agent or new conversation is picking this up cold:
    Plus C:\Users\27252\.claude\projects\e--kykt\memory\
    feedback_kykt_server_topology.md for F-002 server topology
    (still load-bearing if cycle 015 G_run is ever resumed).
-4. Read cycles/CYCLE-20260505-006.md "S6 execution log" through
-   "S10 hold" — full cycle 015 execution record from G_clone
-   through the deliberate pause at S9 done. Still load-bearing
-   as the L3 infrastructure anchor for the architecture spec.
-5. Read decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md
-   if cycle 015 G_run is going to be resumed (otherwise skip to 6).
+4. Read specs/SPEC-20260506-001-dream3r-architecture.md (the
+   cycle 016 S2 deliverable, 1821 lines; section TOC is inlined
+   in this snapshot's S2 deliverable summary above). Read this
+   BEFORE drafting S3 (ablation plan) so the ablation plan
+   targets the right architectural claims.
+5. Read cycles/CYCLE-20260505-006.md "S6..S10 hold" only if
+   cycle 015 G_run is being resumed (otherwise skip; the L3
+   infrastructure remains a future evidence anchor for v0.1's
+   Critic A4 head but is not the cycle 016 critical path).
+6. Read decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md
+   only if cycle 015 G_run is being resumed (otherwise skip).
 
 Project state at this snapshot:
    Cycle 015 PAUSED at S9 done (NOT closed; NOT abandoned;
-                                infrastructure is reusable).
-   Cycle 016 SEEDED but not yet launched at S2..S5
-                                (only S1 done: this DEC + memory +
-                                this snapshot block).
+                                infrastructure is reusable as
+                                future Critic A4 evidence anchor).
+   Cycle 016 IN PROGRESS:
+                                S1 done (DEC-20260506-001 + memory +
+                                  prior snapshot redirect block)
+                                S2 done (architecture spec v0.1
+                                  written 2026-05-06; 1821 lines;
+                                  95 KB; specs/SPEC-20260506-001-
+                                  dream3r-architecture.md)
+                                S3 not started (ablation plan)
+                                S4 not started (comparator map)
+                                S5 partial (this snapshot edit
+                                  pass started S5; full sync
+                                  chain pending S3 + S4)
 
 Mainline redirect summary:
    - Old implicit framing: framework-first paper output.
@@ -149,21 +207,45 @@ Mainline redirect summary:
      (no-all-in) still in force.
 
 Resume action when user returns:
-   Primary path (recommended): launch cycle 016 S2 — start drafting
-     the Dream3R architecture spec. First step is a markdown design
-     pass synthesizing the 4 finalist specs + v2.1 contract + A1-A8
-     actions into a coherent architecture proposal, with per-section
-     evidence labels per Discipline rule 5. User will pick the
-     artifact location at S2 (proposed: specs/SPEC-20260506-001-
-     dream3r-architecture.md OR planning/DREAM3R_ARCHITECTURE_DRAFT.md).
-   Secondary path (only if user explicitly asks): resume cycle 015
-     G_run with the 5 design choices listed in cycles/
-     CYCLE-20260505-006.md "What S10 will surface".
+   Primary path (recommended): launch cycle 016 S3 — start
+     drafting the Dream3R ablation plan. The S2 spec lists 6
+     ablation-plan inputs in its "Next step" section: substrate
+     hypothesis ablations per R1; bus-as-novelty ablations per
+     R2; state-ownership ablations per R3; per-action proxy
+     losses tied to training-objective sketch; per-module
+     load-bearing flags; per-CR-rule firing rate. User picks
+     S3 artifact location at S3 launch (proposed:
+     `planning/DREAM3R_ABLATION_PLAN.md` OR
+     `specs/SPEC-20260506-002-dream3r-ablation-plan.md`).
+
+   S2 spec Q1..Q6 resolution status (carried into S3):
+     Q1 substrate ablation priority -> RESOLVED 2026-05-06:
+        hybrid first (carries v0.1's substrate bet); SSM-only
+        second (highest substrate contrast); transformer-only
+        third (lowest contrast). S3 ablation plan must order
+        substrate experiments in this priority. Recorded here
+        rather than as a Surgical Edit to the S2 spec's Q1
+        block, per Discipline rule 3 (the resolution is a
+        snapshot-level decision; S3 will cite this resolution).
+     Q2..Q6 -> still open; surface during cycle 016 S3 draft
+        OR at S3 review pass.
+
+   Secondary path (only if user explicitly redirects): review
+     cycle 016 S2 spec first; agent will hold S3 until review
+     feedback lands. Q2..Q6 in the S2 spec "Open questions for
+     next session" section enumerate the decisions the user may
+     want to surface during review (Q1 is already resolved as
+     above).
+
+   Tertiary path (only if user explicitly asks): resume cycle
+     015 G_run with the 5 design choices listed in
+     cycles/CYCLE-20260505-006.md "What S10 will surface".
    Do NOT execute anything beyond markdown drafting without
    explicit user `Go`. Do NOT propose training. Do NOT propose
-   thesis finalization.
+   thesis finalization. Do NOT promote any of the 4 storyboards
+   past `draft`.
 
-Hard rules still in force:
+Hard rules still in force (verbatim from S2 spec Boundaries):
    - All 4 finalist demo storyboards (STORY-20260505-001..004)
      remain markdown `draft`. Do NOT promote any to `approved-for-
      showing` without a separate DEC.
@@ -176,6 +258,8 @@ Hard rules still in force:
    - DEC-20260506-001 authorizes architecture-spec DESIGN +
      ablation PLANNING; NOT training, NOT GPU runs, NOT checkpoint
      creation.
+   - v0.1 spec carries 13 explicit boundaries in its "Boundaries"
+     section; all in force.
 
 Honor F-001 working rules throughout: do not Read large files
 already cited in this snapshot; prefer Grep -n + Edit over full-
