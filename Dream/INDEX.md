@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot scope per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required; v2.1 unchanged; G2/G6/G7 unchanged at launch)
+Last updated: 2026-05-06 (cycle 016 S2-S4 done: architecture spec + ablation plan + comparator map under specs/; mainline = architecture-first per DEC-20260506-001)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -145,9 +145,9 @@ Curated guidance, not inventory. Inventories live in `sources/FRONTIER_SOURCE_MA
 | `PAPER_RELATED_WORK_SKELETON.md` | Cycle 013 upgraded from skeleton to **prose draft** (Sections 1-7 prose anchored to L2 case cards + SRC-* IDs; Sections 8-9 drafted as prose). Filename retained per Surgical Edits |
 | `PAPER_PHASE2_BLUEPRINT.md` | Cycle 014 claim-safe paper blueprint; separates current L2 / inferred claims from L3-required claims; not full paper readiness |
 
-### `specs/` - Finalist Mechanism Specs
+### `specs/` - Finalist Mechanism Specs and Architecture Specs
 
-Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branch. Created via `templates/finalist_mechanism_spec.md`. Drafting a spec does not authorize reproduction, training, checkpoint download, or KYKT navigation change.
+Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branch or architecture-level deliverable. Created via `templates/finalist_mechanism_spec.md`. Drafting a spec does not authorize reproduction, training, checkpoint download, or KYKT navigation change.
 
 | File | Role |
 |---|---|
@@ -155,6 +155,9 @@ Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branc
 | `SPEC-20260503-002-executive-memory.md` | Executive Memory / State Governance finalist spec (A1 + A2 + A3; P2 + P3) |
 | `SPEC-20260503-003-dynamic-object-permanence.md` | Dynamic Object Permanence / 4D Memory finalist spec (A6; P4 + identity_consistency) |
 | `SPEC-20260504-001-3r-composer.md` | 3R Composer / Unified Model Ecology finalist spec (A5 routing facet; P5 route_regret + capability_match) |
+| `SPEC-20260506-001-dream3r-architecture.md` | Dream3R architecture v0.1: control-graph-as-architecture; hybrid substrate (transformer + SSM + slot + bus); 4 finalist specs synthesized as cores C1-C5 + C6 bus; CR-1..CR-6 as gates; A1-A8 mapped to concrete layers (cycle 016 S2) |
+| `SPEC-20260506-002-dream3r-ablation-plan.md` | Dream3R ablation plan v0.1: 10 ablations in 3 tiers; falsification table per architectural claim; benchmark categories B1-B6; dependency graph (cycle 016 S3) |
+| `SPEC-20260506-003-dream3r-comparator-map.md` | Dream3R comparator map v0.1: 14+ models across 7 groups; 8 comparison axes; threat ranking; architecture-novel elements with no comparator (cycle 016 S4) |
 
 ### `storyboards/` - Teacher Demo Storyboards
 

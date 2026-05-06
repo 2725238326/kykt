@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot scope per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required; v2.1 unchanged; G2/G6/G7 unchanged at launch; clone / download / install / run NOT yet authorized — each is a separate per-step user go)
+Last updated: 2026-05-06 (cycle 016 S2-S4 done: Dream3R architecture spec v0.1 (SPEC-20260506-001, 1821 lines) + ablation plan v0.1 (SPEC-20260506-002, 10 ablations in 3 tiers) + comparator map v0.1 (SPEC-20260506-003, 14+ models, threat ranking); mainline = architecture-first per DEC-20260506-001; paper Phase 2 = SUPPORT; cycle 015 paused at S9 done)
 
 ## User Intent
 

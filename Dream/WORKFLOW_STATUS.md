@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot scope per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required; v2.1 unchanged; G2/G6/G7 unchanged at launch)
+Last updated: 2026-05-06 (cycle 016 S2-S4 done, S5 closing: Dream3R architecture spec v0.1 (SPEC-20260506-001) + ablation plan v0.1 (SPEC-20260506-002) + comparator map v0.1 (SPEC-20260506-003); mainline redefined as architecture-first per DEC-20260506-001; paper is SUPPORT; cycle 015 paused at S9 done; G2/G6/G7 unchanged)
 
 ## Current Phase
 
@@ -14,7 +14,8 @@ Phase 1.5: Research Workflow Deployment
 No reproduction yet.
 No heavy installs.
 No KYKT app redesign.
-Research content discovery and thesis validation are the mainline.
+Architecture-first design is the mainline (per DEC-20260506-001).
+Paper writing is support, not primary output.
 Backend/research pipeline work is support infrastructure.
 Frontend implementation is delegated to Gemini CLI / designated frontend agent.
 ```

@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-06 (CYCLE 016 S2-S4 DONE, S5 in progress: S2 architecture spec v0.1 (SPEC-20260506-001, 1821 lines, 95 KB); S3 ablation plan v0.1 (SPEC-20260506-002, 10 ablations in 3 tiers, falsification table); S4 comparator map v0.1 (SPEC-20260506-003, 14+ models across 7 groups, threat ranking); S5 sync chain in progress; .gitignore updated to exclude Dream/experiments/runs/; cycle 015 still paused at S9 done; G2/G6/G7 unchanged)
+Last updated: 2026-05-06 (CYCLE 016 DONE + CYCLE 017 DONE: cycle 016 produced architecture spec + ablation plan + comparator map; cycle 017 produced paper draft v1 with architecture-centric framing; all design-layer deliverables complete; next = user review or training authorization)
 
-Status: **in_progress** (cycle 016 S2-S4 done; S5 sync chain in progress; cycle 015 still paused at S9 done; resume action = complete S5 sync chain)
+Status: **idle** (cycles 016-017 complete; design-layer deliverables done; next cycle requires user direction)
 
 ## Why this file exists
 
@@ -24,7 +24,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 task_id:    cycle-016
 phase:      Architecture-first mainline (markdown only; no training, no GPU, no checkpoint creation)
 cycle:      016 (Dream3R architecture spec + ablation plan + comparator map; per DEC-20260506-001)
-status:     in_progress (S1 + S2 + S3 + S4 done; S5 in progress)
+status:     done (S1-S5 all complete)
 ```
 
 One-line description:
@@ -54,7 +54,7 @@ next sub-pass.
 | S2 | Write Dream3R architecture spec v0.1 (NEW file; comprehensive draft synthesizing 4 finalist specs + v2.1 contract + A1-A8 actions; user-picked location specs/SPEC-20260506-001-dream3r-architecture.md; user-picked scope comprehensive v0.1; user-picked substrate hypothesis hybrid transformer + SSM + bus). Per-section evidence labels per Discipline rule 5. Markdown only; no training authorized | done | `specs/SPEC-20260506-001-dream3r-architecture.md` (1821 lines; 95 KB) |
 | S3 | Write Dream3R ablation plan (NEW file; specifies which ablations falsify which architectural claims from S2; 10 ablations in 3 tiers: Tier 1 bus removal + substrate hypothesis + state-ownership isolation; Tier 2 per-module removal (Critic / Memory / Permanence / Composer); Tier 3 per-CR-rule + evidence signal subset + loss weighting; benchmark categories B1-B6; falsification summary table; dependency graph; compute budget estimate; markdown only) | done | `specs/SPEC-20260506-002-dream3r-ablation-plan.md` |
 | S4 | Write Dream3R comparator map (NEW file; full version of the lightweight quick map in S2; 14+ comparator models across 7 groups (A: per-pair, B: streaming, C: verification, D: dynamic-aware, E: SSM-based, F: multi-model, G: Gaussian/asset); 8 comparison axes; threat ranking; architecture-novel elements with no comparator identified; ablation plan cross-referenced; markdown only) | done | `specs/SPEC-20260506-003-dream3r-comparator-map.md` |
-| S5 | Sync chain (TASK_SNAPSHOT first per F-001 rule 6; then WORKFLOW_STATUS.md + RESEARCH_STATE.md + INDEX.md + registry/decision_registry.md + AGENT_MASTER_PROMPT.md + README.md). S5 lands cycle 016 closeout note in cycles/CYCLE-20260506-001.md (NEW cycle log) and updates Open user decisions block | in_progress (TASK_SNAPSHOT updated; cycle log + remaining sync files pending) | sync chain |
+| S5 | Sync chain (TASK_SNAPSHOT first per F-001 rule 6; then WORKFLOW_STATUS.md + RESEARCH_STATE.md + INDEX.md + registry/decision_registry.md). S5 lands cycle 016 closeout note in cycles/CYCLE-20260506-001.md (NEW cycle log) | done | `cycles/CYCLE-20260506-001.md` + sync chain |
 
 S2 deliverable summary (for resume context):
 
