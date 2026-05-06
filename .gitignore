@@ -32,3 +32,6 @@ Coding/4.06/vision_ui/client/vite.config.js
 # Local release copies. Keep README files trackable, but never commit binaries.
 release/**/*.exe
 release/**/*.msi
+
+# Experiment run outputs (logs, checkpoints, cloned repos). Keep local only.
+Dream/experiments/runs/

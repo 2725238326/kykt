@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-06 (CYCLE 016 S2 DONE: SPEC-20260506-001-dream3r-architecture.md drafted, 1821 lines, 95 KB; comprehensive v0.1 with hybrid substrate (transformer perception + SSM/Mamba executive memory + slot memory for Permanence + cross-spec memory bus); 4 finalist specs synthesized as 4 cores on the bus; v2.1 contract rendered as runtime API; CR-1..CR-6 rendered as gates; A1-A8 mapped to concrete layers; A7/A8 reserved hooks; per-section evidence labels carried; markdown only / no training / no GPU / no checkpoint creation per DEC-20260506-001; cycle 015 still paused at S9 done; G2/G6/G7 unchanged; cycle 016 S3/S4/S5 pending)
+Last updated: 2026-05-06 (CYCLE 016 S2-S4 DONE, S5 in progress: S2 architecture spec v0.1 (SPEC-20260506-001, 1821 lines, 95 KB); S3 ablation plan v0.1 (SPEC-20260506-002, 10 ablations in 3 tiers, falsification table); S4 comparator map v0.1 (SPEC-20260506-003, 14+ models across 7 groups, threat ranking); S5 sync chain in progress; .gitignore updated to exclude Dream/experiments/runs/; cycle 015 still paused at S9 done; G2/G6/G7 unchanged)
 
-Status: **in_progress** (cycle 016 S2 done; S3 ablation plan + S4 comparator map + S5 sync chain pending; cycle 015 still paused at S9 done; resume action = launch cycle 016 S3)
+Status: **in_progress** (cycle 016 S2-S4 done; S5 sync chain in progress; cycle 015 still paused at S9 done; resume action = complete S5 sync chain)
 
 ## Why this file exists
 
@@ -24,7 +24,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 task_id:    cycle-016
 phase:      Architecture-first mainline (markdown only; no training, no GPU, no checkpoint creation)
 cycle:      016 (Dream3R architecture spec + ablation plan + comparator map; per DEC-20260506-001)
-status:     in_progress (S1 + S2 done; S3 + S4 + S5 pending)
+status:     in_progress (S1 + S2 + S3 + S4 done; S5 in progress)
 ```
 
 One-line description:
@@ -52,9 +52,9 @@ next sub-pass.
 | --- | --- | --- | --- |
 | S1 | Write DEC-20260506-001 (mainline architecture-first; cycle 015 strategic-pause framing closed; cycle 016 scope seeded) + persist feedback memory + update TASK_SNAPSHOT.md "If interrupted, resume from" + Open user decisions block | done | `decisions/DEC-20260506-001-mainline-architecture-first.md` + `C:\Users\27252\.claude\projects\e--kykt\memory\feedback_dream_mainline_architecture_first.md` + this snapshot block (prior pass) |
 | S2 | Write Dream3R architecture spec v0.1 (NEW file; comprehensive draft synthesizing 4 finalist specs + v2.1 contract + A1-A8 actions; user-picked location specs/SPEC-20260506-001-dream3r-architecture.md; user-picked scope comprehensive v0.1; user-picked substrate hypothesis hybrid transformer + SSM + bus). Per-section evidence labels per Discipline rule 5. Markdown only; no training authorized | done | `specs/SPEC-20260506-001-dream3r-architecture.md` (1821 lines; 95 KB) |
-| S3 | Write Dream3R ablation plan (NEW file; specifies which ablations falsify which architectural claims from S2; substrate ablation + bus-as-novelty ablation + state-ownership ablation + per-action proxy losses + per-module load-bearing flags; markdown only). Proposed location: `planning/DREAM3R_ABLATION_PLAN.md` OR `specs/SPEC-20260506-002-dream3r-ablation-plan.md`; user-pickable at S3 launch | not started | TBD |
-| S4 | Write Dream3R comparator map (NEW file or section; full version of the lightweight quick map in S2; vs DUSt3R / MASt3R / MASt3R-SfM / Spann3R / CUT3R / STream3R / VGGT / MapAnything / Test3R / MonST3R / Mamba-3R / 4DGS variants; markdown only). Proposed location: NEW file under planning/ OR appended section to existing planning/RESEARCH_GRAPH_AND_PAPER_START.md; user-pickable at S4 launch | not started | TBD |
-| S5 | Sync chain (TASK_SNAPSHOT first per F-001 rule 6; then WORKFLOW_STATUS.md + RESEARCH_STATE.md + INDEX.md + registry/decision_registry.md + AGENT_MASTER_PROMPT.md + README.md). S5 lands cycle 016 closeout note in cycles/CYCLE-20260506-001.md (NEW cycle log) and updates Open user decisions block | partial (this snapshot edit pass started S5; full sync chain pending S3 + S4 completion) | sync chain |
+| S3 | Write Dream3R ablation plan (NEW file; specifies which ablations falsify which architectural claims from S2; 10 ablations in 3 tiers: Tier 1 bus removal + substrate hypothesis + state-ownership isolation; Tier 2 per-module removal (Critic / Memory / Permanence / Composer); Tier 3 per-CR-rule + evidence signal subset + loss weighting; benchmark categories B1-B6; falsification summary table; dependency graph; compute budget estimate; markdown only) | done | `specs/SPEC-20260506-002-dream3r-ablation-plan.md` |
+| S4 | Write Dream3R comparator map (NEW file; full version of the lightweight quick map in S2; 14+ comparator models across 7 groups (A: per-pair, B: streaming, C: verification, D: dynamic-aware, E: SSM-based, F: multi-model, G: Gaussian/asset); 8 comparison axes; threat ranking; architecture-novel elements with no comparator identified; ablation plan cross-referenced; markdown only) | done | `specs/SPEC-20260506-003-dream3r-comparator-map.md` |
+| S5 | Sync chain (TASK_SNAPSHOT first per F-001 rule 6; then WORKFLOW_STATUS.md + RESEARCH_STATE.md + INDEX.md + registry/decision_registry.md + AGENT_MASTER_PROMPT.md + README.md). S5 lands cycle 016 closeout note in cycles/CYCLE-20260506-001.md (NEW cycle log) and updates Open user decisions block | in_progress (TASK_SNAPSHOT updated; cycle log + remaining sync files pending) | sync chain |
 
 S2 deliverable summary (for resume context):
 
@@ -190,11 +190,17 @@ Project state at this snapshot:
                                   written 2026-05-06; 1821 lines;
                                   95 KB; specs/SPEC-20260506-001-
                                   dream3r-architecture.md)
-                                S3 not started (ablation plan)
-                                S4 not started (comparator map)
-                                S5 partial (this snapshot edit
-                                  pass started S5; full sync
-                                  chain pending S3 + S4)
+                                S3 done (ablation plan v0.1
+                                  written 2026-05-06; 10 ablations
+                                  in 3 tiers; specs/SPEC-20260506-
+                                  002-dream3r-ablation-plan.md)
+                                S4 done (comparator map v0.1
+                                  written 2026-05-06; 14+ models;
+                                  specs/SPEC-20260506-003-dream3r-
+                                  comparator-map.md)
+                                S5 in progress (TASK_SNAPSHOT
+                                  updated; cycle log + remaining
+                                  sync files pending)
 
 Mainline redirect summary:
    - Old implicit framing: framework-first paper output.
@@ -207,39 +213,33 @@ Mainline redirect summary:
      (no-all-in) still in force.
 
 Resume action when user returns:
-   Primary path (recommended): launch cycle 016 S3 — start
-     drafting the Dream3R ablation plan. The S2 spec lists 6
-     ablation-plan inputs in its "Next step" section: substrate
-     hypothesis ablations per R1; bus-as-novelty ablations per
-     R2; state-ownership ablations per R3; per-action proxy
-     losses tied to training-objective sketch; per-module
-     load-bearing flags; per-CR-rule firing rate. User picks
-     S3 artifact location at S3 launch (proposed:
-     `planning/DREAM3R_ABLATION_PLAN.md` OR
-     `specs/SPEC-20260506-002-dream3r-ablation-plan.md`).
+   Primary path: cycle 016 is nearly complete. S5 sync chain
+     is in progress (TASK_SNAPSHOT updated; remaining: cycle log,
+     decision registry, other sync files). Once S5 finishes,
+     cycle 016 closes.
 
-   S2 spec Q1..Q6 resolution status (carried into S3):
-     Q1 substrate ablation priority -> RESOLVED 2026-05-06:
-        hybrid first (carries v0.1's substrate bet); SSM-only
-        second (highest substrate contrast); transformer-only
-        third (lowest contrast). S3 ablation plan must order
-        substrate experiments in this priority. Recorded here
-        rather than as a Surgical Edit to the S2 spec's Q1
-        block, per Discipline rule 3 (the resolution is a
-        snapshot-level decision; S3 will cite this resolution).
-     Q2..Q6 -> still open; surface during cycle 016 S3 draft
-        OR at S3 review pass.
+   Candidate next actions after cycle 016 closes:
+     - Review S2 architecture spec + S3 ablation plan + S4
+       comparator map (user can read all three and give feedback)
+     - v0.2 architecture spec revision (if review or ablation
+       plan surfaces substrate/bus/module issues)
+     - Paper rewrite to feature Dream3R architecture as central
+       claim (per architecture spec Q6)
+     - Resume cycle 015 G_run for measured Critic A4 evidence
+       (per architecture spec Q5)
+     - A7 Cross-Modal / A8 Active Perception spec drafting
+       (per architecture spec Q3)
+     - Training authorization (requires separate DEC)
 
-   Secondary path (only if user explicitly redirects): review
-     cycle 016 S2 spec first; agent will hold S3 until review
-     feedback lands. Q2..Q6 in the S2 spec "Open questions for
-     next session" section enumerate the decisions the user may
-     want to surface during review (Q1 is already resolved as
-     above).
-
-   Tertiary path (only if user explicitly asks): resume cycle
-     015 G_run with the 5 design choices listed in
-     cycles/CYCLE-20260505-006.md "What S10 will surface".
+   S2 spec Q1..Q6 resolution status:
+     Q1 substrate ablation priority -> RESOLVED in S3 ablation
+        plan: hybrid first; SSM-only second; transformer-only
+        third. ABL-2 in SPEC-20260506-002 specifies all three.
+     Q2 adversarial vs natural CR-rule triggering -> RESOLVED
+        in S3: both (B1-B5 for performance, B6 for CR-rule
+        firing verification).
+     Q3..Q6 -> still open; surface during user review of cycle
+        016 deliverables.
    Do NOT execute anything beyond markdown drafting without
    explicit user `Go`. Do NOT propose training. Do NOT propose
    thesis finalization. Do NOT promote any of the 4 storyboards
