@@ -1818,4 +1818,33 @@ v0.1  2026-05-06  cycle 016 S2 deliverable. First architecture
                   hooks). Per-section evidence labels carried.
                   No training authorized; no GPU runs; no
                   checkpoint creation; markdown only.
+
+v0.2  2026-05-06  cycle 018 S4 deliverable; v0.2 lives in a NEW
+                  file specs/SPEC-20260506-004-dream3r-architecture-
+                  v02.md (delta-only; this v0.1 file body is NOT
+                  rewritten per DEC-20260506-002 + Surgical Edits +
+                  Honesty Override). v0.2 introduces six numbered
+                  deltas: (1) speed priority + frame budget table
+                  (30-50 ms/frame at 30 FPS streaming-first;
+                  inferred); (2) C1 Perceiver substitution ViT-L
+                  -> DINOv3-Small (paper-derived; ~14x param
+                  reduction; -B fallback documented); (3) C2 Memory
+                  bounded anchor bank (K=256 proposed) + NSA-style
+                  three-branch retrieval (compressed / selected /
+                  sliding mapped to long / anchor-bank / short
+                  hierarchy A+B; speculative for 3R transfer);
+                  (4) NSA-style sparse attention as engineering
+                  optimization (not paper main claim); (5) C5
+                  Composer pool admits 7 lightweight experts
+                  (MASt3R / Fast3R / Spann3R / CUT3R / MoGe-2 /
+                  DepthAnything-V2 / Test3R) with capability
+                  descriptors; drop VGGT, MapAnything, Kimi
+                  Linear / KDA from streaming-first scope;
+                  (6) main-claim narrowing to A (Verification-
+                  as-architecture) + D (Heterogeneous best-of-N
+                  Composer); B (state-ownership) + C (reservation
+                  tokens A7/A8) demoted to discipline / future;
+                  E (identity-anchored memory) supporting.
+                  v0.1 sections referenced by name from SPEC-004;
+                  v0.1 body unmodified.
 ```

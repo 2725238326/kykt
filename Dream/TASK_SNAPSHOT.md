@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-06 (CYCLE 016-017 DONE + code implementation started: architecture spec + ablation plan + comparator map + paper draft all complete; Dream3R PyTorch code v0.1 written and smoke-tested on GPU; server dream3r conda env set up (torch 2.5.1+cu121 + mamba-ssm 2.2.4); code polishing = current mainline)
+Last updated: 2026-05-06 (CYCLE 018 CLOSED: v0.2 architecture deltas done; S1-S5 all done in single multi-session pass; SPEC-20260506-004 written 741 lines covering six numbered deltas; full sync chain complete; cycle 018 outcome + next-cycle candidates 1-5 documented in CYCLE-20260506-003)
 
-Status: **in_progress** (code polishing mainline; first module-level refactor done; training infra + data loader + Mamba integration pending)
+Status: **idle** (cycle 018 closed; no active task; pending user direction on next-cycle candidates 1-5 in CYCLE-20260506-003 §"Cycle 018 outcome (closed)" — SPEC-002 v0.2 addendum / SPEC-003 v0.2 addendum / paper Phase 2 rewrite for v0.2 main-claim A+D / cycle 015 G_run resumption / capability-match measurement pass)
 
 ## Why this file exists
 
@@ -21,40 +21,66 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-016
-phase:      Architecture-first mainline (markdown only; no training, no GPU, no checkpoint creation)
-cycle:      016 (Dream3R architecture spec + ablation plan + comparator map; per DEC-20260506-001)
-status:     in_progress (design done; code polishing mainline)
+task_id:    cycle-018
+phase:      Architecture-first mainline; v0.2 architecture deltas (markdown only; no training, no GPU, no checkpoint creation) — CLOSED
+cycle:      018 (Dream3R architecture v0.2 deltas + Composer capability descriptors + NSA/DINOv3 integration memos + v0.2 delta spec; per DEC-20260506-002)
+status:     done (S1-S5 closed in single multi-session pass; SPEC-20260506-004 written 741 lines; full sync chain complete; cycle 018 outcome + 5 next-cycle candidates documented in CYCLE-20260506-003)
 ```
 
 One-line description:
 
 ```text
-Per DEC-20260506-001 (mainline architecture-first), cycle 016 produces 3
-new artifacts: (S2) Dream3R architecture spec, (S3) Dream3R ablation plan,
-(S4) Dream3R comparator map; followed by (S5) sync chain. S1 was the DEC
-itself + feedback memory + TASK_SNAPSHOT redirect block. S2 produced
-specs/SPEC-20260506-001-dream3r-architecture.md (1821 lines, 95 KB,
-comprehensive v0.1 with hybrid substrate hypothesis: transformer
-perception + SSM/Mamba executive memory + slot memory for Permanence +
-parameter-free Composer + explicit cross-spec memory bus). 4 finalist
-specs (Critic / Memory / Permanence / Composer) synthesized as 4 cores on
-the bus. v2.1 contract rendered as runtime API; CR-1..CR-6 rendered as
-gates; A1-A8 mapped to concrete layers (A7 / A8 are reserved hooks). All
-sections carry evidence labels per Discipline rule 5. No training / no GPU
-/ no checkpoint authorized; markdown only. S3 ablation plan deferred to
-next sub-pass.
+Per DEC-20260506-002 (cycle 018 launch + v0.2 architecture scope lock),
+cycle 018 produces v0.2 deltas to v0.1 architecture (SPEC-20260506-001):
+streaming-first inference budget, DINOv3-S backbone replacing ViT-L,
+NSA-style sparse attention as C2 Memory implementation substrate,
+expanded heterogeneous Composer pool (7 admitted lightweight models;
+drop VGGT / MapAnything / Kimi Linear / KDA), and main-claim narrowing
+to two pillars (A. Verification-as-architecture, D. Heterogeneous
+best-of-N Composer). v0.1 preserved as historical record per Honesty
+Override.
+
+S1 done: DEC-20260506-002 written (decisions/DEC-20260506-002-cycle-
+018-launch-v02-architecture.md).
+S2 done: planning/COMPOSER_CAPABILITY_DESCRIPTORS.md written (7
+admitted models with capability descriptor schema covering innovation
+point / input regime / output schema / infrastructure cost / attention
+regime / adapter sketch / capability_match axes / expected failure
+modes / evidence labels; routing policy sketch; cross-axis summary
+table).
+S3 done: planning/NSA_MEMORY_INTEGRATION_MEMO.md (NSA branches mapped
+to v0.2 Memory hierarchy A+B; bounded anchor bank K=256 proposed;
+selection gate driven by Critic confidence + Permanence link;
+speculative evidence label) + planning/DINOV3_C1_INTEGRATION_MEMO.md
+(DINOv3-S replaces ViT-L; ~14x param reduction; ~5x latency speedup;
+heads from scratch; risk: pointmap quality may suffer, fallback to
+DINOv3-B documented).
+S4 done: specs/SPEC-20260506-004-dream3r-architecture-v02.md written
+2026-05-06; 741 lines; six numbered deltas (1 frame budget / 2 C1
+DINOv3-S / 3 C2 anchor-bank+NSA / 4 sparse attention as optimization /
+5 C5 7-expert pool / 6 main-claim narrowing A+D); evidence labels
+inline per delta; v0.1 body NOT modified; carries-forward block lists
+preserved v0.1 sections; Open Questions Q1..Q6 resolution status
+documented; R-v02-1..3 + B-v02-1..4 added; comparator narrowing
+documented (full SPEC-003 addendum deferred).
+S5 IN PROGRESS: TASK_SNAPSHOT mid-pass anchor done (this edit, FIRST
+in sync chain per F-001 rule 6); decision_registry append done in
+prior commit; RU-007 status update + v0.1 spec version-history
+pointer + WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync + cycle
+log final flip remaining in this session.
+
+No training authorized. No GPU runs. No code touch. Markdown only.
 ```
 
-## Subtask board (active pass: cycle 016 architecture-first mainline; 2026-05-06)
+## Subtask board (active pass: cycle 018 v0.2 architecture deltas; 2026-05-06)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Write DEC-20260506-001 (mainline architecture-first; cycle 015 strategic-pause framing closed; cycle 016 scope seeded) + persist feedback memory + update TASK_SNAPSHOT.md "If interrupted, resume from" + Open user decisions block | done | `decisions/DEC-20260506-001-mainline-architecture-first.md` + `C:\Users\27252\.claude\projects\e--kykt\memory\feedback_dream_mainline_architecture_first.md` + this snapshot block (prior pass) |
-| S2 | Write Dream3R architecture spec v0.1 (NEW file; comprehensive draft synthesizing 4 finalist specs + v2.1 contract + A1-A8 actions; user-picked location specs/SPEC-20260506-001-dream3r-architecture.md; user-picked scope comprehensive v0.1; user-picked substrate hypothesis hybrid transformer + SSM + bus). Per-section evidence labels per Discipline rule 5. Markdown only; no training authorized | done | `specs/SPEC-20260506-001-dream3r-architecture.md` (1821 lines; 95 KB) |
-| S3 | Write Dream3R ablation plan (NEW file; specifies which ablations falsify which architectural claims from S2; 10 ablations in 3 tiers: Tier 1 bus removal + substrate hypothesis + state-ownership isolation; Tier 2 per-module removal (Critic / Memory / Permanence / Composer); Tier 3 per-CR-rule + evidence signal subset + loss weighting; benchmark categories B1-B6; falsification summary table; dependency graph; compute budget estimate; markdown only) | done | `specs/SPEC-20260506-002-dream3r-ablation-plan.md` |
-| S4 | Write Dream3R comparator map (NEW file; full version of the lightweight quick map in S2; 14+ comparator models across 7 groups (A: per-pair, B: streaming, C: verification, D: dynamic-aware, E: SSM-based, F: multi-model, G: Gaussian/asset); 8 comparison axes; threat ranking; architecture-novel elements with no comparator identified; ablation plan cross-referenced; markdown only) | done | `specs/SPEC-20260506-003-dream3r-comparator-map.md` |
-| S5 | Sync chain (TASK_SNAPSHOT first per F-001 rule 6; then WORKFLOW_STATUS.md + RESEARCH_STATE.md + INDEX.md + registry/decision_registry.md). S5 lands cycle 016 closeout note in cycles/CYCLE-20260506-001.md (NEW cycle log) | done | `cycles/CYCLE-20260506-001.md` + sync chain |
+| S1 | Write DEC-20260506-002 (cycle 018 launch + v0.2 scope lock; locks streaming-first priority + DINOv3-S backbone + NSA Memory + heterogeneous Composer pool + main-claim narrowing to A+D + drops VGGT/MapAnything/Kimi-KDA) | done | `decisions/DEC-20260506-002-cycle-018-launch-v02-architecture.md` |
+| S2 | Write Composer capability descriptors (NEW; 7 admitted lightweight models: MASt3R / Fast3R / Spann3R / CUT3R / MoGe-2 / DepthAnything-V2 / Test3R; per-row schema; routing policy sketch; cross-axis summary table) | done | `planning/COMPOSER_CAPABILITY_DESCRIPTORS.md` |
+| S3 | Write integration memos (NEW; 1-page each): NSA × C2 Memory + DINOv3 × C1 Perceiver. Carry evidence labels (paper-known / inferred / speculative). NO implementation authorized | done | `planning/NSA_MEMORY_INTEGRATION_MEMO.md` + `planning/DINOV3_C1_INTEGRATION_MEMO.md` |
+| S4 | Write SPEC-20260506-004 v0.2 delta architecture spec (NEW; references v0.1; documents speed priority + frame budget table + C1 substitution + C2 Memory NSA hierarchy + sparse-attention as architectural optimization + C5 Composer pool reference + main-claim A+D + Open Questions resolution) | done | `specs/SPEC-20260506-004-dream3r-architecture-v02.md` (741 lines; six numbered deltas) |
+| S5 | Sync chain: TASK_SNAPSHOT first per F-001 rule 6 (mid-pass anchor + final flip); decision_registry append; cycle log CYCLE-20260506-003.md final flip; RU-007 status update; WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync; v0.1 spec version-history pointer | done (all 7 sync items closed in this multi-session pass) | `cycles/CYCLE-20260506-003.md` + sync chain |
 
 S2 deliverable summary (for resume context):
 
@@ -109,14 +135,62 @@ specs/SPEC-20260506-001-dream3r-architecture.md sections:
 ## Last completed task pass
 
 ```text
-pass_name:        Cycle 014 launch + convergence pass (S1..S5 done;
+pass_name:        Cycle 018 close pass (S1-S5 done across two
+                  sessions; v0.2 architecture deltas locked +
+                  documented + synced; SPEC-20260506-004 written)
+date:             2026-05-06
+trigger:          User authorization "嗯嗯，你全面推进吧" in resume
+                  session, after handoff prompt + first-session
+                  S1-S3 work + first-session S5 mid-pass anchor.
+files_modified:   TASK_SNAPSHOT.md (this file; header + Status +
+                  Current task block + Subtask board + If
+                  interrupted resume from + Last completed task
+                  pass; FIRST in sync chain per F-001 rule 6 — both
+                  mid-pass anchor and final flip)
+                  cycles/CYCLE-20260506-003.md (status flip + S4/S5
+                  rows flipped + artifacts table extended + Why
+                  interrupted preserved as historical + Resume
+                  session 2026-05-06 closure block + Cycle 018
+                  outcome block + Resume action when next session
+                  opens block rewritten for idle handoff)
+                  registry/research_unit_registry.md (Last updated +
+                  RU-007 row status update)
+                  specs/SPEC-20260506-001-dream3r-architecture.md
+                  (Version history tail v0.2 entry append; v0.1
+                  body NOT modified)
+                  WORKFLOW_STATUS.md (Last updated)
+                  RESEARCH_STATE.md (Last updated)
+                  INDEX.md (Last updated + planning/ table 3 rows
+                  added + specs/ table 1 row added + latest cycle
+                  log pointer updated)
+new_artifacts:    specs/SPEC-20260506-004-dream3r-architecture-
+                  v02.md (NEW; 741 lines; six numbered deltas)
+in_place_edits:   sync chain only; SPEC-001 v0.1 body NOT
+                  rewritten; only Version history tail received
+                  v0.2 pointer entry inside existing code fence
+discipline:       Surgical Edits (v0.2 lives in NEW file SPEC-004;
+                  v0.1 body untouched; pre-existing markdown lint
+                  warnings on SPEC-001 line 593 + TASK_SNAPSHOT
+                  historical block + cycle log tables NOT fixed in
+                  this pass per Surgical Edits rule 3) + Honesty
+                  Override (every v0.2 delta carries inline
+                  evidence label: paper-derived for DINOv3-S;
+                  speculative for NSA-to-3R; inferred for frame
+                  budget; paper-known + inferred per Composer
+                  expert row; engineering-judgment for pool
+                  exclusions; agent-recommended/user-accepted for
+                  main-claim narrowing).
+budget_event:     None this pass. F-001 rule 1 honored: v0.1 spec
+                  not re-Read in full; only targeted Grep -n for
+                  Version history tail (lines 1806-1821) +
+                  section header anchor list. F-002 carried:
+                  markdown-only; server untouched.
+
+prior_pass_name:  Cycle 014 launch + convergence pass (S1..S5 done;
                   markdown-only Phase 2 convergence and execution
                   selection)
-date:             2026-05-05
-trigger:          User message "继续" after the agent recommended cycle
-                  014 scope: paper blueprint, VGGT Composer gap addendum,
-                  and L3 pilot downselect.
-files_modified:   TASK_SNAPSHOT.md (this file; subtask board + last
+prior_pass_date:  2026-05-05
+prior_pass_files: TASK_SNAPSHOT.md (this file; subtask board + last
                   completed task pass + If interrupted resume from +
                   hard-rule date-prefix stale sentence corrected;
                   FIRST in sync chain per F-001 rule 6)
@@ -125,29 +199,6 @@ files_modified:   TASK_SNAPSHOT.md (this file; subtask board + last
                   WORKFLOW_STATUS.md, RESEARCH_STATE.md, INDEX.md,
                   AGENT_MASTER_PROMPT.md, README.md,
                   registry/decision_registry.md (cycle 014 sync)
-new_artifacts:    decisions/DEC-20260505-004-cycle-014-launch.md
-                  cycles/CYCLE-20260505-005.md
-                  literature/PAPER_PHASE2_BLUEPRINT.md
-                  cases/CASE-20260505-COMPOSER-05.md
-                  planning/L3_PILOT_SELECTION.md
-in_place_edits:   guidance sync files only; no prior case cards, specs,
-                  storyboards, contract, or experiment briefs rewritten
-discipline:       Surgical Edits (new synthesis in new artifacts;
-                  existing Composer cards not retroactively rewritten;
-                  v2.1 contract unchanged) + Honesty Override (paper
-                  blueprint is draft; VGGT rows inferred; L3 pilot is
-                  recommendation only; no execution authorization;
-                  G2/G6 unchanged; G7 not closed; storyboards draft).
-budget_event:     None this pass. No large source maps or case-card
-                  portfolios were re-read in full.
-
-prior_pass_name:  Cycle 013 launch + closeout pass
-prior_pass_date:  2026-05-05
-prior_pass_files: TASK_SNAPSHOT.md, cycles/CYCLE-20260505-004.md,
-                  sources/FRONTIER_SOURCE_MAP.md,
-                  registry/source_registry.md,
-                  literature/PAPER_RELATED_WORK_SKELETON.md,
-                  experiments/EXP-20260505-001..004-l3-prerequisites-*.md
 ```
 
 ## If interrupted, resume from
@@ -156,28 +207,135 @@ If a new agent or new conversation is picking this up cold:
 
 ```text
 1. Read this file (you are here).
-2. Read decisions/DEC-20260506-001-mainline-architecture-first.md
-   FIRST — this is the most recent strategic decision and it
-   redefines the project mainline. Without reading it, you'll
-   inherit the wrong inference (framework-first) and propose work
-   in the wrong direction.
-3. Read C:\Users\27252\.claude\projects\e--kykt\memory\
-   feedback_dream_mainline_architecture_first.md for the
-   cross-session feedback memory restating the same redirect.
-   Plus C:\Users\27252\.claude\projects\e--kykt\memory\
-   feedback_kykt_server_topology.md for F-002 server topology
-   (still load-bearing if cycle 015 G_run is ever resumed).
-4. Read specs/SPEC-20260506-001-dream3r-architecture.md (the
-   cycle 016 S2 deliverable, 1821 lines; section TOC is inlined
-   in this snapshot's S2 deliverable summary above). Read this
-   BEFORE drafting S3 (ablation plan) so the ablation plan
-   targets the right architectural claims.
-5. Read cycles/CYCLE-20260505-006.md "S6..S10 hold" only if
-   cycle 015 G_run is being resumed (otherwise skip; the L3
-   infrastructure remains a future evidence anchor for v0.1's
-   Critic A4 head but is not the cycle 016 critical path).
-6. Read decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md
-   only if cycle 015 G_run is being resumed (otherwise skip).
+
+2. Read decisions/DEC-20260506-002-cycle-018-launch-v02-architecture.md
+   FIRST — this is the most recent strategic decision and it locks
+   v0.2 architecture deltas. Without reading it, you'll miss the
+   v0.2 scope and may operate on v0.1 framing.
+
+3. Read decisions/DEC-20260506-001-mainline-architecture-first.md
+   for parent-cycle context (cycle 016 architecture-first redirect).
+
+4. Read these cycle 018 deliverables (already done in this pass):
+   - planning/COMPOSER_CAPABILITY_DESCRIPTORS.md (S2; 7 admitted
+     lightweight models with capability descriptors + routing
+     policy sketch + cross-axis summary table)
+   - planning/NSA_MEMORY_INTEGRATION_MEMO.md (S3; NSA -> v0.2
+     Memory hierarchy mapping; bounded anchor bank; Critic +
+     Permanence-driven selection gate)
+   - planning/DINOV3_C1_INTEGRATION_MEMO.md (S3; DINOv3-S replaces
+     ViT-L; ~14x param reduction; ~5x latency speedup)
+
+5. Reference v0.1 ONLY when needed (do NOT re-Read full file; 1821
+   lines, 95 KB; cited via existing TOC in this snapshot's S2
+   deliverable summary block below in earlier history; use Grep -n
+   for specific section references):
+   - specs/SPEC-20260506-001-dream3r-architecture.md (v0.1; this is
+     the substrate that v0.2 deltas modify)
+   - specs/SPEC-20260506-002-dream3r-ablation-plan.md (v0.1; needs
+     v0.2 addendum but that is OUT of cycle 018 scope)
+   - specs/SPEC-20260506-003-dream3r-comparator-map.md (v0.1;
+     comparator pool narrowed under v0.2; needs addendum)
+
+6. Read C:\Users\27252\.claude\projects\e--kykt\memory\
+   feedback_dream_mainline_architecture_first.md and
+   feedback_kykt_server_topology.md (cross-session memories).
+
+Project state at this snapshot:
+   Cycle 015 PAUSED at S9 done (NOT closed; NOT abandoned).
+   Cycle 016 DONE.
+   Cycle 017 DONE (paper draft v1; literature/PAPER_DRAFT_V1.md;
+                   needs v0.2 update later, NOT cycle 018 scope).
+   Cycle 018 DONE (S1-S5 all done across two sessions on
+                   2026-05-06):
+                S1 done (DEC-20260506-002 written first session)
+                S2 done (planning/COMPOSER_CAPABILITY_DESCRIPTORS.md
+                   written first session)
+                S3 done (planning/NSA_MEMORY_INTEGRATION_MEMO.md +
+                   planning/DINOV3_C1_INTEGRATION_MEMO.md written
+                   first session)
+                S4 done (specs/SPEC-20260506-004-dream3r-
+                   architecture-v02.md written resume session;
+                   741 lines; six numbered deltas)
+                S5 done (TASK_SNAPSHOT mid-pass anchor + final
+                   flip; decision_registry append; cycle log
+                   final flip; RU-007 status update; SPEC-001
+                   v0.1 Version history v0.2 pointer; WORKFLOW_
+                   STATUS / RESEARCH_STATE / INDEX light sync;
+                   all 7 sync items closed)
+
+v0.2 deltas locked summary (per DEC-20260506-002):
+   - Backbone: ViT-L -> DINOv3-S (paper-derived; ~14x param
+     reduction; streaming-first 30-50 ms/frame budget)
+   - Memory: bounded anchor bank + NSA-style selective retrieval
+     (A+B pattern; selection gate driven by Critic confidence +
+     Permanence link; speculative for 3R transfer)
+   - Sparse attention: NSA-style architectural optimization
+     (engineering, not paper main claim)
+   - Composer pool: 7 admitted lightweight models (MASt3R /
+     Fast3R / Spann3R / CUT3R / MoGe-2 / DepthAnything-V2 /
+     Test3R); drop VGGT, MapAnything, Kimi Linear/KDA
+   - Frame budget: 30-50 ms/frame at 30 FPS streaming-first
+   - Main claim narrowing: A (Verification-as-architecture) +
+     D (Heterogeneous best-of-N Composer) as paper pillars;
+     E (Identity-anchored memory) as supporting; B (state-
+     ownership) + C (reservation tokens A7/A8) demoted to
+     discipline / future work
+
+Resume action when user returns:
+   Cycle 018 is CLOSED. No active task. Status is `idle`.
+   Surface the 5 next-cycle candidates documented in
+   cycles/CYCLE-20260506-003.md §"Cycle 018 outcome (closed)"
+   with brief tradeoff framing and let user pick:
+     1. SPEC-20260506-002 v0.2 addendum (ablation plan deltas:
+        NSA-removal ablation, DINOv3-S vs -B vs -L, frozen vs
+        partial-unfreeze, route_regret per-regime sweep,
+        capability_match measurement plan). Markdown only.
+        New cycle launch DEC required.
+     2. SPEC-20260506-003 v0.2 addendum (comparator map
+        narrowing per in-pool / out-of-pool / out-of-scope
+        tiers per SPEC-004 Delta 5). Markdown only.
+     3. PAPER_DRAFT_V1.md Section 3 + Section 6 update for
+        v0.2 main-claim A+D framing. New cycle launch DEC
+        required.
+     4. Cycle 015 G_run resumption (Critic A4 measured anchor)
+        — would benefit v0.2 main-claim A primary demonstration.
+        Paused at S9 done; resumption requires fresh DEC.
+     5. Capability-match measurement pass — promotes Delta 5
+        capability_match values from inferred to measured.
+        New cycle launch DEC + server-side execution gate
+        required.
+   None of (1)..(5) is launched without explicit user direction.
+   Do NOT propose training, checkpoint download, GPU runs,
+   KYKT navigation change, frontend implementation, demo
+   storyboard promotion past `draft`, thesis finalization, or
+   retiring of any non-finalist track. DEC-20260501-004
+   candidate-not-final + DEC-20260504-002 no-all-in still in
+   force; v0.2 demotes B/C in main-claim ordering but preserves
+   them as project candidates.
+
+   Hard rules carried (unchanged from prior cycles):
+     - No training. No checkpoint download. No reproduction. No
+       KYKT navigation change. No frontend implementation. No
+       thesis finalization. No retiring of any non-finalist track.
+     - DEC-20260501-004 (Dream3R candidate-not-final) and DEC-
+       20260504-002 (no-all-in) still in force.
+     - Cycle 018 is markdown only. Any code touch requires a
+       separate DEC.
+     - Honesty Override: every v0.2 delta carries an evidence
+       label. NSA-to-3R transfer is `inferred / speculative`.
+       DINOv3-S substitution is `paper-derived`. Frame budget
+       is `inferred`. Composer capability descriptors are
+       `paper-known` for the 7 admitted models.
+
+Honor F-001 working rules throughout: do not Read large files
+already cited in this snapshot; prefer Grep -n + Edit over full-
+file Read + Write; cap large files in active context at <=2
+simultaneously. Honor F-002: KYKT 3R model work runs server-side;
+default to ssh + reuse before installing; check ssh_runner.py:22-44
+ServerConfig before asking for SSH details. Cycle 018 itself is
+markdown only and stays local.
+```
 
 Project state at this snapshot:
    Cycle 015 PAUSED at S9 done (NOT closed; NOT abandoned;

@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-06 (cycle 016 S2-S4 done, S5 closing: Dream3R architecture spec v0.1 (SPEC-20260506-001) + ablation plan v0.1 (SPEC-20260506-002) + comparator map v0.1 (SPEC-20260506-003); mainline redefined as architecture-first per DEC-20260506-001; paper is SUPPORT; cycle 015 paused at S9 done; G2/G6/G7 unchanged)
+Last updated: 2026-05-06 (cycle 018 v0.2 architecture deltas: DEC-20260506-002 v0.2 scope lock + planning/COMPOSER_CAPABILITY_DESCRIPTORS.md (7 admitted experts) + planning/NSA_MEMORY_INTEGRATION_MEMO.md + planning/DINOV3_C1_INTEGRATION_MEMO.md + specs/SPEC-20260506-004 v0.2 delta spec (741 lines, six numbered deltas; main-claim narrowed to A+D); v0.1 spec body unmodified per DEC-20260506-002; mainline = architecture-first per DEC-20260506-001; paper is SUPPORT; cycle 015 paused at S9 done; G2/G6/G7 unchanged)
 
 ## Current Phase
 

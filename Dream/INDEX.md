@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-06 (cycle 016 S2-S4 done: architecture spec + ablation plan + comparator map under specs/; mainline = architecture-first per DEC-20260506-001)
+Last updated: 2026-05-06 (cycle 018 v0.2 architecture deltas: SPEC-20260506-004 v0.2 delta spec + 3 planning artifacts under planning/; main-claim narrowed to A+D; v0.1 spec body unmodified; mainline = architecture-first per DEC-20260506-001)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -52,6 +52,9 @@ Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is
 | `MINIMAL_DEMO_CANDIDATES.md` | Teacher-demo candidate analysis |
 | `WORK_RISK_REGISTER.md` | Consolidated cross-spec risk view across the four finalist specs and the cross-spec contract |
 | `L3_PILOT_SELECTION.md` | Cycle 014 L3 downselect: recommends Critic as first pilot and Composer as backup; planning only, not L3 authorization. Cycle 015 acted on this recommendation: DEC-20260505-005 authorized the Critic L3 pilot SCOPE (per-step micro gates still required) |
+| `COMPOSER_CAPABILITY_DESCRIPTORS.md` | Cycle 018 S2 deliverable: 7 admitted lightweight 3R experts (MASt3R / Fast3R / Spann3R / CUT3R / MoGe-2 / DepthAnything-V2 / Test3R) with capability descriptor schema (innovation point / input / output / cost / attention regime / adapter / capability_match / failure modes / evidence labels); routing policy sketch; cross-axis summary table; pool admission criteria + drops (VGGT, MapAnything, Kimi-KDA) |
+| `NSA_MEMORY_INTEGRATION_MEMO.md` | Cycle 018 S3 deliverable: NSA × C2 Memory integration sketch; three-branch (compressed / selected / sliding) mapped to v0.2 Memory hierarchy A+B; bounded anchor bank K=256 proposed; selection gate driven by Critic confidence + Permanence link; LM-to-3R transfer labeled speculative |
+| `DINOV3_C1_INTEGRATION_MEMO.md` | Cycle 018 S3 deliverable: DINOv3 × C1 Perceiver integration sketch; DINOv3-S replaces ViT-L (~14x param reduction; ~5x latency speedup; paper-derived); -B fallback documented; frozen-backbone default; heads from scratch |
 
 ### `sources/` - Source Mining
 
@@ -171,6 +174,7 @@ Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branc
 | `SPEC-20260506-001-dream3r-architecture.md` | Dream3R architecture v0.1: control-graph-as-architecture; hybrid substrate (transformer + SSM + slot + bus); 4 finalist specs synthesized as cores C1-C5 + C6 bus; CR-1..CR-6 as gates; A1-A8 mapped to concrete layers (cycle 016 S2) |
 | `SPEC-20260506-002-dream3r-ablation-plan.md` | Dream3R ablation plan v0.1: 10 ablations in 3 tiers; falsification table per architectural claim; benchmark categories B1-B6; dependency graph (cycle 016 S3) |
 | `SPEC-20260506-003-dream3r-comparator-map.md` | Dream3R comparator map v0.1: 14+ models across 7 groups; 8 comparison axes; threat ranking; architecture-novel elements with no comparator (cycle 016 S4) |
+| `SPEC-20260506-004-dream3r-architecture-v02.md` | Dream3R architecture v0.2 delta spec: six numbered deltas on v0.1 (frame budget 30-50 ms/frame; C1 DINOv3-S replaces ViT-L; C2 bounded anchor bank + NSA-style retrieval A+B; sparse attention as engineering optimization; C5 Composer pool admits 7 lightweight experts; main-claim narrowed to A Verification-as-architecture + D Heterogeneous best-of-N Composer); v0.1 body unmodified per DEC-20260506-002 (cycle 018 S4) |
 
 ### `storyboards/` - Teacher Demo Storyboards
 
@@ -218,7 +222,7 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | What can Dream do without asking the user? | `AGENT_MASTER_PROMPT.md` section 6 |
 | What requires user approval? | `AGENT_MASTER_PROMPT.md` section 6 + `WORKFLOW_STATUS.md` Blocked Until User Decision |
 | How should I behave when synthesizing or editing files? | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
-| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260505-006.md` (cycle 015 in progress; Critic L3 pilot scope authorized) |
+| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260506-003.md` (cycle 018 v0.2 architecture deltas; SPEC-20260506-004 written; main-claim narrowed to A+D) |
 | What did we decide? | `registry/decision_registry.md` and files under `decisions/` |
 | What experiments are planned? | files under `experiments/`; first-pilot recommendation in `planning/L3_PILOT_SELECTION.md` |
 | How should the frontend agent work? | `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` |

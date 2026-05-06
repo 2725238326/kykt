@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-06 (cycle 016 S2-S4 done: Dream3R architecture spec v0.1 (SPEC-20260506-001, 1821 lines) + ablation plan v0.1 (SPEC-20260506-002, 10 ablations in 3 tiers) + comparator map v0.1 (SPEC-20260506-003, 14+ models, threat ranking); mainline = architecture-first per DEC-20260506-001; paper Phase 2 = SUPPORT; cycle 015 paused at S9 done)
+Last updated: 2026-05-06 (cycle 018 v0.2 architecture deltas: DEC-20260506-002 v0.2 scope lock + 3 planning artifacts (Composer capability descriptors / NSA × C2 Memory / DINOv3 × C1 Perceiver) + specs/SPEC-20260506-004 v0.2 delta spec (741 lines, six numbered deltas); main-claim narrowed to A Verification-as-architecture + D Heterogeneous best-of-N Composer; B/C demoted to discipline/future; E supporting; v0.1 spec body unmodified; RU-007 status updated to "rejected for v0.2 scope; LM-to-3R transfer not pursued")
 
 ## User Intent
 

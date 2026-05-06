@@ -1,6 +1,6 @@
 # Research Unit Registry
 
-Last updated: 2026-05-04 (cycle 008.5 promoted RU-002 to `spec_drafted` after DEC-20260504-001)
+Last updated: 2026-05-06 (cycle 018 S5: RU-007 status updated to "rejected for v0.2 scope; LM-to-3R transfer not pursued" per DEC-20260506-002)
 
 Status: seeded from `units/RESEARCH_UNIT_BANK.md`.
 
@@ -14,7 +14,7 @@ Status: seeded from `units/RESEARCH_UNIT_BANK.md`.
 | RU-004 | External Sparse Spatial Memory | Memory/State | foundational design rule | formalize memory boundary |
 | RU-005 | 3R-to-4DGS Bridge | Demo/4D | demo enabler | keep after visual baseline |
 | RU-006 | Event-Augmented Pointmap 3R | Cross-modal | background/enabler | defer until event-specific cycle |
-| RU-007 | Attention-Residual / KDA 3R | Architecture transfer | speculative only | watchlist |
+| RU-007 | Attention-Residual / KDA 3R | Architecture transfer | rejected for v0.2 scope (per DEC-20260506-002); LM-to-3R transfer not pursued in active branch | preserved as historical RU; readmission requires fresh DEC |
 | RU-008 | Pose-Free Gaussian Demo Bridge | Demo/GS | strong short-term demo enabler | plan Splatt3R/InstantSplat path |
 | RU-009 | Route-Scan Policy Bank | Memory/State | architecture subunit | define route metrics |
 | RU-010 | Hybrid Context Router | Memory/State | high-priority design candidate | draft context budget policy |
