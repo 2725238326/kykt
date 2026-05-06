@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-06 (CYCLE 018 CLOSED: v0.2 architecture deltas done; S1-S5 all done in single multi-session pass; SPEC-20260506-004 written 741 lines covering six numbered deltas; full sync chain complete; cycle 018 outcome + next-cycle candidates 1-5 documented in CYCLE-20260506-003)
+Last updated: 2026-05-06 (CYCLE 019 IN PROGRESS: ablation plan v0.2 addendum per DEC-20260506-003; S1 DEC + S2 SPEC-20260506-005 (991 lines; 9 ABL-v02 with per-ABL review checklist for other-agent handoff) done; S3 sync chain in progress — TASK_SNAPSHOT first per F-001 rule 6 done this commit; SPEC-002 v0.1 Version history pointer + decision_registry append + DEC-002 stale-status backfill + WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync + cycle log NEW remaining)
 
-Status: **idle** (cycle 018 closed; no active task; pending user direction on next-cycle candidates 1-5 in CYCLE-20260506-003 §"Cycle 018 outcome (closed)" — SPEC-002 v0.2 addendum / SPEC-003 v0.2 addendum / paper Phase 2 rewrite for v0.2 main-claim A+D / cycle 015 G_run resumption / capability-match measurement pass)
+Status: **in_progress** (cycle 019 ablation plan v0.2 addendum; S1-S2 done; S3 sync chain in progress — TASK_SNAPSHOT mid-pass anchor done; 5 sync items remaining)
 
 ## Why this file exists
 
@@ -21,66 +21,66 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-018
-phase:      Architecture-first mainline; v0.2 architecture deltas (markdown only; no training, no GPU, no checkpoint creation) — CLOSED
-cycle:      018 (Dream3R architecture v0.2 deltas + Composer capability descriptors + NSA/DINOv3 integration memos + v0.2 delta spec; per DEC-20260506-002)
-status:     done (S1-S5 closed in single multi-session pass; SPEC-20260506-004 written 741 lines; full sync chain complete; cycle 018 outcome + 5 next-cycle candidates documented in CYCLE-20260506-003)
+task_id:    cycle-019
+phase:      Architecture-first mainline; v0.2 ablation plan addendum (markdown only; no training, no GPU, no checkpoint creation)
+cycle:      019 (Dream3R ablation plan v0.2 addendum; per DEC-20260506-003)
+status:     in_progress (S1 DEC + S2 SPEC-005 done; S3 sync chain in progress — TASK_SNAPSHOT mid-pass anchor done; SPEC-002 v0.1 Version history pointer + decision_registry append + DEC-002 stale-status backfill + WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync + cycle log NEW remaining)
 ```
 
 One-line description:
 
 ```text
-Per DEC-20260506-002 (cycle 018 launch + v0.2 architecture scope lock),
-cycle 018 produces v0.2 deltas to v0.1 architecture (SPEC-20260506-001):
-streaming-first inference budget, DINOv3-S backbone replacing ViT-L,
-NSA-style sparse attention as C2 Memory implementation substrate,
-expanded heterogeneous Composer pool (7 admitted lightweight models;
-drop VGGT / MapAnything / Kimi Linear / KDA), and main-claim narrowing
-to two pillars (A. Verification-as-architecture, D. Heterogeneous
-best-of-N Composer). v0.1 preserved as historical record per Honesty
-Override.
+Per DEC-20260506-003 (cycle 019 launch + ablation plan v0.2
+addendum scope lock), cycle 019 produces SPEC-20260506-005 (NEW
+file; delta-only addendum on SPEC-20260506-002 v0.1 ablation plan).
+Nine v0.2 ablations (ABL-v02-1..9) anchored to SPEC-20260506-004
+v0.2 architecture deltas (Delta 1..6): NSA-removal / DINOv3
+backbone tier (-S/-B/-L) / frozen vs partial-unfreeze / Composer
+best-of-N vs single-expert / capability_match measurement pass /
+selection-gate signal subsetting / head training schedule / frame-
+budget benchmark / NSA kernel benefit decomposition. Per-ABL
+review checklist subsection added per user request 2026-05-06
+("其他agent审阅修改 + 文档更新清楚") for other-agent handoff.
+v0.1 ablation plan body preserved per Honesty Override.
 
-S1 done: DEC-20260506-002 written (decisions/DEC-20260506-002-cycle-
-018-launch-v02-architecture.md).
-S2 done: planning/COMPOSER_CAPABILITY_DESCRIPTORS.md written (7
-admitted models with capability descriptor schema covering innovation
-point / input regime / output schema / infrastructure cost / attention
-regime / adapter sketch / capability_match axes / expected failure
-modes / evidence labels; routing policy sketch; cross-axis summary
-table).
-S3 done: planning/NSA_MEMORY_INTEGRATION_MEMO.md (NSA branches mapped
-to v0.2 Memory hierarchy A+B; bounded anchor bank K=256 proposed;
-selection gate driven by Critic confidence + Permanence link;
-speculative evidence label) + planning/DINOV3_C1_INTEGRATION_MEMO.md
-(DINOv3-S replaces ViT-L; ~14x param reduction; ~5x latency speedup;
-heads from scratch; risk: pointmap quality may suffer, fallback to
-DINOv3-B documented).
-S4 done: specs/SPEC-20260506-004-dream3r-architecture-v02.md written
-2026-05-06; 741 lines; six numbered deltas (1 frame budget / 2 C1
-DINOv3-S / 3 C2 anchor-bank+NSA / 4 sparse attention as optimization /
-5 C5 7-expert pool / 6 main-claim narrowing A+D); evidence labels
-inline per delta; v0.1 body NOT modified; carries-forward block lists
-preserved v0.1 sections; Open Questions Q1..Q6 resolution status
-documented; R-v02-1..3 + B-v02-1..4 added; comparator narrowing
-documented (full SPEC-003 addendum deferred).
-S5 IN PROGRESS: TASK_SNAPSHOT mid-pass anchor done (this edit, FIRST
-in sync chain per F-001 rule 6); decision_registry append done in
-prior commit; RU-007 status update + v0.1 spec version-history
-pointer + WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync + cycle
-log final flip remaining in this session.
+Tier placement: ABL-v02-1 + 4 + 6 in Tier 1 (load-bearing);
+ABL-v02-2 + 3 + 7 + 8 in Tier 2; ABL-v02-5 + 9 in Tier 3.
+Falsification mapping covers main-claim A + D + E (supporting).
+Compute budget addendum: ~1237 GPU-hours total across all 9
+v0.2 ABLs (inferred on TITAN RTX 24 GB).
+
+S1 done: DEC-20260506-003 written (decisions/DEC-20260506-003-
+cycle-019-launch-ablation-plan-v02-addendum.md). Carries: scope
+lock + 8 ablation surfaces + post-019 trajectory enumeration
+(cycles 020-025: comparator addendum / code structure planning /
+implementation roadmap / paper rewrite / cycle 015 G_run resume /
+capability_match measurement pass) + review surface checklist.
+
+S2 done: specs/SPEC-20260506-005-dream3r-ablation-plan-v02.md
+written 2026-05-06; 991 lines (target was 500-700; overshoot
+rationale in cycle log: 9 ABLs each have v0.2-delta link + v0.1
+ABL relationship + baseline + variant + test setup + expected
+outcome + falsification interpretation + execution gate +
+per-ABL REVIEW CHECKLIST for other agents — review checklist
+is the load-bearing handoff hook per user request).
+
+S3 IN PROGRESS: TASK_SNAPSHOT mid-pass anchor done (this edit,
+FIRST in sync chain per F-001 rule 6); SPEC-002 v0.1 Version
+history pointer + decision_registry append DEC-003 row +
+DEC-002 stale-status backfill (S1-S5 closed) + WORKFLOW_STATUS
+/ RESEARCH_STATE / INDEX light sync + cycle log
+CYCLE-20260506-004.md NEW remaining in this session.
 
 No training authorized. No GPU runs. No code touch. Markdown only.
 ```
 
-## Subtask board (active pass: cycle 018 v0.2 architecture deltas; 2026-05-06)
+## Subtask board (active pass: cycle 019 ablation plan v0.2 addendum; 2026-05-06)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Write DEC-20260506-002 (cycle 018 launch + v0.2 scope lock; locks streaming-first priority + DINOv3-S backbone + NSA Memory + heterogeneous Composer pool + main-claim narrowing to A+D + drops VGGT/MapAnything/Kimi-KDA) | done | `decisions/DEC-20260506-002-cycle-018-launch-v02-architecture.md` |
-| S2 | Write Composer capability descriptors (NEW; 7 admitted lightweight models: MASt3R / Fast3R / Spann3R / CUT3R / MoGe-2 / DepthAnything-V2 / Test3R; per-row schema; routing policy sketch; cross-axis summary table) | done | `planning/COMPOSER_CAPABILITY_DESCRIPTORS.md` |
-| S3 | Write integration memos (NEW; 1-page each): NSA × C2 Memory + DINOv3 × C1 Perceiver. Carry evidence labels (paper-known / inferred / speculative). NO implementation authorized | done | `planning/NSA_MEMORY_INTEGRATION_MEMO.md` + `planning/DINOV3_C1_INTEGRATION_MEMO.md` |
-| S4 | Write SPEC-20260506-004 v0.2 delta architecture spec (NEW; references v0.1; documents speed priority + frame budget table + C1 substitution + C2 Memory NSA hierarchy + sparse-attention as architectural optimization + C5 Composer pool reference + main-claim A+D + Open Questions resolution) | done | `specs/SPEC-20260506-004-dream3r-architecture-v02.md` (741 lines; six numbered deltas) |
-| S5 | Sync chain: TASK_SNAPSHOT first per F-001 rule 6 (mid-pass anchor + final flip); decision_registry append; cycle log CYCLE-20260506-003.md final flip; RU-007 status update; WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync; v0.1 spec version-history pointer | done (all 7 sync items closed in this multi-session pass) | `cycles/CYCLE-20260506-003.md` + sync chain |
+| S1 | Write DEC-20260506-003 (cycle 019 launch + ablation plan v0.2 addendum scope lock; locks 9 ABL-v02 surfaces; enumerates post-019 trajectory cycles 020-025; defines review surface for other-agent handoff) | done | `decisions/DEC-20260506-003-cycle-019-launch-ablation-plan-v02-addendum.md` |
+| S2 | Write SPEC-20260506-005 v0.2 ablation plan addendum (NEW; references SPEC-002 v0.1; nine ABL-v02 ablations anchored to SPEC-004 v0.2 deltas; v0.1 ABL traceability matrix; per-ABL review checklist for other agents; falsification mapping table for A+D pillars; benchmark mapping to B1-B6; dependency graph; compute budget addendum ~1237 GPU-hours) | done | `specs/SPEC-20260506-005-dream3r-ablation-plan-v02.md` (991 lines; nine ABL-v02; per-ABL review checklist subsection) |
+| S3 | Sync chain: TASK_SNAPSHOT first per F-001 rule 6 (mid-pass anchor + final flip); SPEC-002 v0.1 Version history pointer; decision_registry append DEC-003 row + DEC-002 stale-status backfill (S1-S5 closed); WORKFLOW_STATUS / RESEARCH_STATE / INDEX light sync; INDEX adds SPEC-005 row + latest cycle log pointer; cycles/CYCLE-20260506-004.md NEW cycle log | **IN PROGRESS** (mid-pass anchor done; 5 sync items remaining this session) | `cycles/CYCLE-20260506-004.md` + sync chain |
 
 S2 deliverable summary (for resume context):
 

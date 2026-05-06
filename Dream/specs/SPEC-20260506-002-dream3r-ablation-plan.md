@@ -766,4 +766,38 @@ v0.1  2026-05-06  cycle 016 S3 deliverable. First ablation plan for
                   Falsification table for each architectural claim.
                   Benchmark input categories B1-B6 defined.
                   Dependency graph specified. No training authorized.
+
+v0.2  2026-05-06  cycle 019 S2 deliverable; v0.2 lives in a NEW file
+                  specs/SPEC-20260506-005-dream3r-ablation-plan-v02.md
+                  (delta-only addendum; this v0.1 file body is NOT
+                  rewritten per DEC-20260506-003 + Surgical Edits +
+                  Honesty Override). v0.2 introduces nine numbered
+                  ablations (ABL-v02-1..9) anchored to
+                  SPEC-20260506-004 v0.2 architecture deltas: (1)
+                  NSA-removal (Delta 3 + Delta 4; speculative);
+                  (2) DINOv3 backbone tier -S/-B/-L (Delta 2;
+                  paper-derived; extends v0.1 ABL-2); (3) frozen vs
+                  partial-unfreeze (Delta 2; inferred);
+                  (4) Composer best-of-N vs single-expert (Delta 5
+                  + main-claim D; paper-derived; extends v0.1 ABL-7);
+                  (5) capability_match measurement pass (Delta 5;
+                  inferred -> measured-if-executed); (6) selection-
+                  gate signal subsetting (Delta 3 + main-claim A;
+                  speculative); (7) head training schedule (Delta 2;
+                  inferred); (8) frame-budget benchmark (Delta 1;
+                  inferred); (9) NSA kernel benefit decomposition
+                  (Delta 4; inferred). Tier placement: ABL-v02-1+4+6
+                  in Tier 1 (load-bearing); ABL-v02-2+3+7+8 in
+                  Tier 2; ABL-v02-5+9 in Tier 3. Per-ABL review
+                  checklist subsection added per user request
+                  ("其他agent审阅修改") for other-agent handoff.
+                  v0.1 ABL-1..ABL-10 remain canonical for v0.1
+                  architecture testing; v0.2 ABLs cover surfaces
+                  v0.1 does not address. Falsification mapping
+                  table covers main-claim A + D + E (supporting).
+                  Compute budget addendum: ~1237 GPU-hours total
+                  across all 9 v0.2 ABLs (inferred on TITAN RTX).
+                  No training authorized; markdown only; each
+                  ABL-v02 execution requires fresh DEC + per-step
+                  micro gates per F-002.
 ```
