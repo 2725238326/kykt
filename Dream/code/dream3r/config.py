@@ -1,0 +1,156 @@
+"""
+Dream3R configuration system.
+
+Usage:
+    from dream3r.config import load_config, PRESETS
+    cfg = load_config("configs/small.yaml")   # from file
+    cfg = PRESETS["small"]                     # built-in preset
+"""
+
+import copy
+from pathlib import Path
+from typing import Optional
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
+
+DEFAULTS = {
+    # Perceiver (C1)
+    "d_model": 768,
+    "n_evidence": 17,
+    "d_evidence": 32,
+    "img_size": 224,
+    "patch_size": 16,
+    "use_backbone": False,
+
+    # Memory (C2)
+    "d_state": 256,
+    "n_ssm_layers": 6,
+    "d_bus_context": 3,
+
+    # Permanence (C3)
+    "d_slot": 128,
+    "n_slots": 16,
+    "n_slot_iters": 3,
+
+    # Critic (C4)
+    "d_critic": 256,
+    "n_critic_heads": 4,
+    "n_critic_layers": 2,
+
+    # Composer (C5)
+    "n_regimes": 5,
+    "n_models": 8,
+
+    # Training
+    "batch_size": 4,
+    "lr": 1e-4,
+    "weight_decay": 1e-5,
+    "epochs": 100,
+    "warmup_epochs": 5,
+    "grad_clip": 1.0,
+    "amp": True,
+    "gradient_checkpointing": False,
+
+    # Loss weights
+    "w_pointmap": 1.0,
+    "w_critic_p1": 0.5,
+    "w_critic_p5": 0.3,
+    "w_memory_p2": 0.3,
+    "w_memory_p3": 0.2,
+    "w_permanence_p4": 0.5,
+    "w_action_entropy": 0.1,
+
+    # Data
+    "data_root": "/hdd3/kykt26/data",
+    "dataset": "synthetic",
+    "num_workers": 4,
+    "n_frames_per_window": 4,
+
+    # DDP
+    "gpus": "0,1",
+    "dist_backend": "nccl",
+
+    # Logging
+    "log_dir": "/hdd3/kykt26/code/dream3r/runs",
+    "save_dir": "/hdd3/kykt26/code/dream3r/checkpoints",
+    "log_every": 50,
+    "save_every_epoch": 10,
+    "eval_every_epoch": 5,
+}
+
+
+PRESETS = {
+    "small": {
+        **DEFAULTS,
+        "use_backbone": False,
+        "gpus": "0,1",
+    },
+    "small_vit": {
+        **DEFAULTS,
+        "use_backbone": True,
+        "gpus": "0,1",
+        "batch_size": 2,
+    },
+    "base": {
+        **DEFAULTS,
+        "use_backbone": True,
+        "d_state": 512,
+        "n_ssm_layers": 12,
+        "d_slot": 256,
+        "n_slots": 32,
+        "d_critic": 512,
+        "n_critic_layers": 4,
+        "gpus": "0,1,2",
+        "batch_size": 2,
+    },
+}
+
+
+def load_config(path: Optional[str] = None, preset: str = "small",
+                overrides: Optional[dict] = None) -> dict:
+    """
+    Load config with priority: overrides > yaml file > preset > defaults.
+    """
+    cfg = copy.deepcopy(PRESETS.get(preset, DEFAULTS))
+
+    if path and yaml:
+        p = Path(path)
+        if p.exists():
+            with open(p) as f:
+                file_cfg = yaml.safe_load(f) or {}
+            cfg.update(file_cfg)
+
+    if overrides:
+        cfg.update(overrides)
+
+    return cfg
+
+
+def save_config(cfg: dict, path: str):
+    if yaml is None:
+        raise ImportError("pyyaml required: pip install pyyaml")
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        yaml.dump(cfg, f, default_flow_style=False, sort_keys=False)
+
+
+def config_to_model_args(cfg: dict) -> dict:
+    """Extract only the keys Dream3R.__init__ needs."""
+    return {
+        "d_model": cfg["d_model"],
+        "n_evidence": cfg["n_evidence"],
+        "d_evidence": cfg["d_evidence"],
+        "d_state": cfg["d_state"],
+        "n_ssm_layers": cfg["n_ssm_layers"],
+        "d_slot": cfg["d_slot"],
+        "n_slots": cfg["n_slots"],
+        "d_critic": cfg["d_critic"],
+        "n_regimes": cfg["n_regimes"],
+        "n_models": cfg["n_models"],
+        "use_backbone": cfg["use_backbone"],
+        "img_size": cfg["img_size"],
+    }

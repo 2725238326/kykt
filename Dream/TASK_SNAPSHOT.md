@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-06 (CYCLE 016 DONE + CYCLE 017 DONE: cycle 016 produced architecture spec + ablation plan + comparator map; cycle 017 produced paper draft v1 with architecture-centric framing; all design-layer deliverables complete; next = user review or training authorization)
+Last updated: 2026-05-06 (CYCLE 016-017 DONE + code implementation started: architecture spec + ablation plan + comparator map + paper draft all complete; Dream3R PyTorch code v0.1 written and smoke-tested on GPU; server dream3r conda env set up (torch 2.5.1+cu121 + mamba-ssm 2.2.4); code polishing = current mainline)
 
-Status: **idle** (cycles 016-017 complete; design-layer deliverables done; next cycle requires user direction)
+Status: **in_progress** (code polishing mainline; first module-level refactor done; training infra + data loader + Mamba integration pending)
 
 ## Why this file exists
 
@@ -24,7 +24,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 task_id:    cycle-016
 phase:      Architecture-first mainline (markdown only; no training, no GPU, no checkpoint creation)
 cycle:      016 (Dream3R architecture spec + ablation plan + comparator map; per DEC-20260506-001)
-status:     done (S1-S5 all complete)
+status:     in_progress (design done; code polishing mainline)
 ```
 
 One-line description:

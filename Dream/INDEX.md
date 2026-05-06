@@ -97,6 +97,19 @@ Format: `CYCLE-YYYYMMDD-NNN.md`. Newest is the active cycle.
 
 Format: `DEC-YYYYMMDD-NNN-<slug>.md`. Indexed in `registry/decision_registry.md`.
 
+### `code/dream3r/` - Dream3R PyTorch Implementation
+
+Dream3R v0.1 code. Runs on remote server `/hdd3/kykt26/code/dream3r/` (dream3r conda env). Local copy is for editing; deploy via SFTP.
+
+| File | Role |
+|---|---|
+| `bus.py` | C6 Memory Bus: typed signal namespace + CR-1..CR-6 gates (zero parameters) |
+| `modules.py` | C1 Perceiver (ViT backbone + heads), C2 Memory (GRU/Mamba), C3 Permanence (Slot Attention), C4 Critic (TransformerEncoder), C5 Composer (table join) |
+| `model.py` | Dream3R main model: wires C1-C6 in bus tick order; preset configs (small / small_vit) |
+| `losses.py` | Multi-loss L_total: pointmap + critic P1/P5 + permanence P4 + action entropy |
+| `smoke_test.py` | End-to-end validation: forward + backward + bus signals + CR-1 gate + memory carry-over |
+| `PLAN.md` | Implementation roadmap (6 phases) with checklist |
+
 ### `experiments/` - Experiment Plans
 
 Format: `EXP-YYYYMMDD-NNN-<slug>.md`. Filing here does not mean the experiment was run. Cycle 013 added 4 L3 prerequisites briefs (one per finalist; brief-only, NOT L3 authorization).

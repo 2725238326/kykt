@@ -35,3 +35,6 @@ release/**/*.msi
 
 # Experiment run outputs (logs, checkpoints, cloned repos). Keep local only.
 Dream/experiments/runs/
+
+# Downloaded wheel files. Never commit large binaries.
+*.whl
