@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-08 (cycle 024 DONE: first server-side code task T-v02-A scaffold deployed to 172.17.140.97; 11 NEW Python files; composer_experts/ + memory_anchor_bank + nsa_attention + bench_frame_budget; v0.1 + v0.2 smoke tests PASSED on GPU 0; next = T-v02-C1 DINOv3-S backbone integration + T-v02-C2 Memory integration; mainline = architecture-first per DEC-20260506-001; G2/G6/G7 unchanged)
+Last updated: 2026-05-08 (cycle 025 DONE: direction 3.1 research correction completed; planning/MEMORY_V03_DESIGN_STUDY.md NEW after static server code reading of CUT3R + Spann3R + current Dream3R C2; next recommended = C2 Memory v0.3 spec addendum, markdown only; no model run/training/checkpoint download; mainline = architecture-first per DEC-20260506-001)
 
 ## Current Phase
 

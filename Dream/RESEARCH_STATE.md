@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-08 (cycle 024 DONE + 研究方向校正: v0.2 代码框架部署完成（21 Python files on server; 3 real expert adapters; smoke+demo PASSED）但用户指出方向偏离 — 搭框架过多、核心研究不足; 三个待深入研究方向已规划: (1) DINOv3 真实替换 — DINOv2 不等于 DINOv3, Gram Anchoring + RoPE 是关键差异, 影响 3R dense feature 质量; (2) NSA 稀疏注意力在视觉 memory 的真实可行性 — LLM 技术迁移到 3R 无先例, 需要 full-attn vs cosine-topk vs NSA 真实对比; (3) CUT3R persistent state + Spann3R spatial memory 机制融合到 Dream3R C2 Memory — 这是最优先方向; 用户选择方向 3.1 开始: 读 CUT3R + Spann3R 代码理解 memory 机制 → 设计 Dream3R Memory 改进)
+Last updated: 2026-05-08 (cycle 025 DONE: 方向 3.1 完成第一份机制研究; 静态阅读服务器 CUT3R / Spann3R / Dream3R C2 代码后写出 planning/MEMORY_V03_DESIGN_STUDY.md; 关键结论: 当前 Dream3R C2 的 GRU + vector AnchorBank + NSA label 不够 3R memory, v0.3 应转为 CUT3R-like state-token recurrence + Spann3R-like explicit spatial key/value bank + geometry-aware bus-gated writes; 下一步建议写 C2 Memory v0.3 spec addendum; 未运行模型, 未训练, 未下载 checkpoint)
 
 ## User Intent
 

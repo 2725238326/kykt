@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-08 (cycle 025 IN PROGRESS: 方向 3.1 research pass started; read CUT3R persistent state + Spann3R spatial memory code on server; write Dream/planning/MEMORY_V03_DESIGN_STUDY.md; research-only, no model run, no training, no checkpoint download)
+Last updated: 2026-05-08 (cycle 025 DONE: 方向 3.1 research pass completed; CUT3R persistent state + Spann3R spatial memory code read on server; Dream/planning/MEMORY_V03_DESIGN_STUDY.md written; C2 v0.3 direction = state-token recurrence + spatial key/value memory + geometry-aware bus-gated writes; no model run, no training, no checkpoint download)
 
-Status: **in_progress** (cycle 025 active; S1 snapshot start anchor done; S2 server-side CUT3R/Spann3R code reading in progress; S3 design study pending; S4 sync chain pending)
+Status: **idle** (cycle 025 done; next recommended task = write a C2 Memory v0.3 spec addendum that supersedes Delta 3 from vector AnchorBank to token state + spatial bank, markdown only)
 
 ## Why this file exists
 
@@ -26,89 +26,36 @@ phase:      Architecture-first research correction; C2 Memory mechanism
             study after cycle 024 framework-heavy drift
 cycle:      025 (方向 3.1: CUT3R persistent state + Spann3R spatial
             memory code reading -> Dream3R C2 Memory v0.3 design study)
-status:     in_progress (S1 snapshot start anchor done; S2 code reading
-            in progress; S3 MEMORY_V03_DESIGN_STUDY pending; S4 sync
-            chain pending)
+status:     done (S1 snapshot start anchor done; S2 CUT3R/Spann3R/
+            Dream3R C2 code reading done; S3 MEMORY_V03_DESIGN_STUDY
+            written; S4 sync chain done)
 ```
 
 One-line description:
 
 ```text
-Per DEC-20260507-001 (cycle 021 launch + comparator map v0.2
-addendum + Path C review activation), cycle 021 produces (a)
-specs/SPEC-20260507-001-dream3r-comparator-map-v02.md as the
-v0.2 delta addendum closing the v0.2 markdown trio (architecture
-SPEC-004 + ablation plan SPEC-005 + comparator map this file),
-and (b) ATTEMPTED Path C activation — spawn 2 sub-agents to
-review cycle 020 planning artifacts using their per-file/per-
-task review checklists. (a) succeeded; (b) BLOCKED by
-infrastructure outage.
+Cycle 025 corrected the project direction from framework scaffolding
+back to mechanism research. It read CUT3R state-token recurrence,
+Spann3R spatial key/value memory, and current Dream3R C2 code, then
+wrote planning/MEMORY_V03_DESIGN_STUDY.md. Main conclusion: Dream3R
+C2 v0.3 should stop being GRU + vector cache + NSA label, and become
+state-token recurrence + explicit spatial key/value memory +
+geometry-aware bus-gated writes.
 
-Path C activation incident (full detail in cycle log §"Path C
-activation incident"):
-  Attempt 1: Agent A 187.9s + Agent B 194.8s -> both API 500
-             nil-pointer panic on Calcium-Ion/new-api gateway.
-  Attempt 2: Agent A 183.6s + Agent B 182.7s -> identical
-             panics. Persistent gateway-side bug.
-  Total: 4 failures × ~3 min each ≈ 12 min compute. Zero tokens
-  consumed; zero tool uses. Identical signature across all 4.
-  Decision per Honesty Override + DEC-001 §Q4: Option β —
-  cycle 021 status = `done-with-S2-blocked-by-infrastructure`;
-  Path C deferred to cycle 022; documented transparently rather
-  than silently dropped.
-
-S1 done: DEC-20260507-001 written (~430 lines). Combined-cycle
-scope lock (S2 Path C + S3 comparator map); §"Why this matters"
-trajectory adherence + combined-cycle compression precedent
-matching DEC-004 "高强度推进" pattern; per-deliverable section
-structure preview; allowed/not-allowed enumerations; 5 open
-questions Q1-Q5.
-
-S2 BLOCKED: Path C activation attempted; 4 failures above;
-deferred to cycle 022 reattempt.
-
-S3 done: SPEC-20260507-001 written 2026-05-07 (~880 lines).
-Reorganizes v0.1 16-entry comparator pool into 5 tiers per
-SPEC-004 Delta 5: in-pool 7 admitted experts (MASt3R / Fast3R
-/ Spann3R / CUT3R / MoGe-2 / DepthAnything-V2 / Test3R);
-out-of-pool 3 drops (VGGT + MapAnything + Kimi-KDA per DEC-002
-reasons); out-of-scope 1 (ViT-L per Delta 2); foundation 1
-(DUSt3R); orthogonal 8 (STream3R / LONG3R+LongStream+LoGeR /
-TTT3R / MonST3R / POMATO+D2USt3R+Easi3R+RayMap3R / Mamba-3R /
-SLAM3R / Splatt3R+4DGS). Adds 3 NEW axes 9-11 (NSA-style
-sparse attention / DINOv3 backbone tier / Composer expert
-pool composition) per Deltas 2-5. Re-ranks threats against
-pillar A+D narrowing — pillar A HIGH: Test3R alone + TTT3R;
-pillar D HIGH: VGGT offline-batch + each in-pool expert alone.
-Full v0.1 → v0.2 traceability matrix preserves all 16 v0.1
-entries with explicit reclassification reason. 5 risks R-cm-1..5
-+ 5 open questions Q1-Q5 surfaced including ABL-v02-10 Test3R-
-alone candidate for pillar A robustness gap.
-
-S4 done: cycles/CYCLE-20260507-001.md NEW. Subtask board +
-artifacts + Path C activation incident + cycle 021 outcome +
-renumbered post-021 trajectory + Hard rules + F-001/F-002
-honoring + Honesty Override consummation + resume action.
-
-S5 done: full sync chain (TASK_SNAPSHOT mid-pass anchor + final
-flip; decision_registry append DEC-001 row + line-3 stamp;
-SPEC-003 v0.1 Version history v0.2 pointer; WORKFLOW_STATUS /
-RESEARCH_STATE / INDEX line-3 + INDEX SPEC-001 row + INDEX
-latest-cycle-log pointer to CYCLE-20260507-001).
-
-No training authorized. No GPU runs. No code touch. No clones /
-installs / checkpoints. Markdown only.
+No training authorized. No model run. No checkpoint download. Server
+use was static code reading over SSH only. Local change was markdown
+research documentation plus sync metadata.
 ```
 
-## Subtask board (active pass: cycle 022 combined Path C reattempt + paper §3+§6 v0.2 rewrite; single session 2026-05-07)
+## Subtask board (cycle 025 memory mechanism study; single session 2026-05-08)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Write DEC-20260507-002 (cycle 022 launch: Path C reattempt + paper S3+S6 rewrite scope lock; Path C protocol; paper rewrite protocol; failure protocol Option β carried; RA items framework) + TASK_SNAPSHOT mid-pass anchor (F-001 rule 6 first) | done | `decisions/DEC-20260507-002-cycle-022-path-c-reattempt-and-paper-s3s6-rewrite.md` |
-| S2 | Path C reattempt (2 sub-agents in background; general-purpose subagent_type; READ-ONLY scope by prompt instruction): Agent A reviews planning/DREAM3R_V02_CODE_STRUCTURE.md; Agent B reviews planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md; each produces ≤500-word structured 5-section A–E review | **DONE — BOTH SUCCEEDED** (38.2s + 47.5s; API gateway recovered since cycle 021; 7 review-action items RA-01..07 captured; full findings documented in cycles/CYCLE-20260507-002.md §S2) | `cycles/CYCLE-20260507-002.md` §S2 (findings) |
-| S3 | Paper §3+§6 v0.2 rewrite: in-place edit of literature/PAPER_DRAFT_V1.md; §3.8 NEW (six v0.2 deltas with evidence labels; per-frame budget table; DINOv3-S; NSA; attention regime table; 7-expert pool; routing policy; A+D definitions); §6.0–6.3 NEW (5-tier pool; A+D threat table; 3 new axes); §6.4 = v0.1 preserved; version bumped to v1.2; source anchors updated | done (paper v1.2; §3.1–3.7 and §6.4 v0.1 prose preserved per Discipline rule 5) | `literature/PAPER_DRAFT_V1.md` (v1.2) |
-| S4 | Write cycles/CYCLE-20260507-002.md (cycle 022 log; subtask board; Agent A/B full findings; RA-01..07 table; paper rewrite summary; trajectory update; discipline notes) | done | `cycles/CYCLE-20260507-002.md` |
-| S5 | Sync chain: TASK_SNAPSHOT first per F-001 rule 6 (mid-pass anchor + final flip); decision_registry DEC-20260507-002 row + DEC-001 annotation + line-3 stamp; WORKFLOW_STATUS / RESEARCH_STATE / INDEX line-3 sync; INDEX latest-cycle-log pointer to CYCLE-20260507-002; INDEX literature/ entry added | done (all sync items closed in single session) | sync chain |
+| S1 | Start-of-pass TASK_SNAPSHOT anchor per F-001 rule 6 | done | `TASK_SNAPSHOT.md` |
+| S2 | Read CUT3R state-token and LocalMemory code on server | done | `/hdd3/kykt26/code/cut3r/src/dust3r/model.py`, `/hdd3/kykt26/code/cut3r/src/dust3r/blocks.py` |
+| S3 | Read Spann3R SpatialMemory and DUSt3R integration code on server | done | `/hdd3/kykt26/code/spann3r/spann3r/model.py` |
+| S4 | Read current Dream3R C2 implementation and compare gaps | done | `/hdd3/kykt26/code/dream3r/dream3r/modules.py`, `memory_anchor_bank.py`, `nsa_attention.py` |
+| S5 | Write design study and sync metadata | done | `planning/MEMORY_V03_DESIGN_STUDY.md`, `cycles/CYCLE-20260508-002.md`, sync chain |
 
 S2 deliverable summary (for resume context):
 
@@ -163,74 +110,42 @@ specs/SPEC-20260506-001-dream3r-architecture.md sections:
 ## Last completed task pass
 
 ```text
-pass_name:        Cycle 022 close pass (S1–S5 done in single session
+pass_name:        Cycle 025 close pass (方向 3.1 memory mechanism
+                  study done in single session 2026-05-08)
+date:             2026-05-08
+trigger:          User asked to read HANDOFF_PROMPT_MEMORY_RESEARCH
+                  and TASK_SNAPSHOT, then "do the project better".
+files_modified:   TASK_SNAPSHOT.md (start anchor + final flip)
+                  WORKFLOW_STATUS.md (line-3 status update)
+                  RESEARCH_STATE.md (line-3 status update)
+                  INDEX.md (planning row for MEMORY_V03)
+new_artifacts:    planning/MEMORY_V03_DESIGN_STUDY.md (NEW;
+                  CUT3R state-token recurrence + Spann3R spatial
+                  key/value memory study; Dream3R C2 v0.3 proposal)
+                  cycles/CYCLE-20260508-002.md (NEW; concise
+                  cycle 025 log)
+discipline:       Research-only. Server-side work was static code
+                  reading over SSH. No model run, no training, no
+                  checkpoint download, no Dream3R server code edit.
+budget_event:     F-001 honored by targeted code slices and Grep/
+                  Select-String. F-002 honored by using server-side
+                  code paths under /hdd3/kykt26 and keeping local
+                  Windows as markdown/orchestration only.
+
+prior_pass_name:  Cycle 022 close pass (S1-S5 done in single session
                   2026-05-07; combined Path C reattempt SUCCEEDED
-                  + paper §3+§6 v0.2 rewrite done; API gateway
+                  + paper Section 3+6 v0.2 rewrite done; API gateway
                   recovered since cycle 021; 7 RA items captured
                   for conditional cycle 023.5)
-date:             2026-05-07
-trigger:          User "022—A吧" 2026-05-07 selecting 022-A from
-                  cycle 021 closure candidate menu (022-A =
-                  default recommendation: Path C reattempt +
-                  paper Section 3+6 rewrite combined cycle).
-files_modified:   TASK_SNAPSHOT.md (this file; mid-pass anchor +
-                  final flip; FIRST in sync chain per F-001
-                  rule 6)
-                  registry/decision_registry.md (DEC-20260507-
-                  002 row appended; DEC-001 Scope cell annotated
-                  with Path C SUCCEEDED update; line-3 stamp)
-                  WORKFLOW_STATUS.md (Last updated; line 3 + Path
-                  C SUCCEEDED + paper v1.2 + next cycle flagged)
-                  RESEARCH_STATE.md (Last updated; line 3 + Path
-                  C findings summary + RA-01..07 + paper v1.2)
-                  INDEX.md (Last updated + literature/ table 1
-                  row added — PAPER_DRAFT_V1.md v1.2 — + latest-
-                  cycle-log pointer updated to CYCLE-20260507-002)
-                  literature/PAPER_DRAFT_V1.md (v0.2 delta notice
-                  + §3.8 NEW + §6.0–6.3 NEW; §3.1–3.7 + §6.4
-                  preserved; header + source anchors + version
-                  history updated to v1.2)
-new_artifacts:    decisions/DEC-20260507-002-cycle-022-path-c-
-                  reattempt-and-paper-s3s6-rewrite.md (NEW;
-                  combined-cycle scope lock + Path C protocol +
-                  paper rewrite protocol + RA framework +
-                  post-022 trajectory update)
-                  cycles/CYCLE-20260507-002.md (NEW; cycle 022
-                  log; Path C SUCCEEDED; full Agent A/B findings;
-                  RA-01..07 table; paper rewrite summary)
-in_place_edits:   literature/PAPER_DRAFT_V1.md (§3.8 + §6.0–6.3
-                  added in-place with [v0.2 delta] annotation
-                  blocks; v0.1 prose in §3.1–3.7 + §6.4 NOT
-                  deleted per Discipline rule 5); sync chain
-                  only for all other files; planning/DREAM3R_
-                  V02_CODE_STRUCTURE.md + DREAM3R_V02_
-                  IMPLEMENTATION_ROADMAP.md NOT modified (Path C
-                  agents READ-ONLY; RA items deferred to
-                  conditional cycle 023.5 v0.3 addenda per
-                  B-roadmap-F rule)
-discipline:       Surgical Edits (cycle 022 produces 1 NEW DEC +
-                  1 NEW cycle log; paper §3+§6 in-place with
-                  v0.2 markers; pre-existing markdown lint
-                  MD032/MD060 warnings on PAPER_DRAFT_V1.md +
-                  INDEX.md NOT fixed per Surgical Edits rule 3)
-                  + Honesty Override (VGGT offline-batch threat
-                  to pillar D acknowledged in §6.2 with no
-                  measured numbers; per-component latency budget
-                  labeled `inferred` throughout §3.8; Path C
-                  agent findings documented verbatim without
-                  cherry-picking; ALL 7 RA items recorded even
-                  LOW-priority RA-04)
-budget_event:     F-001 honored: SPEC-001 v0.1 (~1821 lines) NOT
-                  Re-Read; SPEC-004 (~500 lines) Read offset/
-                  limit for Deltas 1-6 specific sections only;
-                  SPEC-20260507-001 NOT Re-Read (used targeted
-                  Grep for threat table section); PAPER_DRAFT_V1.md
-                  (331 lines) Read in full (small enough); Path
-                  C sub-agent budget: Agent A 27,720 tokens +
-                  Agent B 30,608 tokens; F-002 carried: markdown
-                  only; server untouched.
+prior_pass_date:  2026-05-07
+prior_pass_files: TASK_SNAPSHOT.md, registry/decision_registry.md,
+                  WORKFLOW_STATUS.md, RESEARCH_STATE.md, INDEX.md,
+                  literature/PAPER_DRAFT_V1.md, decisions/DEC-
+                  20260507-002-cycle-022-path-c-reattempt-and-
+                  paper-s3s6-rewrite.md, cycles/CYCLE-20260507-
+                  002.md
 
-prior_pass_name:  Cycle 021 close pass (S1+S3+S4+S5 done in
+older_prior_pass: Cycle 021 close pass (S1+S3+S4+S5 done in
                   single session 2026-05-07; S2 Path C BLOCKED
                   by API gateway 500 panic — 4 attempts × ~3 min
                   each; cycle closes as done-with-S2-blocked-by-
