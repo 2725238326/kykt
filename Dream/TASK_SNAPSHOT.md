@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-08 (CYCLE 024 DONE phase 3: T-v02-A scaffold + T-v02-C1 DINOv3-S + T-v02-C2 AnchorBank+NSA + T-v02-C5 Composer wiring + T-v02-D integration test ALL PASSED; dinov2_s preset: 29.5M total (21.6M frozen backbone + 7.8M trainable); 7 expert adapters registered; anchor bank grows per window; regime auto-classified from perception; server code 21 files; next = T-v02-E CR gate coverage test + T-v02-F training pipeline)
+Last updated: 2026-05-08 (cycle 025 IN PROGRESS: 方向 3.1 research pass started; read CUT3R persistent state + Spann3R spatial memory code on server; write Dream/planning/MEMORY_V03_DESIGN_STUDY.md; research-only, no model run, no training, no checkpoint download)
 
-Status: **idle** (cycle 024 done; v0.2 architecture fully wired and tested on server; next = T-v02-E gate test or T-v02-F training setup)
+Status: **in_progress** (cycle 025 active; S1 snapshot start anchor done; S2 server-side CUT3R/Spann3R code reading in progress; S3 design study pending; S4 sync chain pending)
 
 ## Why this file exists
 
@@ -21,16 +21,14 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-022
-phase:      Architecture-first mainline; combined Path C reattempt +
-            paper Section 3+6 v0.2 rewrite (markdown only) — DONE
-cycle:      022 (Path C reattempt SUCCEEDED + PAPER_DRAFT_V1.md §3+§6
-            v0.2 rewrite; per DEC-20260507-002; user authorized
-            "022—A吧" 2026-05-07)
-status:     done (S1+S2+S3+S4+S5 done in single session 2026-05-07;
-            Path C SUCCEEDED — both agents completed 38.2s + 47.5s;
-            API gateway recovered since cycle 021; 7 RA items captured;
-            paper v1.2; sync chain complete)
+task_id:    cycle-025
+phase:      Architecture-first research correction; C2 Memory mechanism
+            study after cycle 024 framework-heavy drift
+cycle:      025 (方向 3.1: CUT3R persistent state + Spann3R spatial
+            memory code reading -> Dream3R C2 Memory v0.3 design study)
+status:     in_progress (S1 snapshot start anchor done; S2 code reading
+            in progress; S3 MEMORY_V03_DESIGN_STUDY pending; S4 sync
+            chain pending)
 ```
 
 One-line description:
