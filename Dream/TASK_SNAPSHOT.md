@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-07 (CYCLE 020 CLOSED: combined v0.2 code structure planning + implementation roadmap done; S1-S4 closed across 2026-05-06 launch session + 2026-05-07 closure session; DEC-20260506-004 written 544 lines + planning/DREAM3R_V02_CODE_STRUCTURE.md NEW 1086 lines + planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md NEW 1226 lines + cycles/CYCLE-20260506-005.md NEW; full sync chain complete; user-revised post-019 trajectory documented honestly with old-vs-new table per Discipline rule 5 — DEC-003 row preserved unchanged; renumbered post-020 candidates 021-025 documented in CYCLE-20260506-005 §"Cycle 020 outcome (closed)")
+Last updated: 2026-05-07 (CYCLE 023 DONE: combined v0.3 planning addenda (3 HIGH RA items: RA-01 latency thresholds + RA-02 ExpertAdapter ABC + RA-05 checkpoint inventory) + ablation plan v0.3 addendum (ABL-v02-10 Test3R-alone Tier 1 + Pillar A coverage map RA-07 + VGGT baseline Q2); DEC-20260507-003 + 3 NEW planning files + specs/SPEC-20260507-002 NEW + cycles/CYCLE-20260507-003.md NEW + SPEC-005 v0.2 Version history v0.3 pointer; ALL v0.2/v0.3 MARKDOWN DELIVERABLES COMPLETE; next = cycle 024 server-side G_run)
 
-Status: **idle** (cycle 020 closed; no active task; pending user direction on renumbered next-cycle candidates 021-025 in CYCLE-20260506-005 §"Cycle 020 outcome (closed) and renumbered post-020 trajectory" — comparator map v0.2 addendum / paper Phase 2 rewrite for A+D / cycle 015 G_run resumption / capability_match measurement pass / first ablation execution authorization)
+Status: **idle** (cycle 023 done; all v0.2/v0.3 markdown phase complete; next work requires server-side execution; recommended next: cycle 024 cycle-015 G_run resumption)
 
 ## Why this file exists
 
@@ -21,111 +21,96 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-020
-phase:      Architecture-first mainline; combined v0.2 code structure planning + implementation roadmap (markdown only; no training, no GPU, no checkpoint creation, no code touch) — CLOSED
-cycle:      020 (Dream3R v0.2 code structure + implementation roadmap; per DEC-20260506-004; user-revised trajectory: skip original cycle-020 SPEC-003 v0.2 comparator map; combine original cycles 021+022 into one cycle 020 under "高强度推进")
-status:     done (S1-S4 closed across 2026-05-06 launch session and 2026-05-07 closure session; DEC-20260506-004 written 544 lines + DREAM3R_V02_CODE_STRUCTURE.md NEW 1086 lines + DREAM3R_V02_IMPLEMENTATION_ROADMAP.md NEW 1226 lines + cycles/CYCLE-20260506-005.md NEW; full sync chain complete; user-revised post-019 trajectory documented honestly per Discipline rule 5; renumbered post-020 candidates 021-025 documented in CYCLE-20260506-005)
+task_id:    cycle-022
+phase:      Architecture-first mainline; combined Path C reattempt +
+            paper Section 3+6 v0.2 rewrite (markdown only) — DONE
+cycle:      022 (Path C reattempt SUCCEEDED + PAPER_DRAFT_V1.md §3+§6
+            v0.2 rewrite; per DEC-20260507-002; user authorized
+            "022—A吧" 2026-05-07)
+status:     done (S1+S2+S3+S4+S5 done in single session 2026-05-07;
+            Path C SUCCEEDED — both agents completed 38.2s + 47.5s;
+            API gateway recovered since cycle 021; 7 RA items captured;
+            paper v1.2; sync chain complete)
 ```
 
 One-line description:
 
 ```text
-Per DEC-20260506-004 (cycle 020 launch + combined code
-structure + implementation roadmap), cycle 020 produces two
-sibling planning artifacts that together form the load-bearing
-other-agent review/modification handoff surface per user
-2026-05-06 instruction "其他agent审阅修改 + 你文档更新清楚哈".
+Per DEC-20260507-001 (cycle 021 launch + comparator map v0.2
+addendum + Path C review activation), cycle 021 produces (a)
+specs/SPEC-20260507-001-dream3r-comparator-map-v02.md as the
+v0.2 delta addendum closing the v0.2 markdown trio (architecture
+SPEC-004 + ablation plan SPEC-005 + comparator map this file),
+and (b) ATTEMPTED Path C activation — spawn 2 sub-agents to
+review cycle 020 planning artifacts using their per-file/per-
+task review checklists. (a) succeeded; (b) BLOCKED by
+infrastructure outage.
 
-Trajectory revision (documented honestly per Honesty Override):
-DEC-20260506-003 §"Post-019 trajectory" enumerated cycles 020-025
-with original cycle 020 = SPEC-003 v0.2 comparator map addendum.
-User 2026-05-06 message "行，你帮我吧，我们需要高强度推进"
-revised the trajectory: skip original cycle 020 (deferred to
-renumbered cycle 021); combine original cycles 021 (code
-structure) + 022 (implementation roadmap) into a single cycle
-020 with two artifacts. Both DEC-003 trajectory row and DEC-004
-revision row preserved in decision_registry per Discipline rule 5
-(no silent supersede).
+Path C activation incident (full detail in cycle log §"Path C
+activation incident"):
+  Attempt 1: Agent A 187.9s + Agent B 194.8s -> both API 500
+             nil-pointer panic on Calcium-Ion/new-api gateway.
+  Attempt 2: Agent A 183.6s + Agent B 182.7s -> identical
+             panics. Persistent gateway-side bug.
+  Total: 4 failures × ~3 min each ≈ 12 min compute. Zero tokens
+  consumed; zero tool uses. Identical signature across all 4.
+  Decision per Honesty Override + DEC-001 §Q4: Option β —
+  cycle 021 status = `done-with-S2-blocked-by-infrastructure`;
+  Path C deferred to cycle 022; documented transparently rather
+  than silently dropped.
 
-S1 done: DEC-20260506-004 written
-(decisions/DEC-20260506-004-cycle-020-launch-code-structure-and-
-implementation-roadmap.md; 544 lines). Carries: scope lock
-(combined planning artifacts) + trajectory revision narrative
-(original 6-cycle queue renumbered with explicit
-old-vs-new table) + allowed/not-allowed enumerations + S2
-section structure preview + S3 section structure preview +
-review surface guidance.
+S1 done: DEC-20260507-001 written (~430 lines). Combined-cycle
+scope lock (S2 Path C + S3 comparator map); §"Why this matters"
+trajectory adherence + combined-cycle compression precedent
+matching DEC-004 "高强度推进" pattern; per-deliverable section
+structure preview; allowed/not-allowed enumerations; 5 open
+questions Q1-Q5.
 
-S2 done: planning/DREAM3R_V02_CODE_STRUCTURE.md written
-2026-05-06 (1086 lines). Maps SPEC-004 v0.2 architecture
-Delta 1..6 to per-file changes in code/dream3r/. Sections:
-existing v0.1 substrate per-file summary (cited from
-code/dream3r/PLAN.md; not re-derived); v0.2 delta -> module
-mapping table; per-file change manifest with MODIFIED
-(modules.py / model.py / losses.py / smoke_test.py / config.py
-/ train.py) + NEW (memory_anchor_bank.py / nsa_attention.py /
-composer_experts/ subdirectory with 7 expert adapters +
-latency_bench.py + datasets per ABL-v02 needs) + STABLE
-(bus.py CR-1..CR-6 carry forward; existing token taxonomy
-stable). Each MODIFIED + NEW file has explicit review surface
-subsection per user request "其他agent审阅修改". Server-side
-deployment surface documented per F-002. Honest evidence
-labels: speculative for NSA-related; paper-derived for
-DINOv3-S; engineering-judgment for expert pool composition;
-inferred for line-of-code estimates.
+S2 BLOCKED: Path C activation attempted; 4 failures above;
+deferred to cycle 022 reattempt.
 
-S3 done: planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md
-written 2026-05-07 (1226 lines). Breaks S2 code structure
-into 22 reviewable tasks. Task taxonomy:
-  Tier 1 prerequisites (must run first):
-    T-v02-A repo skeleton + config schema scaffold
-    T-v02-B test harness scaffold (pytest + smoke targets)
-  Tier 2 per-module:
-    T-v02-C1 DINOv3-S backbone + heads from scratch
-    T-v02-C2-mem-bank bounded anchor bank (NEW file)
-    T-v02-C2-nsa NSA-style selective retrieval (NEW file)
-    T-v02-C5 Composer routing skeleton (modifies modules.py)
-    T-v02-EXPERT-1..7 (per-expert adapter; one task per
-      admitted lightweight model: MASt3R / Fast3R / Spann3R
-      / CUT3R / MoGe-2 / DepthAnything-V2 / Test3R)
-  Tier 3 integration:
-    T-v02-D model.py wiring + bus tick re-validation
-    T-v02-E losses.py L_total update for v0.2 signals
-    T-v02-F smoke_test.py + latency_bench.py
-  Tier 4 ABL harnesses:
-    T-v02-ABL-1..9 (one per ABL-v02-N from SPEC-005;
-    each task includes execution gate = separate DEC +
-    per-step micro gates F-002)
-Each task carries: scope (which files; what changes); inputs
-(existing files + spec sections + v0.1 PLAN.md checkboxes
-consumed); outputs (modified + new files + tests + logs);
-estimated effort (engineering-hours + lines-of-code; both
-inferred); pre-execution review checklist (handed to reviewer
-BEFORE implementation); post-execution validation checklist
-(handed to reviewer AFTER implementation; verifies scope +
-tests + no regression); execution gate. Task dependency graph
-is a DAG (visualized as ASCII). Total inferred effort:
-~250-380 engineering-hours across all 22 tasks.
+S3 done: SPEC-20260507-001 written 2026-05-07 (~880 lines).
+Reorganizes v0.1 16-entry comparator pool into 5 tiers per
+SPEC-004 Delta 5: in-pool 7 admitted experts (MASt3R / Fast3R
+/ Spann3R / CUT3R / MoGe-2 / DepthAnything-V2 / Test3R);
+out-of-pool 3 drops (VGGT + MapAnything + Kimi-KDA per DEC-002
+reasons); out-of-scope 1 (ViT-L per Delta 2); foundation 1
+(DUSt3R); orthogonal 8 (STream3R / LONG3R+LongStream+LoGeR /
+TTT3R / MonST3R / POMATO+D2USt3R+Easi3R+RayMap3R / Mamba-3R /
+SLAM3R / Splatt3R+4DGS). Adds 3 NEW axes 9-11 (NSA-style
+sparse attention / DINOv3 backbone tier / Composer expert
+pool composition) per Deltas 2-5. Re-ranks threats against
+pillar A+D narrowing — pillar A HIGH: Test3R alone + TTT3R;
+pillar D HIGH: VGGT offline-batch + each in-pool expert alone.
+Full v0.1 → v0.2 traceability matrix preserves all 16 v0.1
+entries with explicit reclassification reason. 5 risks R-cm-1..5
++ 5 open questions Q1-Q5 surfaced including ABL-v02-10 Test3R-
+alone candidate for pillar A robustness gap.
 
-S4 IN PROGRESS: TASK_SNAPSHOT mid-pass anchor done (this edit,
-FIRST in sync chain per F-001 rule 6); decision_registry
-append DEC-004 row + WORKFLOW_STATUS / RESEARCH_STATE / INDEX
-light sync (line 3 + 2 new planning rows + latest cycle log
-pointer) + cycles/CYCLE-20260506-005.md NEW + final
-TASK_SNAPSHOT flip to idle remaining in this session.
+S4 done: cycles/CYCLE-20260507-001.md NEW. Subtask board +
+artifacts + Path C activation incident + cycle 021 outcome +
+renumbered post-021 trajectory + Hard rules + F-001/F-002
+honoring + Honesty Override consummation + resume action.
 
-No training authorized. No GPU runs. No code touch. No
-clones / installs / checkpoints. Markdown only.
+S5 done: full sync chain (TASK_SNAPSHOT mid-pass anchor + final
+flip; decision_registry append DEC-001 row + line-3 stamp;
+SPEC-003 v0.1 Version history v0.2 pointer; WORKFLOW_STATUS /
+RESEARCH_STATE / INDEX line-3 + INDEX SPEC-001 row + INDEX
+latest-cycle-log pointer to CYCLE-20260507-001).
+
+No training authorized. No GPU runs. No code touch. No clones /
+installs / checkpoints. Markdown only.
 ```
 
-## Subtask board (active pass: cycle 020 combined code structure planning + implementation roadmap; spans 2026-05-06 launch -> 2026-05-07 closure)
+## Subtask board (active pass: cycle 022 combined Path C reattempt + paper §3+§6 v0.2 rewrite; single session 2026-05-07)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Write DEC-20260506-004 (cycle 020 launch + combined code structure planning + implementation roadmap scope lock; trajectory revision narrative honestly noting deferral of original cycle 020 SPEC-003 v0.2 comparator map; explicit allowed/not-allowed enumerations; review surface guidance) | done | `decisions/DEC-20260506-004-cycle-020-launch-code-structure-and-implementation-roadmap.md` (544 lines) |
-| S2 | Write planning/DREAM3R_V02_CODE_STRUCTURE.md (NEW; maps SPEC-004 v0.2 Delta 1..6 to per-file changes in code/dream3r/; per-file change manifest with MODIFIED + NEW + STABLE; explicit review surface subsection per MODIFIED + NEW file per user request "其他agent审阅修改"; server-side deployment surface per F-002; honest evidence labels per change) | done | `planning/DREAM3R_V02_CODE_STRUCTURE.md` (1086 lines) |
-| S3 | Write planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md (NEW; breaks S2 code structure into 22 reviewable tasks T-v02-A/B/C1/C2-mem-bank/C2-nsa/C5/D/E/F + EXPERT-1..7 + ABL-1..9; per-task scope/inputs/outputs/effort/pre-execution review checklist/post-execution validation checklist/execution gate; task dependency DAG; recommended execution order; ~250-380 engineering-hours total inferred) | done | `planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md` (1226 lines) |
-| S4 | Sync chain: TASK_SNAPSHOT first per F-001 rule 6 (mid-pass anchor + final flip); decision_registry append DEC-004 row; WORKFLOW_STATUS / RESEARCH_STATE / INDEX line-3 sync + INDEX 2 new planning rows + INDEX latest cycle log pointer to CYCLE-20260506-005; cycles/CYCLE-20260506-005.md NEW cycle log; final TASK_SNAPSHOT flip to idle | done (all 5 sync items closed across 2026-05-06 + 2026-05-07 sessions) | `cycles/CYCLE-20260506-005.md` + sync chain |
+| S1 | Write DEC-20260507-002 (cycle 022 launch: Path C reattempt + paper S3+S6 rewrite scope lock; Path C protocol; paper rewrite protocol; failure protocol Option β carried; RA items framework) + TASK_SNAPSHOT mid-pass anchor (F-001 rule 6 first) | done | `decisions/DEC-20260507-002-cycle-022-path-c-reattempt-and-paper-s3s6-rewrite.md` |
+| S2 | Path C reattempt (2 sub-agents in background; general-purpose subagent_type; READ-ONLY scope by prompt instruction): Agent A reviews planning/DREAM3R_V02_CODE_STRUCTURE.md; Agent B reviews planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md; each produces ≤500-word structured 5-section A–E review | **DONE — BOTH SUCCEEDED** (38.2s + 47.5s; API gateway recovered since cycle 021; 7 review-action items RA-01..07 captured; full findings documented in cycles/CYCLE-20260507-002.md §S2) | `cycles/CYCLE-20260507-002.md` §S2 (findings) |
+| S3 | Paper §3+§6 v0.2 rewrite: in-place edit of literature/PAPER_DRAFT_V1.md; §3.8 NEW (six v0.2 deltas with evidence labels; per-frame budget table; DINOv3-S; NSA; attention regime table; 7-expert pool; routing policy; A+D definitions); §6.0–6.3 NEW (5-tier pool; A+D threat table; 3 new axes); §6.4 = v0.1 preserved; version bumped to v1.2; source anchors updated | done (paper v1.2; §3.1–3.7 and §6.4 v0.1 prose preserved per Discipline rule 5) | `literature/PAPER_DRAFT_V1.md` (v1.2) |
+| S4 | Write cycles/CYCLE-20260507-002.md (cycle 022 log; subtask board; Agent A/B full findings; RA-01..07 table; paper rewrite summary; trajectory update; discipline notes) | done | `cycles/CYCLE-20260507-002.md` |
+| S5 | Sync chain: TASK_SNAPSHOT first per F-001 rule 6 (mid-pass anchor + final flip); decision_registry DEC-20260507-002 row + DEC-001 annotation + line-3 stamp; WORKFLOW_STATUS / RESEARCH_STATE / INDEX line-3 sync; INDEX latest-cycle-log pointer to CYCLE-20260507-002; INDEX literature/ entry added | done (all sync items closed in single session) | sync chain |
 
 S2 deliverable summary (for resume context):
 
@@ -180,124 +165,87 @@ specs/SPEC-20260506-001-dream3r-architecture.md sections:
 ## Last completed task pass
 
 ```text
-pass_name:        Cycle 020 mid-pass anchor (S1-S3 done across
-                  2026-05-06 launch + 2026-05-07 closure session;
-                  v0.2 code structure + implementation roadmap
-                  combined planning artifacts written; user-
-                  revised post-019 trajectory documented; S4
-                  sync chain mid-pass — registry append + light
-                  sync + cycle log + final flip remaining)
-date:             2026-05-07 (cycle launched 2026-05-06; this
-                  S4 sync chain mid-pass anchor edit on
-                  2026-05-07)
-trigger:          User authorization "行，你帮我吧，我们需要高强度
-                  推进" (2026-05-06) approving option B from
-                  agent's prioritized post-cycle-019 next-cycle
-                  candidate list (skip original cycle 020 SPEC-
-                  003 v0.2 comparator map; jump to code structure
-                  + implementation roadmap as the cycles where
-                  "其他agent审阅修改" lands) + "高强度推进"
-                  intensity instruction justifying combined cycle
-                  compression of original cycles 021 + 022.
-                  Followed by 2026-05-07 user message "阅读
-                  E:\kykt\Dream\TASK_SNAPSHOT.md，继续推进工作"
-                  resuming the in-flight S4 sync chain.
-files_modified:   TASK_SNAPSHOT.md (this file; header + Status +
-                  Current task block + Subtask board + Last
-                  completed task pass + If interrupted resume
-                  from; FIRST in sync chain per F-001 rule 6 —
-                  both mid-pass anchor and final flip)
-                  registry/decision_registry.md (DEC-20260506-004
-                  row appended; pending in this pass)
-                  WORKFLOW_STATUS.md (Last updated; line 3
-                  re-stamped; pending in this pass)
-                  RESEARCH_STATE.md (Last updated; line 3
-                  re-stamped; pending in this pass)
-                  INDEX.md (Last updated + planning/ table 2 new
-                  rows added + latest cycle log pointer updated
-                  to CYCLE-20260506-005; pending in this pass)
-new_artifacts:    decisions/DEC-20260506-004-cycle-020-launch-
-                  code-structure-and-implementation-roadmap.md
-                  (NEW; 544 lines; combined cycle scope lock +
-                  trajectory revision narrative + per-deliverable
-                  section structure preview + review surface
-                  guidance)
-                  planning/DREAM3R_V02_CODE_STRUCTURE.md (NEW;
-                  1086 lines; v0.2 Delta 1..6 -> per-file change
-                  manifest with MODIFIED + NEW + STABLE; explicit
-                  review surface subsection per MODIFIED + NEW
-                  file per user request "其他agent审阅修改";
-                  server-side deployment surface per F-002;
-                  honest evidence labels per change)
-                  planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md
-                  (NEW; 1226 lines; 22 reviewable tasks in 4
-                  tiers — Tier 1 prerequisites T-v02-A/B; Tier 2
-                  per-module T-v02-C1/C2-mem-bank/C2-nsa/C5/
-                  EXPERT-1..7; Tier 3 integration T-v02-D/E/F;
-                  Tier 4 ABL harnesses T-v02-ABL-1..9; per-task
-                  scope/inputs/outputs/effort/pre + post execution
-                  review checklists/execution gate; task DAG;
-                  ~250-380 engineering-hours total inferred)
-                  cycles/CYCLE-20260506-005.md (NEW; cycle 020
-                  log; pending in this pass)
-in_place_edits:   sync chain only; SPEC-004 / SPEC-005 / SPEC-001
-                  / SPEC-002 / SPEC-003 bodies NOT modified;
-                  code/dream3r/PLAN.md NOT modified (v0.1 user-
-                  authored roadmap preserved unchanged); code/
-                  dream3r/*.py source files NOT modified (no code
-                  touch — markdown planning only)
-discipline:       Surgical Edits (cycle 020 produces 2 NEW
-                  planning files + 1 NEW DEC + 1 NEW cycle log;
-                  no in-place rewrites of any prior SPEC / DEC /
-                  cycle log; pre-existing markdown lint warnings
-                  on TASK_SNAPSHOT historical "If interrupted,
-                  resume from" block lines 460-524 NOT fixed
-                  per Surgical Edits rule 3 — these predate
-                  cycle 020 and are out of scope; carried
-                  pre-existing lint warnings on SPEC-001 line
-                  593 + SPEC-002 line 633 falsification table +
-                  cycle log tables + WORKFLOW_STATUS / INDEX
-                  spec-row tables also NOT fixed) + Honesty
-                  Override (every per-file change in CODE_
-                  STRUCTURE carries inline evidence label;
-                  every per-task entry in IMPLEMENTATION_
-                  ROADMAP carries effort + evidence label;
-                  trajectory revision documented honestly with
-                  old-vs-new table in DEC-004 §"Why this
-                  matters" — original DEC-003 trajectory NOT
-                  silently superseded; effort estimates labeled
-                  inferred and flagged as needing post-first-
-                  task calibration).
-budget_event:     None this pass. F-001 rule 1 honored: SPEC-001
-                  / SPEC-002 / SPEC-003 v0.1 NOT re-Read; SPEC-004
-                  / SPEC-005 v0.2 NOT re-Read (already in
-                  context from cycle 018 + 019); cited by section
-                  + line anchor only. code/dream3r/PLAN.md cited
-                  via INDEX summary; bus.py / modules.py /
-                  model.py / losses.py / smoke_test.py NOT Read
-                  in cycle 020 (per-file summary cited from
-                  PLAN.md INDEX block instead). F-002 carried:
-                  markdown-only; server-side /hdd3/kykt26/
-                  untouched.
+pass_name:        Cycle 022 close pass (S1–S5 done in single session
+                  2026-05-07; combined Path C reattempt SUCCEEDED
+                  + paper §3+§6 v0.2 rewrite done; API gateway
+                  recovered since cycle 021; 7 RA items captured
+                  for conditional cycle 023.5)
+date:             2026-05-07
+trigger:          User "022—A吧" 2026-05-07 selecting 022-A from
+                  cycle 021 closure candidate menu (022-A =
+                  default recommendation: Path C reattempt +
+                  paper Section 3+6 rewrite combined cycle).
+files_modified:   TASK_SNAPSHOT.md (this file; mid-pass anchor +
+                  final flip; FIRST in sync chain per F-001
+                  rule 6)
+                  registry/decision_registry.md (DEC-20260507-
+                  002 row appended; DEC-001 Scope cell annotated
+                  with Path C SUCCEEDED update; line-3 stamp)
+                  WORKFLOW_STATUS.md (Last updated; line 3 + Path
+                  C SUCCEEDED + paper v1.2 + next cycle flagged)
+                  RESEARCH_STATE.md (Last updated; line 3 + Path
+                  C findings summary + RA-01..07 + paper v1.2)
+                  INDEX.md (Last updated + literature/ table 1
+                  row added — PAPER_DRAFT_V1.md v1.2 — + latest-
+                  cycle-log pointer updated to CYCLE-20260507-002)
+                  literature/PAPER_DRAFT_V1.md (v0.2 delta notice
+                  + §3.8 NEW + §6.0–6.3 NEW; §3.1–3.7 + §6.4
+                  preserved; header + source anchors + version
+                  history updated to v1.2)
+new_artifacts:    decisions/DEC-20260507-002-cycle-022-path-c-
+                  reattempt-and-paper-s3s6-rewrite.md (NEW;
+                  combined-cycle scope lock + Path C protocol +
+                  paper rewrite protocol + RA framework +
+                  post-022 trajectory update)
+                  cycles/CYCLE-20260507-002.md (NEW; cycle 022
+                  log; Path C SUCCEEDED; full Agent A/B findings;
+                  RA-01..07 table; paper rewrite summary)
+in_place_edits:   literature/PAPER_DRAFT_V1.md (§3.8 + §6.0–6.3
+                  added in-place with [v0.2 delta] annotation
+                  blocks; v0.1 prose in §3.1–3.7 + §6.4 NOT
+                  deleted per Discipline rule 5); sync chain
+                  only for all other files; planning/DREAM3R_
+                  V02_CODE_STRUCTURE.md + DREAM3R_V02_
+                  IMPLEMENTATION_ROADMAP.md NOT modified (Path C
+                  agents READ-ONLY; RA items deferred to
+                  conditional cycle 023.5 v0.3 addenda per
+                  B-roadmap-F rule)
+discipline:       Surgical Edits (cycle 022 produces 1 NEW DEC +
+                  1 NEW cycle log; paper §3+§6 in-place with
+                  v0.2 markers; pre-existing markdown lint
+                  MD032/MD060 warnings on PAPER_DRAFT_V1.md +
+                  INDEX.md NOT fixed per Surgical Edits rule 3)
+                  + Honesty Override (VGGT offline-batch threat
+                  to pillar D acknowledged in §6.2 with no
+                  measured numbers; per-component latency budget
+                  labeled `inferred` throughout §3.8; Path C
+                  agent findings documented verbatim without
+                  cherry-picking; ALL 7 RA items recorded even
+                  LOW-priority RA-04)
+budget_event:     F-001 honored: SPEC-001 v0.1 (~1821 lines) NOT
+                  Re-Read; SPEC-004 (~500 lines) Read offset/
+                  limit for Deltas 1-6 specific sections only;
+                  SPEC-20260507-001 NOT Re-Read (used targeted
+                  Grep for threat table section); PAPER_DRAFT_V1.md
+                  (331 lines) Read in full (small enough); Path
+                  C sub-agent budget: Agent A 27,720 tokens +
+                  Agent B 30,608 tokens; F-002 carried: markdown
+                  only; server untouched.
 
-prior_pass_name:  Cycle 019 close pass (S1-S3 done in single
-                  session; v0.2 ablation plan addendum locked +
-                  documented + synced; SPEC-20260506-005 written
-                  991 lines; bundled DEC-20260506-002 stale-
-                  status backfill)
-prior_pass_date:  2026-05-06
+prior_pass_name:  Cycle 021 close pass (S1+S3+S4+S5 done in
+                  single session 2026-05-07; S2 Path C BLOCKED
+                  by API gateway 500 panic — 4 attempts × ~3 min
+                  each; cycle closes as done-with-S2-blocked-by-
+                  infrastructure per Honesty Override Option β;
+                  v0.2 markdown trio CLOSED via SPEC-20260507-001)
+prior_pass_date:  2026-05-07
 prior_pass_files: TASK_SNAPSHOT.md, registry/decision_registry.md
-                  (DEC-20260506-003 append + DEC-002 stale-status
-                  backfill), specs/SPEC-20260506-002-dream3r-
-                  ablation-plan.md (Version history tail v0.2
-                  pointer entry), WORKFLOW_STATUS.md,
-                  RESEARCH_STATE.md, INDEX.md, + new artifacts
-                  decisions/DEC-20260506-003-cycle-019-launch-
-                  ablation-plan-v02-addendum.md (~360 lines),
-                  specs/SPEC-20260506-005-dream3r-ablation-plan-
-                  v02.md (991 lines; nine ABL-v02; per-ABL
-                  review checklist), cycles/CYCLE-20260506-004.md
-                  (cycle 019 log)
+                  (DEC-20260507-001 append), WORKFLOW_STATUS.md,
+                  RESEARCH_STATE.md, INDEX.md, specs/SPEC-
+                  20260506-003 (Version history pointer append),
+                  + new artifacts decisions/DEC-20260507-001
+                  (~430 lines), specs/SPEC-20260507-001 (~880
+                  lines), cycles/CYCLE-20260507-001.md
 ```
 
 ## If interrupted, resume from
@@ -307,50 +255,51 @@ If a new agent or new conversation is picking this up cold:
 ```text
 1. Read this file (you are here).
 
-2. Read decisions/DEC-20260506-004-cycle-020-launch-code-structure
-   -and-implementation-roadmap.md FIRST — this is the most recent
-   strategic decision and it locks (a) cycle 020 combined scope
-   (code structure + implementation roadmap as 2 artifacts;
-   markdown only; no code touch) and (b) the user-revised post-019
-   trajectory: original cycle 020 (SPEC-003 v0.2 comparator map
-   addendum) deferred to renumbered cycle 021; cycles 021+022
-   (code structure + roadmap) compressed into single cycle 020
-   under "高强度推进".
+2. Read decisions/DEC-20260507-002-cycle-022-path-c-reattempt-
+   and-paper-s3s6-rewrite.md — this is the most recent strategic
+   decision and documents the cycle 022 combined scope (Path C
+   reattempt + paper §3+§6 v0.2 rewrite; both DONE; see below).
 
-3. Read decisions/DEC-20260506-003-cycle-019-launch-ablation-plan
-   -v02-addendum.md and decisions/DEC-20260506-002-cycle-018-
-   launch-v02-architecture.md and decisions/DEC-20260506-001-
-   mainline-architecture-first.md (parent decisions; v0.2
-   architecture + ablation deltas + architecture-first mainline).
+3. Read cycles/CYCLE-20260507-002.md — this is the cycle 022 log
+   documenting: Path C SUCCEEDED (API gateway recovered; both
+   agents returned 5-section reviews); 7 review-action items
+   RA-01..07 captured for v0.3 addenda (conditional cycle 023.5);
+   paper PAPER_DRAFT_V1.md updated to v1.2 (§3.8 + §6.0–6.3
+   added; §3.1–3.7 + §6.4 preserved). Cycle 022 status = DONE.
 
-4. Read these cycle 020 deliverables (already done in this pass):
-   - planning/DREAM3R_V02_CODE_STRUCTURE.md (S2; 1086 lines;
-     Delta 1..6 -> per-file change manifest; review surface per
-     MODIFIED + NEW file)
-   - planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md (S3; 1226
-     lines; 22 reviewable tasks T-v02-A/B/C1/C2-mem-bank/C2-nsa/
-     C5/D/E/F + EXPERT-1..7 + ABL-1..9; per-task pre + post
-     execution review checklists; task DAG; ~250-380 engineering-
-     hours total)
-   - cycles/CYCLE-20260506-005.md (S4; cycle 020 log; CLOSED
-     once final TASK_SNAPSHOT flip done)
+4. Read decisions/DEC-20260506-004 (cycle 020 combined planning),
+   decisions/DEC-20260506-003 (cycle 019 ablation plan v0.2),
+   decisions/DEC-20260506-002 (cycle 018 v0.2 architecture deltas),
+   decisions/DEC-20260506-001 (mainline architecture-first) for
+   parent-cycle context.
 
-5. Reference SPEC bodies ONLY when needed (do NOT re-Read full
+5. Read these cycle 021 deliverables (already done in this pass):
+   - specs/SPEC-20260507-001-dream3r-comparator-map-v02.md (S3;
+     ~880 lines; closes v0.2 markdown trio; 5-tier reorganization
+     + 3 NEW axes + threat re-rank; 5 risks + 5 open questions
+     including ABL-v02-10 Test3R-alone candidate)
+   - cycles/CYCLE-20260507-001.md (S4; cycle 021 log; status
+     done-with-S2-blocked-by-infrastructure)
+
+6. Reference SPEC bodies ONLY when needed (do NOT re-Read full
    files; cite by section + line anchor):
    - specs/SPEC-20260506-004-dream3r-architecture-v02.md (v0.2
-     architecture; six deltas; INPUT for code structure)
+     architecture; six deltas; 882 lines)
    - specs/SPEC-20260506-005-dream3r-ablation-plan-v02.md (v0.2
-     ablation plan; nine ABL-v02; INPUT for Tier 4 ABL harness
-     tasks)
-   - specs/SPEC-20260506-001-dream3r-architecture.md (v0.1; the
-     substrate that v0.2 deltas modify; very large, ~1821 lines,
-     do NOT re-Read)
+     ablation plan; nine ABL-v02; 991 lines)
+   - specs/SPEC-20260506-003-dream3r-comparator-map.md (v0.1
+     comparator map substrate; 625 lines; preserved unchanged
+     in body; only Version history tail received v0.2 pointer)
+   - specs/SPEC-20260506-001-dream3r-architecture.md (v0.1
+     architecture; 1821 lines; do NOT re-Read)
+   - planning/DREAM3R_V02_CODE_STRUCTURE.md (1086 lines; cycle
+     020 deliverable; Path C review TARGET — deferred)
+   - planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md (1226 lines;
+     cycle 020 deliverable; Path C review TARGET — deferred)
    - code/dream3r/PLAN.md (v0.1 user-authored implementation
-     roadmap; preserved unchanged; INDEX summary cited from
-     INDEX.md without re-Reading the source files bus.py /
-     modules.py / model.py / losses.py / smoke_test.py)
+     roadmap; preserved unchanged)
 
-6. Read C:\Users\27252\.claude\projects\e--kykt\memory\
+7. Read C:\Users\27252\.claude\projects\e--kykt\memory\
    feedback_dream_mainline_architecture_first.md and
    feedback_kykt_server_topology.md (cross-session memories;
    F-002 anchor — KYKT 3R model code runs server-side at
@@ -364,113 +313,136 @@ Project state at this snapshot:
    Cycle 016 DONE.
    Cycle 017 DONE (paper draft v1; needs v0.2 update later).
    Cycle 018 DONE (v0.2 architecture deltas; SPEC-20260506-004
-                   written 741 lines; six numbered deltas; main-
-                   claim narrowed to A+D).
+                   written; six deltas; main-claim narrowed to
+                   A+D).
    Cycle 019 DONE (v0.2 ablation plan addendum; SPEC-20260506-
-                   005 written 991 lines; 9 ABL-v02; per-ABL
-                   review checklist for other-agent handoff).
-   Cycle 020 IN PROGRESS (S1-S3 done; S4 sync chain mid-pass):
-                S1 done (DEC-20260506-004 written 544 lines;
-                   cycle 020 launch + combined scope + trajectory
-                   revision)
-                S2 done (planning/DREAM3R_V02_CODE_STRUCTURE.md
-                   written 1086 lines; per-file change manifest
-                   + per-file review surface)
-                S3 done (planning/DREAM3R_V02_IMPLEMENTATION_
-                   ROADMAP.md written 1226 lines; 22 tasks with
-                   per-task pre + post execution checklists)
-                S4 in progress (TASK_SNAPSHOT mid-pass anchor
-                   done; remaining: registry append DEC-004 row
-                   + WORKFLOW_STATUS / RESEARCH_STATE / INDEX
-                   line-3 sync + INDEX 2 new planning rows +
-                   INDEX latest cycle log pointer to CYCLE-
-                   20260506-005 + cycles/CYCLE-20260506-005.md
-                   NEW + final TASK_SNAPSHOT flip to idle)
+                   005 written; 9 ABL-v02; per-ABL review
+                   checklist for other-agent handoff).
+   Cycle 020 DONE (combined v0.2 code structure + implementation
+                   roadmap planning artifacts; DREAM3R_V02_CODE_
+                   STRUCTURE.md + DREAM3R_V02_IMPLEMENTATION_
+                   ROADMAP.md NEW; trajectory revision per user
+                   "高强度推进").
+   Cycle 021 DONE-WITH-S2-BLOCKED:
+                S1 done (DEC-20260507-001 written ~430 lines;
+                   cycle 021 launch + combined scope + Path C
+                   protocol + 5 open questions Q1-Q5)
+                S2 BLOCKED (Path C activation; 4 sub-agent
+                   attempts × ~3 min each all failed with API
+                   500 nil-pointer panic on Calcium-Ion/new-api
+                   gateway; deferred to cycle 022 per Honesty
+                   Override Option β; full incident in
+                   CYCLE-20260507-001 §"Path C activation
+                   incident")
+                S3 done (specs/SPEC-20260507-001-dream3r-
+                   comparator-map-v02.md written ~880 lines;
+                   closes v0.2 markdown trio: architecture +
+                   ablation + comparator)
+                S4 done (cycles/CYCLE-20260507-001.md NEW)
+                S5 done (full sync chain)
+   Cycle 022 DONE:
+                S1 done (DEC-20260507-002 written; combined
+                   cycle scope lock + protocols + post-022
+                   trajectory)
+                S2 done (Path C SUCCEEDED — both agents 38.2s
+                   + 47.5s; API gateway recovered; 7 RA items
+                   captured: RA-01..04 CODE_STRUCTURE gaps +
+                   RA-05..07 IMPLEMENTATION_ROADMAP risks)
+                S3 done (literature/PAPER_DRAFT_V1.md v1.2;
+                   §3.8 six v0.2 deltas NEW + §6.0–6.3 v0.2
+                   comparator positioning NEW; §3.1–3.7 +
+                   §6.4 preserved)
+                S4 done (cycles/CYCLE-20260507-002.md NEW)
+                S5 done (full sync chain)
 
-User-revised post-019 trajectory (per DEC-20260506-004
-§"Why this matters"):
-   Cycle 020 (in progress; closing this pass):
-     code structure + implementation roadmap (combined; 2
-     artifacts; markdown only; reviewable other-agent handoff
-     surface)
-   Renumbered cycle 021 (deferred from original DEC-003 cycle 020):
-     SPEC-20260506-003 v0.2 comparator map addendum (NEW;
-     candidate ID SPEC-006 reorganizes comparators per in-pool /
-     out-of-pool / out-of-scope tiers per SPEC-004 Delta 5)
-   Renumbered cycle 022:
-     PAPER_DRAFT_V1.md Section 3 + Section 6 update for v0.2
-     main-claim A+D framing (markdown only)
-   Renumbered cycle 023:
-     Cycle 015 G_run resumption (Critic A4 measured anchor;
-     paused at S9 done; server-side execution per F-002)
-   Renumbered cycle 024:
-     Capability_match measurement pass per ABL-v02-5 (promotes
-     inferred -> measured for 7-expert pool; server-side per
-     F-002)
-   Renumbered cycle 025:
-     First ablation execution authorization per ABL-v02-N
-     selection (server-side per F-002; per-ABL DEC + per-step
-     micro gates required)
+v0.2 markdown trio + paper status (post cycle 022):
+   - Architecture: SPEC-20260506-004 v0.2 (cycle 018; 6 deltas;
+     A+D pillars)
+   - Ablation plan: SPEC-20260506-005 v0.2 (cycle 019; 9 ABL-
+     v02 with per-ABL review checklist)
+   - Comparator map: SPEC-20260507-001 v0.2 (cycle 021 S3;
+     5-tier reorganization + 3 new axes + threat re-rank)
+   - Paper: PAPER_DRAFT_V1.md v1.2 (cycle 022 S3; §3.8 + §6.0–
+     6.3 added; §3.1–3.7 + §6.4 v0.1 preserved)
+   All 4 artifacts are now v0.2-coherent. v0.1 bodies of all 3
+   substrate specs preserved unchanged per Discipline rule 5.
 
-Resume action when interrupted mid S4 sync chain:
-   - If decision_registry.md does NOT yet have a DEC-20260506-004
-     row: that is the next sub-step. Append to the table
-     immediately after DEC-20260506-003.
-   - If WORKFLOW_STATUS.md / RESEARCH_STATE.md / INDEX.md line 3
-     timestamps still say "2026-05-06 (cycle 019...)": that is
-     the next sub-step. Update line 3 of each to point to
-     cycle 020 closure.
-   - If INDEX.md planning/ table does NOT yet have rows for
-     DREAM3R_V02_CODE_STRUCTURE.md and DREAM3R_V02_
-     IMPLEMENTATION_ROADMAP.md: add them.
-   - If INDEX.md latest-cycle-log pointer still says CYCLE-
-     20260506-004: update to CYCLE-20260506-005.
-   - If cycles/CYCLE-20260506-005.md does not exist: write it
-     (cycle 020 log; closed status; spans 2026-05-06 launch ->
-     2026-05-07 closure).
-   - When all 5 sync items above are done: flip TASK_SNAPSHOT
-     Status to idle + update Last updated line with closure
-     summary + flip Subtask board S4 row to done.
+Post-022 trajectory (per CYCLE-20260507-002 + DEC-20260507-002
+§"Post-022 trajectory"):
+   Cycle 023: SPEC-002 v0.2 ablation plan addendum (markdown only;
+              adds ABL-v02-1..10 new ablations; includes ABL-v02-10
+              Test3R-alone for Q1; ABL-v02-4 VGGT offline-batch
+              baseline for Q2; address RA-07 Pillar A task gap from
+              Path C Agent B).
+   Cycle 023.5 (CONDITIONAL): v0.3 addendum cycle for cycle 020
+              planning artifacts — triggered if RA-01..07 items are
+              actioned; produces v0.3 addenda to CODE_STRUCTURE +
+              IMPLEMENTATION_ROADMAP via fresh DEC + new spec files
+              (B-roadmap-F: no in-place modification); priority items:
+              RA-01 (latency budget), RA-02 (ExpertAdapter ABC),
+              RA-05 (checkpoint inventory).
+   Cycle 024: Cycle 015 G_run resumption (Critic A4 measured
+              anchor; server-side per F-002).
+   Cycle 025: Capability_match measurement architecture (server-side
+              measurement design for route_regret + capability_match).
+   Cycle 026: First T-v02-N code task execution (server-side per
+              F-002; per-task DEC + per-step micro gates + reviewer
+              authorization per IMPLEMENTATION_ROADMAP B-roadmap-F).
 
-Resume action when cycle 020 fully closed:
-   No active task. Status idle. Pending user direction on
-   renumbered cycles 021-025 in CYCLE-20260506-005 §"Cycle 020
-   outcome (closed)" / DEC-20260506-004 §"Why this matters".
-   None of cycles 021..025 launches without explicit user
-   direction. Do NOT propose training, checkpoint download,
-   GPU runs, KYKT navigation change, frontend implementation,
-   demo storyboard promotion past `draft`, thesis finalization,
-   or retiring of any non-finalist track. DEC-20260501-004
-   candidate-not-final + DEC-20260504-002 no-all-in still in
-   force.
+Resume action when user returns:
+   Cycle 022 is DONE. No active task. Status `idle`. Surface cycle
+   023 (ablation plan addendum) + conditional cycle 023.5 (v0.3
+   planning addenda; only if RA-01..07 are to be actioned now).
+
+   If user asks about Path C findings:
+   - Agent A (CODE_STRUCTURE): 3 HIGH/MEDIUM gaps (latency budget
+     absent; ExpertAdapter ABC unresolved; NSA output combination
+     underspecified); 1 LOW gap (losses.py labeling contradiction).
+     Full details in CYCLE-20260507-002 §S2 / RA-01..04.
+   - Agent B (IMPLEMENTATION_ROADMAP): Pillar A faithfulness gap;
+     3 risks (checkpoint inventory; NSA kernel cu121; T-v02-F
+     oversized). Full details in CYCLE-20260507-002 §S2 / RA-05..07.
+   - All 7 RA items captured for conditional cycle 023.5 v0.3
+     addenda. NOT actioned in cycle 022 (B-roadmap-F rule).
+
+   None of cycles 023..026 launches without explicit user direction.
+   Do NOT propose training, checkpoint download, GPU runs, KYKT
+   navigation change, frontend implementation, demo storyboard
+   promotion past `draft`, thesis finalization, or retiring of any
+   non-finalist track. DEC-20260501-004 candidate-not-final +
+   DEC-20260504-002 no-all-in still in force.
 
 Hard rules carried (unchanged from prior cycles):
    - No training. No checkpoint download. No reproduction. No
      KYKT navigation change. No frontend implementation. No
      thesis finalization. No retiring of any non-finalist track.
-   - DEC-20260501-004 (Dream3R candidate-not-final) and DEC-
-     20260504-002 (no-all-in) still in force.
-   - Cycle 020 is markdown only. Any code touch (whether per
-     T-v02-N task in roadmap or otherwise) requires a separate
-     DEC + per-step micro gates per F-002.
-   - Honesty Override: every per-file change in CODE_STRUCTURE
-     carries an evidence label; every per-task entry in
-     IMPLEMENTATION_ROADMAP carries effort estimate +
-     evidence label. NSA-related work is speculative for 3R
-     transfer. DINOv3-S backbone is paper-derived. Effort
-     estimates are inferred and need post-first-task
-     calibration.
-   - Trajectory revision in DEC-004 documented honestly with
-     old-vs-new table; original DEC-003 trajectory NOT
-     silently superseded.
+     No demo storyboard promotion past `draft`. No teacher-
+     demo readiness claim.
+   - DEC-20260501-004 (Dream3R candidate-not-final) and
+     DEC-20260504-002 (no-all-in) still in force.
+   - Cycles 021-022 were markdown only. Any code touch (whether
+     per T-v02-N task or otherwise) requires a separate DEC +
+     per-step micro gates per F-002 + reviewer authorization
+     per IMPLEMENTATION_ROADMAP B-roadmap-F.
+   - Honesty Override: VGGT offline-batch threat to pillar D
+     acknowledged in PAPER_DRAFT_V1.md §6.2 and in
+     CYCLE-20260507-002; no ablation numbers manufactured; all
+     v0.2 paper claims carry evidence labels; Path C Agent
+     findings documented verbatim without cherry-picking.
+   - Trajectory adherence: paper v1.2 delivered as planned per
+     cycle 022 scope; Path C SUCCEEDED; RA items captured;
+     v0.3 addendum deferred to conditional cycle 023.5.
+   - Per-task review checklist pattern (cycle 020) first real
+     exercise SUCCEEDED in cycle 022. Path C = operational and
+     confirmed working. API gateway stable at time of cycle 022.
 
 Honor F-001 working rules throughout: do not Read large files
 already cited in this snapshot; prefer Grep -n + Edit over full-
 file Read + Write; cap large files in active context at <=2
 simultaneously. Honor F-002: KYKT 3R model work runs server-side;
 default to ssh + reuse before installing; check ssh_runner.py:22-44
-ServerConfig before asking for SSH details. Cycle 020 itself is
-markdown only and stays local.
+ServerConfig before asking for SSH details. Cycles 022 is markdown
+only and stayed local.
 ```
 
 Project state at this snapshot:

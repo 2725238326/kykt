@@ -1,18 +1,21 @@
 # Dream3R Paper Draft v1
 
-Last updated: 2026-05-06 (cycle 017; architecture-centric rewrite per DEC-20260506-001)
+Last updated: 2026-05-07 (cycle 022; Section 3 + Section 6 updated for v0.2 A+D framing per DEC-20260507-002; §3.8 v0.2 architecture deltas added; §6.0–6.3 new v0.2 comparator content added; v0.1 content in §3.1–3.7 and §6.4 preserved unchanged)
 
 Status: draft (not submission-ready; no measured results; evidence labels per Discipline rule 5)
 
 Supersedes: literature/PAPER_PHASE2_BLUEPRINT.md (demoted to SUPPORT per DEC-20260506-001)
 
 Source anchors:
-- specs/SPEC-20260506-001-dream3r-architecture.md (v0.1; central contribution)
+- specs/SPEC-20260506-001-dream3r-architecture.md (v0.1; §3.1–3.7 substrate)
+- specs/SPEC-20260506-004-dream3r-architecture-v02.md (v0.2; §3.8 delta source)
 - specs/SPEC-20260506-002-dream3r-ablation-plan.md (v0.1; planned experiments)
-- specs/SPEC-20260506-003-dream3r-comparator-map.md (v0.1; related work anchor)
+- specs/SPEC-20260506-003-dream3r-comparator-map.md (v0.1; §6.4 preserved)
+- specs/SPEC-20260507-001-dream3r-comparator-map-v02.md (v0.2; §6.0–6.3 source)
 - specs/SPEC-20260503-001..003 + SPEC-20260504-001 (4 finalist specs; inputs)
 - paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md (v2.1)
 - planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md (A1-A8 + V1 + P1-P6)
+- planning/COMPOSER_CAPABILITY_DESCRIPTORS.md (v0.2; 7-expert pool)
 - literature/PAPER_RELATED_WORK_SKELETON.md (prose draft; reused)
 - cases/ L2 portfolio (13 cards)
 
@@ -137,6 +140,8 @@ These carry the evidence label "architecture-novel" and represent the highest pa
 
 ## 3. Architecture
 
+> **[v0.2 delta — cycle 022 — 2026-05-07]** Sections 3.1–3.7 are the v0.1 architecture (cycle 017; source: SPEC-20260506-001). Section 3.8 adds the six v0.2 deltas (DEC-20260507-002; source: SPEC-20260506-004 Deltas 1–6). v0.1 prose is preserved unchanged per Discipline rule 5. Main-claim narrows to pillars A (Verification-as-architecture) + D (Heterogeneous best-of-N Composer) per Delta 6.
+
 ### 3.1 Overview
 
 Dream3R is a control-graph-as-architecture: six computational cores (C1 Perceiver, C2 Memory SSM, C3 Permanence slot memory, C4 Critic head, C5 Composer table join, C6 Memory Bus) connected by a typed bus carrying the v2.1 cross-spec signal contract as its runtime API.
@@ -200,6 +205,95 @@ State is owned by exactly one module. Cross-module reads are read-only with evid
 
 The hybrid substrate (transformer perception + SSM memory + slot permanence) is v0.1's most falsifiable choice. The claim: per-frame perception is local + parallel (transformers excel); memory is sequential + compressed (SSMs excel); forcing both into one substrate degrades performance. ABL-2 in the ablation plan tests this directly.
 
+### 3.8 v0.2 architecture deltas [cycle 022 — 2026-05-07]
+
+Source: SPEC-20260506-004 (Deltas 1–6); authorized per DEC-20260507-002. Every claim below carries an inline evidence label. v0.1 text in §3.1–3.7 is preserved unchanged.
+
+**Delta 1 — Speed priority + frame budget** (engineering-judgment / inferred):
+
+Speed priority locked: inference real-time PRIMARY (30–50 ms/frame at 30 FPS streaming-first); training fast and integration fast secondary. Per-frame component budget targets:
+
+| Component | Target latency |
+|---|---|
+| C1 Perceiver (DINOv3-S forward) | 10–15 ms |
+| C2 Memory NSA retrieve | few ms (sparse top-k) |
+| C3 Permanence slot | few ms (bounded slots) |
+| C4 Critic head | few ms (small transformer) |
+| C5 Composer route | < 1 ms (table join) |
+| C6 Bus tick + handoff | < 1 ms |
+| **Total** | **20–25 ms/frame; 5–25 ms reserve for downstream pointmap heads** |
+
+Heavy verification path (EXPERT-07 Test3R) is OFF the streaming path: Critic-triggered lazy invocation only, on flagged tokens, with its own latency budget outside the 30–50 ms streaming envelope. Evidence label: inferred; not measured on dream3r server (TITAN RTX 24GB); NSA hardware-aware kernel benefit may be narrower than published numbers.
+
+**Delta 2 — C1 Perceiver: DINOv3-S replaces ViT-L** (paper-derived / inferred):
+
+v0.1 C1 inherits DUSt3R-lineage ViT-L (~300–700M params). v0.2 default: DINOv3-Small (~22M backbone params, frozen). DINOv3-Base (~85M) is the documented fallback if Small features prove insufficient for downstream pointmap quality. Inferred impact: backbone VRAM fp16 ~600 MB → ~50 MB; forward latency ~50–80 ms → ~10–15 ms. T1/T2/T3 bus publications carry forward unchanged. Evidence: paper-derived for substitution (DINOv3 backward-compatible with DINOv2 usage patterns; published 2025 3R works already use DINOv3 features); inferred for dream3r-server-specific latency (not measured). Risk: DINOv3-S features are semantically oriented; pointmap quality may degrade relative to ViT-L. Mitigation: -B fallback documented; top-N partial unfreezing as ablation candidate.
+
+**Delta 3 — C2 Memory: bounded anchor bank + NSA-style retrieval** (paper-known / speculative):
+
+v0.1 C2 names SSM/Mamba without storage/retrieval spec. v0.2 substantiates C2 as:
+
+(a) Bounded anchor bank (K = 256 proposed; hyperparameter). Each entry: anchor_embedding (D-dim) + scene_pose_metadata + freshness_counter + permanence_link. Eviction: LRU among non-permanence-anchored entries; permanence-anchored entries evict-protected (C3 Permanence owns permanence_link; C2 reads but does not mutate — preserves v0.1 state-ownership invariant).
+
+(b) NSA-style three-branch selective retrieval: compressed branch (long-term scene summary, ~32 tokens) / selected branch (top-k anchor lookup, k = 8 proposed) / sliding branch (last W = 4 frames of evidence). Selection gate co-driven by Critic confidence (C4) and permanence_link (C3). Low Critic confidence biases gate toward retrieving more anchors for verification — this is the structural link between Delta 3 (C2 memory substantiation) and Delta 6 pillar A (Verification-as-architecture): the Critic shapes what the memory retrieves, not only what it accepts.
+
+Mamba SSM retained as optional medium-term layer. Evidence: paper-known for NSA mechanism (DeepSeek 2025, arXiv 2502.11089); speculative for 3R/vision transfer (no published vision use of NSA); speculative for cross-module-signal claim (Critic + Permanence co-driving the selection gate).
+
+**Delta 4 — Sparse attention as architectural optimization** (paper-known / speculative):
+
+NSA-style token-level sparse attention is the C2 Memory selection-gate substrate and the Composer routing axis (per-expert attention_regime). This is an engineering optimization, NOT a paper main claim.
+
+Per-module attention regime (v0.2):
+
+| Module | Attention regime |
+|---|---|
+| C1 Perceiver | Full (DINOv3-S backbone; per-frame) |
+| C2 Memory | NSA three-branch (sparse + compressed + sliding) |
+| C3 Permanence | Full within bounded slot set |
+| C4 Critic | Full (small head) |
+| C5 Composer | Routing logic; no attention in C5 itself; per-expert varies |
+| C6 Bus | N/A (dataflow, not compute) |
+
+Evidence: paper-known for NSA story (LLM domain); speculative for per-module assignment in 3R.
+
+**Delta 5 — C5 Composer pool: 7 admitted lightweight experts** (paper-known / inferred / engineering-judgment):
+
+v0.1 lists 5 backbones at coarse granularity. v0.2 admits exactly 7 lightweight experts with finer-granularity capability descriptors (full descriptors in planning/COMPOSER_CAPABILITY_DESCRIPTORS.md):
+
+| Expert | Role | Params | Attention |
+|---|---|---|---|
+| EXPERT-01 MASt3R | Pair / matching head | ~300M | full |
+| EXPERT-02 Fast3R | Many-view single forward | ~580M | full |
+| EXPERT-03 Spann3R | Streaming spatial anchor | ~250M | full |
+| EXPERT-04 CUT3R | Online persistent state | ~300M | full |
+| EXPERT-05 MoGe-2 | Mono pointmap recovery + bootstrap | ~200M | full |
+| EXPERT-06 DepthAnything-V2 | Mono depth cheap prior | ~25M (S) | full |
+| EXPERT-07 Test3R | Lazy test-time verification (off streaming path) | backbone+iter | full+iter |
+
+Excluded (engineering-judgment; not retired): VGGT (~1.2B), MapAnything (too heavy for streaming). VGGT remains a known out-of-pool comparator whose offline-batch performance is a threat to pillar D (see §6.2).
+
+Routing policy sketch (inferred v0.2; sub-millisecond table join in C5):
+
+- first-frame / tracking-lost → EXPERT-05 + EXPERT-06 (mono recovery + cheap prior in parallel)
+- N ≥ 4 views, budget allows → EXPERT-02 (avoid O(N²) pair fusion)
+- streaming, prior state ok → EXPERT-03 and/or EXPERT-04 (best-of-N; pillar D primary demonstration)
+- loop-closure pair candidate → EXPERT-01 (matching)
+- Critic flag OR retrieval conflict → EXPERT-07 Test3R lazy off streaming path (pillar A primary demonstration)
+
+Added routing axis: attention_regime per expert (full/linear/sparse) joins the v2.1 cross-spec contract's capability_match vector.
+
+**Delta 6 — Main claim narrowing** (user-decided; agent-recommended):
+
+v0.1 carries 5+ candidate innovations in parallel. v0.2 paper main-claim narrows to TWO PILLARS:
+
+**Pillar A — Verification-as-architecture**: The Critic gate is a STRUCTURAL write-blocker wired into the bus (CR-1, CR-2 gates from v0.1) and into the Memory selection gate (Critic confidence biases retrieval; Delta 3). Test-time verification (EXPERT-07 Test3R) is invoked only when the Critic flags a region — verification at ARCHITECTURE LAYER, not at TRAINING LAYER.
+
+**Pillar D — Heterogeneous best-of-N Composer**: Routing exploits NON-uniform infrastructure across 7 lightweight 3R foundation models. An explicit routing layer over heterogeneous experts beats any monolithic backbone in expected regret. route_regret is the first 3R-specific routing falsification axis.
+
+Supporting (not deleted; not in main claim): Pillar E — Identity-anchored memory (Permanence × Memory coupling via permanence_link in Delta 3 selection gate; supports A and D by providing the cross-module signal mix that makes verification + routing semantically grounded).
+
+Demoted to discipline / future (not deleted; per DEC-20260504-002 no-all-in): Pillar B (state-ownership invariant) → carried as discipline rule; Pillar C (A7/A8 reservation tokens) → reserved bus surfaces only; not designed in v0.2.
+
 ## 4. A1-A8 action mapping
 
 Each action from the taxonomy maps to a specific module, concrete layer, trigger condition, and bus signals:
@@ -254,6 +348,59 @@ Each action from the taxonomy maps to a specific module, concrete layer, trigger
 - P6: Action entropy (controller validity guard)
 
 ## 6. Comparator positioning
+
+> **[v0.2 delta — cycle 022 — 2026-05-07]** Section 6 restructured for v0.2 main-claim A+D framing (DEC-20260507-002; source: SPEC-20260507-001 — v0.2 comparator map addendum). §6.0–6.3 are new v0.2 content. §6.4 preserves the v0.1 threat table (cycle 017) for traceability per Discipline rule 5.
+
+### 6.0 v0.2 positioning framing
+
+v0.2 main-claim narrows to two pillars (Delta 6, SPEC-20260506-004):
+
+- **Pillar A** — Verification-as-architecture: Critic gate as structural write-blocker wired to bus (CR-1/CR-2); NSA selection gate biased by Critic confidence; EXPERT-07 Test3R invoked lazily off streaming path when Critic flags a region.
+- **Pillar D** — Heterogeneous best-of-N Composer: 7 admitted lightweight experts; route_regret as the first 3R-specific routing falsification axis; no single backbone covers all regimes well.
+
+Threat analysis and comparator positioning are now anchored to A+D only. Pillars B (state-ownership invariant) and C (reservation tokens A7/A8) are discipline/future-work items, not paper novelty claims. Pillar E (identity-anchored memory) is a supporting mechanism for A and D.
+
+### 6.1 Composer pool — 5-tier structure (v0.2)
+
+Source: SPEC-20260507-001 §"5-tier pool reorganization"; Delta 5 (SPEC-20260506-004).
+
+| Tier | Models | Basis |
+|---|---|---|
+| In-pool (7) | MASt3R, Fast3R, Spann3R, CUT3R, MoGe-2, DepthAnything-V2, Test3R | Streaming-compatible, lightweight; admitted per Delta 5 |
+| Out-of-pool (3) | VGGT, MapAnything, Kimi-KDA | Exceed streaming budget (VGGT ~1.2B; MapAnything heavy) or LM-to-3R transfer not pursued (Kimi-KDA) |
+| Out-of-scope (1) | ViT-L | Replaced as C1 backbone by DINOv3-S (Delta 2); no longer a comparator |
+| Foundation (1) | DUSt3R | Parent lineage; not a competitor; Dream3R builds on it |
+| Orthogonal (8) | MonST3R, POMATO, D²USt3R, Easi3R, RayMap3R, SLAM3R, TTT3R, Mamba-3R | Single-axis overlap; not Composer-pool candidates |
+
+Most significant reclassification from v0.1: Spann3R moves from HIGH threat to IN-POOL. Spann3R's spatial anchor streaming is an implementation substrate Dream3R exploits as EXPERT-03, not a competing approach. Evidence: paper-derived (Spann3R capability profile); engineering-judgment (pool admission).
+
+### 6.2 Threat ranking against pillars A + D (v0.2)
+
+Source: SPEC-20260507-001 §"Updated threat ranking against v0.2 main-claim A + D".
+
+| Pillar | Threat | Model | Threat axis | Dream3R differentiation |
+|---|---|---|---|---|
+| A (Verification-as-arch) | HIGH | Test3R | Built-in verifier head could substitute for C4 Critic + EXPERT-07 lazy path | Dream3R's Critic is a structural gate (CR-1/CR-2) driving Memory retrieval (Delta 3 NSA gate); Test3R verifier is single-model-scoped; Dream3R crosses model families at inference time |
+| A | MEDIUM | TTT3R | Test-time training on confidence drop triggers revision | Dream3R uses Critic gate (no re-training); broader A5 action set (5-way repair classifier) |
+| D (Heterogeneous best-of-N) | HIGH | VGGT | Single feed-forward backbone strong on offline batch; no routing needed | VGGT out-of-pool (exceeds streaming budget; engineering-judgment); pillar D offline-batch framing is an open gap: ABL-v02-4 + Q2 open question acknowledge this; no measured numbers claimed |
+| D | MEDIUM | CUT3R | Strong single streaming expert; online persistent state | CUT3R is IN the pool (EXPERT-04); Dream3R's Composer runs best-of-N ACROSS CUT3R + 6 other experts; single-expert coverage = no route_regret axis |
+| D | MEDIUM | Spann3R | Spatial anchor streaming; v0.1 HIGH threat | Reclassified in-pool (EXPERT-03); see §6.1 note |
+
+Evidence discipline: all threat claims are paper-derived from published abstracts/results; no measured route_regret numbers exist (inferred from capability descriptors; not measured on dream3r server).
+
+### 6.3 Three new comparison axes (v0.2)
+
+Source: SPEC-20260507-001 §"New comparison axes (Axis 9–11)".
+
+| Axis | What it measures | v0.2 relevance |
+|---|---|---|
+| Axis 9 — NSA-style sparse attention | Whether model uses token-level sparse attention for memory retrieval | C2 Memory uses NSA three-branch; no published 3R model uses NSA-equivalent (paper-known for LLM domain; speculative for 3R transfer) |
+| Axis 10 — DINOv3 backbone tier | S / B / L weight class for perception backbone | C1 = DINOv3-S (~22M frozen) default; comparators using ViT-L lineage are heavier; DINOv3-B used by some 2025 3R works |
+| Axis 11 — Composer expert pool | Number of heterogeneous experts admitted; attention_regime variety | Dream3R = 7 experts (full/full/full/full/full/full/full+iter); no published 3R paper has a multi-expert routing pool with route_regret falsification axis |
+
+### 6.4 v0.1 comparator positioning (cycle 017 — preserved for traceability)
+
+v0.1 framing below is the cycle 017 (DEC-20260506-001) text. It is preserved unchanged per Discipline rule 5. It uses full-architecture-level threat tiers, not the A+D-pillar-specific framing of §6.2 above.
 
 Dream3R is NOT a competitor at any single substrate axis. It is a control graph that REUSES existing 3R substrates as its modules. The novelty is the graph + bus + gates.
 
@@ -327,4 +474,14 @@ v1  2026-05-06  cycle 017. Architecture-centric paper rewrite per
                 1-8 drafted. Supersedes PAPER_PHASE2_BLUEPRINT.md as
                 primary paper artifact. No training; no measured
                 results; all claims carry evidence labels.
+
+v1.2  2026-05-07  cycle 022. Section 3 + Section 6 updated for v0.2
+                A+D framing per DEC-20260507-002. §3.8 added:
+                six v0.2 architecture deltas (source: SPEC-004
+                Deltas 1–6). §6.0–6.3 added: v0.2 comparator
+                positioning (5-tier pool, A+D threat table, 3 new
+                axes; source: SPEC-20260507-001). §6.4 = v0.1
+                threat table preserved for traceability. Sections
+                1, 2, 4, 5, 7, 8 unchanged. Source anchors updated
+                to include v0.2 specs.
 ```

@@ -622,4 +622,17 @@ v0.1  2026-05-06  cycle 016 S4 deliverable. First full comparator map
                   elements with no comparator identified. Ablation
                   plan cross-referenced. No reproduction; no benchmark
                   runs.
+
+v0.2  2026-05-07  cycle 021 S3 pointer entry. v0.2 delta addendum
+                  lives in NEW file specs/SPEC-20260507-001-dream3r-
+                  comparator-map-v02.md per Discipline rule 5 NEW-file
+                  pattern (this v0.1 body NOT modified). v0.2 addendum:
+                  reorganizes 16-entry pool into 5 tiers (in-pool 7 /
+                  out-of-pool 3 / out-of-scope 1 / foundation 1 /
+                  orthogonal 8) per SPEC-004 Delta 5; adds 3 NEW axes
+                  (Axis 9 NSA / Axis 10 DINOv3 / Axis 11 Composer pool)
+                  per Deltas 2-5; re-ranks threats against pillar A +
+                  D narrowing per DEC-20260506-002. v0.1 → v0.2
+                  traceability matrix preserved. See SPEC-20260507-
+                  001 for full delta content.
 ```

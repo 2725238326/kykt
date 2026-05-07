@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-07 (cycle 020 combined code structure planning + implementation roadmap: planning/DREAM3R_V02_CODE_STRUCTURE.md NEW (1086 lines; v0.2 Delta 1..6 -> per-file change manifest; explicit review surface per MODIFIED + NEW file per user request "其他agent审阅修改") + planning/DREAM3R_V02_IMPLEMENTATION_ROADMAP.md NEW (1226 lines; 22 reviewable tasks T-v02-A/B/C1/C2-mem-bank/C2-nsa/C5/D/E/F + EXPERT-1..7 + ABL-1..9 with per-task pre + post execution review checklists; task DAG; ~250-380 engineering-hours total); SPEC-004 / SPEC-005 v0.2 bodies unmodified per DEC-20260506-004; cycle 019 closed; mainline = architecture-first per DEC-20260506-001)
+Last updated: 2026-05-07 (cycle 023 DONE: DEC-20260507-003 + 3 NEW planning addenda + specs/SPEC-20260507-002 NEW + cycles/CYCLE-20260507-003.md NEW; all v0.2/v0.3 markdown deliverables COMPLETE; next = cycle 024 server-side G_run)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -178,6 +178,14 @@ Format: `SPEC-YYYYMMDD-NNN-<slug>.md`. One file per user-approved finalist branc
 | `SPEC-20260506-003-dream3r-comparator-map.md` | Dream3R comparator map v0.1: 14+ models across 7 groups; 8 comparison axes; threat ranking; architecture-novel elements with no comparator (cycle 016 S4) |
 | `SPEC-20260506-004-dream3r-architecture-v02.md` | Dream3R architecture v0.2 delta spec: six numbered deltas on v0.1 (frame budget 30-50 ms/frame; C1 DINOv3-S replaces ViT-L; C2 bounded anchor bank + NSA-style retrieval A+B; sparse attention as engineering optimization; C5 Composer pool admits 7 lightweight experts; main-claim narrowed to A Verification-as-architecture + D Heterogeneous best-of-N Composer); v0.1 body unmodified per DEC-20260506-002 (cycle 018 S4) |
 | `SPEC-20260506-005-dream3r-ablation-plan-v02.md` | Dream3R ablation plan v0.2 delta addendum: nine v0.2 ablations (ABL-v02-1..9) anchored to SPEC-20260506-004 v0.2 architecture deltas — NSA-removal / DINOv3 backbone tier (-S/-B/-L) / frozen vs partial-unfreeze / Composer best-of-N vs single-expert / capability_match measurement / selection-gate signal subsetting / head training schedule / frame-budget benchmark / NSA kernel decomposition. Tier 1 load-bearing: ABL-v02-1+4+6. Falsification mapping for main-claim A + D + E. Per-ABL review checklist subsection for other-agent handoff per user request "其他agent审阅修改". v0.1 body unmodified per DEC-20260506-003 (cycle 019 S2) |
+| `SPEC-20260507-001-dream3r-comparator-map-v02.md` | Dream3R comparator map v0.2 delta addendum: reorganizes v0.1 16-entry comparator pool into 5 tiers per SPEC-004 Delta 5 — in-pool 7 admitted experts (MASt3R / Fast3R / Spann3R / CUT3R / MoGe-2 / DepthAnything-V2 / Test3R) + out-of-pool 3 drops (VGGT / MapAnything / Kimi-KDA per DEC-002 reasons) + out-of-scope 1 (ViT-L per Delta 2) + foundation 1 (DUSt3R) + orthogonal 8. Adds 3 NEW comparison axes 9-11 (NSA-style sparse attention / DINOv3 backbone tier / Composer expert pool composition) per Deltas 2-5. Re-ranks threats against pillar A + D narrowing — pillar A HIGH threats: Test3R alone + TTT3R; pillar D HIGH threats: VGGT offline-batch + each in-pool expert alone. Full v0.1 → v0.2 traceability matrix; 5 risks R-cm-1..5 + 5 open questions Q1-Q5 surfaced including ABL-v02-10 Test3R-alone candidate for pillar A robustness. v0.1 SPEC-003 body unmodified per DEC-20260507-001 (cycle 021 S3); v0.1 Version history v0.2 pointer entry appended. Closes v0.2 markdown trio (architecture / ablation / comparator) |
+| `SPEC-20260507-002-dream3r-ablation-plan-v03-addendum.md` | Dream3R ablation plan v0.3 delta addendum on SPEC-005 (v0.2). Adds ABL-v02-10 Test3R-alone comparator (Tier 1; Q1 from comparator map; tests whether Test3R built-in verifier matches Dream3R Critic-gate pipeline on pillar A; 3 outcome scenarios; ~120 GPU-hours). Pillar A falsification coverage map (4 sub-claims × primary ABL; RA-07 from Path C Agent B). ABL-v02-4 VGGT offline-batch baseline annotation (Q2; Variant X; ~20 GPU-hours). Updated tier placement + compute budget ~1377 GPU-hours. SPEC-005 v0.2 body NOT modified (cycle 023 S3) |
+
+### `literature/` - Paper artifacts
+
+| File | Description |
+|---|---|
+| `PAPER_DRAFT_V1.md` | Dream3R paper draft v1.2 (cycle 022 update). §1-2, §4-8 = v0.1 cycle 017 baseline. §3.8 NEW: six v0.2 architecture deltas (Delta 1 frame budget / Delta 2 DINOv3-S / Delta 3 NSA anchor bank / Delta 4 attention regime / Delta 5 7-expert pool / Delta 6 A+D pillar narrowing). §6.0–6.3 NEW: v0.2 comparator positioning (5-tier pool / A+D threat table / 3 new axes). §6.4 = v0.1 threat table preserved. Source: SPEC-004 (§3.8) + SPEC-20260507-001 (§6). Per DEC-20260507-002 (cycle 022) |
 
 ### `storyboards/` - Teacher Demo Storyboards
 
@@ -225,7 +233,7 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | What can Dream do without asking the user? | `AGENT_MASTER_PROMPT.md` section 6 |
 | What requires user approval? | `AGENT_MASTER_PROMPT.md` section 6 + `WORKFLOW_STATUS.md` Blocked Until User Decision |
 | How should I behave when synthesizing or editing files? | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
-| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260506-005.md` (cycle 020 combined code structure planning + implementation roadmap; planning/DREAM3R_V02_CODE_STRUCTURE.md + DREAM3R_V02_IMPLEMENTATION_ROADMAP.md NEW; load-bearing other-agent handoff surface per user "其他agent审阅修改") |
+| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260507-003.md` (cycle 023 v0.3 planning addenda + ablation plan v0.3 addendum; all v0.2/v0.3 markdown COMPLETE) |
 | What did we decide? | `registry/decision_registry.md` and files under `decisions/` |
 | What experiments are planned? | files under `experiments/`; first-pilot recommendation in `planning/L3_PILOT_SELECTION.md` |
 | How should the frontend agent work? | `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` |

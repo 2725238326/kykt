@@ -987,4 +987,16 @@ v0.2 (SPEC-20260506-005)  2026-05-06
                           estimate addendum: ~1237 GPU-hours total
                           across all 9 v0.2 ABLs (inferred on TITAN
                           RTX). No training authorized; markdown only.
+
+v0.3 (SPEC-20260507-002)  2026-05-07
+                          cycle 023 S3 deliverable. Delta-only addendum
+                          on this v0.2 spec. Adds ABL-v02-10 (Test3R-
+                          alone comparator; Tier 1; Q1 from comparator
+                          map v0.2). Pillar A falsification coverage
+                          map (RA-07 from cycle 022 Path C Agent B).
+                          ABL-v02-4 VGGT offline-batch baseline
+                          annotation (Q2 from comparator map v0.2).
+                          v0.2 body NOT modified; see specs/SPEC-
+                          20260507-002-dream3r-ablation-plan-v03-
+                          addendum.md for full v0.3 addendum.
 ```
