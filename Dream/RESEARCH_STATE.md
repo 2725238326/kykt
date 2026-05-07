@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-07 (cycle 023 DONE: DEC-20260507-003 combined v0.3 planning addenda + ablation plan v0.3 addendum; RA-01 DONE (per-component latency pass/fail: C1 ≤18ms / e2e ≤33ms / FAIL >50ms) + RA-02 DONE (ExpertAdapter ABC: forward/get_capability_match/get_latency_estimate + error protocol) + RA-05 DONE (checkpoint inventory: CUT3R unverified / MoGe-2 unverified / DepthAnything-V2 likely-available; all-7 VRAM ≈4.7GB fits TITAN RTX) + RA-07 DONE (Pillar A coverage map: 4 sub-claims × primary ABL); ABL-v02-10 Test3R-alone comparator NEW (Tier 1 for pillar A; 3 scenarios A/B/C; ~120 GPU-hours) + ABL-v02-4 VGGT baseline annotation (Q2; Variant X) + SPEC-005 v0.2 Version history v0.3 pointer; v0.3 compute ~1377 GPU-hours total; all v0.2/v0.3 markdown deliverables COMPLETE; next = cycle 024 G_run server-side; main-claim A+D unchanged; B/C demoted; E supporting; RU-007 remains rejected)
+Last updated: 2026-05-08 (cycle 024 DONE: first server-side code task T-v02-A scaffold deployed; 11 NEW Python files on 172.17.140.97:/hdd3/kykt26/code/dream3r/dream3r/ — composer_experts/ (ExpertAdapter ABC + registry + 7 stubs) + memory_anchor_bank.py (K=256 LRU + permanence) + nsa_attention.py (three-branch + Critic confidence gate) + bench_frame_budget.py (per-component thresholds); v0.1 smoke PASSED + v0.2 integrated smoke PASSED on GPU 0 TITAN RTX; cycle 015 bypassed (v0.1 design obsolete); next = T-v02-C1 DINOv3-S backbone + T-v02-C2 Memory integration; main-claim A+D unchanged)
 
 ## User Intent
 

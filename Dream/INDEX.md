@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-07 (cycle 023 DONE: DEC-20260507-003 + 3 NEW planning addenda + specs/SPEC-20260507-002 NEW + cycles/CYCLE-20260507-003.md NEW; all v0.2/v0.3 markdown deliverables COMPLETE; next = cycle 024 server-side G_run)
+Last updated: 2026-05-08 (cycle 024 DONE: DEC-20260508-001 + CYCLE-20260508-001.md NEW; first server-side code: T-v02-A scaffold deployed; 11 new .py files on server; next = T-v02-C1 + T-v02-C2)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -233,7 +233,7 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | What can Dream do without asking the user? | `AGENT_MASTER_PROMPT.md` section 6 |
 | What requires user approval? | `AGENT_MASTER_PROMPT.md` section 6 + `WORKFLOW_STATUS.md` Blocked Until User Decision |
 | How should I behave when synthesizing or editing files? | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
-| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260507-003.md` (cycle 023 v0.3 planning addenda + ablation plan v0.3 addendum; all v0.2/v0.3 markdown COMPLETE) |
+| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260508-001.md` (cycle 024 T-v02-A server-side scaffold deployed; 11 new .py files; v0.1 + v0.2 smoke tests passed) |
 | What did we decide? | `registry/decision_registry.md` and files under `decisions/` |
 | What experiments are planned? | files under `experiments/`; first-pilot recommendation in `planning/L3_PILOT_SELECTION.md` |
 | How should the frontend agent work? | `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` |

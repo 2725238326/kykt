@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-07 (CYCLE 023 DONE: combined v0.3 planning addenda (3 HIGH RA items: RA-01 latency thresholds + RA-02 ExpertAdapter ABC + RA-05 checkpoint inventory) + ablation plan v0.3 addendum (ABL-v02-10 Test3R-alone Tier 1 + Pillar A coverage map RA-07 + VGGT baseline Q2); DEC-20260507-003 + 3 NEW planning files + specs/SPEC-20260507-002 NEW + cycles/CYCLE-20260507-003.md NEW + SPEC-005 v0.2 Version history v0.3 pointer; ALL v0.2/v0.3 MARKDOWN DELIVERABLES COMPLETE; next = cycle 024 server-side G_run)
+Last updated: 2026-05-08 (CYCLE 024 DONE phase 3: T-v02-A scaffold + T-v02-C1 DINOv3-S + T-v02-C2 AnchorBank+NSA + T-v02-C5 Composer wiring + T-v02-D integration test ALL PASSED; dinov2_s preset: 29.5M total (21.6M frozen backbone + 7.8M trainable); 7 expert adapters registered; anchor bank grows per window; regime auto-classified from perception; server code 21 files; next = T-v02-E CR gate coverage test + T-v02-F training pipeline)
 
-Status: **idle** (cycle 023 done; all v0.2/v0.3 markdown phase complete; next work requires server-side execution; recommended next: cycle 024 cycle-015 G_run resumption)
+Status: **idle** (cycle 024 done; v0.2 architecture fully wired and tested on server; next = T-v02-E gate test or T-v02-F training setup)
 
 ## Why this file exists
 
