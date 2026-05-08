@@ -1,8 +1,8 @@
 # Dream3R Paper Draft v1
 
-Last updated: 2026-05-08 (cycle 024; §3.9 pipeline demonstration added with measured latency data; §7.1 evidence status updated; evidence labels promoted: DepthAnything-V2 latency inferred→measured; DINOv2-S param count inferred→measured; pipeline end-to-end demonstrated on real DTU images)
+Last updated: 2026-05-08 (cycle 026; v1.4 evidence-boundary correction after C2 Memory v0.3 addendum; cycle 024 measurements remain valid for component latency, parameter counts, adapter availability, and pipeline plumbing only; they do NOT validate C2 memory quality, reconstruction quality, routing quality, or C2 v0.3)
 
-Status: draft (not submission-ready; first measured results from cycle 024 demo; evidence labels per Discipline rule 5)
+Status: draft (not submission-ready; cycle 024 contains bounded component measurements and an untrained pipeline trace; C2 Memory v0.3 supersedes v0.2 Delta 3 as the current memory design)
 
 Supersedes: literature/PAPER_PHASE2_BLUEPRINT.md (demoted to SUPPORT per DEC-20260506-001)
 
@@ -12,6 +12,7 @@ Source anchors:
 - specs/SPEC-20260506-002-dream3r-ablation-plan.md (v0.1; planned experiments)
 - specs/SPEC-20260506-003-dream3r-comparator-map.md (v0.1; §6.4 preserved)
 - specs/SPEC-20260507-001-dream3r-comparator-map-v02.md (v0.2; §6.0–6.3 source)
+- specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md (v0.3 C2 Memory addendum; supersedes v0.2 Delta 3 as current memory design)
 - specs/SPEC-20260503-001..003 + SPEC-20260504-001 (4 finalist specs; inputs)
 - paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md (v2.1)
 - planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md (A1-A8 + V1 + P1-P6)
@@ -92,9 +93,12 @@ This paper IS:
 - A comparator map showing where Dream3R sits relative to 14+ existing 3R models
 
 This paper is NOT:
-- A trained model (no training authorized)
-- A measured performance claim (all numbers are inferred or paper-derived)
+- A trained model
+- A measured quality or architecture-performance claim
+- A validation of C2 Memory v0.3
 - A final thesis (Dream3R remains a candidate per DEC-20260501-004)
+
+Cycle 024 adds bounded engineering measurements for component latency, parameter counts, adapter availability, and untrained pipeline plumbing. Those measurements do not validate reconstruction quality, routing quality, memory quality, or paper-level superiority.
 
 ## 2. Related work
 
@@ -296,7 +300,7 @@ Demoted to discipline / future (not deleted; per DEC-20260504-002 no-all-in): Pi
 
 ### 3.9 Pipeline demonstration [cycle 024 — 2026-05-08]
 
-> **Evidence label upgrade**: this section contains the project's first **measured** and **demonstrated** results, replacing inferred estimates.
+> **Evidence boundary correction [v1.4, cycle 026]**: this section contains bounded component measurements and an untrained pipeline trace. It upgrades some engineering facts from inferred to measured/demonstrated, but it does NOT validate C2 memory quality, reconstruction quality, routing quality, pillar A, pillar D, or C2 Memory v0.3. SPEC-20260508-001 supersedes the v0.2 C2 mechanism below as the current memory design.
 
 We run the full Dream3R v0.2 control-graph pipeline on a pair of DTU scan24 images (224x224) using the `dinov2_s` preset (DINOv2-S frozen backbone, 21.6M + 7.8M trainable = 29.5M total params) on a single NVIDIA TITAN RTX 24GB.
 
@@ -305,7 +309,7 @@ We run the full Dream3R v0.2 control-graph pipeline on a pair of DTU scan24 imag
 | Stage | Module | Output | Measured |
 |---|---|---|---|
 | C1 Perceiver | DINOv2-S (frozen) + trainable heads | 257 tokens x 768d per frame | 29.5M params (measured) |
-| C2 Memory | GRU + AnchorBank + NSA | A1: reset (first frame); 1 anchor stored | drift=0.039 |
+| C2 Memory | GRU + AnchorBank + NSA | A1: reset (first frame); 1 anchor stored | engineering-demonstrated plumbing; superseded as current memory design by SPEC-20260508-001 |
 | C3 Permanence | Slot attention (16 slots) | 13 admit / 3 suppress / 0 defer | dynamic_ratio=0.47 |
 | C4 Critic | Transformer encoder | conflict=-0.36 → accept | no reroute triggered |
 | C5 Composer | Regime classifier + table join | route_regret=0.00 (untrained) | selects DepthAnything-V2 |
@@ -323,7 +327,7 @@ We run the full Dream3R v0.2 control-graph pipeline on a pair of DTU scan24 imag
 
 The Critic evaluates conflict_score from 17 evidence signals. Low conflict (< 0) → accept → streaming-path expert (DepthAnything-V2). High conflict → reroute → lazy off-streaming expert (Test3R or MASt3R). This is pillar A (Verification-as-architecture) in action: the Critic gate structurally determines which expert runs, not a training-time loss.
 
-**Evidence label promotions from this demonstration:**
+**Bounded evidence label changes from this demonstration:**
 
 | Claim | Previous label | New label |
 |---|---|---|
@@ -331,8 +335,8 @@ The Critic evaluates conflict_score from 17 evidence signals. Low conflict (< 0)
 | DINOv2-S backbone frozen | inferred | measured (174 param tensors, requires_grad=False) |
 | DepthAnything-V2 latency (< 30 ms) | inferred | measured (24.3 ms TITAN RTX) |
 | MASt3R pair latency | paper-derived | measured (342 ms TITAN RTX) |
-| AnchorBank occupancy growth per window | inferred | demonstrated (1 → 2 → 3 → 4 → 5 over 5 windows) |
-| NSA three-branch forward | speculative | demonstrated (gate weights functional; Critic confidence bias operative) |
+| AnchorBank occupancy growth per window | inferred | engineering-demonstrated (1 → 2 → 3 → 4 → 5 over 5 windows; vector bank plumbing only) |
+| NSA three-branch forward | speculative | engineering-demonstrated (gate weights functional; Critic confidence bias operative; not a validated 3R memory mechanism) |
 | Bus contract log (3 cross-module reads) | architecture-novel | demonstrated (dynamic_ratio→memory, capability_match→critic, drift→critic) |
 | Pipeline end-to-end on real images | none | demonstrated (DTU scan24 pair → depth output) |
 
@@ -342,6 +346,8 @@ The Critic evaluates conflict_score from 17 evidence signals. Low conflict (< 0)
 - Routing quality (Composer capability_match is uniformly initialized; route_regret=0)
 - Streaming performance (single window only; no multi-window streaming test with real data)
 - Pillar A Critic discrimination (untrained Critic accepts everything; ABL-v02-10 needed)
+- C2 memory quality (v0.2 vector AnchorBank/NSA plumbing is superseded by SPEC-20260508-001 for v0.3)
+- C2 Memory v0.3 (not implemented, not run, not trained, not measured)
 - Pillar D best-of-N advantage (needs trained regime classifier; ABL-v02-4 needed)
 
 ## 4. A1-A8 action mapping
@@ -466,7 +472,7 @@ Threat ranking by novelty overlap:
 
 ### 7.1 Evidence status
 
-The aggregate evidence distribution of Dream3R v0.2 (updated cycle 024):
+The aggregate evidence distribution of Dream3R v0.2/v0.3 (corrected cycle 026):
 
 - ~5 elements paper-proven (perception substrate, token outputs, per-frame dynamic split, slot attention outside 3R)
 - ~5 elements paper-derived (SSM-for-3R-memory, Critic substrate pattern, Composer routing pattern)
@@ -474,11 +480,12 @@ The aggregate evidence distribution of Dream3R v0.2 (updated cycle 024):
 - ~7 elements architecture-novel (bus, CR-1..CR-6 as gates, substrate composition)
 - 2 elements speculative (A7/A8 reserved hooks)
 
-> **[v0.2 evidence upgrade — cycle 024 — 2026-05-08]** First measured/demonstrated evidence from server-side pipeline demo:
-> - **8 evidence labels promoted** (see §3.9 table): DINOv2-S params measured; DepthAnything-V2 + MASt3R + Test3R latency measured; AnchorBank/NSA/Bus demonstrated on real images
-> - Aggregate distribution shifts: ~3 elements move from inferred/speculative to measured/demonstrated
-> - Pipeline end-to-end demonstrated on real DTU images (untrained model; no quality claims)
-> - Architecture-novel elements remain highest risk until ABL-v02 ablation execution
+> **[v1.4 evidence-boundary correction - cycle 026 - 2026-05-08]** Cycle 024 measurements are bounded:
+> - parameter counts and component latencies may be labeled `measured`
+> - AnchorBank/NSA/Bus behavior may be labeled `engineering-demonstrated` for plumbing only
+> - C2 memory quality, reconstruction quality, routing quality, and C2 v0.3 remain unvalidated
+> - SPEC-20260508-001 supersedes v0.2 Delta 3 as the current memory design
+> - Architecture-novel elements remain highest risk until memory-specific prototype and ablation execution
 
 ### 7.2 Limitations
 
@@ -510,7 +517,7 @@ The contribution is the graph — not any single node.
 
 ```text
 - Every section carries evidence labels per Discipline rule 5
-- No measured performance is claimed
+- No measured quality or architecture-performance claim is made
 - Comparator claims are restricted to what papers report in
   abstracts/results
 - Four finalists are treated as parallel modules, not contestants
@@ -548,4 +555,13 @@ v1.3  2026-05-08  cycle 024. §3.9 pipeline demonstration added:
                 measured. AnchorBank + NSA + Bus demonstrated on
                 real DTU images. §7.1 evidence status updated.
                 Honest "what this does NOT prove" section added.
+
+v1.4  2026-05-08  cycle 026. Evidence-boundary correction after
+                SPEC-20260508-001 C2 Memory v0.3 addendum. Cycle
+                024 measurements remain valid only for component
+                latency, parameter counts, adapter availability, and
+                untrained pipeline plumbing. AnchorBank/NSA evidence
+                relabeled as engineering-demonstrated plumbing, not
+                validated C2 memory quality. C2 v0.3 not implemented
+                or measured.
 ```

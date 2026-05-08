@@ -1,0 +1,16 @@
+{"timestamp":"2026-05-08T01:44:20.733Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e0539-aa21-7221-82b4-99272a674911","thread_id":"019e03e3-8a32-7443-8bf3-0d7c4e41c4df","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-08T01:44:21.006Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-08T02:20:47.235Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e055f-26ff-7251-9175-36b5cc57d0ab","thread_id":"019e03e3-8a32-7443-8bf3-0d7c4e41c4df","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-08T02:20:47.715Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-08T02:34:45.521Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e056b-bc64-7df2-a274-88760815883d","thread_id":"019e03e3-8a32-7443-8bf3-0d7c4e41c4df","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-08T02:34:45.764Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-08T03:06:04.515Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e058c-5921-7901-b807-63139b6485b9","thread_id":"019e03e3-8a32-7443-8bf3-0d7c4e41c4df","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-08T03:06:04.754Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-08T03:33:12.352Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e05a4-bb4e-7082-8686-fa6acdac1289","thread_id":"019e03e3-8a32-7443-8bf3-0d7c4e41c4df","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-08T03:33:12.611Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-08T05:14:19.711Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e0601-c7e3-7800-adc9-13889b23972e","thread_id":"019e03e3-8a32-7443-8bf3-0d7c4e41c4df","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-08T05:14:19.944Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-08T05:14:50.993Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e0602-657f-7413-a7b3-a191a549664c","thread_id":"019e03e3-8a32-7443-8bf3-0d7c4e41c4df","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-08T05:14:51.253Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-08T05:39:54.180Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e060f-4cdc-7811-80d3-cf4af5aa7688","thread_id":"019e03e3-8a32-7443-8bf3-0d7c4e41c4df","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-08T05:39:55.359Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}

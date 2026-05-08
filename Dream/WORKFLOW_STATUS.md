@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-08 (cycle 025 DONE: direction 3.1 research correction completed; planning/MEMORY_V03_DESIGN_STUDY.md NEW after static server code reading of CUT3R + Spann3R + current Dream3R C2; next recommended = C2 Memory v0.3 spec addendum, markdown only; no model run/training/checkpoint download; mainline = architecture-first per DEC-20260506-001)
+Last updated: 2026-05-08 (cycle 031 DONE: local Memory v0.3 P0 scaffold created; ABL-memory-0 passed as fixture/logging validity gate; next recommended = ABL-memory-1 local vector baseline under a new DEC)
 
 ## Current Phase
 
@@ -11,8 +11,8 @@ Phase 1.5: Research Workflow Deployment
 ## Current Mode
 
 ```text
-No reproduction yet.
-No heavy installs.
+No new reproduction or heavy install is currently authorized.
+Cycle 024 server scaffold is a historical engineering baseline, not the current research direction.
 No KYKT app redesign.
 Architecture-first design is the mainline (per DEC-20260506-001).
 Paper writing is support, not primary output.
@@ -66,9 +66,10 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Source registry | active; cycle 013 mining pass added SRC-2026-009..015 (7 new rows: MapAnything / Julian Ost AAAI-2026 driving permanence / tttLRM / awesome-dust3r curated index / DUSt3R-MASt3R-VGGT MVS evaluation / NTIRE 2026 / VGGT) | `registry/source_registry.md` |
 | Research unit registry | seeded | `registry/research_unit_registry.md` |
 | Decision registry | seeded | `registry/decision_registry.md` |
-| Cycle logs | active | `cycles/CYCLE-20260505-006.md` (cycle 015 in progress; Critic L3 pilot scope authorized per DEC-20260505-005; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required) |
-| Experiment planning | active; cycle 013 added 4 L3 prerequisite briefs (one per finalist; brief-only, NOT L3 authorization); cycle 014 added L3 pilot downselect recommending Critic first and Composer backup; cycle 015 launched Critic L3 pilot scope authorization (DEC-20260505-005) — clone / install / download / run still gated per micro gates | `experiments/EXP-20260505-001..004-l3-prerequisites-{critic\|memory\|permanence\|composer}.md` + `planning/L3_PILOT_SELECTION.md` + `decisions/DEC-20260505-005-cycle-015-launch-critic-l3-pilot.md` |
+| Cycle logs | active | `cycles/CYCLE-20260508-008.md` (cycle 031 done; local P0 scaffold + ABL-memory-0 validity gate) |
+| Experiment planning | active; local v0.3 P0 scaffold now exists and ABL-memory-0 passed, but later ablations still require separate DEC + gate | `experiments/prototypes/memory_v03_p0/outputs/summary_go_no_go.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
+| C2 Memory v0.3 | active architecture addendum + P0 plan + reviewed ablation addendum + local P0 scaffold. ABL-memory-0 passed as a fixture/logging gate only; C2 memory quality remains unvalidated | `specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md` + `planning/MEMORY_V03_DESIGN_STUDY.md` + `planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md` + `specs/SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md` + `planning/MEMORY_V03_ABLATION_REVIEW.md` + `experiments/prototypes/memory_v03_p0/README.md` |
 | Research content roadmap | active | `paradigm/RESEARCH_CONTENT_ROADMAP.md` |
 | Multi-track research canvas | active; cycle 008.5 four-finalist + no-all-in section appended | `planning/MULTI_TRACK_RESEARCH_CANVAS.md` |
 | Research graph / paper start | active; cycle 008.5 F6 row note + Next Concrete Artifact supersede applied | `planning/RESEARCH_GRAPH_AND_PAPER_START.md` |
@@ -99,8 +100,9 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Blocked Until User Decision
 
-- first local reproduction target (NARROW EXCEPTION cycle 015 only: Critic L3 pilot smoke loop authorized at scope level per DEC-20260505-005; each operational step still per-step gated via G_clone / G_install / G_download / G_run / G_log_use; "reproduction" in the strict sense of paper-result re-runs / training remains blocked)
-- large checkpoint downloads (NARROW EXCEPTION cycle 015 only: minimum checkpoints required for the Critic smoke loop authorized at scope level per DEC-20260505-005; each download per-step gated via G_download)
+- any new reproduction, server run, model run, or heavy install
+- any new checkpoint download
+- C2 v0.3 server integration, model import, or any ablation beyond ABL-memory-0 without a separate DEC
 - KYKT Dream page or navigation change
 - Codex direct frontend implementation
 - major Gemini CLI frontend redesign instruction
@@ -110,47 +112,24 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 015 launched (DEC-20260505-005 + CYCLE-20260505-006). User
-authorized Critic L3 pilot scope per planning/L3_PILOT_SELECTION.md
-"Recommended first-pilot scope". Cycle 015 is `in_progress`.
-
-The next user decision is the first per-step micro gate, **G_clone**:
+Cycle 031 closeout recommendation:
 
 ```text
-G_clone: "Go to clone Test3R + CTRL + DUSt3R + MASt3R under
-          E:\kykt\Dream\experiments\runs\cycle-015-critic-l3-pilot\?
-          Or redirect path / repo set?"
+Choose one next step:
+  A. Start cycle 032 for local ABL-memory-1:
+     vector AnchorBank baseline + retrieval metrics on the existing P0 fixtures.
 
-If user replies "go": cycle 015 enters S6 (clone). Each subsequent
-step (install / checkpoint download / run / log commit) is its own
-gate; do not chain silently.
+  B. Review the ABL-memory-0 output artifacts before implementing
+     later ablations.
 
-If user replies "redirect" or "no": cycle 015 stays gated at S5;
-agent records the gate result in the cycle log and waits.
+  C. Pause local execution and return to research design.
 ```
 
-After G_clone (whichever way it goes), the remaining cycle 015 micro
-gates surface in order: G_install -> G_download -> G_run -> G_log_use.
-Out-of-scope alternatives (that the user can pick instead of G_clone
-go):
-
-```text
-(b) Continue markdown paper writing:
-    expand PAPER_PHASE2_BLUEPRINT.md into introduction + method
-    sections, keeping L3 sections as planned validation. Cycle 015
-    can pause Critic L3 work to do this (no DEC change required;
-    DEC-005 scope authorization is not an obligation to execute).
-
-(c) Prepare Composer L3 sweep design (out-of-scope for cycle 015):
-    add VGGT / optional MapAnything rows to a concrete route_policies
-    / capability_match schema before any execution. Would require a
-    separate cycle-015' or cycle 016 DEC.
-
-(d) Hold:
-    keep current state as Phase 2 execution-prep stop-state. The
-    DEC-005 authorization remains valid; user can resume G_clone
-    later without re-authorizing the scope.
-```
+The local P0 scaffold and ABL-memory-0 validity gate are complete. This
+does not validate memory quality, reconstruction quality, recurrence, or
+paper claims. Any ABL-memory-1..8 execution, server-side prototype, model
+run, checkpoint use, training, or `Dream/code/` edit needs a separate DEC
+and per-step gate.
 
 Still blocked on user approval:
 

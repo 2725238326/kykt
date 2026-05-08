@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-08 (cycle 025 DONE: 方向 3.1 research pass completed; CUT3R persistent state + Spann3R spatial memory code read on server; Dream/planning/MEMORY_V03_DESIGN_STUDY.md written; C2 v0.3 direction = state-token recurrence + spatial key/value memory + geometry-aware bus-gated writes; no model run, no training, no checkpoint download)
+Last updated: 2026-05-08 (cycle 031 DONE: local P0 static tensor scaffold created and ABL-memory-0 passed for Memory v0.3; next recommended = cycle 032 ABL-memory-1 vector baseline)
 
-Status: **idle** (cycle 025 done; next recommended task = write a C2 Memory v0.3 spec addendum that supersedes Delta 3 from vector AnchorBank to token state + spatial bank, markdown only)
+Status: **idle** (cycle 031 closed; next work requires a new cycle or explicit user decision)
 
 ## Why this file exists
 
@@ -21,144 +21,192 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-025
-phase:      Architecture-first research correction; C2 Memory mechanism
-            study after cycle 024 framework-heavy drift
-cycle:      025 (方向 3.1: CUT3R persistent state + Spann3R spatial
-            memory code reading -> Dream3R C2 Memory v0.3 design study)
-status:     done (S1 snapshot start anchor done; S2 CUT3R/Spann3R/
-            Dream3R C2 code reading done; S3 MEMORY_V03_DESIGN_STUDY
-            written; S4 sync chain done)
+task_id:    cycle-031
+phase:      Architecture-first research correction; C2 Memory v0.3
+            P0 local static tensor scaffold
+cycle:      031 (authorized local P0 scaffold + ABL-memory-0)
+status:     done (S1 snapshot start anchor done; S2 execution DEC
+            done; S3 local scaffold done; S4 ABL-memory-0
+            done; S5 verification and sync done)
 ```
 
 One-line description:
 
 ```text
-Cycle 025 corrected the project direction from framework scaffolding
-back to mechanism research. It read CUT3R state-token recurrence,
-Spann3R spatial key/value memory, and current Dream3R C2 code, then
-wrote planning/MEMORY_V03_DESIGN_STUDY.md. Main conclusion: Dream3R
-C2 v0.3 should stop being GRU + vector cache + NSA label, and become
-state-token recurrence + explicit spatial key/value memory +
-geometry-aware bus-gated writes.
+Cycle 031 executes the first bounded local P0 step after user
+authorization: create a local static tensor prototype scaffold under
+Dream/experiments/prototypes/memory_v03_p0/ and implement only
+ABL-memory-0 as the fixture/logging validity gate.
 
-No training authorized. No model run. No checkpoint download. Server
-use was static code reading over SSH only. Local change was markdown
-research documentation plus sync metadata.
+No server code edit, no Dream/code edit, no model run, no training,
+no checkpoint download, and no frontend are authorized in this pass.
 ```
 
-## Subtask board (cycle 025 memory mechanism study; single session 2026-05-08)
+## Subtask board (cycle 031 Memory v0.3 P0 local static tensor scaffold; single session 2026-05-08)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
 | S1 | Start-of-pass TASK_SNAPSHOT anchor per F-001 rule 6 | done | `TASK_SNAPSHOT.md` |
-| S2 | Read CUT3R state-token and LocalMemory code on server | done | `/hdd3/kykt26/code/cut3r/src/dust3r/model.py`, `/hdd3/kykt26/code/cut3r/src/dust3r/blocks.py` |
-| S3 | Read Spann3R SpatialMemory and DUSt3R integration code on server | done | `/hdd3/kykt26/code/spann3r/spann3r/model.py` |
-| S4 | Read current Dream3R C2 implementation and compare gaps | done | `/hdd3/kykt26/code/dream3r/dream3r/modules.py`, `memory_anchor_bank.py`, `nsa_attention.py` |
-| S5 | Write design study and sync metadata | done | `planning/MEMORY_V03_DESIGN_STUDY.md`, `cycles/CYCLE-20260508-002.md`, sync chain |
+| S2 | Write cycle 031 execution decision record | done | `decisions/DEC-20260508-007-cycle-031-p0-local-static-tensor-scaffold.md` |
+| S3 | Create local prototype scaffold | done | `experiments/prototypes/memory_v03_p0/` |
+| S4 | Implement and run ABL-memory-0 fixture/logging validity gate | done | `experiments/prototypes/memory_v03_p0/outputs/` |
+| S5 | Verify, write cycle log, and sync guidance chain | done | `cycles/CYCLE-20260508-008.md`, `TASK_SNAPSHOT.md` |
 
-S2 deliverable summary (for resume context):
+Cycle 031 active boundary:
 
 ```text
-specs/SPEC-20260506-001-dream3r-architecture.md sections:
-  - Identity / Approval (per DEC-20260506-001; candidate per DEC-501-004)
-  - Scope of v0.1 (markdown only; no training)
-  - The architectural claim (control-graph-as-architecture; what is novel
-    vs what is carried from existing work)
-  - Substrate hypothesis (hybrid transformer + SSM/Mamba + slot + bus;
-    per-substrate justification + lineage + evidence labels)
-  - Top-level architecture (ASCII block diagram)
-  - Tokens (T1 frame / T2 pointmap / T3 evidence / T4 regime / T5 anchor +
-    object slot / T6 bus)
-  - State ownership (which module owns which state; cross-module reads
-    are read-only)
-  - Computational cores (C1 Perceiver transformer / C2 Memory SSM / C3
-    Permanence slot / C4 Critic small head / C5 Composer table join /
-    C6 Memory Bus)
-  - The Memory Bus as runtime API (publish + read + handoff + gates)
-  - A1-A8 mapping to concrete layers (A7 / A8 are RESERVED hooks; not
-    designed in v0.1)
-  - Read-write protocol per window (8-step bus tick)
-  - Conflict resolution as architectural elements (CR-1..CR-6 as gates /
-    masks / invariants / ledgers)
-  - Training-objective sketch (NOT a training authorization; INPUT to S3
-    ablation plan)
-  - Module-level evidence labels (aggregate distribution: ~5 paper-proven
-    / ~5 paper-derived / ~10 inferred / ~7 architecture-novel / 2
-    speculative)
-  - Comparator quick map (lightweight; full at S4)
-  - Per-spec cross-reference (each finalist spec re-mapped to architecture)
-  - Risks (R1 substrate falsification / R2 bus-as-novelty collapse / R3
-    state-ownership invariant under training / R4 A7/A8 reserved hook
-    conflict / R5 storytelling-vs-measurement asymmetry / R6 KYKT scope
-    creep / R7 paper writing risk)
-  - Boundaries (13 explicit boundaries; all carried from prior cycles +
-    DEC-20260506-001)
-  - Linked artifacts (decisions, finalist specs as INPUTS, paradigm
-    artifacts, planning artifacts, failure modes, KYKT artifacts as
-    future evidence anchors, storyboards remain `draft`, paper Phase 2
-    now SUPPORT)
-  - Next step (cycle 016 S3 ablation plan)
-  - Open questions for next session (Q1 substrate ablation priority / Q2
-    bus falsifying experiment design / Q3 A7/A8 concretization timing /
-    Q4 v0.1 -> v0.2 trigger / Q5 KYKT integration for evidence anchoring
-    / Q6 paper integration path)
-  - Discipline notes
-  - Version history
+Authorized user trigger:
+  - "那就先进行后续操作吧"
+
+Execution scope:
+  - local deterministic P0 fixture scaffold
+  - ABL-memory-0 only as validity gate
+  - output manifest/log/metric/summary/evidence-boundary artifacts
+
+Explicit exclusions:
+  - no ABL-memory-1..8 performance claims in this cycle
+  - no ABL-memory-9..11
+  - no server/runtime/model/checkpoint/training/frontend work
+```
+
+Cycle 031 deliverable summary:
+
+```text
+DEC-20260508-007:
+  - authorizes only local P0 scaffold + ABL-memory-0 validity gate
+  - forbids Dream/code, server integration, model imports, checkpoint use,
+    training, frontend work, paper claim promotion, and ABL-memory-1..11
+    behavior claims
+
+experiments/prototypes/memory_v03_p0/:
+  - deterministic fixture generator
+  - oracle-bus contract
+  - raw-label exclusion audit
+  - ABL-memory-0 gate runner
+  - direct smoke test
+
+outputs:
+  - fixtures_manifest.json
+  - write_log.jsonl
+  - metrics_abl_memory_0_8.csv
+  - summary_go_no_go.md
+  - evidence_boundary_update.md
+
+Result:
+  - ABL-memory-0 pass, 22/22 validity checks
+  - pytest unavailable in the current Python environment
+  - direct smoke test passed with python tests\test_abl_memory_0.py
+
+Evidence boundary:
+  - fixture/logging substrate only
+  - no memory quality, retrieval quality, recurrence quality, reconstruction
+    quality, server behavior, model behavior, or paper claim validated
+```
+
+Cycle 030 deliverable summary (for resume context):
+
+```text
+DEC-20260508-006:
+  - accepts only markdown-only template creation scope
+  - authorizes planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md
+  - keeps actual P0 implementation gated
+
+planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md:
+  - predefines future DEC fields, allowed paths, forbidden actions,
+    ABL-memory-0..8 scope, ABL-memory-9..11 exclusion, oracle-bus
+    rules, required outputs, stop gates, result labels, go/no-go rules,
+    and post-execution evidence boundary
+
+Evidence boundary:
+  - cycle 030 is authorization-template evidence only
+  - no ABL-memory result, prototype implementation, C2 Memory v0.3
+    quality, reconstruction quality, spatial retrieval quality,
+    state-token recurrence performance, or paper claim is validated yet
+
+Next expected research object after cycle 030:
+  - user decision on whether to authorize local static tensor P0
+    execution for ABL-memory-0..8, revise the template, or return to
+    research design
 ```
 
 ## Last completed task pass
 
 ```text
-pass_name:        Cycle 025 close pass (方向 3.1 memory mechanism
-                  study done in single session 2026-05-08)
+pass_name:        Cycle 031 close pass (Memory v0.3 local P0 scaffold
+                  + ABL-memory-0 gate done in single session 2026-05-08)
 date:             2026-05-08
-trigger:          User asked to read HANDOFF_PROMPT_MEMORY_RESEARCH
-                  and TASK_SNAPSHOT, then "do the project better".
-files_modified:   TASK_SNAPSHOT.md (start anchor + final flip)
-                  WORKFLOW_STATUS.md (line-3 status update)
-                  RESEARCH_STATE.md (line-3 status update)
-                  INDEX.md (planning row for MEMORY_V03)
-new_artifacts:    planning/MEMORY_V03_DESIGN_STUDY.md (NEW;
-                  CUT3R state-token recurrence + Spann3R spatial
-                  key/value memory study; Dream3R C2 v0.3 proposal)
-                  cycles/CYCLE-20260508-002.md (NEW; concise
-                  cycle 025 log)
-discipline:       Research-only. Server-side work was static code
-                  reading over SSH. No model run, no training, no
-                  checkpoint download, no Dream3R server code edit.
-budget_event:     F-001 honored by targeted code slices and Grep/
-                  Select-String. F-002 honored by using server-side
-                  code paths under /hdd3/kykt26 and keeping local
-                  Windows as markdown/orchestration only.
+trigger:          User authorized proceeding after cycle 030 template and
+                  GitHub CLI discussion.
+files_modified:   TASK_SNAPSHOT.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md,
+                  INDEX.md, README.md, AGENT_MASTER_PROMPT.md,
+                  registry/decision_registry.md
+new_artifacts:    decisions/DEC-20260508-007-cycle-031-p0-local-static-
+                  tensor-scaffold.md
+                  experiments/prototypes/memory_v03_p0/
+                  cycles/CYCLE-20260508-008.md
+result:           Local P0 scaffold created. ABL-memory-0 passed 22/22
+                  fixture/logging validity checks and wrote required
+                  outputs under experiments/prototypes/memory_v03_p0/outputs/.
+paper_boundary:   No paper evidence promoted. Cycle 031 validates only the
+                  local fixture/logging substrate.
+discipline:       No Dream/code edit. No server integration. No model run.
+                  No checkpoint use. No training. No frontend.
+verification:     python run_ablations.py --output outputs returned pass;
+                  python -m pytest tests failed because pytest is not
+                  installed; python tests\test_abl_memory_0.py passed.
 
-prior_pass_name:  Cycle 022 close pass (S1-S5 done in single session
-                  2026-05-07; combined Path C reattempt SUCCEEDED
-                  + paper Section 3+6 v0.2 rewrite done; API gateway
-                  recovered since cycle 021; 7 RA items captured
-                  for conditional cycle 023.5)
-prior_pass_date:  2026-05-07
-prior_pass_files: TASK_SNAPSHOT.md, registry/decision_registry.md,
-                  WORKFLOW_STATUS.md, RESEARCH_STATE.md, INDEX.md,
-                  literature/PAPER_DRAFT_V1.md, decisions/DEC-
-                  20260507-002-cycle-022-path-c-reattempt-and-
-                  paper-s3s6-rewrite.md, cycles/CYCLE-20260507-
-                  002.md
+pass_name:        Cycle 030 close pass (Memory v0.3 P0 execution DEC
+                  template done in single session 2026-05-08)
+date:             2026-05-08
+trigger:          User asked to continue according to the current plan.
+files_modified:   TASK_SNAPSHOT.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md,
+                  INDEX.md, README.md, AGENT_MASTER_PROMPT.md,
+                  registry/decision_registry.md
+new_artifacts:    decisions/DEC-20260508-006-cycle-030-p0-execution-
+                  dec-template.md
+                  planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md
+                  cycles/CYCLE-20260508-007.md
+result:           P0 execution DEC template completed. It predefines
+                  future DEC fields, allowed local prototype path,
+                  forbidden server/model/checkpoint paths, allowed and
+                  forbidden actions, ABL-memory-0..8 scope,
+                  ABL-memory-9..11 exclusion, oracle-bus boundary,
+                  required outputs, stop gates, result labels, go/no-go
+                  rules, and post-execution evidence boundary.
+paper_boundary:   No paper evidence promoted. Cycle 030 is
+                  authorization-template evidence only.
+discipline:       Markdown-only. No server code edit. No model run.
+                  No training. No checkpoint download. No frontend.
+verification:     git diff --check returned no whitespace errors
+                  (line-ending warnings only); stale-pointer search
+                  returned no active hits; checked markdown fence
+                  counts for edited key files and all were even.
 
-older_prior_pass: Cycle 021 close pass (S1+S3+S4+S5 done in
-                  single session 2026-05-07; S2 Path C BLOCKED
-                  by API gateway 500 panic — 4 attempts × ~3 min
-                  each; cycle closes as done-with-S2-blocked-by-
-                  infrastructure per Honesty Override Option β;
-                  v0.2 markdown trio CLOSED via SPEC-20260507-001)
-prior_pass_date:  2026-05-07
-prior_pass_files: TASK_SNAPSHOT.md, registry/decision_registry.md
-                  (DEC-20260507-001 append), WORKFLOW_STATUS.md,
-                  RESEARCH_STATE.md, INDEX.md, specs/SPEC-
-                  20260506-003 (Version history pointer append),
-                  + new artifacts decisions/DEC-20260507-001
-                  (~430 lines), specs/SPEC-20260507-001 (~880
-                  lines), cycles/CYCLE-20260507-001.md
+prior_pass_name:  Cycle 029 close pass (Memory v0.3 ablation review
+                  and correction done in single session 2026-05-08)
+prior_pass_date:  2026-05-08
+prior_pass_files: TASK_SNAPSHOT.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md,
+                  INDEX.md, README.md, AGENT_MASTER_PROMPT.md,
+                  registry/decision_registry.md,
+                  specs/SPEC-20260508-002-dream3r-memory-v03-
+                  ablation-addendum.md,
+                  decisions/DEC-20260508-005-cycle-029-memory-
+                  ablation-review.md,
+                  planning/MEMORY_V03_ABLATION_REVIEW.md,
+                  cycles/CYCLE-20260508-006.md
+
+prior_pass_name:  Cycle 028 close pass (Memory v0.3 ablation addendum
+                  done in single session 2026-05-08)
+prior_pass_date:  2026-05-08
+prior_pass_files: TASK_SNAPSHOT.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md,
+                  INDEX.md, README.md, AGENT_MASTER_PROMPT.md,
+                  registry/decision_registry.md,
+                  planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md,
+                  specs/SPEC-20260508-001-dream3r-c2-memory-v03-
+                  addendum.md, decisions/DEC-20260508-004-cycle-
+                  028-memory-ablation-addendum.md,
+                  specs/SPEC-20260508-002-dream3r-memory-v03-
+                  ablation-addendum.md, cycles/CYCLE-20260508-005.md
 ```
 
 ## If interrupted, resume from
@@ -166,6 +214,45 @@ prior_pass_files: TASK_SNAPSHOT.md, registry/decision_registry.md
 If a new agent or new conversation is picking this up cold:
 
 ```text
+CURRENT RESUME OVERRIDE (cycle 031 closed; 2026-05-08):
+
+1. Read this file (you are here).
+
+2. Read decisions/DEC-20260508-007-cycle-031-p0-local-static-
+   tensor-scaffold.md.
+
+3. Read experiments/prototypes/memory_v03_p0/README.md and
+   experiments/prototypes/memory_v03_p0/outputs/summary_go_no_go.md.
+
+4. Read cycles/CYCLE-20260508-008.md for the cycle 031 result and
+   verification boundary.
+
+5. Read planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md and
+   decisions/DEC-20260508-006-cycle-030-p0-execution-dec-template.md
+   for the parent authorization template.
+
+6. Read decisions/DEC-20260508-005-cycle-029-memory-
+   ablation-review.md and planning/MEMORY_V03_ABLATION_REVIEW.md.
+
+7. Read planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md and
+   specs/SPEC-20260508-002-dream3r-memory-v03-ablation-
+   addendum.md. The latter has cycle 029 v1.1 corrections.
+
+8. Read specs/SPEC-20260508-001-dream3r-c2-memory-v03-
+   addendum.md for the current C2 Memory architecture direction.
+
+9. Default next action is a user decision on:
+   A. start cycle 032 local ABL-memory-1 vector AnchorBank baseline,
+   B. review ABL-memory-0 outputs before later ablations, or
+   C. pause execution and return to research design.
+
+10. ABL-memory-1..8 execution, server code edit, model run, checkpoint
+    use, training, or paper claim promotion requires a separate DEC and
+    per-step gate.
+
+11. The older cycle 022 / cycle 015 resume material below is retained
+    as historical traceability only. It is not the active next action.
+
 1. Read this file (you are here).
 
 2. Read decisions/DEC-20260507-002-cycle-022-path-c-reattempt-
@@ -219,6 +306,7 @@ If a new agent or new conversation is picking this up cold:
    /hdd3/kykt26/; local Windows is markdown + orchestration
    only).
 
+```text
 Project state at this snapshot:
    Cycle 015 PAUSED at S9 done (NOT closed; NOT abandoned;
                                 infrastructure reusable as future
@@ -280,32 +368,23 @@ v0.2 markdown trio + paper status (post cycle 022):
    All 4 artifacts are now v0.2-coherent. v0.1 bodies of all 3
    substrate specs preserved unchanged per Discipline rule 5.
 
-Post-022 trajectory (per CYCLE-20260507-002 + DEC-20260507-002
-§"Post-022 trajectory"):
-   Cycle 023: SPEC-002 v0.2 ablation plan addendum (markdown only;
-              adds ABL-v02-1..10 new ablations; includes ABL-v02-10
-              Test3R-alone for Q1; ABL-v02-4 VGGT offline-batch
-              baseline for Q2; address RA-07 Pillar A task gap from
-              Path C Agent B).
-   Cycle 023.5 (CONDITIONAL): v0.3 addendum cycle for cycle 020
-              planning artifacts — triggered if RA-01..07 items are
-              actioned; produces v0.3 addenda to CODE_STRUCTURE +
-              IMPLEMENTATION_ROADMAP via fresh DEC + new spec files
-              (B-roadmap-F: no in-place modification); priority items:
-              RA-01 (latency budget), RA-02 (ExpertAdapter ABC),
-              RA-05 (checkpoint inventory).
-   Cycle 024: Cycle 015 G_run resumption (Critic A4 measured
-              anchor; server-side per F-002).
-   Cycle 025: Capability_match measurement architecture (server-side
-              measurement design for route_regret + capability_match).
-   Cycle 026: First T-v02-N code task execution (server-side per
-              F-002; per-task DEC + per-step micro gates + reviewer
-              authorization per IMPLEMENTATION_ROADMAP B-roadmap-F).
+Historical post-022 projection (superseded by actual cycles 023-027):
+   Cycle 023 actual: v0.3 planning addenda + ablation plan v0.3
+              addendum (DEC-20260507-003).
+   Cycle 024 actual: server-side v0.2 scaffold / engineering smoke
+              baseline (DEC-20260508-001), later bounded by cycle 026.
+   Cycle 025 actual: C2 memory mechanism study
+              (planning/MEMORY_V03_DESIGN_STUDY.md).
+   Cycle 026 actual: C2 Memory v0.3 addendum and guidance correction
+              (SPEC-20260508-001 + DEC-20260508-002).
+   Cycle 027 actual: P0 static tensor prototype plan
+              (planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md +
+              DEC-20260508-003).
 
 Resume action when user returns:
-   Cycle 022 is DONE. No active task. Status `idle`. Surface cycle
-   023 (ablation plan addendum) + conditional cycle 023.5 (v0.3
-   planning addenda; only if RA-01..07 are to be actioned now).
+   Cycle 027 is DONE. No active task. Status `idle`. Prefer a new
+   markdown-only memory-specific ablation addendum unless the user
+   explicitly authorizes a separate P0 execution DEC.
 
    If user asks about Path C findings:
    - Agent A (CODE_STRUCTURE): 3 HIGH/MEDIUM gaps (latency budget
@@ -318,7 +397,7 @@ Resume action when user returns:
    - All 7 RA items captured for conditional cycle 023.5 v0.3
      addenda. NOT actioned in cycle 022 (B-roadmap-F rule).
 
-   None of cycles 023..026 launches without explicit user direction.
+   Any execution step launches only with explicit user direction.
    Do NOT propose training, checkpoint download, GPU runs, KYKT
    navigation change, frontend implementation, demo storyboard
    promotion past `draft`, thesis finalization, or retiring of any

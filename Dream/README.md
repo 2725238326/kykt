@@ -1,6 +1,6 @@
 # Dream Research Workspace
 
-Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot SCOPE per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required before any operational step; v2.1 unchanged; all L3 execution operational gates remain in force as per-step user gos)
+Last updated: 2026-05-08 (cycle 031: C2 Memory v0.3 local P0 scaffold created; ABL-memory-0 passed as fixture/logging validity gate; cycle 024 scaffold remains engineering baseline only)
 
 ## Purpose
 
@@ -59,6 +59,21 @@ Primary direction:
 Architecture-first 3R research, with demo and KYKT app integration as required output surfaces.
 ```
 
+Current mechanism focus:
+
+```text
+C2 Memory v0.3: replace GRU/vector AnchorBank/NSA-label as the research
+center with state-token recurrence + explicit spatial memory + bus-gated
+write policy. The current planning chain is:
+planning/MEMORY_V03_DESIGN_STUDY.md ->
+specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md ->
+planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md ->
+specs/SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md ->
+planning/MEMORY_V03_ABLATION_REVIEW.md ->
+planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md ->
+experiments/prototypes/memory_v03_p0/README.md.
+```
+
 The current strategy is **not** to prematurely choose one method such as Mamba-3R, Event-DUSt3R, or SplatBridge-4D.
 
 Instead, Dream should first build a systematic research engine that can compare and synthesize:
@@ -84,7 +99,7 @@ Root-level files (entry points):
 Subdirectories:
 
 - `paradigm/`: how Dream operates (paradigm, workflow, data model, rules draft, content roadmap, cross-spec signal contract, teacher audience profile placeholder).
-- `planning/`: active research-planning artifacts (graph, branch matrix, shortlist surface, mechanism intake, action taxonomy, multi-track canvas, thesis stress test, minimal demo candidates, work risk register).
+- `planning/`: active research-planning artifacts (graph, branch matrix, shortlist surface, mechanism intake, action taxonomy, multi-track canvas, thesis stress test, minimal demo candidates, work risk register, C2 Memory v0.3 design study, C2 Memory P0 prototype plan, C2 Memory ablation review, C2 Memory P0 execution DEC template).
 - `sources/`: source mining artifacts (`FRONTIER_SOURCE_MAP.md`).
 - `units/`: Research Units, scoring, reproduction readiness.
 - `handoff/`: collaboration roadmap and frontend handoff prompt for Gemini CLI.
@@ -92,9 +107,9 @@ Subdirectories:
 - `archive/`: historical / superseded documents (Phase 1 artifacts, early prompt drafts).
 - `cycles/`: per-cycle research logs.
 - `decisions/`: decision memos that require commitment or deferral.
-- `experiments/`: experiment plans; a file here does not mean the experiment has been run.
+- `experiments/`: experiment plans and explicitly authorized local prototypes. Cycle 031 added `prototypes/memory_v03_p0/` for the local P0 fixture/logging gate.
 - `literature/`: literature guidance board (curated reading order, deconfusion notes, paper-related-work skeleton); not a duplicate inventory.
-- `specs/`: finalist mechanism specs (one per user-approved finalist branch; created via `templates/finalist_mechanism_spec.md`).
+- `specs/`: finalist mechanism specs and architecture addenda, including current C2 Memory v0.3 addendum and Memory v0.3 ablation addendum.
 - `storyboards/`: teacher demo storyboards (one per finalist demo target; created via `templates/demo_storyboard.md`; drafting does NOT authorize showing).
 - `registry/`: lightweight indexes for sources, research units, and decisions.
 - `templates/`: reusable forms (source card, research unit, decision memo, cycle log, experiment plan, frontend design handoff, proxy case card, finalist mechanism spec, demo storyboard).

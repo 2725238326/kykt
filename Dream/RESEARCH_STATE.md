@@ -1,6 +1,6 @@
 # Dream Research State
 
-Last updated: 2026-05-08 (cycle 025 DONE: 方向 3.1 完成第一份机制研究; 静态阅读服务器 CUT3R / Spann3R / Dream3R C2 代码后写出 planning/MEMORY_V03_DESIGN_STUDY.md; 关键结论: 当前 Dream3R C2 的 GRU + vector AnchorBank + NSA label 不够 3R memory, v0.3 应转为 CUT3R-like state-token recurrence + Spann3R-like explicit spatial key/value bank + geometry-aware bus-gated writes; 下一步建议写 C2 Memory v0.3 spec addendum; 未运行模型, 未训练, 未下载 checkpoint)
+Last updated: 2026-05-08 (cycle 031 DONE: Memory v0.3 local P0 scaffold created; ABL-memory-0 passed as fixture/logging validity gate; next recommended = ABL-memory-1 vector baseline under a new DEC)
 
 ## User Intent
 
@@ -95,6 +95,349 @@ First construct:
 2. research rules / skill behavior
 3. a scoring and convergence system
 4. a plan for turning the best ideas into KYKT demos
+
+## Cycle 026 C2 Memory correction
+
+Cycle 026 turns the cycle 025 mechanism study into a formal architecture addendum:
+
+```text
+specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md
+```
+
+Current C2 Memory direction:
+
+```text
+state-token recurrence + explicit spatial key/value bank
++ geometry-aware bus-gated writes
+```
+
+This supersedes `SPEC-20260506-004` Delta 3 as the current Memory-core design. The v0.2 GRU/vector AnchorBank/NSA implementation from cycle 024 remains useful as a runnable scaffold and engineering baseline, but not as research validation.
+
+Research-validity boundary:
+
+```text
+cycle 024 evidence:
+  measured or engineering-demonstrated for component latency,
+  parameter counts, adapter availability, vector AnchorBank/NSA plumbing,
+  and untrained pipeline trace.
+
+not validated:
+  C2 memory quality, reconstruction quality, routing quality,
+  state-token recurrence, spatial key/value memory, or C2 v0.3.
+```
+
+Cycle 026 recommended next research object, now closed by cycle 027:
+
+```text
+Memory-state prototype plan, markdown only:
+  compare v0.2 vector AnchorBank,
+  Spann3R-style spatial bank read,
+  CUT3R-style state-token recurrence,
+  and hybrid+bus-gated write policy before touching server code.
+```
+
+## Cycle 027 C2 Memory P0 prototype plan
+
+Cycle 027 turns the cycle 026 recommendation into an executable-quality
+planning artifact:
+
+```text
+planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md
+```
+
+Decision record:
+
+```text
+decisions/DEC-20260508-003-cycle-027-memory-p0-prototype-plan.md
+```
+
+The P0 plan compares four variants:
+
+```text
+V0 vector AnchorBank baseline
+V1 Spann3R-style spatial key/value bank
+V2 CUT3R-style state-token recurrence
+V3 hybrid state tokens + spatial bank + bus-gated writes
+```
+
+The plan defines deterministic tensor fixtures, synthetic regimes,
+variant inputs and outputs, metrics M1-M8, kill conditions K1-K7,
+reviewer checklist, and the future execution gate.
+
+Research-validity boundary:
+
+```text
+cycle 027 evidence:
+  engineering plan only.
+
+not validated:
+  P0 implementation, memory quality, reconstruction quality,
+  state-token recurrence performance, spatial retrieval quality,
+  or hybrid bus-gated write performance.
+```
+
+Cycle 027 recommended next research object, now closed by cycle 028:
+
+```text
+Memory-specific ablation addendum, markdown only:
+  map the P0 variants to ABL-memory-* tests, define the smallest
+  measurement set for each claim, and connect those tests to pillar A,
+  pillar D, and C2 v0.3 falsification.
+```
+
+Alternative next step if the user explicitly authorizes execution:
+
+```text
+Open a separate DEC for implementing the P0 static tensor prototype
+under a non-server-model path such as:
+  Dream/experiments/prototypes/memory_v03_p0/
+```
+
+## Cycle 028 Memory ablation addendum
+
+Cycle 028 turns the P0 plan into a memory-specific falsification map:
+
+```text
+specs/SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md
+```
+
+Decision record:
+
+```text
+decisions/DEC-20260508-004-cycle-028-memory-ablation-addendum.md
+```
+
+The addendum defines claims C2M-C1..C2M-C11 and maps them to
+`ABL-memory-0..11`.
+
+Tiering:
+
+```text
+Tier 0:
+  ABL-memory-0 fixture and logging validity.
+
+Tier 1:
+  ABL-memory-1 spatial retrieval,
+  ABL-memory-3 state-token continuity,
+  ABL-memory-4 dynamic write suppression,
+  ABL-memory-5 conflict quarantine,
+  ABL-memory-6 utility pruning.
+
+Tier 2:
+  ABL-memory-2 duplicate filtering,
+  ABL-memory-7 entropy as uncertainty,
+  ABL-memory-8 operation proxy.
+
+Tier 3:
+  ABL-memory-9 payload source,
+  ABL-memory-10 memory before decoder,
+  ABL-memory-11 NSA gate value after payload semantics.
+```
+
+Research-validity boundary:
+
+```text
+cycle 028 evidence:
+  engineering plan only.
+
+not validated:
+  any ABL-memory result, P0 implementation, C2 v0.3 quality,
+  reconstruction quality, state-token recurrence performance,
+  spatial retrieval quality, or paper claim.
+```
+
+Cycle 028 recommended next research object, now closed by cycle 029:
+
+```text
+Review pass on SPEC-20260508-002:
+  check claim coverage, Tier 1 stop conditions, stage separation,
+  and whether ABL-memory-9..11 remain correctly gated as future tests.
+```
+
+Alternative next step if the user explicitly authorizes execution:
+
+```text
+Open a separate DEC for implementing P0 ABL-memory-0..8 under:
+  Dream/experiments/prototypes/memory_v03_p0/
+```
+
+## Cycle 029 Memory ablation review
+
+Cycle 029 reviewed and corrected the Memory v0.3 ablation addendum:
+
+```text
+planning/MEMORY_V03_ABLATION_REVIEW.md
+```
+
+Decision record:
+
+```text
+decisions/DEC-20260508-005-cycle-029-memory-ablation-review.md
+```
+
+Review verdict:
+
+```text
+APPROVED FOR PLANNING USE, WITH CYCLE 029 CORRECTIONS APPLIED.
+NOT APPROVED FOR EXECUTION.
+```
+
+Corrections applied to `SPEC-20260508-002`:
+
+```text
+R-029-1: add oracle-bus boundary so fixture labels do not leak into
+          variants.
+R-029-2: strengthen ABL-memory-3 so smooth but stale state cannot pass.
+R-029-3: narrow C2M-C8 / ABL-memory-8 to op-proxy decomposition only.
+R-029-4: define hard_fail / soft_fail / invalid rules for Tier 1.
+R-029-5: narrow C2M-C1 from loop+overlap to controlled loop/revisit
+          until an overlap fixture or recorded trace exists.
+```
+
+Research-validity boundary:
+
+```text
+cycle 029 evidence:
+  review evidence and corrected engineering plan only.
+
+not validated:
+  any ABL-memory result, P0 implementation, C2 v0.3 quality,
+  reconstruction quality, state-token recurrence performance,
+  spatial retrieval quality, or paper claim.
+```
+
+Cycle 029 recommended next research object, now closed by cycle 030:
+
+```text
+Markdown-only P0 execution DEC template:
+  pre-fill the exact future execution scope, allowed paths, required
+  outputs, stop gates, and evidence labels for ABL-memory-0..8 without
+  implementing anything.
+```
+
+Alternative next step if the user explicitly authorizes execution:
+
+```text
+Open a separate execution DEC for implementing P0 ABL-memory-0..8 under:
+  Dream/experiments/prototypes/memory_v03_p0/
+```
+
+## Cycle 030 Memory P0 execution DEC template
+
+Cycle 030 created a future execution authorization packet:
+
+```text
+planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md
+```
+
+Decision record:
+
+```text
+decisions/DEC-20260508-006-cycle-030-p0-execution-dec-template.md
+```
+
+The template predefines:
+
+```text
+future DEC fields
+allowed local prototype path
+forbidden server/model/checkpoint paths
+allowed P0 actions
+forbidden actions
+ABL-memory-0..8 scope
+ABL-memory-9..11 exclusion
+oracle-bus boundary
+required output files
+stop gates G0-G5
+result labels: pass / hard_fail / soft_fail / invalid
+go/no-go rules
+post-execution evidence boundary
+```
+
+Research-validity boundary:
+
+```text
+cycle 030 evidence:
+  authorization template only.
+
+not validated:
+  any ABL-memory result, P0 implementation, C2 v0.3 quality,
+  reconstruction quality, state-token recurrence performance,
+  spatial retrieval quality, streaming latency, or paper claim.
+```
+
+Cycle 030 recommended next user decision, now closed by cycle 031:
+
+```text
+A. Approve P0 local static tensor prototype for ABL-memory-0..8.
+B. Revise planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md.
+C. Do not execute; return to research design.
+```
+
+Execution remained blocked until the user explicitly selected A or wrote
+equivalent authorization.
+
+## Cycle 031 Memory P0 local scaffold and ABL-memory-0 gate
+
+Cycle 031 created the first bounded local P0 prototype scaffold:
+
+```text
+experiments/prototypes/memory_v03_p0/
+```
+
+Decision record:
+
+```text
+decisions/DEC-20260508-007-cycle-031-p0-local-static-tensor-scaffold.md
+```
+
+Generated outputs:
+
+```text
+experiments/prototypes/memory_v03_p0/outputs/fixtures_manifest.json
+experiments/prototypes/memory_v03_p0/outputs/write_log.jsonl
+experiments/prototypes/memory_v03_p0/outputs/metrics_abl_memory_0_8.csv
+experiments/prototypes/memory_v03_p0/outputs/summary_go_no_go.md
+experiments/prototypes/memory_v03_p0/outputs/evidence_boundary_update.md
+```
+
+Cycle 031 result:
+
+```text
+ABL-memory-0 status: pass
+validity checks: 22/22
+```
+
+Validated locally:
+
+```text
+P0 tensor shape contract
+deterministic tensor and raw-label hashes
+oracle-bus field tags
+raw fixture label exclusion from variant inputs
+JSON / JSONL / CSV / Markdown output serialization
+```
+
+Research-validity boundary:
+
+```text
+cycle 031 evidence:
+  local fixture/logging validity gate only.
+
+not validated:
+  ABL-memory-1..8 behavior, spatial retrieval quality, state-token
+  recurrence quality, hybrid bus-gated writes, reconstruction quality,
+  server integration, checkpoint/model behavior, or paper claim.
+```
+
+Recommended next research object:
+
+```text
+Cycle 032 local ABL-memory-1:
+  implement vector AnchorBank baseline on the existing deterministic
+  fixture substrate, add retrieval/write metrics, and preserve the same
+  raw-label and oracle-bus boundary.
+```
 
 ## Phase 1 Operating Decision
 

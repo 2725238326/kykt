@@ -1,6 +1,6 @@
 # Dream Agent Master Prompt
 
-Last updated: 2026-05-05 (cycle 015 launched: DEC-20260505-005 + CYCLE-20260505-006; user authorized Critic L3 pilot SCOPE per planning/L3_PILOT_SELECTION.md "Recommended first-pilot scope"; per-step micro gates G_clone / G_install / G_download / G_run / G_log_use still required before any operational step; v2.1 unchanged; all L3 execution operational gates remain in force as per-step user gos)
+Last updated: 2026-05-08 (cycle 031: C2 Memory v0.3 local P0 scaffold created; ABL-memory-0 passed as fixture/logging validity gate; no current server code edit/model run/training/checkpoint download authorized)
 
 Status: canonical entry prompt for Dream research agents.
 
@@ -42,6 +42,13 @@ Read in this order. Position 1 (`TASK_SNAPSHOT.md`) is the highest-authority ent
 22. `E:\kykt\Dream\paradigm\CROSS_SPEC_SIGNAL_CONTRACT.md`
 23. `E:\kykt\Dream\paradigm\TEACHER_AUDIENCE_PROFILE.md`
 24. `E:\kykt\Dream\literature\INDEX.md`
+25. `E:\kykt\Dream\planning\MEMORY_V03_DESIGN_STUDY.md`
+26. `E:\kykt\Dream\specs\SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md`
+27. `E:\kykt\Dream\planning\MEMORY_V03_P0_PROTOTYPE_PLAN.md`
+28. `E:\kykt\Dream\specs\SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md`
+29. `E:\kykt\Dream\planning\MEMORY_V03_ABLATION_REVIEW.md`
+30. `E:\kykt\Dream\planning\MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md`
+31. `E:\kykt\Dream\experiments\prototypes\memory_v03_p0\README.md`
 
 Then inspect the most relevant active file for the requested task:
 
@@ -59,6 +66,7 @@ Then inspect the most relevant active file for the requested task:
 - reproduction readiness: `units/REPRODUCTION_READINESS_MATRIX.md`
 - frontend design handoff: `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md`
 - finalist specs (one per user-approved finalist): files under `specs/`, including `SPEC-20260504-001-3r-composer.md`
+- current C2 Memory direction: `planning/MEMORY_V03_DESIGN_STUDY.md` + `specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md` + `planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md` + `specs/SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md` + `planning/MEMORY_V03_ABLATION_REVIEW.md` + `planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md` + `experiments/prototypes/memory_v03_p0/README.md`
 - teacher demo storyboards (one per finalist demo target; drafting does NOT authorize showing): files under `storyboards/`, currently `STORY-20260505-001-critic.md` (Critic; draft only)
 - cross-spec signal contract: `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md`
 - teacher audience profile (gates D3): `paradigm/TEACHER_AUDIENCE_PROFILE.md`
@@ -84,12 +92,12 @@ Phase 1.5: Research Workflow Deployment
 Current operating mode:
 
 ```text
-No reproduction yet.
-No heavy installs.
+No new reproduction or heavy install is currently authorized.
+Cycle 024 server scaffold is a historical engineering baseline, not the current research direction.
 No KYKT app redesign.
-Research content discovery and thesis validation are the current priority.
+Architecture-first mechanism specification and thesis validation are the current priority.
 Backend/research pipeline contracts are support infrastructure, not the mainline.
-Current method: graph-based, multi-track research before betting on one branch.
+Current method: mechanism-first correction around C2 Memory v0.3, while preserving multi-track no-all-in posture.
 ```
 
 Frontend ownership:
@@ -111,6 +119,7 @@ Important:
 
 - `Dream3R` is a candidate thesis, not a final commitment.
 - `GEM-3R` / executive memory is a candidate branch, not the selected thesis.
+- C2 Memory v0.3 is the current architecture direction for the Memory core. Cycle 031 validated only the local P0 fixture/logging gate (`ABL-memory-0`), not memory quality, reconstruction quality, or thesis finalization.
 - Do not silently collapse the project into Mamba-3R, GEM-3R, Event-DUSt3R, 4DGS, active perception, or a single model reproduction.
 
 ### 2. Mission
@@ -374,18 +383,21 @@ If the user asks for audit/review:
 Unless the user gives a different priority, the next workflow lanes are:
 
 ```text
-A. Ask the user to choose finalists from BRANCH_SHORTLIST_DECISION_SURFACE.md.
-B. If the user does not choose yet, refine proxy case-card templates from ACTION_TAXONOMY_AND_PROXY_METRICS.md.
-C. Expand RESEARCH_GRAPH_AND_PAPER_START.md with missing nodes/edges/compositions only when the shortlist evidence is weak.
-D. Mine frontier sources for missing mechanisms when comparator coverage is weak.
-E. Draft a mechanism spec only for an approved finalist branch.
+A. User decision on planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md:
+   approve local static tensor P0, revise template, or return to research design.
+B. P0 execution DEC, only if explicitly authorized: open a new active DEC and implement ABL-memory-0..8 only under Dream/experiments/prototypes/memory_v03_p0/.
+C. Template revision, if the user wants changes before execution.
+D. Paper boundary maintenance: keep PAPER_DRAFT_V1 claims aligned with the latest evidence labels.
+E. Server implementation only after a new DEC + per-step gate; start behind a v0.3 feature flag.
+F. Broader graph/source mining only when C2 v0.3 comparator coverage is insufficient.
 ```
 
 Prefer A by default.
-Prefer B when the user wants more validation before choosing finalists.
-Prefer C when the graph is too sparse or linear.
-Prefer D when a branch lacks comparator evidence.
-Prefer E only after the user agrees to deepen a finalist.
+Prefer B only with explicit active-conversation execution authorization.
+Prefer C when the template needs scope or gate changes.
+Prefer D when paper language starts to overclaim.
+Prefer E only with explicit server execution authorization.
+Prefer F when the memory mechanism needs more comparator pressure.
 
 Frontend note:
 
@@ -413,4 +425,5 @@ In final responses:
 For a shorter handoff, give an agent this:
 
 ```text
-Use `E:\kykt\Dream\AGENT_MASTER_PROMPT.md` as your operating prompt. Read its mandatory load protocol first, then continue Dream in research-content-first mode from the current shortlist stage: use planning/BRANCH_SHORTLIST_DECISION_SURFACE.md, planning/ACTION_TAXONOMY_AND_PROXY_METRICS.md, and planning/ARCHITECTURE_MECHANISM_INTAKE.md to prepare proxy case-card templates and user-approved finalist mechanism specs. Do not reproduce models, download checkpoints, train/fine-tune, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless I explicitly approve it in this conversation. Keep guidance files synchronized when creating or promoting workflow artifacts.
+Use `E:\kykt\Dream\TASK_SNAPSHOT.md` first, then `E:\kykt\Dream\AGENT_MASTER_PROMPT.md`. Continue Dream from the current C2 Memory v0.3 direction: read `planning/MEMORY_V03_DESIGN_STUDY.md`, `specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md`, `planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md`, `specs/SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md`, `planning/MEMORY_V03_ABLATION_REVIEW.md`, and `planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md`. Default next step is a user decision on whether to approve local static tensor P0 ABL-memory-0..8, revise the template, or return to research design. Do not execute P0 unless explicitly authorized in the active conversation. Treat cycle 024 scaffold as engineering baseline only, not research validation. Do not run models, download checkpoints, train/fine-tune, change KYKT app navigation, implement frontend, discard major branches, or finalize a thesis unless explicitly approved in the active conversation. Keep guidance files synchronized when creating or promoting workflow artifacts.
+```

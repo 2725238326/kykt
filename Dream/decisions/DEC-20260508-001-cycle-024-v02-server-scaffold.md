@@ -53,6 +53,12 @@ Path: /hdd3/kykt26/code/dream3r/dream3r/
 - No checkpoint downloads
 - No training
 
+## Cycle 026 correction note
+
+The "Not done" section above records the initial DEC scope for cycle 024. The later `cycles/CYCLE-20260508-001.md` version-history tail records additional same-cycle work beyond this initial scaffold scope, including real adapter deployment, one DepthAnything-V2 checkpoint download, and a synthetic training dry-run.
+
+Per DEC-20260508-002, those later cycle 024 events are treated as engineering smoke / implementation-baseline evidence only. They do not validate C2 memory quality, reconstruction quality, routing quality, pillar A, pillar D, or the later C2 Memory v0.3 design. `SPEC-20260508-001` supersedes the v0.2 GRU/vector AnchorBank/NSA path as the current C2 memory research direction.
+
 ## Discipline
 
 - F-002 honored: all code at /hdd3/kykt26/; GPU 0 only; dream3r conda env
@@ -66,4 +72,8 @@ v1  2026-05-08  cycle 024. First server-side code task. T-v02-A
                 scaffold: composer_experts/ + memory_anchor_bank +
                 nsa_attention + bench_frame_budget. Both smoke tests
                 passed.
+v1.1 2026-05-08  cycle 026 correction note. Initial DEC scope preserved,
+                but later cycle 024 log tail records additional adapter,
+                checkpoint, and synthetic dry-run work. Evidence bounded
+                to engineering smoke per DEC-20260508-002.
 ```
