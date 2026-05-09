@@ -14,6 +14,7 @@ Every module reads from the bus for cross-module decisions:
 import time
 import torch
 import torch.nn as nn
+from torch.utils.checkpoint import checkpoint as grad_checkpoint
 from typing import Dict, List, Optional
 
 from dream3r.bus import MemoryBus, EvidenceLabel
@@ -40,6 +41,7 @@ class Dream3R(nn.Module):
 
         self.version = version
         self.profile = c.get("profile", False)
+        self.use_gradient_checkpointing = c.get("gradient_checkpointing", False)
         self._timings: Dict[str, List[float]] = {}
 
         self.perceiver = Perceiver(
@@ -108,6 +110,14 @@ class Dream3R(nn.Module):
         """Context-manager-free timing. Call _time_start/_time_end."""
         pass
 
+    def enable_gradient_checkpointing(self, enable: bool = True):
+        self.use_gradient_checkpointing = enable
+
+    def _maybe_checkpoint(self, fn, *args):
+        if self.use_gradient_checkpointing and self.training:
+            return grad_checkpoint(fn, *args, use_reentrant=False)
+        return fn(*args)
+
     def forward(self,
                 x: torch.Tensor,
                 regime_probs: Optional[torch.Tensor] = None,
@@ -132,7 +142,7 @@ class Dream3R(nn.Module):
         timings = {}
 
         t0 = time.perf_counter()
-        perc = self.perceiver(x)
+        perc = self._maybe_checkpoint(self.perceiver, x)
         if self.profile:
             timings["perceiver_ms"] = (time.perf_counter() - t0) * 1000
 
@@ -186,11 +196,19 @@ class Dream3R(nn.Module):
             frame_tokens_flat = t1.mean(dim=1)
             if prev_memory_state is None:
                 prev_memory_state = self.memory.init_state(B, device)
+
+            cr3_k = self.bus.gate_cr3(base_k=8)
+            cr3_conf = self.bus.cr3_retrieval_bias()
+            cr3_perm = self.bus.cr3_permanence_bias()
+
             mem_out = self.memory(
                 frame_tokens_flat, evidence_flat, prev_memory_state,
                 bus_dynamic_ratio=bus_dyn,
                 bus_conflict_score=prev_conflict_sig.tensor if prev_conflict_sig is not None else None,
                 suppress_mask=cr2,
+                cr3_critic_confidence=cr3_conf,
+                cr3_permanence_bias=cr3_perm,
+                cr3_dynamic_k=cr3_k,
             )
 
         if self.profile:

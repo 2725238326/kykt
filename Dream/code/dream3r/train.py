@@ -94,19 +94,21 @@ def load_checkpoint(path: str, model: nn.Module, optimizer=None, scaler=None):
 
 class MultiStageScheduler:
     """
-    3-stage LR schedule:
-      Stage 1 (warmup):  linear ramp from 0 to lr, only heads trainable
-      Stage 2 (partial):  constant lr, top backbone layers unfrozen
+    3-stage LR schedule with actual parameter freeze/unfreeze:
+      Stage 1 (warmup):  linear ramp, only heads trainable (backbone frozen)
+      Stage 2 (partial):  constant lr, backbone partially unfrozen
       Stage 3 (full):     cosine decay, all parameters unfrozen
     """
 
-    def __init__(self, optimizer, cfg: dict):
+    def __init__(self, optimizer, cfg: dict, model: nn.Module = None):
         self.optimizer = optimizer
+        self.model = model
         self.warmup = cfg.get("warmup_epochs", 5)
         self.total = cfg.get("epochs", 100)
         self.base_lr = cfg.get("lr", 1e-4)
         self.stage2_start = self.warmup
         self.stage3_start = self.warmup + (self.total - self.warmup) // 3
+        self._current_stage = None
 
     def step(self, epoch: int) -> float:
         if epoch < self.warmup:
@@ -118,7 +120,34 @@ class MultiStageScheduler:
             lr = self.base_lr * 0.5 * (1 + math.cos(math.pi * progress))
         for pg in self.optimizer.param_groups:
             pg["lr"] = lr
+
+        stage = self.get_stage(epoch)
+        if stage != self._current_stage:
+            self._apply_freeze(stage)
+            self._current_stage = stage
+
         return lr
+
+    def _apply_freeze(self, stage: str):
+        if self.model is None:
+            return
+        m = self.model.module if hasattr(self.model, "module") else self.model
+
+        if stage == "warmup":
+            if hasattr(m, "perceiver") and hasattr(m.perceiver, "backbone"):
+                if m.perceiver.backbone is not None:
+                    for p in m.perceiver.backbone.parameters():
+                        p.requires_grad = False
+        elif stage == "partial_unfreeze":
+            if hasattr(m, "perceiver") and hasattr(m.perceiver, "backbone"):
+                if m.perceiver.backbone is not None:
+                    layers = list(m.perceiver.backbone.parameters())
+                    n_unfreeze = max(1, len(layers) // 3)
+                    for p in layers[-n_unfreeze:]:
+                        p.requires_grad = True
+        elif stage == "full_unfreeze":
+            for p in m.parameters():
+                p.requires_grad = True
 
     def get_stage(self, epoch: int) -> str:
         if epoch < self.warmup:
@@ -182,6 +211,10 @@ def train(cfg: dict):
     if is_ddp:
         model = DDP(model, device_ids=[local_rank], find_unused_parameters=True)
 
+    if cfg.get("gradient_checkpointing", False):
+        raw = model.module if hasattr(model, "module") else model
+        raw.enable_gradient_checkpointing(True)
+
     if is_main_process():
         n_params = sum(p.numel() for p in model.parameters())
         version = cfg.get("version", "v03")
@@ -203,7 +236,7 @@ def train(cfg: dict):
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"],
     )
-    scheduler = MultiStageScheduler(optimizer, cfg)
+    scheduler = MultiStageScheduler(optimizer, cfg, model=model)
     use_amp = cfg["amp"] and device.type == "cuda"
     scaler = torch.amp.GradScaler("cuda") if use_amp else None
 

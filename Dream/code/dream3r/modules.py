@@ -565,6 +565,9 @@ class SpatialMemory(nn.Module):
                 bus_dynamic_ratio: Optional[torch.Tensor] = None,
                 bus_conflict_score: Optional[torch.Tensor] = None,
                 suppress_mask: Optional[torch.Tensor] = None,
+                cr3_critic_confidence: Optional[torch.Tensor] = None,
+                cr3_permanence_bias: Optional[torch.Tensor] = None,
+                cr3_dynamic_k: Optional[int] = None,
                 ) -> Dict[str, torch.Tensor]:
         """
         Args:
@@ -601,6 +604,9 @@ class SpatialMemory(nn.Module):
             bank_values=bank_values,
             sliding_buffer=sliding,
             bank_mask=bank_mask,
+            critic_confidence=cr3_critic_confidence,
+            permanence_bias=cr3_permanence_bias,
+            dynamic_top_k=cr3_dynamic_k,
         )
 
         memory_output = nsa_out["output"]

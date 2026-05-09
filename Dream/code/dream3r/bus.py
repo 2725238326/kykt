@@ -120,6 +120,45 @@ class MemoryBus(nn.Module):
             return None
         return handoff.tensor
 
+    def gate_cr3(self, base_k: int = 8) -> int:
+        """CR-3: Low Critic confidence increases retrieval depth.
+
+        When conflict_score is high (meaning the Critic is uncertain about
+        reconstruction quality), the Memory should retrieve more bank entries
+        to gather additional evidence. Returns an adjusted top-k value.
+        """
+        conflict = self._signals.get("conflict_score")
+        if conflict is None:
+            return base_k
+        conf_mean = torch.sigmoid(conflict.tensor).mean().item()
+        if conf_mean > 0.7:
+            return min(base_k * 2, 32)
+        if conf_mean > 0.4:
+            return min(int(base_k * 1.5), 24)
+        return base_k
+
+    def cr3_retrieval_bias(self) -> Optional[torch.Tensor]:
+        """CR-3 auxiliary: return Critic confidence as a retrieval bias weight.
+
+        Modules can use this to bias retrieval scoring toward entries that
+        were written under high confidence.
+        """
+        conflict = self._signals.get("conflict_score")
+        if conflict is None:
+            return None
+        return 1.0 - torch.sigmoid(conflict.tensor)
+
+    def cr3_permanence_bias(self) -> Optional[torch.Tensor]:
+        """CR-3 auxiliary: permanence link bias for spatial retrieval.
+
+        Entries associated with tracked objects (high permanence) should
+        be preferred during retrieval under uncertainty.
+        """
+        perm = self._signals.get("dynamic_ratio")
+        if perm is None:
+            return None
+        return 1.0 - perm.tensor
+
     def gate_cr4(self, route_history: Optional[torch.Tensor] = None
                  ) -> Optional[torch.Tensor]:
         """CR-4: Tiebreak on capability ties using Critic-internal preference."""

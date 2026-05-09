@@ -197,25 +197,47 @@ class NSAAttention(nn.Module):
                 bank_values: torch.Tensor,
                 sliding_buffer: torch.Tensor,
                 bank_mask: Optional[torch.Tensor] = None,
+                critic_confidence: Optional[torch.Tensor] = None,
+                permanence_bias: Optional[torch.Tensor] = None,
+                dynamic_top_k: Optional[int] = None,
                 ) -> Dict[str, torch.Tensor]:
         """
         Args:
-            query:          [B, Q, D]
-            compressed_ctx: [B, C, D]
-            bank_keys:      [B, M, D]
-            bank_values:    [B, M, D]
-            sliding_buffer: [B, W, D]
-            bank_mask:      [B, M] — True = valid
+            query:              [B, Q, D]
+            compressed_ctx:     [B, C, D]
+            bank_keys:          [B, M, D]
+            bank_values:        [B, M, D]
+            sliding_buffer:     [B, W, D]
+            bank_mask:          [B, M] — True = valid
+            critic_confidence:  [B, 1] — CR-3: high values bias toward high-confidence entries
+            permanence_bias:    [B, 1] — CR-3: high values prefer stable/permanent entries
+            dynamic_top_k:      int — CR-3: adjusted retrieval depth based on Critic confidence
         Returns:
             output:               [B, Q, D]
             branch_weights:       [B, Q, 3]
             selected_indices:     [B, Q, K]
         """
         out_c = self.compressed(query, compressed_ctx)
+
+        effective_k = dynamic_top_k if dynamic_top_k is not None else self.n_select_k
+        if effective_k != self.n_select_k:
+            saved_k = self.selected.n_select_k
+            self.selected.n_select_k = effective_k
+
         out_s, sel_idx = self.selected(query, bank_keys, bank_values, bank_mask)
+
+        if effective_k != self.n_select_k and dynamic_top_k is not None:
+            self.selected.n_select_k = saved_k
+
         out_w = self.sliding(query, sliding_buffer)
 
         gate_logits = self.gate(query)
+
+        if critic_confidence is not None:
+            conf = critic_confidence.unsqueeze(1).expand(-1, query.shape[1], -1)
+            gate_logits = gate_logits.clone()
+            gate_logits[:, :, 1] = gate_logits[:, :, 1] + (1.0 - conf.squeeze(-1)) * 2.0
+
         gate_weights = F.softmax(gate_logits, dim=-1)
 
         branches = torch.stack([out_c, out_s, out_w], dim=-2)

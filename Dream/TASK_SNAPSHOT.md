@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-08 (cycle 031 DONE: local P0 static tensor scaffold created and ABL-memory-0 passed for Memory v0.3; next recommended = cycle 032 ABL-memory-1 vector baseline)
+Last updated: 2026-05-09 (cycle 032 DONE: full v0.3 code architecture implemented, optimized, and server-verified; 29 Python files; smoke test 9/9, unit tests 4/4, 8.4ms/frame, 10-epoch training converged; CR-3 + gradient checkpointing + freeze schedule wired; REVIEW_PROMPT.md written for agent collaboration)
 
-Status: **idle** (cycle 031 closed; next work requires a new cycle or explicit user decision)
+Status: **idle** (cycle 032 closed; ready for ablation experiments or expert adapter integration)
 
 ## Why this file exists
 
@@ -21,36 +21,39 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-031
-phase:      Architecture-first research correction; C2 Memory v0.3
-            P0 local static tensor scaffold
-cycle:      031 (authorized local P0 scaffold + ABL-memory-0)
-status:     done (S1 snapshot start anchor done; S2 execution DEC
-            done; S3 local scaffold done; S4 ABL-memory-0
-            done; S5 verification and sync done)
+task_id:    cycle-032
+phase:      Full v0.3 code architecture implementation + server verification
+cycle:      032
+status:     done
 ```
 
 One-line description:
 
 ```text
-Cycle 031 executes the first bounded local P0 step after user
-authorization: create a local static tensor prototype scaffold under
-Dream/experiments/prototypes/memory_v03_p0/ and implement only
-ABL-memory-0 as the fixture/logging validity gate.
-
-No server code edit, no Dream/code edit, no model run, no training,
-no checkpoint download, and no frontend are authorized in this pass.
+Cycle 032 implemented the complete Dream3R v0.3 codebase: NSA 3-branch
+attention, AnchorBank spatial memory, 7 expert adapters, SpatialMemory,
+ComposerRouter, training pipeline, evaluation, profiler, and tests.
+Code was optimized (Memory 117ms->4ms), server-verified (smoke 9/9,
+unit 4/4, training converged), and CR-3/gradient-checkpointing/freeze
+wired. REVIEW_PROMPT.md written for multi-agent collaboration.
 ```
 
-## Subtask board (cycle 031 Memory v0.3 P0 local static tensor scaffold; single session 2026-05-08)
+## Subtask board (cycle 032 v0.3 code architecture; 2026-05-09)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Start-of-pass TASK_SNAPSHOT anchor per F-001 rule 6 | done | `TASK_SNAPSHOT.md` |
-| S2 | Write cycle 031 execution decision record | done | `decisions/DEC-20260508-007-cycle-031-p0-local-static-tensor-scaffold.md` |
-| S3 | Create local prototype scaffold | done | `experiments/prototypes/memory_v03_p0/` |
-| S4 | Implement and run ABL-memory-0 fixture/logging validity gate | done | `experiments/prototypes/memory_v03_p0/outputs/` |
-| S5 | Verify, write cycle log, and sync guidance chain | done | `cycles/CYCLE-20260508-008.md`, `TASK_SNAPSHOT.md` |
+| S1 | Create NSA attention + AnchorBank + expert adapters | done | `nsa_attention.py`, `anchor_bank.py`, `composer_experts/` |
+| S2 | Upgrade modules.py (SpatialMemory + ComposerRouter) | done | `modules.py` |
+| S3 | Upgrade model.py + bus.py + config.py + losses.py | done | `model.py`, `bus.py`, `config.py`, `losses.py` |
+| S4 | Create training infra (data/ + train.py + evaluate.py + bench) | done | `data/`, `train.py`, `evaluate.py`, `bench_frame_budget.py` |
+| S5 | Write smoke_test.py + unit tests | done | `smoke_test.py`, `tests/` |
+| S6 | Optimize Memory (117ms -> 4ms) | done | vectorized AnchorBank + efficient NSA gather |
+| S7 | Fix AMP overflow + dtype mismatch | done | `finfo(dtype).min` + `.float()` casts |
+| S8 | Server sync + smoke test + training verification | done | `/hdd3/kykt26/code/dream3r/` |
+| S9 | Fix A1-A3 (CR-3 + NSA retrieval bias wiring) | done | `bus.py:gate_cr3`, `nsa_attention.py`, `modules.py` |
+| S10 | Fix B1-B2 (gradient checkpointing + freeze schedule) | done | `model.py`, `train.py` |
+| S11 | Fix F1-F3 (interface cleanup + __init__.py) | done | `__init__.py` v0.3.0 |
+| S12 | Write REVIEW_PROMPT.md for agent collaboration | done | `REVIEW_PROMPT.md` |
 
 Cycle 031 active boundary:
 
@@ -214,13 +217,41 @@ prior_pass_files: TASK_SNAPSHOT.md, WORKFLOW_STATUS.md, RESEARCH_STATE.md,
 If a new agent or new conversation is picking this up cold:
 
 ```text
-CURRENT RESUME OVERRIDE (cycle 031 closed; 2026-05-08):
+CURRENT RESUME OVERRIDE (cycle 032 closed; 2026-05-09):
 
 1. Read this file (you are here).
 
-2. Read decisions/DEC-20260508-007-cycle-031-p0-local-static-
-   tensor-scaffold.md.
+2. Read code/dream3r/REVIEW_PROMPT.md — this is the canonical
+   onboarding document for the v0.3 codebase. It contains the
+   file map, architecture diagram, key contracts, known gaps,
+   verification commands, and review checklist.
 
+3. The v0.3 codebase is server-verified at
+   /hdd3/kykt26/code/dream3r/dream3r/. All smoke tests (9/9),
+   unit tests (4/4), profiling (8.4ms p95), and synthetic
+   training (10 epochs, loss converging) pass.
+
+4. Default next actions (user decision required):
+   A. Start ablation experiments (ABL-memory-1..8) using the
+      validated training pipeline on synthetic data.
+   B. Connect expert adapters to real KYKT runners on server
+      (MASt3R, Fast3R, etc. already have conda envs).
+   C. Implement DTU dataset loader for real-data training.
+   D. Add standard depth evaluation metrics (AbsRel, RMSE, etc.).
+   E. Pause and return to research design / paper writing.
+
+5. Known architecture gaps (see REVIEW_PROMPT.md "Known gaps"):
+   A4 (points3d in AnchorBank), A5 (DINOv3 backbone),
+   A6 (Test3R lazy invocation), C1 (DTU stub), D1-D4 (metrics),
+   E1 (streaming orchestration), E2 (expert adapter stubs).
+
+6. Hard rules from prior cycles still apply:
+   - No reproduction / checkpoint download / training on real data
+     without explicit user approval.
+   - DEC-20260501-004 (candidate-not-final) and
+     DEC-20260504-002 (no-all-in) still in force.
+   - F-002: server-side execution only; local = editing + markdown.
+```
 3. Read experiments/prototypes/memory_v03_p0/README.md and
    experiments/prototypes/memory_v03_p0/outputs/summary_go_no_go.md.
 
