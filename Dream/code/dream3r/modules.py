@@ -330,7 +330,7 @@ class Permanence(nn.Module):
             slots = slots + self.mlp(slots)
 
         region_logits = self.region_head(slots)  # [B, S, 3]
-        dynamic_ratio = torch.sigmoid(self.dynamic_head(slots.mean(dim=1)))  # [B, 1]
+        dynamic_ratio = torch.sigmoid(self.dynamic_head(slots))  # [B, S, 1]
 
         # Mint gate: modulated by conflict_score from bus
         conflict = bus_conflict_score if bus_conflict_score is not None else torch.zeros(B, 1, device=device)
@@ -338,7 +338,16 @@ class Permanence(nn.Module):
         mint_input = torch.cat([slots, conflict_expanded], dim=-1)  # [B, S, d_slot+1]
         mint_confidence = torch.sigmoid(self.mint_gate(mint_input)).squeeze(-1)  # [B, S]
 
-        suppress = (region_logits.argmax(dim=-1) == 0).any(dim=-1).float()
+        suppress = (region_logits.argmax(dim=-1) == 0).float()
+
+        if prev_slots is None:
+            slot_match_indices = torch.arange(self.n_slots, device=device).unsqueeze(0).expand(B, -1)
+            slot_match_scores = torch.zeros(B, self.n_slots, device=device)
+        else:
+            current_norm = F.normalize(slots, dim=-1)
+            prev_norm = F.normalize(prev_slots, dim=-1)
+            sim = torch.bmm(current_norm, prev_norm.transpose(1, 2))
+            slot_match_scores, slot_match_indices = sim.max(dim=-1)
 
         return {
             "object_track_set": slots,
@@ -346,6 +355,8 @@ class Permanence(nn.Module):
             "dynamic_ratio": dynamic_ratio,
             "suppress_static_write": suppress,
             "mint_confidence": mint_confidence,
+            "slot_match_indices": slot_match_indices,
+            "slot_match_scores": slot_match_scores,
         }
 
 
@@ -387,6 +398,9 @@ class Critic(nn.Module):
 
         conflict = self.conflict_head(pooled)
         repair = self.repair_head(pooled)
+        repair = repair.clone()
+        conflict_pressure = (torch.sigmoid(conflict).squeeze(-1) - 0.5).clamp_min(0.0) * 2.0
+        repair[:, 1] = repair[:, 1] + conflict_pressure
 
         if cr1_mask is not None:
             cr1 = cr1_mask.float()
@@ -597,9 +611,9 @@ class SpatialMemory(nn.Module):
             self._sliding_buffer = self._sliding_buffer[-self.sliding_window:]
         sliding = torch.cat(self._sliding_buffer, dim=1)
 
-        bank_keys = self.anchor_bank.keys[:B]
-        bank_values = self.anchor_bank.values[:B]
-        bank_mask = self.anchor_bank.readable_mask[:B]
+        bank_keys = self.anchor_bank.keys[:B].detach().clone()
+        bank_values = self.anchor_bank.values[:B].detach().clone()
+        bank_mask = self.anchor_bank.readable_mask[:B].detach().clone()
 
         nsa_out = self.nsa(
             query=frame_proj,
@@ -619,13 +633,16 @@ class SpatialMemory(nn.Module):
 
         selected_indices = nsa_out["selected_indices"]
         flat_selected = selected_indices.reshape(B, -1)
-        retrieval_log["retrieved_source_frame_pose"] = self.anchor_bank.source_frame_pose[:B].gather(
+        source_frame_pose = self.anchor_bank.source_frame_pose[:B].detach().clone()
+        source_patch_ids = self.anchor_bank.source_patch_ids[:B].detach().clone()
+        points3d_mean = self.anchor_bank.points3d_mean[:B].detach().clone()
+        retrieval_log["retrieved_source_frame_pose"] = source_frame_pose.gather(
             1, flat_selected.unsqueeze(-1).unsqueeze(-1).expand(-1, -1, 4, 4)
         ).view(B, selected_indices.shape[1], selected_indices.shape[2], 4, 4).detach()
-        retrieval_log["retrieved_source_patch_ids"] = self.anchor_bank.source_patch_ids[:B].gather(
+        retrieval_log["retrieved_source_patch_ids"] = source_patch_ids.gather(
             1, flat_selected
         ).view(B, selected_indices.shape[1], selected_indices.shape[2]).detach()
-        retrieval_log["retrieved_points3d_mean"] = self.anchor_bank.points3d_mean[:B].gather(
+        retrieval_log["retrieved_points3d_mean"] = points3d_mean.gather(
             1, flat_selected.unsqueeze(-1).expand(-1, -1, 3)
         ).view(B, selected_indices.shape[1], selected_indices.shape[2], 3).detach()
 

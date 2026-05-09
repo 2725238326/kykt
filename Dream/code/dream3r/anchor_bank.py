@@ -210,6 +210,8 @@ class AnchorBank(nn.Module):
         quarantine_new = torch.zeros(B, N, dtype=torch.bool, device=device)
 
         if bus_dynamic_ratio is not None:
+            if bus_dynamic_ratio.dim() == 3:
+                bus_dynamic_ratio = bus_dynamic_ratio.mean(dim=1)
             suppress_dyn = (bus_dynamic_ratio > self.dynamic_threshold).squeeze(-1)
             accept = accept & ~suppress_dyn.unsqueeze(-1).expand(B, N)
 

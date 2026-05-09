@@ -39,6 +39,7 @@ class SyntheticSequenceDataset(Dataset):
                  n_patches: int = 196, n_slots: int = 16,
                  n_regimes: int = 5, d_model: int = 768,
                  seed: int = 42,
+                 sequence_length: int = 1,
                  inject_dynamics: bool = True,
                  inject_conflicts: bool = True):
         self.n_sequences = n_sequences
@@ -50,6 +51,7 @@ class SyntheticSequenceDataset(Dataset):
         self.n_regimes = n_regimes
         self.d_model = d_model
         self.seed = seed
+        self.sequence_length = sequence_length
         self.inject_dynamics = inject_dynamics
         self.inject_conflicts = inject_conflicts
 
@@ -59,31 +61,45 @@ class SyntheticSequenceDataset(Dataset):
     def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
         gen = torch.Generator()
         gen.manual_seed(self.seed + idx)
+        if self.sequence_length > 1:
+            windows = [self._generate_window(idx, t, gen) for t in range(self.sequence_length)]
+            return {
+                key: torch.stack([w[key] for w in windows])
+                for key in windows[0].keys()
+            }
+        return self._generate_window(idx, 0, gen)
+
+    def _generate_window(self, idx: int, window_idx: int,
+                         gen: torch.Generator) -> Dict[str, torch.Tensor]:
         N = self.n_frames
         P = self.P
 
-        trajectory = self._generate_trajectory(idx, gen)
+        trajectory = self._generate_trajectory(idx, window_idx, gen)
         pointmap_gt = self._generate_pointmap(trajectory, gen)
         confidence_gt = torch.rand(N, P, 1, generator=gen) * 0.5 + 0.5
 
         dynamic_mask = torch.zeros(N, P, dtype=torch.bool)
-        if self.inject_dynamics and idx % 3 == 0:
+        if self.inject_dynamics and (idx + window_idx) % 3 == 0:
             n_dyn = max(1, P // 8)
             start = torch.randint(0, P - n_dyn, (1,), generator=gen).item()
             dynamic_mask[:, start:start + n_dyn] = True
             confidence_gt[:, start:start + n_dyn] *= 0.3
 
-        features = torch.randn(N, P, self.d_model, generator=gen) * 0.1
+        base_features = torch.randn(1, P, self.d_model, generator=gen) * 0.1
+        temporal_offset = window_idx * 0.03
+        features = base_features.expand(N, -1, -1).clone()
+        features = features + torch.randn(N, P, self.d_model, generator=gen) * 0.02
+        features = features + temporal_offset
 
         regime = torch.zeros(self.n_regimes)
-        regime_idx = idx % self.n_regimes
+        regime_idx = (idx + window_idx) % self.n_regimes
         regime[regime_idx] = 0.7
         regime[(regime_idx + 1) % self.n_regimes] = 0.2
         regime[(regime_idx + 2) % self.n_regimes] = 0.1
 
         conflict = 0
         repair = 0
-        if self.inject_conflicts and idx % 5 == 0:
+        if self.inject_conflicts and (idx + window_idx) % 5 == 0:
             conflict = 1
             repair = torch.randint(0, 6, (1,), generator=gen).item()
 
@@ -107,14 +123,16 @@ class SyntheticSequenceDataset(Dataset):
         }
 
     def _generate_trajectory(self, idx: int,
+                              window_idx: int,
                               gen: torch.Generator) -> torch.Tensor:
         N = self.n_frames
         poses = torch.eye(4).unsqueeze(0).repeat(N, 1, 1)
 
         speed = 0.1 + (idx % 10) * 0.02
         for i in range(N):
-            angle = speed * i * 0.3
-            poses[i, 0, 3] = speed * i
+            global_i = window_idx * N + i
+            angle = speed * global_i * 0.3
+            poses[i, 0, 3] = speed * global_i
             poses[i, 1, 3] = 0.05 * math.sin(angle * 2)
             poses[i, 2, 3] = 0.02 * math.cos(angle)
             c, s = math.cos(angle), math.sin(angle)

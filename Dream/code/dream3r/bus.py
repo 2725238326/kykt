@@ -143,6 +143,15 @@ class MemoryBus(nn.Module):
         handoff = self._handoffs.get("suppress_static_write")
         if handoff is None:
             return None
+        suppress = handoff.tensor
+        if suppress.dim() == 2:
+            return (suppress.float().mean(dim=-1) > 0.5).float()
+        return suppress
+
+    def cr2_per_slot_suppress(self) -> Optional[torch.Tensor]:
+        handoff = self._handoffs.get("suppress_static_write")
+        if handoff is None:
+            return None
         return handoff.tensor
 
     def gate_cr3(self, base_k: int = 8) -> int:
@@ -184,7 +193,10 @@ class MemoryBus(nn.Module):
         perm = self._signals.get("dynamic_ratio")
         if perm is None:
             return None
-        return 1.0 - perm.tensor
+        dynamic_ratio = perm.tensor
+        if dynamic_ratio.dim() == 3:
+            dynamic_ratio = dynamic_ratio.mean(dim=1)
+        return 1.0 - dynamic_ratio
 
     def gate_cr4(self, route_history: Optional[torch.Tensor] = None
                  ) -> Optional[torch.Tensor]:

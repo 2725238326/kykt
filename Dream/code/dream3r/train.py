@@ -172,6 +172,7 @@ def build_datasets(cfg: dict):
             n_slots=cfg.get("n_slots", 16),
             n_regimes=cfg.get("n_regimes", 5),
             d_model=cfg.get("d_model", 768),
+            sequence_length=cfg.get("sequence_length", 3),
             seed=42,
         )
         val_ds = SyntheticSequenceDataset(
@@ -180,6 +181,7 @@ def build_datasets(cfg: dict):
             n_slots=cfg.get("n_slots", 16),
             n_regimes=cfg.get("n_regimes", 5),
             d_model=cfg.get("d_model", 768),
+            sequence_length=cfg.get("sequence_length", 3),
             seed=1337,
         )
     return train_ds, val_ds
@@ -188,6 +190,74 @@ def build_datasets(cfg: dict):
 def collate_synthetic(batch):
     keys = batch[0].keys()
     return {k: torch.stack([b[k] for b in batch]) for k in keys}
+
+
+def _window_value(value: torch.Tensor, t: int, sequence_length: int) -> torch.Tensor:
+    if sequence_length > 1 and value.dim() >= 2:
+        return value[:, t]
+    return value
+
+
+def _make_targets(batch: dict, device: torch.device, t: int,
+                  sequence_length: int) -> dict:
+    targets = {
+        "pointmap": _window_value(batch["pointmap_gt"].to(device, non_blocking=True), t, sequence_length),
+        "conflict_label": _window_value(batch["conflict_label"].to(device, non_blocking=True), t, sequence_length),
+        "repair_label": _window_value(batch["repair_label"].to(device, non_blocking=True), t, sequence_length),
+        "region_label": _window_value(batch["region_label"].to(device, non_blocking=True), t, sequence_length),
+    }
+    if "pointmap_change" in batch:
+        targets["pointmap_change"] = _window_value(
+            batch["pointmap_change"].to(device, non_blocking=True), t, sequence_length
+        )
+    return targets
+
+
+def _forward_sequence(model: nn.Module, batch: dict, loss_fn: nn.Module,
+                      device: torch.device, tbptt_detach_every: int = 1):
+    x = batch["features"].to(device, non_blocking=True)
+    regime = batch["regime"].to(device, non_blocking=True)
+    sequence_length = x.shape[1] if x.dim() == 5 else 1
+
+    prev_state = None
+    prev_slots = None
+    total_loss = None
+    last_outputs = None
+    loss_sums = {}
+
+    for t in range(sequence_length):
+        x_t = x[:, t] if sequence_length > 1 else x
+        regime_t = regime[:, t] if sequence_length > 1 and regime.dim() == 3 else regime
+        targets_t = _make_targets(batch, device, t, sequence_length)
+
+        outputs = model(
+            x_t, regime_t,
+            prev_memory_state=prev_state,
+            prev_object_slots=prev_slots,
+            timestep=t,
+        )
+        losses = loss_fn(outputs, targets_t)
+        total_loss = losses["total"] if total_loss is None else total_loss + losses["total"]
+
+        for key, value in losses.items():
+            if isinstance(value, torch.Tensor):
+                loss_sums[key] = loss_sums.get(key, 0.0) + value.detach()
+
+        prev_state = outputs.get("latent_state_tokens", outputs.get("latent_state"))
+        prev_slots = outputs.get("object_track_set")
+        if tbptt_detach_every > 0 and (t + 1) % tbptt_detach_every == 0:
+            if prev_state is not None:
+                prev_state = prev_state.detach()
+            if prev_slots is not None:
+                prev_slots = prev_slots.detach()
+        last_outputs = outputs
+
+    loss_avg = {
+        key: value / sequence_length
+        for key, value in loss_sums.items()
+    }
+    loss_avg["total"] = total_loss / sequence_length
+    return last_outputs, loss_avg
 
 
 # ---------------------------------------------------------------------------
@@ -290,31 +360,19 @@ def train(cfg: dict):
         t0 = time.time()
 
         for batch_idx, batch in enumerate(train_loader):
-            x = batch["features"].to(device, non_blocking=True)
-            regime = batch["regime"].to(device, non_blocking=True)
-            targets = {
-                "pointmap": batch["pointmap_gt"].to(device, non_blocking=True),
-                "conflict_label": batch["conflict_label"].to(device, non_blocking=True),
-                "repair_label": batch["repair_label"].to(device, non_blocking=True),
-                "region_label": batch["region_label"].to(device, non_blocking=True),
-            }
-            if "pointmap_change" in batch:
-                targets["pointmap_change"] = batch["pointmap_change"].to(device, non_blocking=True)
-
             optimizer.zero_grad(set_to_none=True)
+            tbptt = cfg.get("tbptt_detach_every", 1)
 
             if use_amp:
                 with torch.amp.autocast("cuda"):
-                    outputs = model(x, regime)
-                    losses = loss_fn(outputs, targets)
+                    outputs, losses = _forward_sequence(model, batch, loss_fn, device, tbptt)
                 scaler.scale(losses["total"]).backward()
                 scaler.unscale_(optimizer)
                 nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"])
                 scaler.step(optimizer)
                 scaler.update()
             else:
-                outputs = model(x, regime)
-                losses = loss_fn(outputs, targets)
+                outputs, losses = _forward_sequence(model, batch, loss_fn, device, tbptt)
                 losses["total"].backward()
                 nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"])
                 optimizer.step()
@@ -361,16 +419,10 @@ def train(cfg: dict):
                 n_val = 0
                 with torch.no_grad():
                     for batch in val_loader:
-                        x = batch["features"].to(device)
-                        regime = batch["regime"].to(device)
-                        targets = {
-                            "pointmap": batch["pointmap_gt"].to(device),
-                            "conflict_label": batch["conflict_label"].to(device),
-                            "repair_label": batch["repair_label"].to(device),
-                            "region_label": batch["region_label"].to(device),
-                        }
-                        outputs = model(x, regime)
-                        losses = loss_fn(outputs, targets)
+                        outputs, losses = _forward_sequence(
+                            model, batch, loss_fn, device,
+                            cfg.get("tbptt_detach_every", 1),
+                        )
                         val_loss += losses["total"].item()
                         n_val += 1
                 avg_val = val_loss / max(n_val, 1)

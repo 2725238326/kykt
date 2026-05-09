@@ -156,6 +156,8 @@ class Dream3R(nn.Module):
         perc_summary  = perc["perception_summary"]
 
         memory_conflict_sig = self.bus.read_previous("conflict_score", "memory")
+        memory_repair_sig = self.bus.read_previous("recommended_action", "memory")
+        repair_action = memory_repair_sig.tensor.long() if memory_repair_sig is not None else None
 
         # === Permanence ===
         t0 = time.perf_counter()
@@ -179,6 +181,8 @@ class Dream3R(nn.Module):
         t0 = time.perf_counter()
         dyn_sig = self.bus.read("dynamic_ratio", "memory")
         bus_dyn = dyn_sig.tensor if dyn_sig is not None else None
+        if bus_dyn is not None and bus_dyn.dim() == 3:
+            bus_dyn = bus_dyn.mean(dim=1)
         cr2 = self.bus.gate_cr2()
 
         evidence_pooled = t3.mean(dim=1)
@@ -202,6 +206,8 @@ class Dream3R(nn.Module):
             cr3_k = self.bus.gate_cr3(base_k=8)
             cr3_conf = self.bus.cr3_retrieval_bias()
             cr3_perm = self.bus.cr3_permanence_bias()
+            if repair_action is not None and (repair_action == 1).any():
+                cr3_k = min(max(cr3_k, 16), 32)
 
             mem_out = self.memory(
                 frame_tokens_flat, evidence_flat, prev_memory_state,
@@ -242,6 +248,9 @@ class Dream3R(nn.Module):
             cs = self.bus.read_previous("conflict_score", "composer")
             if cs is not None:
                 critic_conf = 1.0 - torch.sigmoid(cs.tensor)
+            composer_repair_sig = self.bus.read_previous("recommended_action", "composer")
+            if composer_repair_sig is not None and (composer_repair_sig.tensor.long() == 2).any():
+                critic_conf = torch.zeros(B, 1, device=device)
             comp_out = self.composer(regime_probs, critic_confidence=critic_conf)
 
         if self.profile:
@@ -294,10 +303,18 @@ class Dream3R(nn.Module):
             "dynamic_ratio": perm_out["dynamic_ratio"],
             "region_logits": perm_out["region_logits"],
             "mint_confidence": perm_out["mint_confidence"],
+            "slot_match_indices": perm_out["slot_match_indices"],
+            "slot_match_scores": perm_out["slot_match_scores"],
             "capability_match": comp_out["capability_match"],
             "route_recommendation": comp_out["route_recommendation"],
             "route_regret": comp_out["route_regret"],
             "contract_log": self.bus.get_contract_log(),
+            "repair_action_log": {
+                "previous_action": repair_action.detach() if repair_action is not None else None,
+                "increase_retrieval": bool(repair_action is not None and (repair_action == 1).any().item()),
+                "reroute": bool(repair_action is not None and (repair_action == 2).any().item()),
+                "stubbed_actions": [3, 4, 5],
+            },
         }
 
         if "nsa_branch_weights" in mem_out:

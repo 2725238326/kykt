@@ -85,6 +85,8 @@ DEFAULTS = {
     "dataset": "synthetic",
     "num_workers": 4,
     "n_frames_per_window": 4,
+    "sequence_length": 3,
+    "tbptt_detach_every": 1,
 
     # DDP
     "gpus": "0,1",
