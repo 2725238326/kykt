@@ -50,6 +50,8 @@ def test_adapter_status_reports_backend_availability():
     assert set(status) == set(reg.names)
     assert "is_loaded" in status["mast3r"]
     assert "is_available" in status["mast3r"]
+    assert "has_checkpoint_artifacts" in status["mast3r"]
+    assert "load_error" in status["mast3r"]
     assert status["mast3r"]["backend"] in {"real", "fallback"}
 
 
@@ -97,6 +99,23 @@ def test_mast3r_fallback_is_deterministic_and_marked():
         assert out1.metadata["is_loaded"] is False
 
 
+def test_all_fallback_adapters_are_deterministic():
+    reg = ExpertRegistry()
+    reg.register_all_defaults()
+    images = torch.randn(1, 3, 3, 224, 224)
+
+    for name in reg.names:
+        adapter = reg.get(name)
+        if adapter.is_loaded:
+            continue
+        out1 = adapter.forward(images)
+        out2 = adapter.forward(images)
+        assert torch.allclose(out1.pointmap, out2.pointmap), name
+        assert torch.allclose(out1.confidence, out2.confidence), name
+        assert torch.allclose(out1.evidence_tokens, out2.evidence_tokens), name
+        assert out1.metadata["backend"] == "deterministic_fallback"
+
+
 def test_capability_tensor():
     reg = ExpertRegistry()
     reg.register_all_defaults()
@@ -124,6 +143,7 @@ if __name__ == "__main__":
     test_latency_vector()
     test_adapter_forward()
     test_mast3r_fallback_is_deterministic_and_marked()
+    test_all_fallback_adapters_are_deterministic()
     test_capability_tensor()
     test_cut3r_state_tokens()
     print("All composer expert tests passed.")

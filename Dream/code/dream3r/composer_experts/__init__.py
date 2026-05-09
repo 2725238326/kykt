@@ -108,6 +108,12 @@ class ExpertRegistry:
             status[name] = {
                 "is_loaded": bool(adapter.is_loaded),
                 "is_available": bool(is_available),
+                "has_checkpoint_artifacts": bool(
+                    adapter.has_checkpoint_artifacts()
+                    if hasattr(adapter, "has_checkpoint_artifacts")
+                    else is_available
+                ),
+                "load_error": getattr(adapter, "load_error", None),
                 "backend": "real" if adapter.is_loaded else "fallback",
                 "attention_regime": adapter.attention_regime,
                 "latency_estimate_ms": adapter.latency_estimate_ms,

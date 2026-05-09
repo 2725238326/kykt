@@ -1,8 +1,8 @@
 # Dream3R Cycle 033: Full Architecture Advancement Plan
 
-Status: **proposal** (awaiting user approval before execution)
+Status: **active implementation** (major W1-W10 paths implemented; W4 real-adapter expansion ongoing)
 
-Date: 2026-05-09
+Date: 2026-05-10
 
 ## Goal
 
@@ -171,12 +171,31 @@ Implemented:
 - `load_checkpoint()` loads `/hdd3/kykt26/code/mast3r/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth`
 - real model forward maps MASt3R pointmaps/confidence into the `ExpertOutput` contract
 - `ExpertRegistry.adapter_status()` reports availability, loaded state, backend, attention regime, and latency estimate
+- all non-real adapters now use deterministic image-derived fallback outputs instead of `torch.randn`
+- `ComposerRouter.dispatch()` records dispatch latency, selected expert name/id, and adapter availability/loading metadata
 - Composer routing test verifies MASt3R is preferred for static indoor regimes when cost penalty is disabled
 - optional server integration test in `tests/test_mast3r_integration.py`
 
 Verified on server:
 - normal fallback contract test passes without loading the large model
 - `DREAM3R_RUN_MAST3R_INTEGRATION=1` successfully loads the checkpoint and runs one forward pass
+
+### Implementation status update (2026-05-10)
+
+Implemented:
+- Fast3R adapter now has a real checkpoint-loading path using `/hdd3/kykt26/code/fast3r` and `/hdd3/kykt26/models/fast3r/Fast3R_ViT_Large_512`
+- Fast3R adapter installs the PyTorch math attention fallback used by the server runner for sm75 compatibility
+- `ExpertRegistry.adapter_status()` now distinguishes `has_checkpoint_artifacts` from runtime `is_available`
+- MASt3R integration test now verifies loaded MASt3R can be invoked through `ComposerRouter.dispatch()`
+- Fast3R integration test verifies fallback contract and records the current runtime dependency blocker
+
+Verified on server:
+- Fast3R repo and checkpoint artifacts are present
+- `DREAM3R_RUN_FAST3R_INTEGRATION=1` reaches dependency validation and reports the missing `omegaconf` runtime dependency instead of failing the normal test suite
+- MASt3R loaded dispatch path remains green
+
+Current W4 blocker:
+- The `dream3r` conda env is missing `omegaconf`, required by Fast3R. No package install was performed in this cycle.
 
 ### Current problem
 

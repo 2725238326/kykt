@@ -25,8 +25,8 @@ class ExpertAdapter(ABC):
     a uniform interface. Adapters define their capability card (per-regime
     suitability scores), latency estimate, and attention regime.
 
-    In stub mode (no checkpoint loaded), adapters produce random outputs
-    with correct shapes for architecture validation.
+    In fallback mode (no checkpoint loaded), adapters produce deterministic
+    image-derived outputs with correct shapes for architecture validation.
     """
 
     name: str = "base"
@@ -67,3 +67,6 @@ class ExpertAdapter(ABC):
 
     def is_available(self) -> bool:
         return False
+
+    def has_checkpoint_artifacts(self) -> bool:
+        return self.is_available()

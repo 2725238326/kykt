@@ -1,10 +1,11 @@
 """CUT3R adapter — state-token recurrence for temporal continuity."""
 
 import torch
-import torch.nn as nn
+import torch.nn.functional as F
 from typing import Dict, Optional
 
 from .base_adapter import ExpertAdapter, ExpertOutput
+from .fallback import image_fallback_output
 
 
 class CUT3RAdapter(ExpertAdapter):
@@ -27,28 +28,22 @@ class CUT3RAdapter(ExpertAdapter):
         self.d_evidence = d_evidence
         self.n_state_tokens = n_state_tokens
         self._loaded = False
-        self._proj = nn.Linear(d_out, 3)
-        self._conf = nn.Linear(d_out, 1)
-        self._ev = nn.Linear(d_out, n_evidence * d_evidence)
-        self._state_proj = nn.Linear(d_out, d_out)
 
     def forward(self, images: torch.Tensor,
                 context: Optional[Dict[str, torch.Tensor]] = None,
                 ) -> ExpertOutput:
-        B, N = images.shape[:2]
-        P = 196
-        device = images.device
-        feat = torch.randn(B, N, P, self.d_out, device=device)
-        state_tokens = self._state_proj(
-            torch.randn(B, self.n_state_tokens, self.d_out, device=device)
-        )
-        return ExpertOutput(
-            pointmap=self._proj(feat),
-            confidence=torch.sigmoid(self._conf(feat)),
-            evidence_tokens=self._ev(feat.mean(dim=2)).view(B, N, self.n_evidence, self.d_evidence),
+        B = images.shape[0]
+        stats = F.adaptive_avg_pool2d(
+            images.reshape(-1, *images.shape[2:]), (1, 1)
+        ).reshape(B, -1)
+        repeat = (self.n_state_tokens * self.d_out + stats.shape[-1] - 1) // stats.shape[-1]
+        state_tokens = stats.repeat(1, repeat)[..., :self.n_state_tokens * self.d_out]
+        state_tokens = state_tokens.view(B, self.n_state_tokens, self.d_out)
+        return image_fallback_output(
+            images, self.name, "state_token_recurrence",
+            self.n_evidence, self.d_evidence,
             metadata={
-                "expert": self.name,
-                "regime": "state_token_recurrence",
+                "attention_regime": self.attention_regime,
                 "state_tokens": state_tokens,
             },
         )

@@ -43,29 +43,29 @@ C6 MemoryBus ── publish/read/handoff + CR-1..CR-6 gates
 | `bus.py` | C6 typed tensor namespace, CR-1..CR-6 | `MemoryBus`, `BusSignal`, `EvidenceLabel` |
 | `nsa_attention.py` | 3-branch Native Sparse Attention | `NSAAttention`, `CompressedBranch`, `SelectedBranch`, `SlidingBranch` |
 | `anchor_bank.py` | Bounded spatial K/V memory | `AnchorBank`, `WriteResult`, `ReadResult` |
-| `losses.py` | Multi-task loss (7 base + 3 v0.3 terms) | `Dream3RLoss` |
+| `losses.py` | Multi-task loss with geometry/retrieval/routing/drift terms | `Dream3RLoss` |
 | `config.py` | YAML config + presets | `load_config`, `PRESETS`, `config_to_model_args` |
 
 ### Composer experts (7 adapters)
 | File | Expert | Latency | Strength |
 |------|--------|---------|----------|
-| `composer_experts/mast3r_adapter.py` | MASt3R | 35ms | indoor_static 0.9 |
-| `composer_experts/fast3r_adapter.py` | Fast3R | 12ms | dense_sequential 0.8 |
+| `composer_experts/mast3r_adapter.py` | MASt3R | 35ms | real checkpoint path + deterministic fallback |
+| `composer_experts/fast3r_adapter.py` | Fast3R | 12ms | checkpoint artifacts present; env missing `omegaconf` |
 | `composer_experts/spann3r_adapter.py` | Spann3R | 28ms | dense_sequential 0.95 |
 | `composer_experts/cut3r_adapter.py` | CUT3R | 30ms | state token recurrence |
 | `composer_experts/moge2_adapter.py` | MoGe-2 | 18ms | sparse_view 0.9 |
 | `composer_experts/depthanything_adapter.py` | DAv2 | 8ms | monocular depth |
 | `composer_experts/test3r_adapter.py` | Test3R | 120ms | offline verification |
 
-All adapters are **stubs** (random projections). Real model loading is TODO.
+MASt3R is loadable through `DREAM3R_RUN_MAST3R_INTEGRATION=1`. Other unloaded adapters use deterministic image-derived fallback outputs, not random projections. Fast3R has repo/checkpoint artifacts present, but the current `dream3r` conda env lacks `omegaconf`.
 
 ### Training infrastructure
 | File | Purpose |
 |------|---------|
 | `train.py` | DDP, AMP, multi-stage LR with freeze/unfreeze, checkpoint I/O |
 | `data/synthetic.py` | Deterministic synthetic sequences + DTU stub |
-| `evaluate.py` | Evaluator (pointmap MSE, critic F1, branch usage, routing entropy) |
-| `bench_frame_budget.py` | Per-module p50/p95/p99 latency profiler |
+| `evaluate.py` | Pointmap/depth/Chamfer/F-score + architecture metrics |
+| `bench_frame_budget.py` | Per-module p50/p95/p99 latency + architecture/memory profiler |
 
 ### Tests
 | File | Covers |
@@ -73,8 +73,10 @@ All adapters are **stubs** (random projections). Real model loading is TODO.
 | `smoke_test.py` | 9-section integration test (v03 forward/backward/bus/NSA/AnchorBank/experts/v01-compat/dataset) |
 | `tests/test_nsa_attention.py` | NSA branch shapes, masks, gradients |
 | `tests/test_anchor_bank.py` | Write/read/gating/quarantine/prune/batch |
-| `tests/test_composer_experts.py` | Registry, capability matrix, adapter forward |
-| `tests/test_spatial_memory.py` | SpatialMemory + ComposerRouter init/forward/multi-window/gradient |
+| `tests/test_composer_experts.py` | Registry, capability matrix, deterministic adapter fallback |
+| `tests/test_spatial_memory.py` | SpatialMemory + ComposerRouter init/forward/multi-window/dispatch metadata |
+| `tests/test_mast3r_integration.py` | Optional real MASt3R checkpoint + dispatch path |
+| `tests/test_fast3r_integration.py` | Fast3R fallback contract + artifact/dependency status |
 
 ## Key contracts to preserve
 
@@ -92,14 +94,14 @@ All adapters are **stubs** (random projections). Real model loading is TODO.
 
 | ID | Gap | Priority |
 |----|-----|----------|
-| A4 | AnchorBank lacks `points3d` payload (spec requires storing 3D point anchors) | Medium |
+| A4 | AnchorBank stores spatial payload; pose is still identity until real data loader provides poses | Medium |
 | A5 | DINOv3-S backbone not integrated (Perceiver still uses ViT-Base/identity) | Medium |
 | A6 | Test3R lazy invocation path (Critic triggers off-path verification) | Medium |
 | C1 | DTUDataset is a stub (returns random tensors) | Medium |
 | C2 | No data augmentation | Low |
-| D1-D4 | No standard depth metrics, pose eval, ECE, or visualization | Medium |
-| E1 | No sequence-level streaming orchestration | Medium |
-| E2 | All 7 expert adapters are stubs | High |
+| D1-D4 | Depth/3D metrics implemented; pose eval, ECE, visualization still pending | Medium |
+| E1 | Sequence-level synthetic streaming implemented; real dataset streaming pending | Medium |
+| E2 | MASt3R real path implemented; Fast3R blocked on env dependency; remaining experts deterministic fallback | High |
 | E4 | AnchorBank.write still has per-batch Python loop | Low |
 
 ## How to verify changes
@@ -123,6 +125,12 @@ python -m dream3r.tests.test_nsa_attention
 python -m dream3r.tests.test_anchor_bank
 python -m dream3r.tests.test_composer_experts
 python -m dream3r.tests.test_spatial_memory
+python -m dream3r.tests.test_mast3r_integration
+python -m dream3r.tests.test_fast3r_integration
+
+# Optional real checkpoint integrations
+CUDA_VISIBLE_DEVICES=0 DREAM3R_RUN_MAST3R_INTEGRATION=1 python -m dream3r.tests.test_mast3r_integration
+CUDA_VISIBLE_DEVICES=0 DREAM3R_RUN_FAST3R_INTEGRATION=1 python -m dream3r.tests.test_fast3r_integration
 
 # Profile latency (p95 must be < 50ms)
 CUDA_VISIBLE_DEVICES=0 python -m dream3r.bench_frame_budget --preset small --n-windows 30

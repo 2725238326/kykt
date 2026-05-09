@@ -1,11 +1,11 @@
 # Dream3R 实现推进计划
 
-日期：2026-05-06
-状态：阶段一进行中（代码打磨 = 主线）
+日期：2026-05-10
+状态：Cycle 033 架构推进中（W1-W10 主路径已大幅落地，W4 expert real-path 继续扩展）
 
 ## 当前基线
 
-- 代码：bus + 5 模块 + losses + smoke test 已通过 GPU 验证（第一轮重构完成）
+- 代码：bus + 5 模块 + losses + smoke test 已通过 GPU 验证；Cycle 033 已补 temporal bus、SpatialMemory payload、NSA 几何稀疏、sequence training、loss/metrics/profiler、MASt3R real adapter
 - 环境：dream3r conda env，版本全部对齐 ✓
 - 数据：服务器已有 DTU (539MB, 15 scenes) + KITTI (196GB)
 - 硬件：4 x TITAN RTX 24GB，训练用 2-3 卡
@@ -52,23 +52,25 @@ Dream/code/dream3r/
 - [x] Permanence (C3)：对照 Locatello 2020 重写 Slot Attention（q 来自 slots，k/v 来自 inputs，softmax over slots 竞争）；slot 初始化改为 mu+sigma 采样
 - [x] Critic (C4)：改为 2-layer TransformerEncoder over 17 evidence tokens（不再 flatten 成单 token）
 - [x] Bus (C6)：model.py 加入 read() 调用（Critic 读 capability_match 和 latent_drift_proxy），contract_log 非空
-- [ ] Composer (C5)：regime classifier 接入真实输入 metadata（当前用 uniform）
+- [x] Composer (C5)：ExpertRegistry 能抽取 3R 方法 profile，MASt3R 真实 checkpoint path 接入，dispatch metadata 已记录
+- [ ] Composer (C5)：regime classifier 接入真实输入 metadata（当前训练主路仍用传入 regime）
 - [ ] Memory (C2)：GRU → Mamba SSM 替换（mamba-ssm 2.2.4 已装好，待代码层面切换）
 
 ### 1.2 训练基础设施
 
-- [ ] YAML config 系统（管理所有超参数；preset: small / small_vit / base）
-- [ ] DDP 多卡训练封装（2-3 卡，CUDA_VISIBLE_DEVICES 控制）
-- [ ] checkpoint 保存 / 恢复
-- [ ] tensorboard logging
-- [ ] 混合精度训练 (torch.amp)
-- [ ] gradient checkpointing（长序列省显存）
+- [x] YAML config 系统（管理所有超参数；preset: small / small_vit / base）
+- [x] DDP 多卡训练封装（2-3 卡，CUDA_VISIBLE_DEVICES 控制）
+- [x] checkpoint 保存
+- [x] tensorboard logging
+- [x] 混合精度训练 (torch.amp)
+- [x] gradient checkpointing 开关（长序列省显存）
+- [ ] checkpoint resume 路径实测
 
 ### 1.3 代码质量
 
 - [ ] 统一 tensor shape 注释（每个函数标清 [B, N, D] 的含义）
 - [ ] 边界情况处理（第一个 window 没有 t-1 状态、空 anchor set 等）
-- [ ] 单元测试（每个模块独立跑一个 mini forward/backward）
+- [x] 单元测试（bus / NSA / AnchorBank / Composer / SpatialMemory / sequence / permanence / critic / loss / eval / profiler / expert integration）
 
 ---
 
@@ -83,6 +85,8 @@ Dream/code/dream3r/
 
 - [ ] 先 timm ViT-Base 跑通训练流程
 - [ ] 后接 DUSt3R 预训练权重（/hdd3/kykt26/models/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth）
+- [x] MASt3R adapter 真实 checkpoint 加载与 forward contract
+- [ ] Fast3R adapter 真实 forward：repo/checkpoint 已存在，当前 dream3r env 缺 `omegaconf`
 
 ## 阶段四：第一轮训练（小规模验证）
 

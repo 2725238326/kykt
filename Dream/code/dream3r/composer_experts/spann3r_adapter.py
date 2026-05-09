@@ -1,10 +1,10 @@
 """Spann3R adapter — sequential/streaming spatial reconstruction."""
 
 import torch
-import torch.nn as nn
 from typing import Dict, Optional
 
 from .base_adapter import ExpertAdapter, ExpertOutput
+from .fallback import image_fallback_output
 
 
 class Spann3RAdapter(ExpertAdapter):
@@ -26,22 +26,14 @@ class Spann3RAdapter(ExpertAdapter):
         self.n_evidence = n_evidence
         self.d_evidence = d_evidence
         self._loaded = False
-        self._proj = nn.Linear(d_out, 3)
-        self._conf = nn.Linear(d_out, 1)
-        self._ev = nn.Linear(d_out, n_evidence * d_evidence)
 
     def forward(self, images: torch.Tensor,
                 context: Optional[Dict[str, torch.Tensor]] = None,
                 ) -> ExpertOutput:
-        B, N = images.shape[:2]
-        P = 196
-        device = images.device
-        feat = torch.randn(B, N, P, self.d_out, device=device)
-        return ExpertOutput(
-            pointmap=self._proj(feat),
-            confidence=torch.sigmoid(self._conf(feat)),
-            evidence_tokens=self._ev(feat.mean(dim=2)).view(B, N, self.n_evidence, self.d_evidence),
-            metadata={"expert": self.name, "regime": "streaming_spatial"},
+        return image_fallback_output(
+            images, self.name, "streaming_spatial",
+            self.n_evidence, self.d_evidence,
+            metadata={"attention_regime": self.attention_regime},
         )
 
     def load_checkpoint(self, path: str) -> None:

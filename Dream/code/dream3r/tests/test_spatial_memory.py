@@ -127,6 +127,8 @@ def test_composer_router_with_registry():
     expert_out = router.dispatch(expert_id, images)
     assert expert_out is not None
     assert expert_out.pointmap.shape == (1, 4, 196, 3)
+    assert "dispatch_latency_ms" in expert_out.metadata
+    assert "selected_expert_name" in expert_out.metadata
 
 
 def test_composer_router_prefers_mast3r_for_static_indoor_without_cost_penalty():

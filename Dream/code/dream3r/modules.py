@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
+import time
 from typing import Optional, Dict, List
 
 from dream3r.nsa_attention import NSAAttention
@@ -841,4 +842,15 @@ class ComposerRouter(nn.Module):
         if expert_id >= len(names):
             return None
         adapter = self.registry.get(names[expert_id])
-        return adapter.forward(images, context)
+        t0 = time.perf_counter()
+        out = adapter.forward(images, context)
+        latency_ms = (time.perf_counter() - t0) * 1000
+        out.metadata.setdefault("dispatch_latency_ms", latency_ms)
+        out.metadata.setdefault("selected_expert_id", expert_id)
+        out.metadata.setdefault("selected_expert_name", names[expert_id])
+        out.metadata.setdefault("adapter_is_loaded", bool(adapter.is_loaded))
+        out.metadata.setdefault(
+            "adapter_is_available",
+            bool(adapter.is_available()) if hasattr(adapter, "is_available") else False,
+        )
+        return out

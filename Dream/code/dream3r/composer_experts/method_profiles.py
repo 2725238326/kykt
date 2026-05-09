@@ -80,7 +80,7 @@ METHOD_PROFILES: Dict[str, MethodProfile] = {
     "fast3r": MethodProfile(
         name="fast3r",
         family="large-scale feed-forward 3D reconstruction",
-        implementation_status="stub",
+        implementation_status="checkpoint_available",
         advantages=[
             "many-image reconstruction in one forward pass",
             "reduced sequential error accumulation",
