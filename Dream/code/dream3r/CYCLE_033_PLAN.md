@@ -1,8 +1,8 @@
 # Dream3R Cycle 033: Full Architecture Advancement Plan
 
-Status: **active implementation** (major W1-W10 paths implemented; W4 multi-adapter real-path expansion ongoing)
+Status: **active implementation** (W1-W10 paths implemented; W4 multi-adapter expansion ongoing; W11-W18 breakthrough directions added 2026-05-10)
 
-Date: 2026-05-10
+Date: 2026-05-10 (updated with SOTA gap analysis and W11-W18 breakthrough workstreams)
 
 ## Goal
 
@@ -10,15 +10,33 @@ Push Dream3R v0.3 codebase from "scaffold with stubs" to "architecturally compet
 
 Dream3R's innovation is not a single trick. It is the composition of multiple advances:
 
-1. **3R reconstruction core** — competitive with MASt3R / Fast3R / CUT3R / Spann3R
+1. **3R reconstruction core** — competitive with MASt3R / Fast3R / CUT3R / Spann3R / VGGT
 2. **NSA (Native Sparse Attention)** — adapted from DeepSeek for 3D streaming
 3. **Control-graph architecture** — bus-mediated cross-module contracts (CR-1..CR-6)
-4. **Spatial memory with AnchorBank** — geometric anchor retrieval, not just latent vectors
+4. **Spatial memory with AnchorBank** — geometric anchor retrieval with 3D position embeddings
 5. **Expert routing with cost awareness** — learned dispatch across multiple 3R backbones
-6. **Object permanence tracking** — slot attention with bus-informed mint control
-7. **Critic verification loop** — evidence-based conflict detection and repair recommendation
+6. **Object permanence tracking** — slot attention with ISA-style per-slot reference frames
+7. **Critic verification loop** — geometric consistency-based error detection and repair
+8. **Foundation model backbone** — frozen DINOv2/v3 encoder as visual prior
+9. **Active/stable state architecture** — solving the bounded-memory forgetting problem
+10. **Self-supervised geometric losses** — Sampson distance, covisible maps, cycle consistency
 
-All seven must reach a level where the architecture can be presented as a coherent, working system, not a collection of plumbed-but-inert interfaces.
+All ten pillars must reach a level where the architecture can be presented as a coherent, working system that advances beyond the current SOTA, not a collection of plumbed-but-inert interfaces.
+
+## SOTA landscape (as of 2026-05-10)
+
+Key competitive targets:
+- **VGGT** (CVPR 2025 Best Paper): unified feed-forward, pose+depth+pointmap+tracking, alternating frame/global attention. Accuracy ceiling.
+- **CUT3R** (CVPR 2025 Oral): state-token recurrence for streaming. Forgetting problem spawned Point3R, Mem3R, LONG3R.
+- **Fast3R** (CVPR 2025): all-to-all attention, 1000+ images, "train short test long". Non-streaming.
+- **DeepSeek NSA** (ACL 2025 Best Paper): 3-branch compress/select/sliding. 9x training speedup.
+- **Point3R** (NeurIPS 2025): spatial pointer memory with 3D hierarchical position embeddings.
+- **OnlineX** (March 2026): active/stable state decoupling for streaming.
+- **STream3R** (2025): causal decoder-only 3R, FlashAttention-compatible.
+- **DINOv3** (late 2025): 7B ViT teacher, Gram Anchoring, RoPE. Default feature backbone.
+- **tttLRM** (CVPR 2026 Highlight): test-time training layers for implicit 3D representation.
+
+Dream3R's differentiation: **no existing method combines** NSA sparse attention + explicit spatial memory + multi-expert routing + bus-mediated control contracts + object permanence + Critic verification in one streaming architecture. The challenge is making each of these real, not just plumbed.
 
 ---
 
@@ -26,7 +44,7 @@ All seven must reach a level where the architecture can be presented as a cohere
 
 | ID | Workstream | What it advances | Priority |
 |----|-----------|-----------------|----------|
-| W1 | Bus temporal semantics | Control-graph (3) | P0 — blocks W2, W3, W5 |
+| W1 | Bus temporal semantics | Control-graph (3) | P0 — blocks W2, W5-W7 |
 | W2 | CR-3 retrieval policy | NSA (2) + Control-graph (3) | P0 |
 | W3 | Spatial memory payload | Spatial memory (4) | P0 |
 | W4 | Expert adapter real integration | Expert routing (5) + 3R core (1) | P1 |
@@ -36,6 +54,14 @@ All seven must reach a level where the architecture can be presented as a cohere
 | W8 | NSA architecture refinement | NSA (2) | P2 |
 | W9 | Loss and training advancement | 3R core (1) | P2 |
 | W10 | Evaluation and metrics | All | P2 |
+| **W11** | **DINOv2/v3 frozen encoder** | **Foundation backbone (8)** | **P1 — highest impact** |
+| **W12** | **3D position embeddings for AnchorBank** | **Spatial memory (4)** | **P1 — depends on W3** |
+| **W13** | **Active/stable state decoupling** | **State architecture (9)** | **P1 — depends on W5** |
+| **W14** | **SSR Grassmannian drift regularizer** | **State architecture (9)** | **P1 — plug-and-play** |
+| **W15** | **Critic geometric consistency signals** | **Critic (7) + Losses (10)** | **P2 — depends on W7** |
+| **W16** | **ISA per-slot reference frames** | **Permanence (6)** | **P2 — depends on W6** |
+| **W17** | **Mamba-Transformer hybrid blocks** | **NSA (2) + State (9)** | **P3 — architectural** |
+| **W18** | **3DGS output head** | **3R core (1) + Losses (10)** | **P3 — new output format** |
 
 ---
 
@@ -515,6 +541,298 @@ Implemented:
 
 ---
 
+## W11: DINOv2/v3 frozen encoder (P1 — highest single-item impact)
+
+### Why this matters
+
+Every competitive 3R method (VGGT, MASt3R, Depth Anything, CUT3R) uses DINOv2 or DINOv3 as its visual backbone. DINOv3 (late 2025, 7B teacher) introduced Gram Anchoring for stable patch features and RoPE for resolution robustness. Dream3R's current Perceiver uses either a randomly initialized ViT or raw pre-extracted features. Without foundation-model-quality features, all downstream modules (memory, matching, routing) operate on weak input representations. This is the single largest quality gap.
+
+### Required changes
+
+**modules.py (Perceiver):**
+- Add a `backbone_type` config: `"none"` (current), `"dinov2_vitb14"`, `"dinov2_vitl14"`, `"dinov3"` (future)
+- For DINOv2/v3 modes:
+  - Load frozen pretrained weights via `torch.hub.load("facebookresearch/dinov2", ...)` or local checkpoint
+  - Freeze all backbone parameters (`requires_grad_(False)`)
+  - Add a lightweight adapter: `nn.Linear(backbone_dim, d_model)` to project DINOv2 features to the model's internal dimension
+  - Keep the evidence projectors, pointmap head, and confidence head as trainable layers on top of frozen features
+- The backbone should be lazy-loaded: if `use_backbone=True` but the model is unavailable, fall back to current behavior with a warning
+
+**config.py:**
+- Add `backbone_type`, `backbone_freeze`, `backbone_checkpoint_path` parameters
+- Default: `backbone_type="dinov2_vitb14"`, `backbone_freeze=True`
+
+**model.py:**
+- No changes needed — Perceiver already handles backbone vs pre-extracted features
+
+### Verification
+
+- Test: load DINOv2-B, freeze, run forward, verify output shapes match
+- Test: verify backbone gradients are all None when frozen
+- Test: verify evidence projectors and heads still receive gradients
+- Profile: measure latency increase from DINOv2-B backbone (expect ~20-30ms per frame on server GPU)
+- Quality: compare evidence token variance with DINOv2 features vs random init (should be dramatically higher)
+
+### Server dependency
+
+- `pip install timm` (likely already available)
+- DINOv2-B weights auto-download from torch hub (~350MB) or can be pre-cached at `/hdd3/kykt26/models/dinov2/`
+- DINOv3 requires manual download when available
+
+### Files touched
+
+- `modules.py`: ~40 lines modified (Perceiver backbone loading)
+- `config.py`: ~5 lines added
+- `tests/test_dinov2_backbone.py`: new, ~50 lines
+
+---
+
+## W12: 3D position embeddings for AnchorBank (P1, depends on W3)
+
+### Why this matters
+
+Point3R (NeurIPS 2025) showed that adding 3D hierarchical position embeddings to memory pointers dramatically improves spatial retrieval. Dream3R's W3 adds `points3d_mean` storage to AnchorBank, but retrieval is still purely based on latent vector similarity. Without 3D-aware retrieval, the memory cannot answer "what did I see near this 3D location?" — it can only answer "what looks similar in latent space?"
+
+### Required changes
+
+**anchor_bank.py:**
+- Add a 3D positional encoding function: `encode_3d_position(points3d) -> [B, N, d_pos]`
+  - Use sinusoidal encoding with multi-scale frequencies (similar to NeRF positional encoding but with 3 input dims)
+  - Hierarchical: coarse (room-scale) + fine (patch-scale) frequencies
+- Modify `read()` to combine latent similarity with 3D proximity:
+  - Compute 3D distance between query points and stored `points3d_mean`
+  - Add a 3D proximity bonus to retrieval scores: `score = latent_sim + alpha * 3d_proximity`
+  - `alpha` is a learnable scalar or configurable hyperparameter
+- Add `spatial_retrieval_mode` config: `"latent_only"` (current), `"latent_plus_3d"` (new default), `"3d_only"` (for ablation)
+
+**modules.py (SpatialMemory):**
+- Pass query frame's pointmap-derived 3D positions into bank read
+- Add 3D positional encoding to bank keys at write time
+
+### Verification
+
+- Test: write two anchors at different 3D locations with similar latent features; query near one location; verify the spatially closer anchor ranks higher
+- Test: verify `spatial_retrieval_mode="latent_only"` reproduces current behavior exactly
+- Ablation: compare retrieval precision with and without 3D position embeddings
+
+### Files touched
+
+- `anchor_bank.py`: ~50 lines added
+- `modules.py`: ~15 lines modified
+- `tests/test_3d_retrieval.py`: new, ~70 lines
+
+---
+
+## W13: Active/stable state decoupling (P1, depends on W5)
+
+### Why this matters
+
+OnlineX (March 2026) demonstrated that decoupling state into active (fast-changing local geometry) and stable (long-term global structure) prevents the temporal forgetting that plagues CUT3R's fixed-size state. Dream3R has `StateTokenRecurrence` (active-like) and `AnchorBank` (stable-like) but does not explicitly manage the promotion/demotion between them.
+
+### Required changes
+
+**modules.py (SpatialMemory):**
+- Formalize AnchorBank as the "stable state" and StateTokenRecurrence as the "active state"
+- Add a `promote_to_stable()` mechanism: when active state tokens reach high confidence (measured by write_confidence or Critic signal), promote them to AnchorBank entries
+- Add a `recall_from_stable()` mechanism: when the model re-visits a previously seen region (detected by high retrieval scores from bank), inject the stable anchor back into active processing via cross-attention
+- Add a `stability_score` per bank entry: entries that survive multiple windows without quarantine gain higher stability, making them harder to prune
+
+**anchor_bank.py:**
+- Add `stability_score` buffer: `[B, capacity]`, initialized to 0, incremented each tick for entries that remain valid and non-quarantined
+- Modify `prune()` to factor in `stability_score`: stable entries require higher pressure to evict
+- Add `promote()` method: accepts state tokens + confidence, writes to bank with initial stability=0
+
+### Verification
+
+- Test: run 5-window sequence, verify some entries reach stability > 3
+- Test: verify stable entries survive pruning that removes newer entries
+- Test: verify recall mechanism activates when revisiting a location (high retrieval score threshold)
+
+### Files touched
+
+- `modules.py`: ~50 lines modified
+- `anchor_bank.py`: ~30 lines added
+- `tests/test_active_stable.py`: new, ~80 lines
+
+---
+
+## W14: SSR Grassmannian drift regularizer (P1 — plug-and-play, no training needed)
+
+### Why this matters
+
+SSR (March 2026) provides a training-free Grassmannian manifold regularizer that prevents geometric drift in streaming reconstruction. It constrains state updates to lie on a smooth manifold, preventing the kind of accumulating error that causes long-sequence degradation. This is the highest impact-to-effort ratio item: it requires no training, no new parameters, and can be added as a single function call in the state update path.
+
+### Required changes
+
+**modules.py (StateTokenRecurrence):**
+- After computing `new_state`, apply Grassmannian projection:
+  ```python
+  def grassmannian_regularize(prev_state, new_state, strength=0.1):
+      # Project the state update onto the tangent space of the Grassmannian
+      # manifold at prev_state, preventing drift off the manifold
+      delta = new_state - prev_state
+      # Orthogonal projection: remove component parallel to prev_state
+      proj = prev_state * (delta * prev_state).sum(dim=-1, keepdim=True) / (prev_state.norm(dim=-1, keepdim=True) ** 2 + 1e-8)
+      regularized_delta = delta - strength * proj
+      return prev_state + regularized_delta
+  ```
+- Add `grassmannian_strength` config parameter (default: 0.1)
+- This is applied AFTER the cross-attention and self-attention updates, BEFORE the FFN
+
+### Verification
+
+- Test: run 10-window sequence with and without regularizer; measure state token L2 drift from initialization
+- Test: verify regularized drift is monotonically smaller than unregularized
+- Test: verify reconstruction quality (pointmap L2) does not degrade with regularizer
+
+### Files touched
+
+- `modules.py`: ~15 lines added
+- `config.py`: ~2 lines added
+- `tests/test_drift_regularizer.py`: new, ~40 lines
+
+---
+
+## W15: Critic geometric consistency signals (P2, depends on W7)
+
+### Why this matters
+
+Test3R (2025) and TTT3R (2025-2026) showed that pairwise geometric consistency is the right self-supervised signal for detecting reconstruction errors. Dream3R's Critic currently reads abstract evidence tokens but has no access to actual geometric verification. Adding Sampson distance (epipolar consistency) and differentiable covisible maps (occlusion awareness) gives the Critic real geometric reasoning ability.
+
+### Required changes
+
+**modules.py (Critic):**
+- Add geometric consistency inputs alongside evidence tokens:
+  - `pointmap_pair`: `[B, 2, P, 3]` — predicted pointmaps for a pair of overlapping views
+  - `confidence_pair`: `[B, 2, P, 1]` — confidence for each view
+- Compute Sampson distance: measure epipolar consistency between the two pointmaps
+- Compute covisible mask: differentiable estimate of which points are visible in both views
+- Feed these as additional tokens to the Critic's transformer encoder
+- The `conflict_score` should now reflect geometric inconsistency, not just abstract evidence disagreement
+
+**losses.py:**
+- Add `sampson_distance_loss`: penalize predicted correspondences that violate epipolar geometry
+- Add `covisibility_consistency_loss`: penalize predictions where covisible regions have inconsistent depth/pointmap
+
+### Verification
+
+- Test: create a pair with known geometric inconsistency (shifted pointmap), verify Critic detects it (high conflict_score)
+- Test: create a consistent pair, verify low conflict_score
+- Test: verify Sampson distance is zero for perfectly consistent predictions
+
+### Files touched
+
+- `modules.py`: ~40 lines modified (Critic)
+- `losses.py`: ~30 lines added
+- `tests/test_geometric_critic.py`: new, ~60 lines
+
+---
+
+## W16: ISA per-slot reference frames (P2, depends on W6)
+
+### Why this matters
+
+Invariant Slot Attention (2025) showed that giving each slot its own learnable reference frame (translation, rotation, scale) makes object tracking equivariant under camera motion. Dream3R's Permanence tracks slots but has no mechanism to account for the fact that the same object appears at different positions/scales as the camera moves. Without this, slot matching across windows degrades rapidly under large viewpoint changes.
+
+### Required changes
+
+**modules.py (Permanence):**
+- Add per-slot pose parameters: `slot_poses: [B, n_slots, 7]` (3 translation + 4 quaternion)
+- Before slot attention iterations, transform input features into each slot's reference frame
+- After slot attention, update slot poses based on the attention-weighted input positions
+- The slot matching mechanism from W6 should use pose-aware similarity: slots are matched based on both feature similarity AND pose proximity
+
+### Verification
+
+- Test: track an object across 3 windows with camera rotation; verify slot pose updates track the apparent motion
+- Test: verify slot matching accuracy improves vs W6 baseline (cosine-only matching)
+
+### Files touched
+
+- `modules.py`: ~50 lines modified
+- `tests/test_isa_slots.py`: new, ~60 lines
+
+---
+
+## W17: Mamba-Transformer hybrid blocks (P3 — major architectural change)
+
+### Why this matters
+
+The 2025-2026 trend is Mamba-Transformer hybrids: Mamba for O(N) sequential processing, Transformer for global attention at critical positions. For streaming 3D, Mamba is natural for the temporal dimension (sequential frames), while Transformer handles spatial reasoning within each frame. SF-Mamba (March 2026) addresses the causality limitation with patch swapping.
+
+### Required changes
+
+**New file: `mamba_block.py`:**
+- Implement a Mamba block (or wrap `mamba_ssm` package if available)
+- Create `MambaTransformerBlock`: Mamba processes temporal sequence, Transformer handles spatial cross-attention
+- This replaces `StateTokenRecurrence`'s cross-attention with a hybrid: Mamba for state evolution, Transformer for frame-state interaction
+
+**modules.py:**
+- Add `state_recurrence_type` config: `"cross_attention"` (current), `"mamba_hybrid"` (new)
+- `MambaHybridRecurrence`: Mamba evolves state tokens temporally, Transformer cross-attends to current frame tokens
+
+### Verification
+
+- Test: verify Mamba hybrid produces same-shape outputs as cross-attention recurrence
+- Profile: measure latency reduction for 10+ window sequences
+- Quality: verify convergence on synthetic training
+
+### Files touched
+
+- `mamba_block.py`: new, ~100 lines
+- `modules.py`: ~30 lines modified
+- `config.py`: ~3 lines added
+
+### External dependency
+
+- `mamba_ssm` package (pip install mamba-ssm, requires CUDA)
+
+---
+
+## W18: 3DGS output head (P3 — new output representation)
+
+### Why this matters
+
+3D Gaussian Splatting has become the dominant 3D output representation, replacing NeRF for real-time rendering. AnchorSplat (2026) showed that anchor-aligned Gaussians with geometric priors outperform pixel-aligned ones. Adding a 3DGS prediction head to Dream3R enables:
+- Novel view synthesis (renders from arbitrary viewpoints)
+- Photometric self-supervision (render-and-compare loss)
+- Direct comparison with VGGT and other methods on rendering benchmarks
+
+### Required changes
+
+**New file: `gaussian_head.py`:**
+- Predict per-point Gaussian parameters from frame tokens: mean (3D position from pointmap), covariance (learned 6-param), color (RGB from input), opacity (from confidence)
+- Use AnchorBank entries as Gaussian anchors: each bank entry becomes a Gaussian center with learned attributes
+- Support differentiable rendering via `diff-gaussian-rasterization` or `gsplat`
+
+**model.py:**
+- Add optional `gaussian_head` module, controlled by config
+- After SpatialMemory, predict Gaussians from frame tokens + bank entries
+- Include rendered images in output dict
+
+**losses.py:**
+- Add photometric rendering loss: L1 + SSIM between rendered and input images
+- This enables self-supervised training without ground-truth depth
+
+### Verification
+
+- Test: predict Gaussians from synthetic data, render from training viewpoint, verify low photometric error
+- Test: render from novel viewpoint, verify plausible output
+- Profile: measure rendering overhead (expect ~5-10ms per frame with gsplat)
+
+### Files touched
+
+- `gaussian_head.py`: new, ~120 lines
+- `model.py`: ~20 lines modified
+- `losses.py`: ~20 lines added
+- `config.py`: ~5 lines added
+
+### External dependency
+
+- `gsplat` or `diff-gaussian-rasterization` package
+
+---
+
 ## Execution order and dependencies
 
 ```
@@ -522,22 +840,34 @@ Phase 1 (P0 — unblocks everything):
   W1 (bus temporal) ──> W2 (CR-3 policy)
   W3 (spatial payload) [independent of W1]
 
-Phase 2 (P1 — real architecture):
-  W4 (expert integration) [independent]
-  W5 (sequence training) [depends on W1]
-  W6 (permanence hardening) [depends on W1]
-  W7 (critic loop) [depends on W1]
+Phase 2 (P1 — real architecture + breakthroughs):
+  W4  (expert integration)         [independent]
+  W5  (sequence training)          [depends on W1]
+  W6  (permanence hardening)       [depends on W1]
+  W7  (critic loop)                [depends on W1]
+  W11 (DINOv2/v3 encoder)          [independent — highest single impact]
+  W12 (3D position embeddings)     [depends on W3]
+  W13 (active/stable decoupling)   [depends on W5]
+  W14 (SSR drift regularizer)      [independent — plug-and-play]
 
 Phase 3 (P2 — competitive edge):
-  W8 (NSA refinement) [independent]
-  W9 (loss advancement) [depends on W5]
-  W10 (evaluation) [independent]
+  W8  (NSA refinement)             [independent]
+  W9  (loss advancement)           [depends on W5]
+  W10 (evaluation)                 [independent]
+  W15 (Critic geometric signals)   [depends on W7]
+  W16 (ISA per-slot frames)        [depends on W6]
+
+Phase 4 (P3 — next-generation, separate cycle if needed):
+  W17 (Mamba hybrid)               [major architectural change]
+  W18 (3DGS output head)           [new output representation]
 ```
 
 Recommended parallel execution:
+
 - Phase 1: W1 first (1-2 sessions), then W2 + W3 in parallel
-- Phase 2: all four workstreams can proceed in parallel after W1
+- Phase 2: W11 + W14 can start immediately (no dependencies). W4/W5/W6/W7 after W1. W12 after W3. W13 after W5.
 - Phase 3: after Phase 2 stabilizes
+- Phase 4: separate authorization required
 
 ---
 
@@ -546,15 +876,18 @@ Recommended parallel execution:
 - All code changes are server-side only (per F-002)
 - Local Windows = editing + markdown + orchestration only
 - No real data training without explicit user approval
-- No checkpoint download without explicit user approval
-- Expert adapter integration (W4) requires server access for MASt3R weights
+- No checkpoint download without explicit user approval (DINOv2 auto-download via torch hub is acceptable for W11)
+- Expert adapter integration (W4) requires server access for method checkpoints
+- W17 (Mamba) requires `mamba_ssm` package install — separate approval needed
+- W18 (3DGS) requires `gsplat` or `diff-gaussian-rasterization` — separate approval needed
 - All verification is server-side via ssh
 
 ## Estimated scope
 
-- Total new/modified code: ~800-1200 lines across all workstreams
-- New test files: ~8 files, ~600 lines total
-- Total sessions: 5-8 for Phase 1+2; 3-4 for Phase 3
+- W1-W10 (original): ~800-1200 lines, 8 test files, 5-8 sessions
+- W11-W14 (P1 breakthroughs): ~300 lines, 4 test files, 3-4 sessions
+- W15-W16 (P2 breakthroughs): ~200 lines, 2 test files, 2 sessions
+- W17-W18 (P3 future): ~350 lines, separate cycle if needed
 - Each workstream is independently testable and shippable
 
 ---
@@ -614,14 +947,22 @@ For each workstream W_n:
 
 ### What success looks like
 
-After all workstreams complete:
-- `bus.read_previous()` returns real signals at window 2+
-- CR-3 measurably changes retrieval depth and scoring under different conflict levels
-- AnchorBank stores and retrieves 3D spatial payloads
-- At least two expert adapters produce real (non-random) features; MASt3R and Spann3R currently satisfy this
-- Training unrolls across 3+ windows with state carry-over
-- Permanence tracks objects across windows with per-slot granularity
-- Critic repair actions are consumed by downstream modules
+After all Phase 1-3 workstreams complete:
+
+- `bus.read_previous()` returns real signals at window 2+ (W1)
+- CR-3 measurably changes retrieval depth and scoring under different conflict levels (W2)
+- AnchorBank stores and retrieves 3D spatial payloads with 3D position embeddings (W3 + W12)
+- At least two expert adapters produce real (non-random) features; MASt3R and Spann3R currently satisfy this (W4)
+- Training unrolls across 3+ windows with state carry-over (W5)
+- Permanence tracks objects across windows with per-slot granularity and ISA reference frames (W6 + W16)
+- Critic repair actions are consumed by downstream modules and backed by geometric consistency signals (W7 + W15)
+- NSA uses top-2 gating and optional FlashAttention (W8)
+- Loss includes geometric consistency, retrieval quality, routing entropy, and drift regularization (W9)
+- Standard depth/3D/architectural metrics are computed and reported (W10)
+- Perceiver uses frozen DINOv2/v3 features as backbone (W11)
+- AnchorBank retrieval is 3D-position-aware, not just latent-similarity (W12)
+- State architecture has explicit active/stable decoupling with promotion mechanism (W13)
+- Grassmannian regularizer prevents geometric drift in streaming mode (W14)
 - All existing smoke tests (9/9) and unit tests (4/4) still pass
-- New tests (8+ files) all pass
-- Profiling stays under 20ms/frame for the `small` preset
+- New tests (14+ files) all pass
+- Profiling stays under 30ms/frame for the `small` preset (relaxed from 20ms due to DINOv2 backbone)
