@@ -1,6 +1,6 @@
 # Dream3R Cycle 033: Full Architecture Advancement Plan
 
-Status: **active implementation** (major W1-W10 paths implemented; W4 real-adapter expansion ongoing)
+Status: **active implementation** (major W1-W10 paths implemented; W4 multi-adapter real-path expansion ongoing)
 
 Date: 2026-05-10
 
@@ -188,22 +188,35 @@ Implemented:
 - `ExpertRegistry.adapter_status()` now distinguishes `has_checkpoint_artifacts` from runtime `is_available`
 - MASt3R integration test now verifies loaded MASt3R can be invoked through `ComposerRouter.dispatch()`
 - Fast3R integration test verifies fallback contract and records the current runtime dependency blocker
+- Spann3R adapter now has a real checkpoint-loading path using `/hdd3/kykt26/code/spann3r/checkpoints/spann3r.pth`
+- Spann3R real forward maps native streaming pointmaps/confidence into the shared `ExpertOutput` contract
+- Spann3R optional integration test verifies both direct adapter forward and `ComposerRouter.dispatch()`
 
 Verified on server:
 - Fast3R repo and checkpoint artifacts are present
 - `DREAM3R_RUN_FAST3R_INTEGRATION=1` reaches dependency validation and reports the missing `omegaconf` runtime dependency instead of failing the normal test suite
 - MASt3R loaded dispatch path remains green
+- `DREAM3R_RUN_SPANN3R_INTEGRATION=1` loads the real Spann3R checkpoint and runs the dispatch path successfully
 
 Current W4 blocker:
 - The `dream3r` conda env is missing `omegaconf`, required by Fast3R. No package install was performed in this cycle.
+- Spann3R uses the slow PyTorch RoPE2D fallback on the server because the cuda-compiled RoPE2D extension is not present.
 
-### Current problem
+### Remaining problem
 
-All 7 expert adapters are stubs that produce `torch.randn` features. The `ComposerRouter` dispatches to these stubs, so routing decisions are made against random capabilities. The entire expert routing system is architecturally complete but functionally inert.
+MASt3R and Spann3R now have real loadable paths, and Fast3R has checkpoint artifacts plus a guarded loader. Remaining adapters still need true backends or explicit blocker reporting:
+- CUT3R: repo/checkpoints present, adapter still deterministic fallback
+- MoGe-2 / DepthAnything / Test3R: fallback only
+- Fast3R: true forward blocked by missing `omegaconf`
 
 ### Required changes
 
-This workstream connects at least ONE real adapter to validate the interface. The recommended first target is **MASt3R** because:
+This workstream originally connected at least ONE real adapter to validate the interface. That is complete for **MASt3R** and extended to **Spann3R**. Next real-adapter targets:
+- Resolve Fast3R runtime dependency and run the true forward path
+- Connect CUT3R as the next stateful streaming expert
+- Add latency/status reporting for each loaded real backend
+
+The original first target was **MASt3R** because:
 - Server already has `mast3r_runner.py` and the conda env
 - MASt3R's architecture (ViT encoder + decoder for pairwise matching) maps cleanly to the ExpertOutput contract
 - It's the most widely cited baseline in the 3R literature
@@ -224,26 +237,30 @@ This workstream connects at least ONE real adapter to validate the interface. Th
 - Confirm the adapter can be registered in ExpertRegistry and dispatched by ComposerRouter
 
 **Other adapters:**
-- Keep as stubs for now. Each adapter follows the same pattern; once MASt3R works, the others follow mechanically.
+- Keep deterministic fallback until a backend is wired. Each adapter follows the same status/reporting pattern; once a checkpoint is available, it must expose `has_checkpoint_artifacts`, `is_available`, and optional real integration tests.
 - Update capability_cards to reflect real vs stub status in ExpertRegistry
 
 ### Verification
 
 - Server-side test: load MASt3R adapter, run one forward pass on a real image pair, verify output shapes
+- Server-side test: load Spann3R adapter, run one forward pass on a two-view sequence, verify output shapes
 - Routing test: with one real adapter and 6 stubs, verify ComposerRouter prefers the real adapter for static indoor regimes (where MASt3R excels)
-- Profile: measure MASt3R adapter latency and compare against the `latency_estimate_ms` in the capability card
+- Routing test: dispatch loaded Spann3R through `ComposerRouter` and verify metadata marks the selected loaded backend
+- Profile: measure MASt3R/Spann3R adapter latency and compare against the `latency_estimate_ms` in the capability card
 
 ### Files touched
 
 - `composer_experts/mast3r_adapter.py`: major rewrite (~150 lines)
+- `composer_experts/spann3r_adapter.py`: real loader/forward/status path
 - `composer_experts/__init__.py`: minor update for real/stub status
 - `tests/test_mast3r_integration.py`: new, ~60 lines (server-side only)
+- `tests/test_spann3r_integration.py`: optional real checkpoint + dispatch path
 
 ### Constraints
 
-- Requires server access and MASt3R checkpoint
+- Requires server access and method checkpoints
 - Should not change the adapter interface — the `ExpertOutput` contract is stable
-- Other adapters remain stubs; this workstream proves the pattern
+- Remaining fallback adapters must remain deterministic, never random
 
 ---
 
@@ -601,7 +618,7 @@ After all workstreams complete:
 - `bus.read_previous()` returns real signals at window 2+
 - CR-3 measurably changes retrieval depth and scoring under different conflict levels
 - AnchorBank stores and retrieves 3D spatial payloads
-- At least one expert adapter produces real (non-random) features
+- At least two expert adapters produce real (non-random) features; MASt3R and Spann3R currently satisfy this
 - Training unrolls across 3+ windows with state carry-over
 - Permanence tracks objects across windows with per-slot granularity
 - Critic repair actions are consumed by downstream modules

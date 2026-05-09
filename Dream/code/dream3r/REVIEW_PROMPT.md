@@ -51,13 +51,13 @@ C6 MemoryBus ── publish/read/handoff + CR-1..CR-6 gates
 |------|--------|---------|----------|
 | `composer_experts/mast3r_adapter.py` | MASt3R | 35ms | real checkpoint path + deterministic fallback |
 | `composer_experts/fast3r_adapter.py` | Fast3R | 12ms | checkpoint artifacts present; env missing `omegaconf` |
-| `composer_experts/spann3r_adapter.py` | Spann3R | 28ms | dense_sequential 0.95 |
+| `composer_experts/spann3r_adapter.py` | Spann3R | 28ms | real checkpoint path + streaming memory fallback |
 | `composer_experts/cut3r_adapter.py` | CUT3R | 30ms | state token recurrence |
 | `composer_experts/moge2_adapter.py` | MoGe-2 | 18ms | sparse_view 0.9 |
 | `composer_experts/depthanything_adapter.py` | DAv2 | 8ms | monocular depth |
 | `composer_experts/test3r_adapter.py` | Test3R | 120ms | offline verification |
 
-MASt3R is loadable through `DREAM3R_RUN_MAST3R_INTEGRATION=1`. Other unloaded adapters use deterministic image-derived fallback outputs, not random projections. Fast3R has repo/checkpoint artifacts present, but the current `dream3r` conda env lacks `omegaconf`.
+MASt3R is loadable through `DREAM3R_RUN_MAST3R_INTEGRATION=1`. Spann3R is loadable through `DREAM3R_RUN_SPANN3R_INTEGRATION=1`; the server currently uses slow PyTorch RoPE2D fallback because the cuda RoPE2D extension is absent. Other unloaded adapters use deterministic image-derived fallback outputs, not random projections. Fast3R has repo/checkpoint artifacts present, but the current `dream3r` conda env lacks `omegaconf`.
 
 ### Training infrastructure
 | File | Purpose |
@@ -77,6 +77,7 @@ MASt3R is loadable through `DREAM3R_RUN_MAST3R_INTEGRATION=1`. Other unloaded ad
 | `tests/test_spatial_memory.py` | SpatialMemory + ComposerRouter init/forward/multi-window/dispatch metadata |
 | `tests/test_mast3r_integration.py` | Optional real MASt3R checkpoint + dispatch path |
 | `tests/test_fast3r_integration.py` | Fast3R fallback contract + artifact/dependency status |
+| `tests/test_spann3r_integration.py` | Optional real Spann3R checkpoint + dispatch path |
 
 ## Key contracts to preserve
 
@@ -101,7 +102,7 @@ MASt3R is loadable through `DREAM3R_RUN_MAST3R_INTEGRATION=1`. Other unloaded ad
 | C2 | No data augmentation | Low |
 | D1-D4 | Depth/3D metrics implemented; pose eval, ECE, visualization still pending | Medium |
 | E1 | Sequence-level synthetic streaming implemented; real dataset streaming pending | Medium |
-| E2 | MASt3R real path implemented; Fast3R blocked on env dependency; remaining experts deterministic fallback | High |
+| E2 | MASt3R and Spann3R real paths implemented; Fast3R blocked on env dependency; remaining experts deterministic fallback | High |
 | E4 | AnchorBank.write still has per-batch Python loop | Low |
 
 ## How to verify changes
@@ -127,10 +128,12 @@ python -m dream3r.tests.test_composer_experts
 python -m dream3r.tests.test_spatial_memory
 python -m dream3r.tests.test_mast3r_integration
 python -m dream3r.tests.test_fast3r_integration
+python -m dream3r.tests.test_spann3r_integration
 
 # Optional real checkpoint integrations
 CUDA_VISIBLE_DEVICES=0 DREAM3R_RUN_MAST3R_INTEGRATION=1 python -m dream3r.tests.test_mast3r_integration
 CUDA_VISIBLE_DEVICES=0 DREAM3R_RUN_FAST3R_INTEGRATION=1 python -m dream3r.tests.test_fast3r_integration
+CUDA_VISIBLE_DEVICES=0 DREAM3R_RUN_SPANN3R_INTEGRATION=1 python -m dream3r.tests.test_spann3r_integration
 
 # Profile latency (p95 must be < 50ms)
 CUDA_VISIBLE_DEVICES=0 python -m dream3r.bench_frame_budget --preset small --n-windows 30

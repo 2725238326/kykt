@@ -108,7 +108,7 @@ METHOD_PROFILES: Dict[str, MethodProfile] = {
     "spann3r": MethodProfile(
         name="spann3r",
         family="spatial-memory 3D reconstruction",
-        implementation_status="stub",
+        implementation_status="checkpoint_available",
         advantages=[
             "external spatial memory for image collections",
             "ordered or unordered dense reconstruction",
