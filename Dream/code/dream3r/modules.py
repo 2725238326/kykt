@@ -1,18 +1,20 @@
 """
-Dream3R computational cores C1-C5 (v0.2 — bus-load-bearing refactor).
+Dream3R computational cores C1-C5.
 
-Changes from v0.1:
-  C2 Memory: A1 update_kind now branches execution (5 distinct state transitions);
-             reads dynamic_ratio + conflict_score from bus for informed decisions.
-  C3 Permanence: reads conflict_score from bus; modulates mint_rate in high-conflict.
-  C4 Critic: unchanged (already reads from bus via CR-1/CR-3).
-  T3 Evidence: split into per-signal projectors with named outputs.
+v0.2 modules (MemorySSM_v01, Composer_v01) are preserved for ablation.
+v0.3 modules (SpatialMemory, ComposerRouter) are the current defaults.
 """
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, Dict
+import math
+from typing import Optional, Dict, List
+
+from dream3r.nsa_attention import NSAAttention
+from dream3r.anchor_bank import AnchorBank
+from dream3r.composer_experts import ExpertRegistry
+from dream3r.composer_experts.base_adapter import ExpertOutput
 
 
 # ---------------------------------------------------------------------------
@@ -125,8 +127,9 @@ class Perceiver(nn.Module):
 # C2: Executive Memory — A1 branching + bus-informed decisions
 # ---------------------------------------------------------------------------
 
-class MemorySSM(nn.Module):
+class MemorySSM_v01(nn.Module):
     """
+    [v0.1 — preserved for ablation ABL-v02-1]
     Recurrent state controller with 5 distinct update modes.
 
     A1 update modes:
@@ -407,8 +410,8 @@ class Critic(nn.Module):
 # C5: Composer — parameter-free table join
 # ---------------------------------------------------------------------------
 
-class Composer(nn.Module):
-    """Zero parameters. regime @ capability_cards.T → match → rank."""
+class Composer_v01(nn.Module):
+    """[v0.1 — preserved for ablation] Zero parameters. regime @ capability_cards.T -> match -> rank."""
 
     def __init__(self, n_regimes: int = 5, n_models: int = 8):
         super().__init__()
@@ -429,3 +432,349 @@ class Composer(nn.Module):
             "route_recommendation": indices,
             "route_regret": regret,
         }
+
+
+# Aliases for backward compatibility
+MemorySSM = MemorySSM_v01
+Composer = Composer_v01
+
+
+# ---------------------------------------------------------------------------
+# C2 v0.3: Spatial Memory — NSA + AnchorBank + latent state recurrence
+# ---------------------------------------------------------------------------
+
+class StateTokenRecurrence(nn.Module):
+    """CUT3R-style latent state token update via cross-attention with frame tokens."""
+
+    def __init__(self, d_model: int, n_state_tokens: int, n_heads: int = 4):
+        super().__init__()
+        self.n_state_tokens = n_state_tokens
+        self.init_tokens = nn.Parameter(
+            torch.randn(1, n_state_tokens, d_model) * (d_model ** -0.5)
+        )
+        self.cross_attn = nn.MultiheadAttention(
+            d_model, n_heads, batch_first=True,
+        )
+        self.self_attn = nn.MultiheadAttention(
+            d_model, n_heads, batch_first=True,
+        )
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.ffn = nn.Sequential(
+            nn.Linear(d_model, d_model * 2),
+            nn.GELU(),
+            nn.Linear(d_model * 2, d_model),
+        )
+        self.norm3 = nn.LayerNorm(d_model)
+
+    def init_state(self, batch_size: int, device: torch.device) -> torch.Tensor:
+        return self.init_tokens.expand(batch_size, -1, -1).clone()
+
+    def forward(self, prev_state: torch.Tensor,
+                frame_tokens: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            prev_state:   [B, S, D] — previous latent state tokens
+            frame_tokens: [B, P, D] — current frame tokens
+        Returns:
+            new_state: [B, S, D]
+        """
+        h = self.norm1(prev_state)
+        h = prev_state + self.cross_attn(h, frame_tokens, frame_tokens)[0]
+
+        h2 = self.norm2(h)
+        h = h + self.self_attn(h2, h2, h2)[0]
+
+        h = h + self.ffn(self.norm3(h))
+        return h
+
+
+class SpatialMemory(nn.Module):
+    """
+    C2 v0.3: NSA-backed spatial memory with AnchorBank and latent recurrence.
+
+    Architecture:
+      1. Latent state tokens recur via cross-attention with frame tokens (compressed branch source)
+      2. AnchorBank stores/retrieves spatial K/V anchors (selected branch source)
+      3. Sliding window buffer holds recent frames (sliding branch source)
+      4. NSA fuses all three branches
+      5. Bus-gated writes to AnchorBank
+
+    Args:
+        d_model:          token dimension for all internal representations
+        n_state_tokens:   number of latent state tokens (CUT3R-style)
+        bank_capacity:    max AnchorBank entries
+        nsa_n_select_k:   top-k for NSA selected branch
+        nsa_n_heads:      attention heads in NSA
+        sliding_window:   number of recent windows to keep in sliding buffer
+        n_evidence:       number of evidence signals (for write decision)
+        d_evidence:       evidence signal dimension
+    """
+
+    def __init__(self, d_model: int = 128, n_state_tokens: int = 32,
+                 bank_capacity: int = 256, nsa_n_select_k: int = 8,
+                 nsa_n_heads: int = 4, sliding_window: int = 4,
+                 n_evidence: int = 17, d_evidence: int = 32):
+        super().__init__()
+        self.d_model = d_model
+        self.n_state_tokens = n_state_tokens
+        self.sliding_window = sliding_window
+
+        self.state_recurrence = StateTokenRecurrence(
+            d_model, n_state_tokens, n_heads=nsa_n_heads,
+        )
+
+        self.anchor_bank = AnchorBank(
+            capacity=bank_capacity, d_key=d_model, d_value=d_model,
+        )
+
+        self.nsa = NSAAttention(
+            d_model=d_model, n_compress=n_state_tokens,
+            n_select_k=nsa_n_select_k, n_heads=nsa_n_heads,
+        )
+
+        self.frame_proj = nn.Linear(768, d_model)
+        self.evidence_proj = nn.Linear(n_evidence * d_evidence, d_model)
+
+        self.write_gate = nn.Sequential(
+            nn.Linear(d_model * 2, d_model),
+            nn.GELU(),
+            nn.Linear(d_model, 1),
+        )
+
+        self.key_gen = nn.Linear(d_model, d_model)
+        self.value_gen = nn.Linear(d_model, d_model)
+
+        self.drift_proj = nn.Linear(d_model, 1)
+
+        self.update_classifier = nn.Linear(d_model, 5)
+        self.write_head = nn.Linear(d_model, 4)
+        self.anchor_scorer = nn.Linear(d_model, 1)
+
+        self._sliding_buffer: List[torch.Tensor] = []
+
+    def init_state(self, batch_size: int,
+                   device: torch.device) -> torch.Tensor:
+        self.anchor_bank.reset(batch_size, device)
+        self._sliding_buffer = []
+        return self.state_recurrence.init_state(batch_size, device)
+
+    def forward(self, frame_tokens: torch.Tensor,
+                evidence_flat: torch.Tensor,
+                prev_state_tokens: torch.Tensor,
+                bus_dynamic_ratio: Optional[torch.Tensor] = None,
+                bus_conflict_score: Optional[torch.Tensor] = None,
+                suppress_mask: Optional[torch.Tensor] = None,
+                ) -> Dict[str, torch.Tensor]:
+        """
+        Args:
+            frame_tokens:      [B, P, D_frame] (D_frame=768)
+            evidence_flat:     [B, n_ev * d_ev]
+            prev_state_tokens: [B, S, D] latent state from previous window
+            bus_dynamic_ratio: [B, 1] from Permanence
+            bus_conflict_score:[B, 1] from Critic t-1
+            suppress_mask:     [B] CR-2 from Permanence
+        Returns:
+            latent_state_tokens, update_kind, write_decision, retrieval_log, etc.
+        """
+        B = frame_tokens.shape[0]
+        device = frame_tokens.device
+
+        frame_proj = self.frame_proj(frame_tokens)
+        evidence_proj = self.evidence_proj(evidence_flat).unsqueeze(1)
+
+        new_state = self.state_recurrence(prev_state_tokens, frame_proj)
+
+        self._sliding_buffer.append(frame_proj.detach())
+        if len(self._sliding_buffer) > self.sliding_window:
+            self._sliding_buffer = self._sliding_buffer[-self.sliding_window:]
+        sliding = torch.cat(self._sliding_buffer, dim=1)
+
+        bank_keys = self.anchor_bank.keys[:B]
+        bank_values = self.anchor_bank.values[:B]
+        bank_mask = self.anchor_bank.readable_mask[:B]
+
+        nsa_out = self.nsa(
+            query=frame_proj,
+            compressed_ctx=new_state,
+            bank_keys=bank_keys,
+            bank_values=bank_values,
+            sliding_buffer=sliding,
+            bank_mask=bank_mask,
+        )
+
+        memory_output = nsa_out["output"]
+        pooled = memory_output.mean(dim=1)
+
+        update_logits = self.update_classifier(pooled)
+        update_probs = F.softmax(update_logits, dim=-1)
+
+        write_logits = self.write_head(pooled)
+        if suppress_mask is not None:
+            write_logits = write_logits.clone()
+            write_logits[:, 0] = write_logits[:, 0] - 1e9 * suppress_mask
+
+        write_conf = torch.sigmoid(self.write_gate(
+            torch.cat([pooled, evidence_proj.squeeze(1)], dim=-1)
+        ))
+
+        n_write_candidates = min(8, frame_proj.shape[1])
+        anchor_scores_per_token = torch.bmm(
+            self.key_gen(frame_proj),
+            pooled.unsqueeze(-1)
+        ).squeeze(-1)
+        _, top_indices = anchor_scores_per_token.topk(n_write_candidates, dim=1)
+        write_keys = self.key_gen(frame_proj).gather(
+            1, top_indices.unsqueeze(-1).expand(-1, -1, self.d_model)
+        )
+        write_values = self.value_gen(memory_output).gather(
+            1, top_indices.unsqueeze(-1).expand(-1, -1, self.d_model)
+        )
+
+        write_result = self.anchor_bank.write(
+            keys=write_keys,
+            values=write_values,
+            confidence=write_conf.expand(B, n_write_candidates),
+            bus_dynamic_ratio=bus_dynamic_ratio,
+            bus_conflict_score=bus_conflict_score,
+        )
+        self.anchor_bank.tick()
+
+        anchor_scores = self.anchor_scorer(pooled)
+        drift = self.drift_proj(pooled)
+
+        return {
+            "latent_state_tokens": new_state,
+            "latent_state": pooled,
+            "update_kind": update_logits,
+            "update_probs": update_probs,
+            "write_decision": write_logits,
+            "anchor_scores": anchor_scores,
+            "latent_drift_proxy": drift,
+            "nsa_branch_weights": nsa_out["branch_weights"],
+            "nsa_selected_indices": nsa_out["selected_indices"],
+            "bank_occupancy": self.anchor_bank.occupancy,
+            "write_result": {
+                "n_written": write_result.n_written,
+                "n_suppressed": write_result.n_suppressed,
+                "n_quarantined": write_result.n_quarantined,
+            },
+        }
+
+
+# ---------------------------------------------------------------------------
+# C5 v0.3: Composer Router — expert dispatch with cost-normalized matching
+# ---------------------------------------------------------------------------
+
+class ComposerRouter(nn.Module):
+    """
+    C5 v0.3: Expert routing with cost-normalized capability matching.
+
+    Replaces the zero-param table join with learned routing that accounts
+    for latency cost and Critic confidence feedback.
+
+    Args:
+        n_regimes:       number of reconstruction regimes
+        d_routing:       routing embedding dimension
+        cost_alpha:      latency cost weight (0 = ignore latency, 1 = latency-only)
+        expert_registry: ExpertRegistry instance (optional, for dispatch)
+    """
+
+    def __init__(self, n_regimes: int = 5, d_routing: int = 64,
+                 cost_alpha: float = 0.5,
+                 expert_registry: Optional[ExpertRegistry] = None):
+        super().__init__()
+        self.n_regimes = n_regimes
+        self.d_routing = d_routing
+        self.cost_alpha = cost_alpha
+        self.registry = expert_registry
+
+        n_experts = 7
+        self.register_buffer(
+            "capability_cards",
+            torch.ones(n_experts, n_regimes) / n_regimes,
+        )
+        self.register_buffer(
+            "latency_costs",
+            torch.ones(n_experts) * 30.0,
+        )
+
+        self.regime_encoder = nn.Sequential(
+            nn.Linear(n_regimes, d_routing),
+            nn.GELU(),
+            nn.Linear(d_routing, d_routing),
+        )
+        self.confidence_gate = nn.Linear(1, d_routing)
+        self.routing_head = nn.Linear(d_routing, n_experts)
+
+    def set_capability_cards(self, cards: torch.Tensor):
+        self.capability_cards.copy_(cards)
+
+    def set_latency_costs(self, costs: torch.Tensor):
+        self.latency_costs.copy_(costs)
+
+    def load_from_registry(self):
+        if self.registry is None:
+            return
+        cards = self.registry.capability_matrix()
+        latencies = self.registry.latency_vector()
+        n = min(cards.shape[0], self.capability_cards.shape[0])
+        self.capability_cards[:n] = cards[:n]
+        self.latency_costs[:n] = latencies[:n]
+
+    def forward(self, regime_probs: torch.Tensor,
+                critic_confidence: Optional[torch.Tensor] = None,
+                latency_budget_ms: Optional[float] = None,
+                ) -> Dict[str, torch.Tensor]:
+        """
+        Args:
+            regime_probs:      [B, n_regimes]
+            critic_confidence: [B, 1] or None
+            latency_budget_ms: float or None
+        Returns:
+            capability_match, route_recommendation, route_regret,
+            routing_logits, selected_expert
+        """
+        B = regime_probs.shape[0]
+        device = regime_probs.device
+
+        table_match = regime_probs @ self.capability_cards.t()
+
+        latency_norm = self.latency_costs / (self.latency_costs.max() + 1e-8)
+        cost_penalty = self.cost_alpha * latency_norm.unsqueeze(0).expand(B, -1)
+
+        if latency_budget_ms is not None:
+            over_budget = (self.latency_costs > latency_budget_ms).float()
+            cost_penalty = cost_penalty + over_budget.unsqueeze(0) * 10.0
+
+        regime_embed = self.regime_encoder(regime_probs)
+        if critic_confidence is not None:
+            conf_mod = self.confidence_gate(critic_confidence)
+            regime_embed = regime_embed + conf_mod
+
+        learned_logits = self.routing_head(regime_embed)
+        combined = table_match + 0.1 * learned_logits - cost_penalty
+
+        scores, indices = combined.sort(dim=-1, descending=True)
+        regret = scores[:, 0] - scores[:, 1] if combined.shape[1] > 1 else combined.new_zeros(B)
+        selected = indices[:, 0]
+
+        return {
+            "capability_match": table_match,
+            "route_recommendation": indices,
+            "route_regret": regret,
+            "routing_logits": learned_logits,
+            "cost_adjusted_scores": combined,
+            "selected_expert": selected,
+        }
+
+    def dispatch(self, expert_id: int, images: torch.Tensor,
+                 context: Optional[Dict[str, torch.Tensor]] = None,
+                 ) -> Optional[ExpertOutput]:
+        if self.registry is None:
+            return None
+        names = sorted(self.registry.names)
+        if expert_id >= len(names):
+            return None
+        adapter = self.registry.get(names[expert_id])
+        return adapter.forward(images, context)

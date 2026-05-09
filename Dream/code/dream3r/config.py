@@ -18,6 +18,9 @@ except ImportError:
 
 
 DEFAULTS = {
+    # Version
+    "version": "v03",
+
     # Perceiver (C1)
     "d_model": 768,
     "n_evidence": 17,
@@ -26,7 +29,15 @@ DEFAULTS = {
     "patch_size": 16,
     "use_backbone": False,
 
-    # Memory (C2)
+    # Memory (C2) — v0.3 spatial memory
+    "d_memory": 128,
+    "n_state_tokens": 32,
+    "bank_capacity": 256,
+    "nsa_select_k": 8,
+    "nsa_heads": 4,
+    "sliding_window": 4,
+
+    # Memory (C2) — v0.1 legacy
     "d_state": 256,
     "n_ssm_layers": 6,
     "d_bus_context": 3,
@@ -41,9 +52,11 @@ DEFAULTS = {
     "n_critic_heads": 4,
     "n_critic_layers": 2,
 
-    # Composer (C5)
+    # Composer (C5) — v0.3 router
     "n_regimes": 5,
     "n_models": 8,
+    "d_routing": 64,
+    "cost_alpha": 0.5,
 
     # Training
     "batch_size": 4,
@@ -63,6 +76,9 @@ DEFAULTS = {
     "w_memory_p3": 0.2,
     "w_permanence_p4": 0.5,
     "w_action_entropy": 0.1,
+    "w_retrieval": 0.1,
+    "w_routing": 0.05,
+    "w_drift_consistency": 0.1,
 
     # Data
     "data_root": "/hdd3/kykt26/data",
@@ -89,6 +105,12 @@ PRESETS = {
         "use_backbone": False,
         "gpus": "0,1",
     },
+    "small_v01": {
+        **DEFAULTS,
+        "version": "v01",
+        "use_backbone": False,
+        "gpus": "0,1",
+    },
     "small_vit": {
         **DEFAULTS,
         "use_backbone": True,
@@ -98,12 +120,17 @@ PRESETS = {
     "base": {
         **DEFAULTS,
         "use_backbone": True,
-        "d_state": 512,
-        "n_ssm_layers": 12,
+        "d_memory": 256,
+        "n_state_tokens": 64,
+        "bank_capacity": 512,
+        "nsa_select_k": 16,
+        "nsa_heads": 8,
+        "sliding_window": 8,
         "d_slot": 256,
         "n_slots": 32,
         "d_critic": 512,
         "n_critic_layers": 4,
+        "d_routing": 128,
         "gpus": "0,1,2",
         "batch_size": 2,
     },
@@ -140,17 +167,34 @@ def save_config(cfg: dict, path: str):
 
 def config_to_model_args(cfg: dict) -> dict:
     """Extract only the keys Dream3R.__init__ needs."""
-    return {
+    args = {
+        "version": cfg.get("version", "v03"),
         "d_model": cfg["d_model"],
         "n_evidence": cfg["n_evidence"],
         "d_evidence": cfg["d_evidence"],
-        "d_state": cfg["d_state"],
-        "n_ssm_layers": cfg["n_ssm_layers"],
         "d_slot": cfg["d_slot"],
         "n_slots": cfg["n_slots"],
         "d_critic": cfg["d_critic"],
         "n_regimes": cfg["n_regimes"],
-        "n_models": cfg["n_models"],
         "use_backbone": cfg["use_backbone"],
         "img_size": cfg["img_size"],
+        "profile": cfg.get("profile", False),
     }
+    if cfg.get("version", "v03") == "v01":
+        args.update({
+            "d_state": cfg["d_state"],
+            "n_ssm_layers": cfg["n_ssm_layers"],
+            "n_models": cfg.get("n_models", 8),
+        })
+    else:
+        args.update({
+            "d_memory": cfg.get("d_memory", 128),
+            "n_state_tokens": cfg.get("n_state_tokens", 32),
+            "bank_capacity": cfg.get("bank_capacity", 256),
+            "nsa_select_k": cfg.get("nsa_select_k", 8),
+            "nsa_heads": cfg.get("nsa_heads", 4),
+            "sliding_window": cfg.get("sliding_window", 4),
+            "d_routing": cfg.get("d_routing", 64),
+            "cost_alpha": cfg.get("cost_alpha", 0.5),
+        })
+    return args

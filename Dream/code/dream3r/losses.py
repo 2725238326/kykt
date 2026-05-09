@@ -1,5 +1,8 @@
 """
-Dream3R training losses, mapped from the training-objective sketch in SPEC-20260506-001.
+Dream3R training losses.
+
+v0.1 losses: pointmap, critic_p1, critic_p5, memory_p2, permanence_p4, action_entropy
+v0.3 additions: retrieval (anti-collapse), routing (expert utilization), drift_consistency
 """
 
 import torch
@@ -24,6 +27,9 @@ class Dream3RLoss(nn.Module):
             "memory_p3": 0.2,
             "permanence_p4": 0.5,
             "action_entropy": 0.1,
+            "retrieval": 0.1,
+            "routing": 0.05,
+            "drift_consistency": 0.1,
         }
 
     def forward(self, outputs: Dict[str, torch.Tensor],
@@ -85,6 +91,40 @@ class Dream3RLoss(nn.Module):
                 entropy = -(probs * (probs + 1e-8).log()).sum(dim=-1).mean()
                 losses[f"entropy_{key}"] = entropy
                 total = total + self.w["action_entropy"] * (-entropy)
+
+        # L_retrieval: encourage diverse AnchorBank usage (anti-collapse)
+        if "nsa_branch_weights" in outputs:
+            bw = outputs["nsa_branch_weights"]
+            branch_usage = bw.mean(dim=(0, 1))
+            target_uniform = torch.ones_like(branch_usage) / branch_usage.shape[0]
+            l_ret = F.kl_div(
+                branch_usage.log().clamp(min=-20),
+                target_uniform,
+                reduction="batchmean",
+            )
+            losses["retrieval"] = l_ret
+            total = total + self.w.get("retrieval", 0.1) * l_ret
+
+        # L_routing: expert utilization balance
+        if "routing_logits" in outputs:
+            route_probs = F.softmax(outputs["routing_logits"], dim=-1)
+            avg_route = route_probs.mean(dim=0)
+            target_uniform = torch.ones_like(avg_route) / avg_route.shape[0]
+            l_route = F.kl_div(
+                avg_route.log().clamp(min=-20),
+                target_uniform,
+                reduction="batchmean",
+            )
+            losses["routing"] = l_route
+            total = total + self.w.get("routing", 0.05) * l_route
+
+        # L_drift_consistency: latent drift should correlate with scene change
+        if "latent_drift_proxy" in outputs and "pointmap_change" in targets:
+            drift = outputs["latent_drift_proxy"].squeeze(-1)
+            change = targets["pointmap_change"]
+            l_drift = F.mse_loss(torch.sigmoid(drift), change.clamp(0, 1))
+            losses["drift_consistency"] = l_drift
+            total = total + self.w.get("drift_consistency", 0.1) * l_drift
 
         losses["total"] = total
         return losses

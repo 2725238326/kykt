@@ -51,6 +51,11 @@ class MemoryBus(nn.Module):
             "latent_drift_proxy": "memory",
             "anchor_set": "memory",
             "policy_log": "memory",
+            "selected_anchors": "memory",
+            "memory_retrieval_log": "memory",
+            "bank_occupancy": "memory",
+            "quarantine_count": "memory",
+            "nsa_branch_weights": "memory",
             "dynamic_ratio": "permanence",
             "object_track_stability": "permanence",
             "suppress_static_write": "permanence",
@@ -59,6 +64,10 @@ class MemoryBus(nn.Module):
             "route_recommendation": "composer",
             "route_regret": "composer",
             "regime_card": "composer",
+            "routed_expert_id": "composer",
+            "expert_latency": "composer",
+            "routing_logits": "composer",
+            "cost_adjusted_scores": "composer",
         }
 
     def reset(self):

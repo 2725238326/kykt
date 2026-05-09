@@ -1,12 +1,15 @@
 """
-Dream3R training script.
+Dream3R v0.3 training script.
 
 Supports:
   - DDP multi-GPU (2-3 cards, CUDA_VISIBLE_DEVICES to pick)
   - Mixed precision (torch.amp)
   - Checkpoint save/resume
-  - TensorBoard logging
+  - TensorBoard logging with per-bus-signal traces
   - Gradient clipping
+  - Multi-stage LR schedule (warmup -> partial unfreeze -> full cosine)
+  - Synthetic or DTU dataset
+  - v0.3 loss terms (retrieval, routing, drift_consistency)
 
 Usage:
     # Single GPU
@@ -23,50 +26,23 @@ import os
 import sys
 import argparse
 import time
+import math
 from pathlib import Path
 
 import torch
 import torch.nn as nn
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.data import DataLoader, Dataset, DistributedSampler
+from torch.utils.data import DataLoader, DistributedSampler
 
 from dream3r.config import load_config, save_config, config_to_model_args
 from dream3r.model import Dream3R
 from dream3r.losses import Dream3RLoss
+from dream3r.data.synthetic import SyntheticSequenceDataset, DTUDataset
 
 
 # ---------------------------------------------------------------------------
-# Placeholder dataset (replace with DTU/KITTI loader)
-# ---------------------------------------------------------------------------
-
-class SyntheticDataset(Dataset):
-    """Synthetic data for testing the training loop before real data is ready."""
-
-    def __init__(self, n_samples: int = 200, n_frames: int = 4,
-                 n_patches: int = 196, d_model: int = 768):
-        self.n = n_samples
-        self.n_frames = n_frames
-        self.n_patches = n_patches
-        self.d_model = d_model
-
-    def __len__(self):
-        return self.n
-
-    def __getitem__(self, idx):
-        x = torch.randn(self.n_frames, self.n_patches, self.d_model)
-        targets = {
-            "pointmap": torch.randn(self.n_frames, self.n_patches, 3),
-            "pointmap_mask": torch.ones(self.n_frames, self.n_patches),
-            "conflict_label": torch.randint(0, 2, ()).float(),
-            "repair_label": torch.randint(0, 6, ()),
-            "region_label": torch.randint(0, 3, (16,)),
-        }
-        return x, targets
-
-
-# ---------------------------------------------------------------------------
-# Training utilities
+# DDP utilities
 # ---------------------------------------------------------------------------
 
 def setup_ddp(rank: int, world_size: int, backend: str = "nccl"):
@@ -82,6 +58,10 @@ def cleanup_ddp():
 def is_main_process() -> bool:
     return not dist.is_initialized() or dist.get_rank() == 0
 
+
+# ---------------------------------------------------------------------------
+# Checkpoint I/O
+# ---------------------------------------------------------------------------
 
 def save_checkpoint(model: nn.Module, optimizer, scaler, epoch: int,
                     step: int, cfg: dict, path: str):
@@ -109,6 +89,79 @@ def load_checkpoint(path: str, model: nn.Module, optimizer=None, scaler=None):
 
 
 # ---------------------------------------------------------------------------
+# Multi-stage LR scheduler
+# ---------------------------------------------------------------------------
+
+class MultiStageScheduler:
+    """
+    3-stage LR schedule:
+      Stage 1 (warmup):  linear ramp from 0 to lr, only heads trainable
+      Stage 2 (partial):  constant lr, top backbone layers unfrozen
+      Stage 3 (full):     cosine decay, all parameters unfrozen
+    """
+
+    def __init__(self, optimizer, cfg: dict):
+        self.optimizer = optimizer
+        self.warmup = cfg.get("warmup_epochs", 5)
+        self.total = cfg.get("epochs", 100)
+        self.base_lr = cfg.get("lr", 1e-4)
+        self.stage2_start = self.warmup
+        self.stage3_start = self.warmup + (self.total - self.warmup) // 3
+
+    def step(self, epoch: int) -> float:
+        if epoch < self.warmup:
+            lr = self.base_lr * (epoch + 1) / self.warmup
+        elif epoch < self.stage3_start:
+            lr = self.base_lr
+        else:
+            progress = (epoch - self.stage3_start) / max(1, self.total - self.stage3_start)
+            lr = self.base_lr * 0.5 * (1 + math.cos(math.pi * progress))
+        for pg in self.optimizer.param_groups:
+            pg["lr"] = lr
+        return lr
+
+    def get_stage(self, epoch: int) -> str:
+        if epoch < self.warmup:
+            return "warmup"
+        elif epoch < self.stage3_start:
+            return "partial_unfreeze"
+        return "full_unfreeze"
+
+
+# ---------------------------------------------------------------------------
+# Dataset builders
+# ---------------------------------------------------------------------------
+
+def build_datasets(cfg: dict):
+    if cfg.get("dataset", "synthetic") == "dtu":
+        train_ds = DTUDataset(cfg.get("data_root", "/hdd3/kykt26/data/dtu"), "train")
+        val_ds = DTUDataset(cfg.get("data_root", "/hdd3/kykt26/data/dtu"), "val")
+    else:
+        train_ds = SyntheticSequenceDataset(
+            n_sequences=cfg.get("n_train_sequences", 500),
+            n_frames=cfg.get("n_frames_per_window", 4),
+            n_slots=cfg.get("n_slots", 16),
+            n_regimes=cfg.get("n_regimes", 5),
+            d_model=cfg.get("d_model", 768),
+            seed=42,
+        )
+        val_ds = SyntheticSequenceDataset(
+            n_sequences=cfg.get("n_val_sequences", 50),
+            n_frames=cfg.get("n_frames_per_window", 4),
+            n_slots=cfg.get("n_slots", 16),
+            n_regimes=cfg.get("n_regimes", 5),
+            d_model=cfg.get("d_model", 768),
+            seed=1337,
+        )
+    return train_ds, val_ds
+
+
+def collate_synthetic(batch):
+    keys = batch[0].keys()
+    return {k: torch.stack([b[k] for b in batch]) for k in keys}
+
+
+# ---------------------------------------------------------------------------
 # Training loop
 # ---------------------------------------------------------------------------
 
@@ -120,10 +173,10 @@ def train(cfg: dict):
     if is_ddp:
         setup_ddp(local_rank, world_size, cfg["dist_backend"])
 
-    device = torch.device(f"cuda:{local_rank}")
-    torch.cuda.set_device(device)
+    device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
+        torch.cuda.set_device(device)
 
-    # Model
     model_cfg = config_to_model_args(cfg)
     model = Dream3R(model_cfg).to(device)
     if is_ddp:
@@ -131,9 +184,9 @@ def train(cfg: dict):
 
     if is_main_process():
         n_params = sum(p.numel() for p in model.parameters())
-        print(f"Dream3R: {n_params:,} params | {world_size} GPU(s) | AMP={cfg['amp']}")
+        version = cfg.get("version", "v03")
+        print(f"Dream3R [{version}]: {n_params:,} params | {world_size} GPU(s) | AMP={cfg['amp']}")
 
-    # Loss
     loss_fn = Dream3RLoss(weights={
         "pointmap": cfg["w_pointmap"],
         "critic_p1": cfg["w_critic_p1"],
@@ -142,50 +195,49 @@ def train(cfg: dict):
         "memory_p3": cfg["w_memory_p3"],
         "permanence_p4": cfg["w_permanence_p4"],
         "action_entropy": cfg["w_action_entropy"],
+        "retrieval": cfg.get("w_retrieval", 0.1),
+        "routing": cfg.get("w_routing", 0.05),
+        "drift_consistency": cfg.get("w_drift_consistency", 0.1),
     }).to(device)
 
-    # Optimizer
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"],
     )
+    scheduler = MultiStageScheduler(optimizer, cfg)
+    use_amp = cfg["amp"] and device.type == "cuda"
+    scaler = torch.amp.GradScaler("cuda") if use_amp else None
 
-    # AMP scaler
-    scaler = torch.amp.GradScaler("cuda") if cfg["amp"] else None
+    train_ds, val_ds = build_datasets(cfg)
+    sampler = DistributedSampler(train_ds) if is_ddp else None
+    train_loader = DataLoader(
+        train_ds, batch_size=cfg["batch_size"],
+        sampler=sampler, shuffle=(sampler is None),
+        num_workers=cfg["num_workers"], pin_memory=True,
+        drop_last=True, collate_fn=collate_synthetic,
+    )
+    val_loader = DataLoader(
+        val_ds, batch_size=cfg["batch_size"], shuffle=False,
+        num_workers=cfg["num_workers"], pin_memory=True,
+        collate_fn=collate_synthetic,
+    )
 
-    # Dataset
-    if cfg["dataset"] == "synthetic":
-        dataset = SyntheticDataset(
-            n_samples=200, n_frames=cfg["n_frames_per_window"],
-            n_patches=196, d_model=cfg["d_model"],
-        )
-        sampler = DistributedSampler(dataset) if is_ddp else None
-        loader = DataLoader(
-            dataset, batch_size=cfg["batch_size"],
-            sampler=sampler, shuffle=(sampler is None),
-            num_workers=cfg["num_workers"], pin_memory=True,
-            drop_last=True,
-        )
-    elif cfg["dataset"] == "dtu":
-        from dream3r.data_dtu import build_dtu_loaders
-        loader, val_loader, sampler = build_dtu_loaders(cfg)
-        if is_main_process():
-            print(f"DTU: {len(loader.dataset)} train, {len(val_loader.dataset)} val samples")
-    else:
-        raise ValueError(f"Unknown dataset: {cfg['dataset']}")
-
-    # TensorBoard
     writer = None
     if is_main_process():
         try:
-            from tensorboardX import SummaryWriter
+            from torch.utils.tensorboard import SummaryWriter
             log_dir = Path(cfg["log_dir"]) / time.strftime("%Y%m%d-%H%M%S")
             writer = SummaryWriter(str(log_dir))
             save_config(cfg, str(log_dir / "config.yaml"))
             print(f"Logging to {log_dir}")
         except ImportError:
-            print("tensorboardX not found, skipping logging")
+            try:
+                from tensorboardX import SummaryWriter
+                log_dir = Path(cfg["log_dir"]) / time.strftime("%Y%m%d-%H%M%S")
+                writer = SummaryWriter(str(log_dir))
+                save_config(cfg, str(log_dir / "config.yaml"))
+            except ImportError:
+                print("No TensorBoard writer available, skipping logging")
 
-    # Resume
     start_epoch, global_step = 0, 0
     resume_path = cfg.get("resume")
     if resume_path and Path(resume_path).exists():
@@ -193,35 +245,45 @@ def train(cfg: dict):
         if is_main_process():
             print(f"Resumed from {resume_path} (epoch {start_epoch}, step {global_step})")
 
-    # Train
     for epoch in range(start_epoch, cfg["epochs"]):
         if sampler:
             sampler.set_epoch(epoch)
+
+        lr = scheduler.step(epoch)
+        stage = scheduler.get_stage(epoch)
 
         model.train()
         epoch_loss = 0.0
         t0 = time.time()
 
-        for batch_idx, (x, targets) in enumerate(loader):
-            x = x.to(device, non_blocking=True)
-            targets = {k: v.to(device, non_blocking=True) for k, v in targets.items()}
+        for batch_idx, batch in enumerate(train_loader):
+            x = batch["features"].to(device, non_blocking=True)
+            regime = batch["regime"].to(device, non_blocking=True)
+            targets = {
+                "pointmap": batch["pointmap_gt"].to(device, non_blocking=True),
+                "conflict_label": batch["conflict_label"].to(device, non_blocking=True),
+                "repair_label": batch["repair_label"].to(device, non_blocking=True),
+                "region_label": batch["region_label"].to(device, non_blocking=True),
+            }
+            if "pointmap_change" in batch:
+                targets["pointmap_change"] = batch["pointmap_change"].to(device, non_blocking=True)
 
             optimizer.zero_grad(set_to_none=True)
 
-            if cfg["amp"]:
+            if use_amp:
                 with torch.amp.autocast("cuda"):
-                    outputs = model(x)
+                    outputs = model(x, regime)
                     losses = loss_fn(outputs, targets)
                 scaler.scale(losses["total"]).backward()
                 scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"])
+                nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"])
                 scaler.step(optimizer)
                 scaler.update()
             else:
-                outputs = model(x)
+                outputs = model(x, regime)
                 losses = loss_fn(outputs, targets)
                 losses["total"].backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"])
+                nn.utils.clip_grad_norm_(model.parameters(), cfg["grad_clip"])
                 optimizer.step()
 
             epoch_loss += losses["total"].item()
@@ -230,26 +292,64 @@ def train(cfg: dict):
             if is_main_process() and global_step % cfg["log_every"] == 0:
                 if writer:
                     for k, v in losses.items():
-                        writer.add_scalar(f"loss/{k}", v.item(), global_step)
+                        if isinstance(v, torch.Tensor):
+                            writer.add_scalar(f"loss/{k}", v.item(), global_step)
                     if "update_probs" in outputs:
                         probs = outputs["update_probs"].detach().mean(0)
-                        for i, name in enumerate(["full", "pose_adpt", "kalman", "skip", "reset"]):
+                        modes = ["full", "pose_adpt", "kalman", "skip", "reset"]
+                        for i, name in enumerate(modes):
                             writer.add_scalar(f"a1_mode/{name}", probs[i].item(), global_step)
+                    if "nsa_branch_weights" in outputs:
+                        bw = outputs["nsa_branch_weights"].detach().mean(dim=(0, 1))
+                        for i, name in enumerate(["compressed", "selected", "sliding"]):
+                            writer.add_scalar(f"memory/branch_{name}", bw[i].item(), global_step)
+                    if "bank_occupancy" in outputs:
+                        occ = outputs["bank_occupancy"]
+                        if isinstance(occ, torch.Tensor):
+                            writer.add_scalar("memory/bank_occupancy", occ.mean().item(), global_step)
+                    if "route_regret" in outputs:
+                        writer.add_scalar("composer/route_regret",
+                                          outputs["route_regret"].mean().item(), global_step)
+                    writer.add_scalar("train/lr", lr, global_step)
 
         dt = time.time() - t0
-        avg = epoch_loss / max(len(loader), 1)
+        avg = epoch_loss / max(len(train_loader), 1)
 
         if is_main_process():
-            print(f"Epoch {epoch+1}/{cfg['epochs']}  loss={avg:.4f}  time={dt:.1f}s")
+            print(f"  epoch {epoch+1:3d}/{cfg['epochs']}  loss={avg:.4f}  "
+                  f"lr={lr:.2e}  stage={stage}  time={dt:.1f}s")
+
             if writer:
                 writer.add_scalar("epoch/loss", avg, epoch)
+
+            if (epoch + 1) % cfg.get("eval_every_epoch", 5) == 0:
+                model.eval()
+                val_loss = 0.0
+                n_val = 0
+                with torch.no_grad():
+                    for batch in val_loader:
+                        x = batch["features"].to(device)
+                        regime = batch["regime"].to(device)
+                        targets = {
+                            "pointmap": batch["pointmap_gt"].to(device),
+                            "conflict_label": batch["conflict_label"].to(device),
+                            "repair_label": batch["repair_label"].to(device),
+                            "region_label": batch["region_label"].to(device),
+                        }
+                        outputs = model(x, regime)
+                        losses = loss_fn(outputs, targets)
+                        val_loss += losses["total"].item()
+                        n_val += 1
+                avg_val = val_loss / max(n_val, 1)
+                print(f"    val_loss={avg_val:.4f}")
+                if writer:
+                    writer.add_scalar("val/loss", avg_val, epoch)
 
             if (epoch + 1) % cfg["save_every_epoch"] == 0:
                 path = Path(cfg["save_dir"]) / f"epoch_{epoch+1:04d}.pt"
                 save_checkpoint(model, optimizer, scaler, epoch + 1, global_step, cfg, str(path))
-                print(f"  Saved {path}")
+                print(f"    saved {path}")
 
-    # Final save
     if is_main_process():
         path = Path(cfg["save_dir"]) / "latest.pt"
         save_checkpoint(model, optimizer, scaler, cfg["epochs"], global_step, cfg, str(path))
@@ -265,7 +365,7 @@ def train(cfg: dict):
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Dream3R training")
+    parser = argparse.ArgumentParser(description="Dream3R v0.3 training")
     parser.add_argument("--preset", default="small", help="Config preset name")
     parser.add_argument("--config", default=None, help="Path to YAML config")
     parser.add_argument("--resume", default=None, help="Path to checkpoint")
