@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Type
 import torch
 
 from .base_adapter import ExpertAdapter, ExpertOutput
+from .method_profiles import FEATURE_ORDER, METHOD_PROFILES, MethodProfile
 
 
 class ExpertRegistry:
@@ -58,9 +59,60 @@ class ExpertRegistry:
         order = regime_order or ExpertAdapter.REGIMES
         rows = []
         for name in sorted(self._classes.keys()):
-            adapter = self.get(name)
-            rows.append(adapter.capability_tensor(order))
+            profile = METHOD_PROFILES.get(name)
+            if profile is not None:
+                rows.append(profile.regime_tensor(order))
+            else:
+                adapter = self.get(name)
+                rows.append(adapter.capability_tensor(order))
         return torch.stack(rows)
+
+    def method_profile(self, name: str) -> MethodProfile:
+        if name not in METHOD_PROFILES:
+            raise KeyError(f"No method profile for expert: {name}")
+        return METHOD_PROFILES[name]
+
+    def method_profiles(self) -> Dict[str, MethodProfile]:
+        return {
+            name: METHOD_PROFILES[name]
+            for name in sorted(self._classes.keys())
+            if name in METHOD_PROFILES
+        }
+
+    def feature_matrix(self, feature_order: Optional[list] = None) -> torch.Tensor:
+        order = feature_order or FEATURE_ORDER
+        rows = []
+        for name in sorted(self._classes.keys()):
+            profile = METHOD_PROFILES.get(name)
+            if profile is None:
+                rows.append(torch.zeros(len(order)))
+            else:
+                rows.append(profile.feature_tensor(order))
+        return torch.stack(rows)
+
+    def advantage_summary(self) -> Dict[str, List[str]]:
+        return {
+            name: profile.advantages
+            for name, profile in self.method_profiles().items()
+        }
+
+    def adapter_status(self) -> Dict[str, Dict[str, object]]:
+        status = {}
+        for name in sorted(self._classes.keys()):
+            adapter = self.get(name)
+            is_available = (
+                adapter.is_available()
+                if hasattr(adapter, "is_available")
+                else False
+            )
+            status[name] = {
+                "is_loaded": bool(adapter.is_loaded),
+                "is_available": bool(is_available),
+                "backend": "real" if adapter.is_loaded else "fallback",
+                "attention_regime": adapter.attention_regime,
+                "latency_estimate_ms": adapter.latency_estimate_ms,
+            }
+        return status
 
     def latency_vector(self) -> torch.Tensor:
         return torch.tensor([

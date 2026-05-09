@@ -35,6 +35,9 @@ DEFAULTS = {
     "bank_capacity": 256,
     "nsa_select_k": 8,
     "nsa_heads": 4,
+    "nsa_confidence_bias_strength": 2.0,
+    "nsa_geometry_bias_strength": 1.0,
+    "nsa_top_k_branches": 2,
     "sliding_window": 4,
 
     # Memory (C2) — v0.1 legacy
@@ -77,8 +80,11 @@ DEFAULTS = {
     "w_permanence_p4": 0.5,
     "w_action_entropy": 0.1,
     "w_retrieval": 0.1,
+    "w_retrieval_quality": 0.05,
     "w_routing": 0.05,
+    "w_geometric_consistency": 0.05,
     "w_drift_consistency": 0.1,
+    "w_state_drift_regularization": 0.01,
 
     # Data
     "data_root": "/hdd3/kykt26/data",
@@ -195,6 +201,9 @@ def config_to_model_args(cfg: dict) -> dict:
             "bank_capacity": cfg.get("bank_capacity", 256),
             "nsa_select_k": cfg.get("nsa_select_k", 8),
             "nsa_heads": cfg.get("nsa_heads", 4),
+            "nsa_confidence_bias_strength": cfg.get("nsa_confidence_bias_strength", 2.0),
+            "nsa_geometry_bias_strength": cfg.get("nsa_geometry_bias_strength", 1.0),
+            "nsa_top_k_branches": cfg.get("nsa_top_k_branches", 2),
             "sliding_window": cfg.get("sliding_window", 4),
             "d_routing": cfg.get("d_routing", 64),
             "cost_alpha": cfg.get("cost_alpha", 0.5),

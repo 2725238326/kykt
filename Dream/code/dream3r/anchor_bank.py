@@ -238,6 +238,13 @@ class AnchorBank(nn.Module):
         if points3d_mean is None:
             points3d_mean = torch.zeros(B, N, 3, device=device)
 
+        keys = keys.detach()
+        values = values.detach()
+        confidence = confidence.detach()
+        source_frame_pose = source_frame_pose.detach()
+        source_patch_ids = source_patch_ids.detach()
+        points3d_mean = points3d_mean.detach()
+
         n_accepted = accept.sum().item()
         n_suppressed = B * N - n_accepted
         n_quarantined = (accept & quarantine_new).sum().item()

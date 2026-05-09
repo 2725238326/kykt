@@ -108,7 +108,7 @@ class SelectedBranch(nn.Module):
             bank_keys:   [B, M, D] — full bank keys
             bank_values: [B, M, D] — full bank values
             bank_mask:   [B, M] — True = valid entry, False = empty/quarantined
-            score_bias:  [B, M] or [B, 1] — additive CR-3 bank score bias
+            score_bias:  [B, Q, M], [B, M], or [B, 1] additive bank score bias
         Returns:
             output:        [B, Q, D]
             indices:       [B, Q, K] — selected bank indices per query
@@ -126,9 +126,11 @@ class SelectedBranch(nn.Module):
         if score_bias is not None:
             if score_bias.dim() == 3 and score_bias.shape[-1] == 1:
                 score_bias = score_bias.squeeze(-1)
-            if score_bias.shape[-1] == 1:
-                score_bias = score_bias.expand(-1, M)
-            scores = scores + score_bias.unsqueeze(1).to(dtype=scores.dtype, device=scores.device)
+            if score_bias.dim() == 2:
+                if score_bias.shape[-1] == 1:
+                    score_bias = score_bias.expand(-1, M)
+                score_bias = score_bias.unsqueeze(1)
+            scores = scores + score_bias.to(dtype=scores.dtype, device=scores.device)
 
         if bank_mask is not None:
             mask_expanded = bank_mask.unsqueeze(1).expand(B, Q, M)
@@ -191,7 +193,9 @@ class NSAAttention(nn.Module):
     def __init__(self, d_model: int = 128, n_compress: int = 32,
                  n_select_k: int = 8, n_heads: int = 4,
                  dropout: float = 0.0,
-                 confidence_bias_strength: float = 2.0):
+                 confidence_bias_strength: float = 2.0,
+                 geometry_bias_strength: float = 1.0,
+                 top_k_branches: int = 2):
         super().__init__()
         self.d_model = d_model
         self.n_compress = n_compress
@@ -199,6 +203,10 @@ class NSAAttention(nn.Module):
         self.confidence_bias_strength = nn.Parameter(
             torch.tensor(float(confidence_bias_strength))
         )
+        self.geometry_bias_strength = nn.Parameter(
+            torch.tensor(float(geometry_bias_strength))
+        )
+        self.top_k_branches = top_k_branches
 
         self.compressed = CompressedBranch(d_model, n_compress, n_heads, dropout)
         self.selected = SelectedBranch(d_model, n_select_k, n_heads, dropout)
@@ -219,6 +227,8 @@ class NSAAttention(nn.Module):
                 bank_mask: Optional[torch.Tensor] = None,
                 critic_confidence: Optional[torch.Tensor] = None,
                 permanence_bias: Optional[torch.Tensor] = None,
+                query_points3d: Optional[torch.Tensor] = None,
+                bank_points3d: Optional[torch.Tensor] = None,
                 dynamic_top_k: Optional[int] = None,
                 ) -> Dict[str, torch.Tensor]:
         """
@@ -231,6 +241,8 @@ class NSAAttention(nn.Module):
             bank_mask:          [B, M] — True = valid
             critic_confidence:  [B, 1] — CR-3: high values bias toward high-confidence entries
             permanence_bias:    [B, 1] — CR-3: high values prefer stable/permanent entries
+            query_points3d:     [B, Q, 3] current query geometry
+            bank_points3d:      [B, M, 3] stored anchor geometry
             dynamic_top_k:      int — CR-3: adjusted retrieval depth based on Critic confidence
         Returns:
             output:               [B, Q, D]
@@ -252,9 +264,26 @@ class NSAAttention(nn.Module):
                 device=query.device, dtype=query.dtype
             ).abs().mean()
 
+        geometry_bias_applied = torch.zeros((), device=query.device, dtype=query.dtype)
+        geometry_distances = None
+        if query_points3d is not None and bank_points3d is not None:
+            geometry_distances = torch.cdist(
+                query_points3d.float(), bank_points3d.float()
+            ).to(device=query.device, dtype=query.dtype)
+            denom = geometry_distances.detach().mean().clamp_min(1e-6)
+            geometry_bias = -F.softplus(self.geometry_bias_strength) * (geometry_distances / denom)
+            selected_score_bias = (
+                geometry_bias if selected_score_bias is None
+                else selected_score_bias.unsqueeze(1) + geometry_bias
+            )
+            geometry_bias_applied = geometry_bias.abs().mean().detach()
+
         out_s, sel_idx, scores_before, scores_after = self.selected(
             query, bank_keys, bank_values, bank_mask, score_bias=selected_score_bias
         )
+        selected_geometry_distances = None
+        if geometry_distances is not None:
+            selected_geometry_distances = geometry_distances.gather(-1, sel_idx).detach()
 
         if effective_k != self.n_select_k and dynamic_top_k is not None:
             self.selected.n_select_k = saved_k
@@ -272,6 +301,16 @@ class NSAAttention(nn.Module):
         else:
             confidence_bias_applied = torch.zeros((), device=query.device, dtype=query.dtype)
 
+        if self.top_k_branches < gate_logits.shape[-1]:
+            top_values, top_indices = gate_logits.topk(self.top_k_branches, dim=-1)
+            sparse_logits = torch.full_like(gate_logits, torch.finfo(gate_logits.dtype).min)
+            sparse_logits.scatter_(-1, top_indices, top_values)
+            branch_active_mask = torch.zeros_like(gate_logits, dtype=torch.bool)
+            branch_active_mask.scatter_(-1, top_indices, True)
+            gate_logits = sparse_logits
+        else:
+            branch_active_mask = torch.ones_like(gate_logits, dtype=torch.bool)
+
         gate_weights = F.softmax(gate_logits, dim=-1)
 
         branches = torch.stack([out_c, out_s, out_w], dim=-2)
@@ -286,6 +325,9 @@ class NSAAttention(nn.Module):
                 "effective_top_k": effective_k,
                 "confidence_bias_applied": confidence_bias_applied,
                 "permanence_bias_applied": permanence_bias_applied,
+                "geometry_bias_applied": geometry_bias_applied,
+                "selected_3d_distances": selected_geometry_distances,
+                "branch_active_mask": branch_active_mask.detach(),
                 "selected_scores_before_bias": scores_before.detach(),
                 "selected_scores_after_bias": scores_after.detach(),
             },

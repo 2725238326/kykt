@@ -21,6 +21,38 @@ def test_capability_matrix():
     assert (matrix >= 0).all() and (matrix <= 1).all()
 
 
+def test_method_profiles_extract_3r_advantages():
+    reg = ExpertRegistry()
+    reg.register_all_defaults()
+
+    profiles = reg.method_profiles()
+    assert set(profiles) == set(reg.names)
+    assert "dense 3D-grounded local matching" in profiles["mast3r"].advantages
+    assert "persistent state for continuous perception" in profiles["cut3r"].advantages
+    assert "external spatial memory for image collections" in profiles["spann3r"].advantages
+
+    feature_matrix = reg.feature_matrix()
+    assert feature_matrix.shape[0] == 7
+    assert feature_matrix.shape[1] >= 8
+    assert feature_matrix.max() <= 1
+    assert feature_matrix.min() >= 0
+
+    summary = reg.advantage_summary()
+    assert "fast3r" in summary
+    assert len(summary["fast3r"]) >= 2
+
+
+def test_adapter_status_reports_backend_availability():
+    reg = ExpertRegistry()
+    reg.register_all_defaults()
+    status = reg.adapter_status()
+
+    assert set(status) == set(reg.names)
+    assert "is_loaded" in status["mast3r"]
+    assert "is_available" in status["mast3r"]
+    assert status["mast3r"]["backend"] in {"real", "fallback"}
+
+
 def test_latency_vector():
     reg = ExpertRegistry()
     reg.register_all_defaults()
@@ -49,6 +81,22 @@ def test_adapter_forward():
         assert "expert" in out.metadata
 
 
+def test_mast3r_fallback_is_deterministic_and_marked():
+    reg = ExpertRegistry()
+    reg.register_all_defaults()
+    adapter = reg.get("mast3r")
+    images = torch.randn(1, 2, 3, 224, 224)
+
+    out1 = adapter.forward(images)
+    out2 = adapter.forward(images)
+
+    assert torch.allclose(out1.pointmap, out2.pointmap)
+    assert torch.allclose(out1.confidence, out2.confidence)
+    assert out1.metadata["backend"] in {"deterministic_fallback", "mast3r"}
+    if not adapter.is_loaded:
+        assert out1.metadata["is_loaded"] is False
+
+
 def test_capability_tensor():
     reg = ExpertRegistry()
     reg.register_all_defaults()
@@ -71,8 +119,11 @@ def test_cut3r_state_tokens():
 if __name__ == "__main__":
     test_registry_registration()
     test_capability_matrix()
+    test_method_profiles_extract_3r_advantages()
+    test_adapter_status_reports_backend_availability()
     test_latency_vector()
     test_adapter_forward()
+    test_mast3r_fallback_is_deterministic_and_marked()
     test_capability_tensor()
     test_cut3r_state_tokens()
     print("All composer expert tests passed.")

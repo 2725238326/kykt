@@ -163,6 +163,21 @@ CR-3 functions (`gate_cr3`, `cr3_retrieval_bias`, `cr3_permanence_bias` in bus.p
 
 ## W4: Expert adapter real integration (P1)
 
+### Implementation status (2026-05-09)
+
+Implemented:
+- `MASt3RAdapter` now has a deterministic image-derived fallback instead of random tensors
+- real MASt3R checkpoint discovery via `MAST3R_REPO` / `MAST3R_CHECKPOINT` or server defaults
+- `load_checkpoint()` loads `/hdd3/kykt26/code/mast3r/checkpoints/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth`
+- real model forward maps MASt3R pointmaps/confidence into the `ExpertOutput` contract
+- `ExpertRegistry.adapter_status()` reports availability, loaded state, backend, attention regime, and latency estimate
+- Composer routing test verifies MASt3R is preferred for static indoor regimes when cost penalty is disabled
+- optional server integration test in `tests/test_mast3r_integration.py`
+
+Verified on server:
+- normal fallback contract test passes without loading the large model
+- `DREAM3R_RUN_MAST3R_INTEGRATION=1` successfully loads the checkpoint and runs one forward pass
+
 ### Current problem
 
 All 7 expert adapters are stubs that produce `torch.randn` features. The `ComposerRouter` dispatches to these stubs, so routing decisions are made against random capabilities. The entire expert routing system is architecturally complete but functionally inert.
@@ -378,6 +393,17 @@ NSA (nsa_attention.py) is functionally correct but architecturally basic compare
 
 ## W9: Loss and training advancement (P2)
 
+### Implementation status (2026-05-09)
+
+Implemented:
+- `geometric_consistency` over cross-window pointmap displacement on overlapping patches
+- `retrieval_quality` from selected anchor scores and finite 3D anchor distances
+- routing utilization loss hardened for sparse branch weights
+- `state_drift_regularization` on latent drift proxy
+- configurable small weights in `config.py` and sequence-loop plumbing in `train.py`
+- persistent Bus/AnchorBank state is detached across optimizer steps to prevent stale autograd graphs
+- tests in `tests/test_loss_advancement.py`, `tests/test_training_convergence.py`, and sequence regression coverage
+
 ### Current problem
 
 The loss function (losses.py) has basic terms but lacks:
@@ -413,6 +439,16 @@ The loss function (losses.py) has basic terms but lacks:
 ---
 
 ## W10: Evaluation and metrics (P2)
+
+### Implementation status (2026-05-09)
+
+Implemented:
+- pointmap L2 and threshold accuracy metrics
+- depth AbsRel/SqRel/RMSE/RMSE_log/delta metrics
+- Chamfer-L2 and F-score metrics at 0.05/0.10 thresholds
+- architecture metrics for branch entropy, selected 3D anchor distance, geometry-bias usage, bank occupancy, routing entropy, and state drift
+- frame-budget profiling now reports architecture metrics and peak CUDA memory alongside latency
+- tests in `tests/test_evaluate_metrics.py`
 
 ### Current problem
 

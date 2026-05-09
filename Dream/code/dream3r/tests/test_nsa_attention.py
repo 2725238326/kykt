@@ -41,6 +41,8 @@ def test_nsa_full_forward():
 
     weights_sum = result["branch_weights"].sum(dim=-1)
     assert torch.allclose(weights_sum, torch.ones_like(weights_sum), atol=1e-5)
+    assert (result["branch_weights"] == 0).sum(dim=-1).min() == 1
+    assert result["retrieval_log"]["branch_active_mask"].shape == (B, Q, 3)
 
 
 def test_nsa_with_bank_mask():
@@ -102,6 +104,32 @@ def test_nsa_cr3_confidence_and_permanence_bias_log():
     assert log["selected_scores_after_bias"].max() > log["selected_scores_before_bias"].max()
 
 
+def test_nsa_geometry_bias_prefers_nearby_3d_anchors():
+    nsa = NSAAttention(d_model=16, n_compress=2, n_select_k=1, n_heads=2)
+    query = torch.zeros(1, 1, 16)
+    compressed = torch.zeros(1, 2, 16)
+    bank_k = torch.zeros(1, 4, 16)
+    bank_v = torch.randn(1, 4, 16)
+    sliding = torch.zeros(1, 2, 16)
+    query_points = torch.tensor([[[0.0, 0.0, 0.0]]])
+    bank_points = torch.tensor([[[0.1, 0.0, 0.0],
+                                 [10.0, 0.0, 0.0],
+                                 [20.0, 0.0, 0.0],
+                                 [30.0, 0.0, 0.0]]])
+
+    result = nsa(
+        query, compressed, bank_k, bank_v, sliding,
+        query_points3d=query_points,
+        bank_points3d=bank_points,
+    )
+    log = result["retrieval_log"]
+
+    assert result["selected_indices"].item() == 0
+    assert log["geometry_bias_applied"].item() > 0
+    assert log["selected_3d_distances"].shape == (1, 1, 1)
+    assert log["selected_scores_after_bias"].item() > -0.1
+
+
 if __name__ == "__main__":
     test_nsa_branch_shapes()
     test_nsa_branch_with_mask()
@@ -109,4 +137,5 @@ if __name__ == "__main__":
     test_nsa_with_bank_mask()
     test_nsa_gradient_flow()
     test_nsa_cr3_confidence_and_permanence_bias_log()
+    test_nsa_geometry_bias_prefers_nearby_3d_anchors()
     print("All NSA attention tests passed.")

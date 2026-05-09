@@ -64,3 +64,6 @@ class ExpertAdapter(ABC):
     @property
     def is_loaded(self) -> bool:
         return False
+
+    def is_available(self) -> bool:
+        return False

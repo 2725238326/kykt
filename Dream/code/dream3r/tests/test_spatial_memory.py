@@ -129,6 +129,22 @@ def test_composer_router_with_registry():
     assert expert_out.pointmap.shape == (1, 4, 196, 3)
 
 
+def test_composer_router_prefers_mast3r_for_static_indoor_without_cost_penalty():
+    reg = ExpertRegistry()
+    reg.register_all_defaults()
+    router = ComposerRouter(n_regimes=5, d_routing=32, cost_alpha=0.0, expert_registry=reg)
+    router.load_from_registry()
+    with torch.no_grad():
+        router.routing_head.weight.zero_()
+        router.routing_head.bias.zero_()
+
+    regime = torch.tensor([[1.0, 0.0, 0.0, 0.0, 0.0]])
+    out = router(regime)
+    selected_name = sorted(reg.names)[out["selected_expert"].item()]
+
+    assert selected_name == "mast3r"
+
+
 def test_composer_router_gradient():
     router = ComposerRouter(n_regimes=5, d_routing=32)
     regime = torch.randn(1, 5, requires_grad=True)
@@ -148,5 +164,6 @@ if __name__ == "__main__":
     test_composer_router_basic()
     test_composer_router_with_confidence()
     test_composer_router_with_registry()
+    test_composer_router_prefers_mast3r_for_static_indoor_without_cost_penalty()
     test_composer_router_gradient()
     print("All SpatialMemory + ComposerRouter tests passed.")

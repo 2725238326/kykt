@@ -18,8 +18,11 @@ def _loss_fn():
         "permanence_p4": 0.5,
         "action_entropy": 0.1,
         "retrieval": 0.1,
+        "retrieval_quality": 0.05,
         "routing": 0.05,
+        "geometric_consistency": 0.1,
         "drift_consistency": 0.1,
+        "state_drift_regularization": 0.01,
     })
 
 

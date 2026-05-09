@@ -76,6 +76,8 @@ class Dream3R(nn.Module):
             nsa_k        = c.get("nsa_select_k", 8)
             nsa_heads    = c.get("nsa_heads", 4)
             nsa_conf_bias = c.get("nsa_confidence_bias_strength", 2.0)
+            nsa_geo_bias = c.get("nsa_geometry_bias_strength", 1.0)
+            nsa_top_branches = c.get("nsa_top_k_branches", 2)
             slide_win    = c.get("sliding_window", 4)
             d_slot       = c.get("d_slot", 128)
             n_slots      = c.get("n_slots", 16)
@@ -92,6 +94,8 @@ class Dream3R(nn.Module):
                 bank_capacity=bank_cap, nsa_n_select_k=nsa_k,
                 nsa_n_heads=nsa_heads, sliding_window=slide_win,
                 nsa_confidence_bias_strength=nsa_conf_bias,
+                nsa_geometry_bias_strength=nsa_geo_bias,
+                nsa_top_k_branches=nsa_top_branches,
                 n_evidence=n_evidence, d_evidence=d_evidence,
             )
             self.permanence = Permanence(

@@ -529,7 +529,9 @@ class SpatialMemory(nn.Module):
                  bank_capacity: int = 256, nsa_n_select_k: int = 8,
                  nsa_n_heads: int = 4, sliding_window: int = 4,
                  n_evidence: int = 17, d_evidence: int = 32,
-                 nsa_confidence_bias_strength: float = 2.0):
+                 nsa_confidence_bias_strength: float = 2.0,
+                 nsa_geometry_bias_strength: float = 1.0,
+                 nsa_top_k_branches: int = 2):
         super().__init__()
         self.d_model = d_model
         self.n_state_tokens = n_state_tokens
@@ -547,6 +549,8 @@ class SpatialMemory(nn.Module):
             d_model=d_model, n_compress=n_state_tokens,
             n_select_k=nsa_n_select_k, n_heads=nsa_n_heads,
             confidence_bias_strength=nsa_confidence_bias_strength,
+            geometry_bias_strength=nsa_geometry_bias_strength,
+            top_k_branches=nsa_top_k_branches,
         )
 
         self.frame_proj = nn.Linear(768, d_model)
@@ -614,6 +618,7 @@ class SpatialMemory(nn.Module):
         bank_keys = self.anchor_bank.keys[:B].detach().clone()
         bank_values = self.anchor_bank.values[:B].detach().clone()
         bank_mask = self.anchor_bank.readable_mask[:B].detach().clone()
+        bank_points3d = self.anchor_bank.points3d_mean[:B].detach().clone()
 
         nsa_out = self.nsa(
             query=frame_proj,
@@ -624,6 +629,8 @@ class SpatialMemory(nn.Module):
             bank_mask=bank_mask,
             critic_confidence=cr3_critic_confidence,
             permanence_bias=cr3_permanence_bias,
+            query_points3d=t2_pointmap,
+            bank_points3d=bank_points3d,
             dynamic_top_k=cr3_dynamic_k,
         )
 

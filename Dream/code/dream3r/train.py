@@ -210,6 +210,12 @@ def _make_targets(batch: dict, device: torch.device, t: int,
         targets["pointmap_change"] = _window_value(
             batch["pointmap_change"].to(device, non_blocking=True), t, sequence_length
         )
+    if sequence_length > 1 and t > 0 and "pointmap_gt" in batch:
+        pointmaps = batch["pointmap_gt"].to(device, non_blocking=True)
+        targets["prev_pointmap"] = pointmaps[:, t - 1]
+    if sequence_length > 1 and t > 0 and "pointmap_mask" in batch:
+        masks = batch["pointmap_mask"].to(device, non_blocking=True)
+        targets["prev_pointmap_mask"] = masks[:, t - 1]
     return targets
 
 
@@ -224,6 +230,7 @@ def _forward_sequence(model: nn.Module, batch: dict, loss_fn: nn.Module,
     total_loss = None
     last_outputs = None
     loss_sums = {}
+    prev_pointmap_pred = None
 
     for t in range(sequence_length):
         x_t = x[:, t] if sequence_length > 1 else x
@@ -236,6 +243,8 @@ def _forward_sequence(model: nn.Module, batch: dict, loss_fn: nn.Module,
             prev_object_slots=prev_slots,
             timestep=t,
         )
+        if prev_pointmap_pred is not None:
+            outputs["prev_pointmap"] = prev_pointmap_pred.detach()
         losses = loss_fn(outputs, targets_t)
         total_loss = losses["total"] if total_loss is None else total_loss + losses["total"]
 
@@ -250,6 +259,7 @@ def _forward_sequence(model: nn.Module, batch: dict, loss_fn: nn.Module,
                 prev_state = prev_state.detach()
             if prev_slots is not None:
                 prev_slots = prev_slots.detach()
+        prev_pointmap_pred = outputs["pointmap"]
         last_outputs = outputs
 
     loss_avg = {
@@ -299,8 +309,11 @@ def train(cfg: dict):
         "permanence_p4": cfg["w_permanence_p4"],
         "action_entropy": cfg["w_action_entropy"],
         "retrieval": cfg.get("w_retrieval", 0.1),
+        "retrieval_quality": cfg.get("w_retrieval_quality", 0.05),
         "routing": cfg.get("w_routing", 0.05),
+        "geometric_consistency": cfg.get("w_geometric_consistency", 0.05),
         "drift_consistency": cfg.get("w_drift_consistency", 0.1),
+        "state_drift_regularization": cfg.get("w_state_drift_regularization", 0.01),
     }).to(device)
 
     optimizer = torch.optim.AdamW(

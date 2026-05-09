@@ -2,6 +2,9 @@
 Frame budget profiler for Dream3R.
 
 Measures per-module latency and reports p50/p95/p99 statistics.
+Also tracks architecture metrics such as bank utilization, sparse branch
+usage, routing entropy, geometry retrieval distance, state drift, and peak
+memory usage.
 Uses CUDA events for GPU timing, time.perf_counter for CPU.
 
 Usage:
@@ -13,7 +16,61 @@ import time
 from typing import Dict, List
 
 import torch
+import torch.nn.functional as F
 import numpy as np
+
+
+SPECIAL_RESULT_KEYS = {"total", "architecture", "memory"}
+
+
+def _summarize(values: List[float]) -> float:
+    return float(np.array(values).mean()) if values else 0.0
+
+
+def _append_metric(metrics: Dict[str, List[float]], name: str, value):
+    if isinstance(value, torch.Tensor):
+        value = value.detach().float()
+        if value.numel() == 0:
+            return
+        finite = value[torch.isfinite(value)]
+        if finite.numel() == 0:
+            return
+        value = finite.mean().item()
+    metrics.setdefault(name, []).append(float(value))
+
+
+def collect_architecture_metrics(out: Dict[str, torch.Tensor],
+                                 metrics: Dict[str, List[float]]):
+    """Collect scalar architecture metrics from one forward output."""
+    if "bank_occupancy" in out:
+        _append_metric(metrics, "bank_occupancy", out["bank_occupancy"])
+
+    if "nsa_branch_weights" in out:
+        branch = out["nsa_branch_weights"].detach().float().mean(dim=(0, 1))
+        names = ["branch_compressed", "branch_selected", "branch_sliding"]
+        for i, name in enumerate(names[:branch.numel()]):
+            _append_metric(metrics, name, branch[i])
+        entropy = -(branch * branch.clamp_min(1e-8).log()).sum()
+        _append_metric(metrics, "branch_entropy", entropy)
+
+    log = out.get("memory_retrieval_log", {})
+    if isinstance(log, dict):
+        if "selected_3d_distances" in log:
+            _append_metric(metrics, "selected_anchor_3d_distance", log["selected_3d_distances"])
+        if "geometry_bias_applied" in log:
+            _append_metric(metrics, "geometry_bias_applied", log["geometry_bias_applied"])
+        if "branch_active_mask" in log:
+            active = log["branch_active_mask"].detach().float().sum(dim=-1)
+            _append_metric(metrics, "active_branch_count", active)
+
+    if "latent_drift_proxy" in out:
+        _append_metric(metrics, "state_drift_magnitude", out["latent_drift_proxy"].abs())
+
+    if "routing_logits" in out:
+        probs = F.softmax(out["routing_logits"].detach().float(), dim=-1)
+        avg_probs = probs.mean(dim=0)
+        entropy = -(avg_probs * avg_probs.clamp_min(1e-8).log()).sum()
+        _append_metric(metrics, "routing_entropy", entropy)
 
 
 def profile_model(model, x, regime, n_windows: int = 50,
@@ -29,11 +86,14 @@ def profile_model(model, x, regime, n_windows: int = 50,
 
     use_cuda = device.type == "cuda"
     all_timings: Dict[str, List[float]] = {}
+    arch_metrics: Dict[str, List[float]] = {}
     total_times: List[float] = []
 
     with torch.no_grad():
         prev_mem = None
         prev_slots = None
+        if use_cuda:
+            torch.cuda.reset_peak_memory_stats(device)
 
         for i in range(warmup + n_windows):
             if use_cuda:
@@ -65,6 +125,7 @@ def profile_model(model, x, regime, n_windows: int = 50,
                         if k not in all_timings:
                             all_timings[k] = []
                         all_timings[k].append(v)
+                collect_architecture_metrics(out, arch_metrics)
 
             if "latent_state_tokens" in out:
                 prev_mem = out["latent_state_tokens"].detach()
@@ -96,6 +157,20 @@ def profile_model(model, x, regime, n_windows: int = 50,
         "min": float(total_arr.min()),
         "max": float(total_arr.max()),
     }
+    results["architecture"] = {
+        name: _summarize(values)
+        for name, values in sorted(arch_metrics.items())
+    }
+    if use_cuda:
+        results["memory"] = {
+            "peak_allocated_mb": float(torch.cuda.max_memory_allocated(device) / 1024 ** 2),
+            "peak_reserved_mb": float(torch.cuda.max_memory_reserved(device) / 1024 ** 2),
+        }
+    else:
+        results["memory"] = {
+            "peak_allocated_mb": 0.0,
+            "peak_reserved_mb": 0.0,
+        }
 
     return results
 
@@ -106,7 +181,7 @@ def print_report(results: Dict[str, Dict[str, float]], target_ms: float = 50.0):
 
     total = results.get("total", {})
     for name, stats in sorted(results.items()):
-        if name == "total":
+        if name in SPECIAL_RESULT_KEYS:
             continue
         pct = stats["mean"] / total.get("mean", 1) * 100
         print(f"  {name:<18} {stats['p50']:>7.2f} {stats['p95']:>7.2f} "
@@ -118,6 +193,18 @@ def print_report(results: Dict[str, Dict[str, float]], target_ms: float = 50.0):
         print(f"  {'TOTAL':<18} {total['p50']:>7.2f} {total['p95']:>7.2f} "
               f"{total['p99']:>7.2f} {total['mean']:>7.2f}  [{status}]")
         print(f"\n  Target: {target_ms:.0f} ms/frame | p95: {total['p95']:.2f} ms")
+
+    arch = results.get("architecture", {})
+    if arch:
+        print("\nArchitecture metrics:")
+        for name, value in sorted(arch.items()):
+            print(f"  {name:<30} {value:>10.4f}")
+
+    memory = results.get("memory", {})
+    if memory:
+        print("\nMemory:")
+        print(f"  peak_allocated_mb             {memory.get('peak_allocated_mb', 0.0):>10.2f}")
+        print(f"  peak_reserved_mb              {memory.get('peak_reserved_mb', 0.0):>10.2f}")
 
 
 def main():

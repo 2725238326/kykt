@@ -81,7 +81,15 @@ class MemoryBus(nn.Module):
         }
 
     def reset(self):
-        self._previous_signals = self._signals.copy()
+        self._previous_signals = {
+            name: BusSignal(
+                signal.tensor.detach() if isinstance(signal.tensor, torch.Tensor) else signal.tensor,
+                signal.label,
+                signal.producer,
+                signal.timestep,
+            )
+            for name, signal in self._signals.items()
+        }
         self._signals.clear()
         self._handoffs.clear()
 
