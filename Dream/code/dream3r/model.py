@@ -75,6 +75,7 @@ class Dream3R(nn.Module):
             bank_cap     = c.get("bank_capacity", 256)
             nsa_k        = c.get("nsa_select_k", 8)
             nsa_heads    = c.get("nsa_heads", 4)
+            nsa_conf_bias = c.get("nsa_confidence_bias_strength", 2.0)
             slide_win    = c.get("sliding_window", 4)
             d_slot       = c.get("d_slot", 128)
             n_slots      = c.get("n_slots", 16)
@@ -90,6 +91,7 @@ class Dream3R(nn.Module):
                 d_model=d_mem, n_state_tokens=n_state,
                 bank_capacity=bank_cap, nsa_n_select_k=nsa_k,
                 nsa_n_heads=nsa_heads, sliding_window=slide_win,
+                nsa_confidence_bias_strength=nsa_conf_bias,
                 n_evidence=n_evidence, d_evidence=d_evidence,
             )
             self.permanence = Permanence(
@@ -153,16 +155,15 @@ class Dream3R(nn.Module):
         t3_named      = perc["t3_named"]
         perc_summary  = perc["perception_summary"]
 
-        prev_conflict_sig = self.bus.read("conflict_score", "memory")
-        prev_dynamic_sig  = self.bus.read("dynamic_ratio", "memory")
+        memory_conflict_sig = self.bus.read_previous("conflict_score", "memory")
 
         # === Permanence ===
         t0 = time.perf_counter()
         perm_input = t1.mean(dim=2)
-        prev_conflict_for_perm = self.bus.read("conflict_score", "permanence")
+        conflict_for_perm = self.bus.read_previous("conflict_score", "permanence")
         perm_conflict = None
-        if prev_conflict_for_perm is not None:
-            perm_conflict = prev_conflict_for_perm.tensor
+        if conflict_for_perm is not None:
+            perm_conflict = conflict_for_perm.tensor
 
         perm_out = self.permanence(perm_input, prev_object_slots, perm_conflict)
         if self.profile:
@@ -190,10 +191,11 @@ class Dream3R(nn.Module):
                 perc_summary, evidence_flat, prev_memory_state,
                 suppress_mask=cr2,
                 bus_dynamic_ratio=bus_dyn,
-                bus_conflict_score=prev_conflict_sig.tensor if prev_conflict_sig is not None else None,
+                bus_conflict_score=memory_conflict_sig.tensor if memory_conflict_sig is not None else None,
             )
         else:
             frame_tokens_flat = t1.mean(dim=1)
+            pointmap_flat = t2_pointmap.mean(dim=1)
             if prev_memory_state is None:
                 prev_memory_state = self.memory.init_state(B, device)
 
@@ -203,8 +205,9 @@ class Dream3R(nn.Module):
 
             mem_out = self.memory(
                 frame_tokens_flat, evidence_flat, prev_memory_state,
+                t2_pointmap=pointmap_flat,
                 bus_dynamic_ratio=bus_dyn,
-                bus_conflict_score=prev_conflict_sig.tensor if prev_conflict_sig is not None else None,
+                bus_conflict_score=memory_conflict_sig.tensor if memory_conflict_sig is not None else None,
                 suppress_mask=cr2,
                 cr3_critic_confidence=cr3_conf,
                 cr3_permanence_bias=cr3_perm,
@@ -236,7 +239,7 @@ class Dream3R(nn.Module):
             comp_out = self.composer(regime_probs)
         else:
             critic_conf = None
-            cs = self.bus.read("conflict_score", "composer")
+            cs = self.bus.read_previous("conflict_score", "composer")
             if cs is not None:
                 critic_conf = 1.0 - torch.sigmoid(cs.tensor)
             comp_out = self.composer(regime_probs, critic_confidence=critic_conf)
@@ -300,6 +303,8 @@ class Dream3R(nn.Module):
         if "nsa_branch_weights" in mem_out:
             result["nsa_branch_weights"] = mem_out["nsa_branch_weights"]
             result["bank_occupancy"] = mem_out["bank_occupancy"]
+        if "memory_retrieval_log" in mem_out:
+            result["memory_retrieval_log"] = mem_out["memory_retrieval_log"]
         if "latent_state_tokens" in mem_out:
             result["latent_state_tokens"] = mem_out["latent_state_tokens"]
         if "selected_expert" in comp_out:

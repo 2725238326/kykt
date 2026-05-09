@@ -20,6 +20,9 @@ def test_basic_write_read():
     assert rr.values.shape == (1, 3, 3, 32)
     assert rr.keys.shape == (1, 3, 3, 32)
     assert rr.scores.shape == (1, 3, 3)
+    assert rr.source_frame_pose.shape == (1, 3, 3, 4, 4)
+    assert rr.source_patch_ids.shape == (1, 3, 3)
+    assert rr.points3d_mean.shape == (1, 3, 3, 3)
 
 
 def test_write_gating_dynamic():

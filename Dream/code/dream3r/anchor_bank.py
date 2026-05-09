@@ -30,6 +30,9 @@ class ReadResult:
     keys: torch.Tensor              # [B, Q, K, D_k]
     scores: torch.Tensor            # [B, Q, K]
     indices: torch.Tensor           # [B, Q, K]
+    source_frame_pose: torch.Tensor # [B, Q, K, 4, 4]
+    source_patch_ids: torch.Tensor  # [B, Q, K]
+    points3d_mean: torch.Tensor     # [B, Q, K, 3]
 
 
 @dataclass
@@ -85,6 +88,9 @@ class AnchorBank(nn.Module):
         self.register_buffer("access_count", torch.zeros(1, capacity, dtype=torch.long))
         self.register_buffer("write_timestep", torch.zeros(1, capacity, dtype=torch.long))
         self.register_buffer("last_access_timestep", torch.zeros(1, capacity, dtype=torch.long))
+        self.register_buffer("source_frame_pose", torch.zeros(1, capacity, 4, 4))
+        self.register_buffer("source_patch_ids", torch.zeros(1, capacity, dtype=torch.long))
+        self.register_buffer("points3d_mean", torch.zeros(1, capacity, 3))
         self.register_buffer("_write_cursor", torch.zeros(1, dtype=torch.long))
         self.register_buffer("_current_timestep", torch.zeros(1, dtype=torch.long))
 
@@ -106,6 +112,9 @@ class AnchorBank(nn.Module):
         self.access_count = torch.zeros(batch_size, self.capacity, dtype=torch.long, device=dev)
         self.write_timestep = torch.zeros(batch_size, self.capacity, dtype=torch.long, device=dev)
         self.last_access_timestep = torch.zeros(batch_size, self.capacity, dtype=torch.long, device=dev)
+        self.source_frame_pose = torch.zeros(batch_size, self.capacity, 4, 4, device=dev)
+        self.source_patch_ids = torch.zeros(batch_size, self.capacity, dtype=torch.long, device=dev)
+        self.points3d_mean = torch.zeros(batch_size, self.capacity, 3, device=dev)
         self._write_cursor = torch.zeros(batch_size, dtype=torch.long, device=dev)
         self._current_timestep = torch.zeros(batch_size, dtype=torch.long, device=dev)
 
@@ -142,8 +151,18 @@ class AnchorBank(nn.Module):
         flat_idx = topk_idx.reshape(B, -1)
         sel_keys = self.keys.gather(1, flat_idx.unsqueeze(-1).expand(-1, -1, self.d_key))
         sel_vals = self.values.gather(1, flat_idx.unsqueeze(-1).expand(-1, -1, self.d_value))
+        sel_pose = self.source_frame_pose.gather(
+            1, flat_idx.unsqueeze(-1).unsqueeze(-1).expand(-1, -1, 4, 4)
+        )
+        sel_patch = self.source_patch_ids.gather(1, flat_idx)
+        sel_points = self.points3d_mean.gather(
+            1, flat_idx.unsqueeze(-1).expand(-1, -1, 3)
+        )
         sel_keys = sel_keys.view(B, Q, K, self.d_key)
         sel_vals = sel_vals.view(B, Q, K, self.d_value)
+        sel_pose = sel_pose.view(B, Q, K, 4, 4)
+        sel_patch = sel_patch.view(B, Q, K)
+        sel_points = sel_points.view(B, Q, K, 3)
 
         unique_per_batch = topk_idx.reshape(B, -1)
         self.access_count.scatter_add_(1, unique_per_batch,
@@ -156,12 +175,18 @@ class AnchorBank(nn.Module):
             keys=sel_keys,
             scores=topk_scores,
             indices=topk_idx,
+            source_frame_pose=sel_pose,
+            source_patch_ids=sel_patch,
+            points3d_mean=sel_points,
         )
 
     def write(self, keys: torch.Tensor, values: torch.Tensor,
               confidence: Optional[torch.Tensor] = None,
               bus_dynamic_ratio: Optional[torch.Tensor] = None,
               bus_conflict_score: Optional[torch.Tensor] = None,
+              source_frame_pose: Optional[torch.Tensor] = None,
+              source_patch_ids: Optional[torch.Tensor] = None,
+              points3d_mean: Optional[torch.Tensor] = None,
               ) -> WriteResult:
         """
         Bus-gated insertion of new anchor entries.
@@ -172,6 +197,9 @@ class AnchorBank(nn.Module):
             confidence:         [B, N] or None — per-entry write confidence
             bus_dynamic_ratio:  [B, 1] or None
             bus_conflict_score: [B, 1] or None
+            source_frame_pose:  [B, N, 4, 4], [B, 4, 4], or None
+            source_patch_ids:   [B, N] or None
+            points3d_mean:      [B, N, 3] or None
         Returns:
             WriteResult with write stats
         """
@@ -199,6 +227,14 @@ class AnchorBank(nn.Module):
 
         if confidence is None:
             confidence = torch.ones(B, N, device=device)
+        if source_frame_pose is None:
+            source_frame_pose = torch.eye(4, device=device).view(1, 1, 4, 4).expand(B, N, 4, 4)
+        elif source_frame_pose.dim() == 3:
+            source_frame_pose = source_frame_pose.unsqueeze(1).expand(B, N, 4, 4)
+        if source_patch_ids is None:
+            source_patch_ids = torch.full((B, N), -1, dtype=torch.long, device=device)
+        if points3d_mean is None:
+            points3d_mean = torch.zeros(B, N, 3, device=device)
 
         n_accepted = accept.sum().item()
         n_suppressed = B * N - n_accepted
@@ -228,6 +264,9 @@ class AnchorBank(nn.Module):
             self.last_access_timestep[b, write_positions] = self._current_timestep[b]
             self.access_count[b, write_positions] = 0
             self.utility[b, write_positions] = confidence[b, accepted_idx].float()
+            self.source_frame_pose[b, write_positions] = source_frame_pose[b, accepted_idx].float()
+            self.source_patch_ids[b, write_positions] = source_patch_ids[b, accepted_idx].long()
+            self.points3d_mean[b, write_positions] = points3d_mean[b, accepted_idx].float()
 
             quar_mask = quarantine_new[b, accepted_idx]
             self.quarantined[b, write_positions] = quar_mask
@@ -281,6 +320,9 @@ class AnchorBank(nn.Module):
 
             self.valid[b, prune_idx] = False
             self.quarantined[b, prune_idx] = False
+            self.source_frame_pose[b, prune_idx] = 0
+            self.source_patch_ids[b, prune_idx] = 0
+            self.points3d_mean[b, prune_idx] = 0
             total_pruned += n_to_prune
 
             if scores.numel() > 0:
@@ -324,4 +366,7 @@ class AnchorBank(nn.Module):
             "quarantined": self.quarantined.clone(),
             "utility": self.utility.clone(),
             "occupancy": self.occupancy,
+            "source_frame_pose": self.source_frame_pose.clone(),
+            "source_patch_ids": self.source_patch_ids.clone(),
+            "points3d_mean": self.points3d_mean.clone(),
         }

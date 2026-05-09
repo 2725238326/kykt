@@ -514,7 +514,8 @@ class SpatialMemory(nn.Module):
     def __init__(self, d_model: int = 128, n_state_tokens: int = 32,
                  bank_capacity: int = 256, nsa_n_select_k: int = 8,
                  nsa_n_heads: int = 4, sliding_window: int = 4,
-                 n_evidence: int = 17, d_evidence: int = 32):
+                 n_evidence: int = 17, d_evidence: int = 32,
+                 nsa_confidence_bias_strength: float = 2.0):
         super().__init__()
         self.d_model = d_model
         self.n_state_tokens = n_state_tokens
@@ -531,6 +532,7 @@ class SpatialMemory(nn.Module):
         self.nsa = NSAAttention(
             d_model=d_model, n_compress=n_state_tokens,
             n_select_k=nsa_n_select_k, n_heads=nsa_n_heads,
+            confidence_bias_strength=nsa_confidence_bias_strength,
         )
 
         self.frame_proj = nn.Linear(768, d_model)
@@ -562,6 +564,7 @@ class SpatialMemory(nn.Module):
     def forward(self, frame_tokens: torch.Tensor,
                 evidence_flat: torch.Tensor,
                 prev_state_tokens: torch.Tensor,
+                t2_pointmap: Optional[torch.Tensor] = None,
                 bus_dynamic_ratio: Optional[torch.Tensor] = None,
                 bus_conflict_score: Optional[torch.Tensor] = None,
                 suppress_mask: Optional[torch.Tensor] = None,
@@ -574,6 +577,7 @@ class SpatialMemory(nn.Module):
             frame_tokens:      [B, P, D_frame] (D_frame=768)
             evidence_flat:     [B, n_ev * d_ev]
             prev_state_tokens: [B, S, D] latent state from previous window
+            t2_pointmap:       [B, P, 3] or None
             bus_dynamic_ratio: [B, 1] from Permanence
             bus_conflict_score:[B, 1] from Critic t-1
             suppress_mask:     [B] CR-2 from Permanence
@@ -611,6 +615,19 @@ class SpatialMemory(nn.Module):
 
         memory_output = nsa_out["output"]
         pooled = memory_output.mean(dim=1)
+        retrieval_log = dict(nsa_out["retrieval_log"])
+
+        selected_indices = nsa_out["selected_indices"]
+        flat_selected = selected_indices.reshape(B, -1)
+        retrieval_log["retrieved_source_frame_pose"] = self.anchor_bank.source_frame_pose[:B].gather(
+            1, flat_selected.unsqueeze(-1).unsqueeze(-1).expand(-1, -1, 4, 4)
+        ).view(B, selected_indices.shape[1], selected_indices.shape[2], 4, 4).detach()
+        retrieval_log["retrieved_source_patch_ids"] = self.anchor_bank.source_patch_ids[:B].gather(
+            1, flat_selected
+        ).view(B, selected_indices.shape[1], selected_indices.shape[2]).detach()
+        retrieval_log["retrieved_points3d_mean"] = self.anchor_bank.points3d_mean[:B].gather(
+            1, flat_selected.unsqueeze(-1).expand(-1, -1, 3)
+        ).view(B, selected_indices.shape[1], selected_indices.shape[2], 3).detach()
 
         update_logits = self.update_classifier(pooled)
         update_probs = F.softmax(update_logits, dim=-1)
@@ -637,12 +654,28 @@ class SpatialMemory(nn.Module):
             1, top_indices.unsqueeze(-1).expand(-1, -1, self.d_model)
         )
 
+        if t2_pointmap is None:
+            points3d_mean = torch.zeros(B, n_write_candidates, 3, device=device)
+        else:
+            points3d_mean = t2_pointmap.gather(
+                1, top_indices.unsqueeze(-1).expand(-1, -1, 3)
+            )
+        source_patch_ids = top_indices.long()
+        source_frame_pose = torch.eye(4, device=device).view(1, 1, 4, 4).expand(
+            B, n_write_candidates, 4, 4
+        )
+        retrieval_log["written_source_patch_ids"] = source_patch_ids.detach()
+        retrieval_log["written_points3d_mean"] = points3d_mean.detach()
+
         write_result = self.anchor_bank.write(
             keys=write_keys,
             values=write_values,
             confidence=write_conf.expand(B, n_write_candidates),
             bus_dynamic_ratio=bus_dynamic_ratio,
             bus_conflict_score=bus_conflict_score,
+            source_frame_pose=source_frame_pose,
+            source_patch_ids=source_patch_ids,
+            points3d_mean=points3d_mean,
         )
         self.anchor_bank.tick()
 
@@ -658,7 +691,8 @@ class SpatialMemory(nn.Module):
             "anchor_scores": anchor_scores,
             "latent_drift_proxy": drift,
             "nsa_branch_weights": nsa_out["branch_weights"],
-            "nsa_selected_indices": nsa_out["selected_indices"],
+            "nsa_selected_indices": selected_indices,
+            "memory_retrieval_log": retrieval_log,
             "bank_occupancy": self.anchor_bank.occupancy,
             "write_result": {
                 "n_written": write_result.n_written,

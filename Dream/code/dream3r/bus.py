@@ -12,6 +12,7 @@ import torch.nn as nn
 from dataclasses import dataclass, field
 from typing import Dict, Optional, Tuple
 from enum import IntEnum
+import math
 
 
 class EvidenceLabel(IntEnum):
@@ -36,11 +37,20 @@ class MemoryBus(nn.Module):
     Implements publish/read/handoff + CR-1..CR-6 gates.
     """
 
-    def __init__(self, epsilon_spread: float = 0.05, epsilon_tie: float = 0.05):
+    def __init__(self, epsilon_spread: float = 0.05, epsilon_tie: float = 0.05,
+                 cr3_mid_threshold: float = 0.4,
+                 cr3_high_threshold: float = 0.7,
+                 cr3_max_k: int = 32,
+                 cr3_high_scale: float = 2.0):
         super().__init__()
         self.epsilon_spread = epsilon_spread
         self.epsilon_tie = epsilon_tie
+        self.cr3_mid_threshold = cr3_mid_threshold
+        self.cr3_high_threshold = cr3_high_threshold
+        self.cr3_max_k = cr3_max_k
+        self.cr3_high_scale = cr3_high_scale
         self._signals: Dict[str, BusSignal] = {}
+        self._previous_signals: Dict[str, BusSignal] = {}
         self._handoffs: Dict[str, BusSignal] = {}
         self._contract_log: list = []
         self._owner_table = {
@@ -71,6 +81,7 @@ class MemoryBus(nn.Module):
         }
 
     def reset(self):
+        self._previous_signals = self._signals.copy()
         self._signals.clear()
         self._handoffs.clear()
 
@@ -93,6 +104,20 @@ class MemoryBus(nn.Module):
                 "label": signal.label,
                 "consumer": consumer,
                 "t": signal.timestep,
+                "source": "current",
+            })
+        return signal
+
+    def read_previous(self, signal_name: str, consumer: str) -> Optional[BusSignal]:
+        signal = self._previous_signals.get(signal_name)
+        if signal is not None:
+            self._contract_log.append({
+                "signal": signal_name,
+                "producer": signal.producer,
+                "label": signal.label,
+                "consumer": consumer,
+                "t": signal.timestep,
+                "source": "previous",
             })
         return signal
 
@@ -127,15 +152,17 @@ class MemoryBus(nn.Module):
         reconstruction quality), the Memory should retrieve more bank entries
         to gather additional evidence. Returns an adjusted top-k value.
         """
-        conflict = self._signals.get("conflict_score")
+        conflict = self._previous_signals.get("conflict_score")
         if conflict is None:
             return base_k
         conf_mean = torch.sigmoid(conflict.tensor).mean().item()
-        if conf_mean > 0.7:
-            return min(base_k * 2, 32)
-        if conf_mean > 0.4:
-            return min(int(base_k * 1.5), 24)
-        return base_k
+        if conf_mean <= self.cr3_mid_threshold:
+            return base_k
+
+        span = max(self.cr3_high_threshold - self.cr3_mid_threshold, 1e-6)
+        ratio = min(max((conf_mean - self.cr3_mid_threshold) / span, 0.0), 1.0)
+        scale = 1.0 + ratio * (self.cr3_high_scale - 1.0)
+        return min(math.ceil(base_k * scale), self.cr3_max_k)
 
     def cr3_retrieval_bias(self) -> Optional[torch.Tensor]:
         """CR-3 auxiliary: return Critic confidence as a retrieval bias weight.
@@ -143,7 +170,7 @@ class MemoryBus(nn.Module):
         Modules can use this to bias retrieval scoring toward entries that
         were written under high confidence.
         """
-        conflict = self._signals.get("conflict_score")
+        conflict = self._previous_signals.get("conflict_score")
         if conflict is None:
             return None
         return 1.0 - torch.sigmoid(conflict.tensor)
