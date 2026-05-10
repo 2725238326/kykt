@@ -52,6 +52,35 @@ def test_spatial_memory_multi_window():
     assert occ.item() > 0, "Bank should have entries after multiple windows"
 
 
+def test_spatial_memory_can_disable_nsa_for_ablation():
+    mem = SpatialMemory(d_model=64, n_state_tokens=4, bank_capacity=16,
+                        nsa_n_select_k=2, nsa_n_heads=2, memory_use_nsa=False)
+    B, P = 1, 8
+    state = mem.init_state(B, torch.device("cpu"))
+    out = mem(torch.randn(B, P, 768), torch.randn(B, 17 * 32), state)
+
+    log = out["memory_retrieval_log"]
+    assert log["memory_use_nsa"] is False
+    assert log["effective_top_k"] == 0
+    assert out["nsa_branch_weights"].shape == (B, P, 3)
+    assert torch.allclose(out["nsa_branch_weights"][..., 0], torch.ones(B, P))
+    assert torch.allclose(out["nsa_branch_weights"][..., 1:], torch.zeros(B, P, 2))
+
+
+def test_spatial_memory_can_disable_stable_memory_for_ablation():
+    mem = SpatialMemory(d_model=64, n_state_tokens=4, bank_capacity=16,
+                        nsa_n_select_k=2, nsa_n_heads=2, enable_stable_memory=False)
+    B, P = 1, 8
+    state = mem.init_state(B, torch.device("cpu"))
+    out = mem(torch.randn(B, P, 768), torch.randn(B, 17 * 32), state)
+
+    log = out["memory_retrieval_log"]
+    assert log["enable_stable_memory"] is False
+    assert out["write_result"]["n_written"] == 0
+    assert out["bank_occupancy"].item() == 0
+    assert not log["promoted_to_stable"].any()
+
+
 def test_spatial_memory_bus_gating():
     mem = SpatialMemory(d_model=64, n_state_tokens=4, bank_capacity=16)
     B, P = 1, 8
@@ -161,6 +190,8 @@ if __name__ == "__main__":
     test_spatial_memory_init()
     test_spatial_memory_forward()
     test_spatial_memory_multi_window()
+    test_spatial_memory_can_disable_nsa_for_ablation()
+    test_spatial_memory_can_disable_stable_memory_for_ablation()
     test_spatial_memory_bus_gating()
     test_spatial_memory_gradient()
     test_composer_router_basic()

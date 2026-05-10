@@ -95,6 +95,8 @@ class Dream3R(nn.Module):
             stable_recall_strength = c.get("stable_recall_strength", 0.25)
             stability_prune_bonus = c.get("stability_prune_bonus", 1.0)
             state_recurrence_type = c.get("state_recurrence_type", "cross_attention")
+            memory_use_nsa = c.get("memory_use_nsa", True)
+            enable_stable_memory = c.get("enable_stable_memory", True)
             slide_win    = c.get("sliding_window", 4)
             d_slot       = c.get("d_slot", 128)
             n_slots      = c.get("n_slots", 16)
@@ -123,6 +125,8 @@ class Dream3R(nn.Module):
                 stable_recall_strength=stable_recall_strength,
                 stability_prune_bonus=stability_prune_bonus,
                 state_recurrence_type=state_recurrence_type,
+                memory_use_nsa=memory_use_nsa,
+                enable_stable_memory=enable_stable_memory,
                 n_evidence=n_evidence, d_evidence=d_evidence,
             )
             self.permanence = Permanence(

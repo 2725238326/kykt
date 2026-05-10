@@ -892,11 +892,15 @@ class SpatialMemory(nn.Module):
                  stable_recall_threshold: float = -1.0,
                  stable_recall_strength: float = 0.25,
                  stability_prune_bonus: float = 1.0,
-                 state_recurrence_type: str = "cross_attention"):
+                 state_recurrence_type: str = "cross_attention",
+                 memory_use_nsa: bool = True,
+                 enable_stable_memory: bool = True):
         super().__init__()
         self.d_model = d_model
         self.n_state_tokens = n_state_tokens
         self.sliding_window = sliding_window
+        self.memory_use_nsa = memory_use_nsa
+        self.enable_stable_memory = enable_stable_memory
 
         self.state_recurrence_type = state_recurrence_type
         self.state_recurrence = build_state_recurrence(
@@ -1026,28 +1030,65 @@ class SpatialMemory(nn.Module):
         bank_keys = self.anchor_bank.keys[:B].detach().clone()
         bank_values = self.anchor_bank.values[:B].detach().clone()
         bank_mask = self.anchor_bank.readable_mask[:B].detach().clone()
+        if not self.enable_stable_memory:
+            bank_mask = torch.zeros_like(bank_mask)
         bank_points3d = self.anchor_bank.points3d_mean[:B].detach().clone()
 
-        nsa_out = self.nsa(
-            query=frame_proj,
-            compressed_ctx=new_state,
-            bank_keys=bank_keys,
-            bank_values=bank_values,
-            sliding_buffer=sliding,
-            bank_mask=bank_mask,
-            critic_confidence=cr3_critic_confidence,
-            permanence_bias=cr3_permanence_bias,
-            query_points3d=t2_pointmap,
-            bank_points3d=bank_points3d,
-            dynamic_top_k=cr3_dynamic_k,
-        )
+        if self.memory_use_nsa:
+            nsa_out = self.nsa(
+                query=frame_proj,
+                compressed_ctx=new_state,
+                bank_keys=bank_keys,
+                bank_values=bank_values,
+                sliding_buffer=sliding,
+                bank_mask=bank_mask,
+                critic_confidence=cr3_critic_confidence,
+                permanence_bias=cr3_permanence_bias,
+                query_points3d=t2_pointmap,
+                bank_points3d=bank_points3d,
+                dynamic_top_k=cr3_dynamic_k,
+            )
+        else:
+            K = min(self.nsa.selected.n_select_k, bank_keys.shape[1])
+            memory_output = self.nsa.norm(frame_proj + new_state.mean(dim=1, keepdim=True))
+            branch_weights = torch.zeros(B, frame_proj.shape[1], 3, device=device, dtype=frame_proj.dtype)
+            branch_weights[..., 0] = 1.0
+            selected_indices = torch.zeros(B, frame_proj.shape[1], K, device=device, dtype=torch.long)
+            selected_scores = torch.zeros(B, frame_proj.shape[1], K, device=device, dtype=frame_proj.dtype)
+            nsa_out = {
+                "output": memory_output,
+                "branch_weights": branch_weights,
+                "selected_indices": selected_indices,
+                "retrieval_log": {
+                    "effective_top_k": 0,
+                    "confidence_bias_applied": torch.zeros((), device=device, dtype=frame_proj.dtype),
+                    "permanence_bias_applied": torch.zeros((), device=device, dtype=frame_proj.dtype),
+                    "geometry_bias_applied": torch.zeros((), device=device, dtype=frame_proj.dtype),
+                    "selected_3d_distances": None,
+                    "branch_active_mask": branch_weights.bool().detach(),
+                    "selected_scores_before_bias": selected_scores.detach(),
+                    "selected_scores_after_bias": selected_scores.detach(),
+                },
+            }
 
         retrieval_log = dict(nsa_out["retrieval_log"])
         retrieval_log["state_recurrence_type"] = self.state_recurrence_type
+        retrieval_log["memory_use_nsa"] = self.memory_use_nsa
+        retrieval_log["enable_stable_memory"] = self.enable_stable_memory
         selected_indices = nsa_out["selected_indices"]
-        memory_output, stable_recall_log = self.recall_from_stable(
-            nsa_out["output"], selected_indices, retrieval_log["selected_scores_after_bias"]
-        )
+        if self.enable_stable_memory:
+            memory_output, stable_recall_log = self.recall_from_stable(
+                nsa_out["output"], selected_indices, retrieval_log["selected_scores_after_bias"]
+            )
+        else:
+            memory_output = nsa_out["output"]
+            stable_recall_log = {
+                "stable_recall_activated": torch.zeros(
+                    B, memory_output.shape[1], device=device, dtype=torch.bool
+                ),
+                "stable_recall_strength": torch.zeros((), device=device, dtype=memory_output.dtype),
+                "stable_recall_weight_mean": torch.zeros((), device=device, dtype=memory_output.dtype),
+            }
         retrieval_log.update(stable_recall_log)
         pooled = memory_output.mean(dim=1)
 
@@ -1103,27 +1144,40 @@ class SpatialMemory(nn.Module):
         retrieval_log["written_source_patch_ids"] = source_patch_ids.detach()
         retrieval_log["written_points3d_mean"] = points3d_mean.detach()
 
-        write_result = self.anchor_bank.write(
-            keys=write_keys,
-            values=write_values,
-            confidence=write_conf.expand(B, n_write_candidates),
-            bus_dynamic_ratio=bus_dynamic_ratio,
-            bus_conflict_score=bus_conflict_score,
-            source_frame_pose=source_frame_pose,
-            source_patch_ids=source_patch_ids,
-            points3d_mean=points3d_mean,
-        )
+        if self.enable_stable_memory:
+            write_result = self.anchor_bank.write(
+                keys=write_keys,
+                values=write_values,
+                confidence=write_conf.expand(B, n_write_candidates),
+                bus_dynamic_ratio=bus_dynamic_ratio,
+                bus_conflict_score=bus_conflict_score,
+                source_frame_pose=source_frame_pose,
+                source_patch_ids=source_patch_ids,
+                points3d_mean=points3d_mean,
+            )
+        else:
+            write_result = type("WriteResultStub", (), {
+                "n_written": 0,
+                "n_suppressed": n_write_candidates * B,
+                "n_quarantined": 0,
+            })()
 
         active_state_confidence = torch.sigmoid((new_state * pooled.unsqueeze(1)).mean(dim=-1))
         if t2_pointmap is None:
             stable_points = torch.zeros(B, self.n_state_tokens, 3, device=device)
         else:
             stable_points = t2_pointmap.mean(dim=1, keepdim=True).expand(B, self.n_state_tokens, 3)
-        promote_result = self.promote_to_stable(
-            new_state, active_state_confidence, points3d_mean=stable_points
-        )
+        if self.enable_stable_memory:
+            promote_result = self.promote_to_stable(
+                new_state, active_state_confidence, points3d_mean=stable_points
+            )
+            promoted_to_stable = promote_result.written_mask.detach()
+        else:
+            promoted_to_stable = torch.zeros(
+                B, self.n_state_tokens, device=device, dtype=torch.bool
+            )
         retrieval_log["active_state_confidence"] = active_state_confidence.detach()
-        retrieval_log["promoted_to_stable"] = promote_result.written_mask.detach()
+        retrieval_log["promoted_to_stable"] = promoted_to_stable
         retrieval_log["stable_state_score"] = self.anchor_bank.stability_score[:B].detach().clone()
         self.anchor_bank.tick()
 

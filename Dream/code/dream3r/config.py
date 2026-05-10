@@ -49,6 +49,8 @@ DEFAULTS = {
     "stable_recall_strength": 0.25,
     "stability_prune_bonus": 1.0,
     "state_recurrence_type": "cross_attention",
+    "memory_use_nsa": True,
+    "enable_stable_memory": True,
     "sliding_window": 4,
 
     # Memory (C2) — v0.1 legacy
@@ -232,6 +234,8 @@ def config_to_model_args(cfg: dict) -> dict:
             "stable_recall_strength": cfg.get("stable_recall_strength", 0.25),
             "stability_prune_bonus": cfg.get("stability_prune_bonus", 1.0),
             "state_recurrence_type": cfg.get("state_recurrence_type", "cross_attention"),
+            "memory_use_nsa": cfg.get("memory_use_nsa", True),
+            "enable_stable_memory": cfg.get("enable_stable_memory", True),
             "sliding_window": cfg.get("sliding_window", 4),
             "d_routing": cfg.get("d_routing", 64),
             "cost_alpha": cfg.get("cost_alpha", 0.5),
