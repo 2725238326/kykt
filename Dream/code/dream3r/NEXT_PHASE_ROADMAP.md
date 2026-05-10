@@ -1,6 +1,6 @@
 # Dream3R Next Phase Roadmap
 
-Status: planning baseline for post-initial-research execution.
+Status: W19 real-data smoke path started; W20-W22 baseline complete.
 
 Date: 2026-05-10
 
@@ -97,9 +97,10 @@ Replace synthetic-only evidence with real image/depth/pose sequence evaluation.
 
 ### Exit Criteria
 
-- One DTU scene loads without random tensors.
-- One real sequence window runs through Dream3R.
-- Evaluation JSON is produced.
+- First slice: KITTI rectified RGB/depth windows load without random tensors.
+- First slice: one or more real sequence windows run through Dream3R.
+- First slice: evaluation JSON is produced by `evaluate_real_sequence.py`.
+- Remaining: DTU scene loader needs non-random depth/pointmap targets when depth files are available.
 - Smoke and full tests remain passing.
 
 ## W20: SOTA Feature Matrix
