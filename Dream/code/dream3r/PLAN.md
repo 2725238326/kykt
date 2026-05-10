@@ -1,11 +1,11 @@
 # Dream3R 实现推进计划
 
 日期：2026-05-10
-状态：Cycle 033 架构推进中（W1-W10 主路径已大幅落地，W4 expert multi-real-path 继续扩展）
+状态：Cycle 033 架构推进中（W1-W10 主路径已大幅落地，W12/W14 已开始落地）
 
 ## 当前基线
 
-- 代码：bus + 5 模块 + losses + smoke test 已通过 GPU 验证；Cycle 033 已补 temporal bus、SpatialMemory payload、NSA 几何稀疏、sequence training、loss/metrics/profiler、MASt3R + Spann3R real adapters
+- 代码：bus + 5 模块 + losses + smoke test 已通过 GPU 验证；Cycle 033 已补 temporal bus、SpatialMemory payload、NSA 几何稀疏、sequence training、loss/metrics/profiler、MASt3R + Spann3R real adapters、W12 3D-aware retrieval、W14 drift regularizer
 - 环境：dream3r conda env，版本全部对齐 ✓
 - 数据：服务器已有 DTU (539MB, 15 scenes) + KITTI (196GB)
 - 硬件：4 x TITAN RTX 24GB，训练用 2-3 卡
@@ -49,6 +49,7 @@ Dream/code/dream3r/
 
 - [x] Perceiver (C1)：接入 timm ViT-Base backbone（可开关）；pointmap/confidence/evidence 三个 head 改成多层 MLP
 - [x] Memory (C2)：输入改为 concat(perception_summary, evidence_flat)；suppress_mask 维度修正；LayerNorm 加入
+- [x] Memory (C2)：AnchorBank 支持 3D-aware retrieval；StateTokenRecurrence 接入 Grassmannian drift regularizer
 - [x] Permanence (C3)：对照 Locatello 2020 重写 Slot Attention（q 来自 slots，k/v 来自 inputs，softmax over slots 竞争）；slot 初始化改为 mu+sigma 采样
 - [x] Critic (C4)：改为 2-layer TransformerEncoder over 17 evidence tokens（不再 flatten 成单 token）
 - [x] Bus (C6)：model.py 加入 read() 调用（Critic 读 capability_match 和 latent_drift_proxy），contract_log 非空

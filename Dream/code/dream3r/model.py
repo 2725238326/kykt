@@ -38,6 +38,9 @@ class Dream3R(nn.Module):
         d_evidence   = c.get("d_evidence", 32)
         use_backbone = c.get("use_backbone", False)
         img_size     = c.get("img_size", 224)
+        backbone_type = c.get("backbone_type", "dinov2_vitb14")
+        backbone_freeze = c.get("backbone_freeze", True)
+        backbone_checkpoint_path = c.get("backbone_checkpoint_path", "")
 
         self.version = version
         self.profile = c.get("profile", False)
@@ -47,6 +50,8 @@ class Dream3R(nn.Module):
         self.perceiver = Perceiver(
             d_model=d_model, n_evidence=n_evidence, d_evidence=d_evidence,
             img_size=img_size, use_backbone=use_backbone,
+            backbone_type=backbone_type, backbone_freeze=backbone_freeze,
+            backbone_checkpoint_path=backbone_checkpoint_path,
         )
 
         if version == "v01":
@@ -55,6 +60,8 @@ class Dream3R(nn.Module):
             d_slot       = c.get("d_slot", 128)
             n_slots      = c.get("n_slots", 16)
             d_critic     = c.get("d_critic", 256)
+            critic_geo_scale = c.get("critic_geometric_conflict_scale", 8.0)
+            critic_geo_bias = c.get("critic_geometric_clean_bias", -2.0)
             n_regimes    = c.get("n_regimes", 5)
             n_models     = c.get("n_models", 8)
 
@@ -67,6 +74,8 @@ class Dream3R(nn.Module):
             )
             self.critic = Critic(
                 n_evidence=n_evidence, d_evidence=d_evidence, d_critic=d_critic,
+                geometric_conflict_scale=critic_geo_scale,
+                geometric_clean_bias=critic_geo_bias,
             )
             self.composer = Composer_v01(n_regimes=n_regimes, n_models=n_models)
         else:
@@ -78,10 +87,20 @@ class Dream3R(nn.Module):
             nsa_conf_bias = c.get("nsa_confidence_bias_strength", 2.0)
             nsa_geo_bias = c.get("nsa_geometry_bias_strength", 1.0)
             nsa_top_branches = c.get("nsa_top_k_branches", 2)
+            grassmannian_strength = c.get("grassmannian_strength", 0.1)
+            anchor_spatial_bias_alpha = c.get("anchor_spatial_bias_alpha", 1.0)
+            anchor_spatial_retrieval_mode = c.get("anchor_spatial_retrieval_mode", "latent_plus_3d")
+            active_to_stable_threshold = c.get("active_to_stable_threshold", 0.6)
+            stable_recall_threshold = c.get("stable_recall_threshold", -1.0)
+            stable_recall_strength = c.get("stable_recall_strength", 0.25)
+            stability_prune_bonus = c.get("stability_prune_bonus", 1.0)
+            state_recurrence_type = c.get("state_recurrence_type", "cross_attention")
             slide_win    = c.get("sliding_window", 4)
             d_slot       = c.get("d_slot", 128)
             n_slots      = c.get("n_slots", 16)
             d_critic     = c.get("d_critic", 256)
+            critic_geo_scale = c.get("critic_geometric_conflict_scale", 8.0)
+            critic_geo_bias = c.get("critic_geometric_clean_bias", -2.0)
             n_regimes    = c.get("n_regimes", 5)
             d_routing    = c.get("d_routing", 64)
             cost_alpha   = c.get("cost_alpha", 0.5)
@@ -96,6 +115,14 @@ class Dream3R(nn.Module):
                 nsa_confidence_bias_strength=nsa_conf_bias,
                 nsa_geometry_bias_strength=nsa_geo_bias,
                 nsa_top_k_branches=nsa_top_branches,
+                grassmannian_strength=grassmannian_strength,
+                anchor_spatial_bias_alpha=anchor_spatial_bias_alpha,
+                anchor_spatial_retrieval_mode=anchor_spatial_retrieval_mode,
+                active_to_stable_threshold=active_to_stable_threshold,
+                stable_recall_threshold=stable_recall_threshold,
+                stable_recall_strength=stable_recall_strength,
+                stability_prune_bonus=stability_prune_bonus,
+                state_recurrence_type=state_recurrence_type,
                 n_evidence=n_evidence, d_evidence=d_evidence,
             )
             self.permanence = Permanence(
@@ -103,6 +130,8 @@ class Dream3R(nn.Module):
             )
             self.critic = Critic(
                 n_evidence=n_evidence, d_evidence=d_evidence, d_critic=d_critic,
+                geometric_conflict_scale=critic_geo_scale,
+                geometric_clean_bias=critic_geo_bias,
             )
             self.composer = ComposerRouter(
                 n_regimes=n_regimes, d_routing=d_routing,
@@ -129,6 +158,7 @@ class Dream3R(nn.Module):
                 regime_probs: Optional[torch.Tensor] = None,
                 prev_memory_state: Optional[torch.Tensor] = None,
                 prev_object_slots: Optional[torch.Tensor] = None,
+                prev_object_slot_poses: Optional[torch.Tensor] = None,
                 timestep: int = 0,
                 ) -> Dict[str, torch.Tensor]:
         """
@@ -171,7 +201,12 @@ class Dream3R(nn.Module):
         if conflict_for_perm is not None:
             perm_conflict = conflict_for_perm.tensor
 
-        perm_out = self.permanence(perm_input, prev_object_slots, perm_conflict)
+        perm_positions = t2_pointmap.mean(dim=2)
+        perm_out = self.permanence(
+            perm_input, prev_object_slots, perm_conflict,
+            input_positions=perm_positions,
+            prev_slot_poses=prev_object_slot_poses,
+        )
         if self.profile:
             timings["permanence_ms"] = (time.perf_counter() - t0) * 1000
 
@@ -185,9 +220,8 @@ class Dream3R(nn.Module):
         t0 = time.perf_counter()
         dyn_sig = self.bus.read("dynamic_ratio", "memory")
         bus_dyn = dyn_sig.tensor if dyn_sig is not None else None
-        if bus_dyn is not None and bus_dyn.dim() == 3:
-            bus_dyn = bus_dyn.mean(dim=1)
         cr2 = self.bus.gate_cr2()
+        cr2_per_slot = self.bus.cr2_per_slot_suppress()
 
         evidence_pooled = t3.mean(dim=1)
         evidence_flat = evidence_pooled.reshape(B, -1)
@@ -195,10 +229,11 @@ class Dream3R(nn.Module):
         if self.version == "v01":
             if prev_memory_state is None:
                 prev_memory_state = self.memory.init_state(B, device)
+            bus_dyn_v01 = bus_dyn.mean(dim=1) if bus_dyn is not None and bus_dyn.dim() == 3 else bus_dyn
             mem_out = self.memory(
                 perc_summary, evidence_flat, prev_memory_state,
                 suppress_mask=cr2,
-                bus_dynamic_ratio=bus_dyn,
+                bus_dynamic_ratio=bus_dyn_v01,
                 bus_conflict_score=memory_conflict_sig.tensor if memory_conflict_sig is not None else None,
             )
         else:
@@ -277,7 +312,13 @@ class Dream3R(nn.Module):
         drift_sig = self.bus.read("latent_drift_proxy", "critic")
 
         cr1 = self.bus.gate_cr1()
-        critic_out = self.critic(evidence_pooled, cr1)
+        critic_pointmap_pair = t2_pointmap[:, :2] if t2_pointmap.shape[1] >= 2 else None
+        critic_confidence_pair = t2_confidence[:, :2] if t2_confidence.shape[1] >= 2 else None
+        critic_out = self.critic(
+            evidence_pooled, cr1,
+            pointmap_pair=critic_pointmap_pair,
+            confidence_pair=critic_confidence_pair,
+        )
 
         if self.profile:
             timings["critic_ms"] = (time.perf_counter() - t0) * 1000
@@ -298,25 +339,31 @@ class Dream3R(nn.Module):
             "conflict_score": critic_out["conflict_score"],
             "repair_logits": critic_out["repair_logits"],
             "recommended_action": critic_out["recommended_action"],
+            "critic_geometric_log": critic_out.get("geometric_consistency_log", {}),
             "latent_state": mem_out["latent_state"],
             "update_kind": mem_out["update_kind"],
             "update_probs": mem_out["update_probs"],
             "write_decision": mem_out["write_decision"],
             "latent_drift_proxy": mem_out["latent_drift_proxy"],
             "object_track_set": perm_out["object_track_set"],
+            "object_slot_poses": perm_out["object_slot_poses"],
             "dynamic_ratio": perm_out["dynamic_ratio"],
             "region_logits": perm_out["region_logits"],
             "mint_confidence": perm_out["mint_confidence"],
             "slot_match_indices": perm_out["slot_match_indices"],
             "slot_match_scores": perm_out["slot_match_scores"],
+            "suppress_static_write": perm_out["suppress_static_write"],
+            "cr2_per_slot_suppress": cr2_per_slot,
             "capability_match": comp_out["capability_match"],
             "route_recommendation": comp_out["route_recommendation"],
             "route_regret": comp_out["route_regret"],
             "contract_log": self.bus.get_contract_log(),
             "repair_action_log": {
                 "previous_action": repair_action.detach() if repair_action is not None else None,
+                "noop": bool(repair_action is None or (repair_action == 0).any().item()),
                 "increase_retrieval": bool(repair_action is not None and (repair_action == 1).any().item()),
                 "reroute": bool(repair_action is not None and (repair_action == 2).any().item()),
+                "implemented_actions": [0, 1, 2],
                 "stubbed_actions": [3, 4, 5],
             },
         }
@@ -351,6 +398,8 @@ CONFIGS = {
         "d_slot": 128, "n_slots": 16,
         "d_critic": 256, "n_regimes": 5, "n_models": 8,
         "use_backbone": False, "img_size": 224,
+        "backbone_type": "none", "backbone_freeze": True,
+        "backbone_checkpoint_path": "",
     },
     "small": {
         "version": "v03",
@@ -358,10 +407,19 @@ CONFIGS = {
         "d_memory": 128, "n_state_tokens": 32,
         "bank_capacity": 256, "nsa_select_k": 8, "nsa_heads": 4,
         "sliding_window": 4,
+        "grassmannian_strength": 0.1,
+        "anchor_spatial_bias_alpha": 1.0,
+        "anchor_spatial_retrieval_mode": "latent_plus_3d",
+        "active_to_stable_threshold": 0.6,
+        "stable_recall_threshold": -1.0,
+        "stable_recall_strength": 0.25,
+        "stability_prune_bonus": 1.0,
         "d_slot": 128, "n_slots": 16,
         "d_critic": 256, "n_regimes": 5,
         "d_routing": 64, "cost_alpha": 0.5,
         "use_backbone": False, "img_size": 224,
+        "backbone_type": "none", "backbone_freeze": True,
+        "backbone_checkpoint_path": "",
     },
     "small_vit": {
         "version": "v03",
@@ -369,10 +427,19 @@ CONFIGS = {
         "d_memory": 128, "n_state_tokens": 32,
         "bank_capacity": 256, "nsa_select_k": 8, "nsa_heads": 4,
         "sliding_window": 4,
+        "grassmannian_strength": 0.1,
+        "anchor_spatial_bias_alpha": 1.0,
+        "anchor_spatial_retrieval_mode": "latent_plus_3d",
+        "active_to_stable_threshold": 0.6,
+        "stable_recall_threshold": -1.0,
+        "stable_recall_strength": 0.25,
+        "stability_prune_bonus": 1.0,
         "d_slot": 128, "n_slots": 16,
         "d_critic": 256, "n_regimes": 5,
         "d_routing": 64, "cost_alpha": 0.5,
         "use_backbone": True, "img_size": 224,
+        "backbone_type": "dinov2_vitb14", "backbone_freeze": True,
+        "backbone_checkpoint_path": "",
     },
     "base": {
         "version": "v03",

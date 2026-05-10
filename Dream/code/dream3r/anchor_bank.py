@@ -69,7 +69,10 @@ class AnchorBank(nn.Module):
                  d_value: int = 128, dynamic_threshold: float = 0.7,
                  conflict_threshold: float = 0.8,
                  quarantine_threshold: float = 0.5,
-                 utility_decay: float = 0.99):
+                 utility_decay: float = 0.99,
+                 spatial_bias_alpha: float = 1.0,
+                 spatial_retrieval_mode: str = "latent_plus_3d",
+                 stability_prune_bonus: float = 1.0):
         super().__init__()
         self.capacity = capacity
         self.d_key = d_key
@@ -78,6 +81,9 @@ class AnchorBank(nn.Module):
         self.conflict_threshold = conflict_threshold
         self.quarantine_threshold = quarantine_threshold
         self.utility_decay = utility_decay
+        self.spatial_bias_alpha = spatial_bias_alpha
+        self.spatial_retrieval_mode = spatial_retrieval_mode
+        self.stability_prune_bonus = stability_prune_bonus
 
         self.register_buffer("keys", torch.zeros(1, capacity, d_key))
         self.register_buffer("values", torch.zeros(1, capacity, d_value))
@@ -91,6 +97,7 @@ class AnchorBank(nn.Module):
         self.register_buffer("source_frame_pose", torch.zeros(1, capacity, 4, 4))
         self.register_buffer("source_patch_ids", torch.zeros(1, capacity, dtype=torch.long))
         self.register_buffer("points3d_mean", torch.zeros(1, capacity, 3))
+        self.register_buffer("stability_score", torch.zeros(1, capacity))
         self.register_buffer("_write_cursor", torch.zeros(1, dtype=torch.long))
         self.register_buffer("_current_timestep", torch.zeros(1, dtype=torch.long))
 
@@ -115,6 +122,7 @@ class AnchorBank(nn.Module):
         self.source_frame_pose = torch.zeros(batch_size, self.capacity, 4, 4, device=dev)
         self.source_patch_ids = torch.zeros(batch_size, self.capacity, dtype=torch.long, device=dev)
         self.points3d_mean = torch.zeros(batch_size, self.capacity, 3, device=dev)
+        self.stability_score = torch.zeros(batch_size, self.capacity, device=dev)
         self._write_cursor = torch.zeros(batch_size, dtype=torch.long, device=dev)
         self._current_timestep = torch.zeros(batch_size, dtype=torch.long, device=dev)
 
@@ -126,14 +134,27 @@ class AnchorBank(nn.Module):
     def readable_mask(self) -> torch.Tensor:
         return self.valid & ~self.quarantined
 
+    @staticmethod
+    def encode_3d_position(points3d: torch.Tensor,
+                           num_frequencies: int = 6) -> torch.Tensor:
+        freqs = torch.pow(
+            2.0, torch.arange(num_frequencies, device=points3d.device, dtype=points3d.dtype)
+        )
+        scaled = points3d.unsqueeze(-1) * freqs
+        return torch.cat([torch.sin(scaled), torch.cos(scaled)], dim=-1).flatten(-2)
+
     def read(self, queries: torch.Tensor,
-             top_k: int = 8) -> ReadResult:
+             top_k: int = 8,
+             query_points3d: Optional[torch.Tensor] = None,
+             spatial_retrieval_mode: Optional[str] = None,
+             spatial_bias_alpha: Optional[float] = None) -> ReadResult:
         """
         Top-k retrieval from non-quarantined valid entries.
 
         Args:
-            queries: [B, Q, D_k]
-            top_k:   number of entries to retrieve per query
+            queries:        [B, Q, D_k]
+            top_k:          number of entries to retrieve per query
+            query_points3d: optional [B, Q, 3] 3D query locations
         Returns:
             ReadResult with values, keys, scores, indices
         """
@@ -141,7 +162,24 @@ class AnchorBank(nn.Module):
         K = min(top_k, self.capacity)
 
         q = self.key_proj(queries)
-        scores = torch.bmm(q, self.keys.transpose(1, 2)) / (D ** 0.5)
+        latent_scores = torch.bmm(q, self.keys.transpose(1, 2)) / (D ** 0.5)
+        scores = latent_scores
+
+        mode = spatial_retrieval_mode or self.spatial_retrieval_mode
+        alpha = self.spatial_bias_alpha if spatial_bias_alpha is None else spatial_bias_alpha
+        if query_points3d is not None and mode != "latent_only":
+            distances = torch.cdist(
+                query_points3d.float(), self.points3d_mean[:B].float()
+            ).to(device=queries.device, dtype=queries.dtype)
+            valid_distances = distances.masked_select(self.readable_mask[:B].unsqueeze(1))
+            denom = valid_distances.mean().clamp_min(1e-6) if valid_distances.numel() else distances.new_tensor(1.0)
+            spatial_scores = -(distances / denom)
+            if mode == "3d_only":
+                scores = alpha * spatial_scores
+            elif mode == "latent_plus_3d":
+                scores = latent_scores + alpha * spatial_scores
+            else:
+                raise ValueError(f"unknown spatial_retrieval_mode: {mode}")
 
         mask = self.readable_mask.unsqueeze(1).expand_as(scores)
         scores = scores.masked_fill(~mask, torch.finfo(scores.dtype).min)
@@ -211,9 +249,15 @@ class AnchorBank(nn.Module):
 
         if bus_dynamic_ratio is not None:
             if bus_dynamic_ratio.dim() == 3:
-                bus_dynamic_ratio = bus_dynamic_ratio.mean(dim=1)
-            suppress_dyn = (bus_dynamic_ratio > self.dynamic_threshold).squeeze(-1)
-            accept = accept & ~suppress_dyn.unsqueeze(-1).expand(B, N)
+                if bus_dynamic_ratio.shape[1] == N:
+                    suppress_dyn = (bus_dynamic_ratio.squeeze(-1) > self.dynamic_threshold)
+                else:
+                    suppress_dyn = (bus_dynamic_ratio.mean(dim=1) > self.dynamic_threshold).expand(B, N)
+            elif bus_dynamic_ratio.dim() == 2 and bus_dynamic_ratio.shape[-1] == N:
+                suppress_dyn = bus_dynamic_ratio > self.dynamic_threshold
+            else:
+                suppress_dyn = (bus_dynamic_ratio > self.dynamic_threshold).squeeze(-1).unsqueeze(-1).expand(B, N)
+            accept = accept & ~suppress_dyn
 
         if bus_conflict_score is not None:
             suppress_conf = (bus_conflict_score > self.conflict_threshold).squeeze(-1)
@@ -244,6 +288,7 @@ class AnchorBank(nn.Module):
         source_frame_pose = source_frame_pose.detach()
         source_patch_ids = source_patch_ids.detach()
         points3d_mean = points3d_mean.detach()
+        accept = accept & (confidence > 0)
 
         n_accepted = accept.sum().item()
         n_suppressed = B * N - n_accepted
@@ -262,7 +307,8 @@ class AnchorBank(nn.Module):
             else:
                 n_from_free = free_slots.numel()
                 n_evict = n_to_write - n_from_free
-                _, evict_order = self.utility[b].topk(n_evict, largest=False)
+                eviction_score = self.utility[b] + self.stability_prune_bonus * self.stability_score[b]
+                _, evict_order = eviction_score.topk(n_evict, largest=False)
                 write_positions = torch.cat([free_slots, evict_order]) if n_from_free > 0 else evict_order
 
             self.keys[b, write_positions] = keys[b, accepted_idx].float()
@@ -276,6 +322,7 @@ class AnchorBank(nn.Module):
             self.source_frame_pose[b, write_positions] = source_frame_pose[b, accepted_idx].float()
             self.source_patch_ids[b, write_positions] = source_patch_ids[b, accepted_idx].long()
             self.points3d_mean[b, write_positions] = points3d_mean[b, accepted_idx].float()
+            self.stability_score[b, write_positions] = 0
 
             quar_mask = quarantine_new[b, accepted_idx]
             self.quarantined[b, write_positions] = quar_mask
@@ -321,6 +368,7 @@ class AnchorBank(nn.Module):
             with torch.no_grad():
                 scores = self.utility_scorer(feat).squeeze(-1)
 
+            scores = scores + self.stability_prune_bonus * self.stability_score[b, valid_idx]
             self.utility[b, valid_idx] = scores
 
             n_to_prune = n_valid - target
@@ -332,6 +380,7 @@ class AnchorBank(nn.Module):
             self.source_frame_pose[b, prune_idx] = 0
             self.source_patch_ids[b, prune_idx] = 0
             self.points3d_mean[b, prune_idx] = 0
+            self.stability_score[b, prune_idx] = 0
             total_pruned += n_to_prune
 
             if scores.numel() > 0:
@@ -363,9 +412,23 @@ class AnchorBank(nn.Module):
             valid_mask = (idx >= 0) & (idx < self.capacity)
             self.quarantined[b, idx[valid_mask]] = False
 
+    def promote(self, state_tokens: torch.Tensor,
+                confidence: Optional[torch.Tensor] = None,
+                values: Optional[torch.Tensor] = None,
+                points3d_mean: Optional[torch.Tensor] = None) -> WriteResult:
+        values = state_tokens if values is None else values
+        return self.write(
+            keys=state_tokens,
+            values=values,
+            confidence=confidence,
+            points3d_mean=points3d_mean,
+        )
+
     def tick(self):
         self._current_timestep += 1
         self.utility *= self.utility_decay
+        stable_mask = self.valid & ~self.quarantined
+        self.stability_score = self.stability_score + stable_mask.float()
 
     def state_snapshot(self) -> Dict[str, torch.Tensor]:
         return {
@@ -378,4 +441,5 @@ class AnchorBank(nn.Module):
             "source_frame_pose": self.source_frame_pose.clone(),
             "source_patch_ids": self.source_patch_ids.clone(),
             "points3d_mean": self.points3d_mean.clone(),
+            "stability_score": self.stability_score.clone(),
         }

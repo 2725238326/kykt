@@ -28,6 +28,9 @@ DEFAULTS = {
     "img_size": 224,
     "patch_size": 16,
     "use_backbone": False,
+    "backbone_type": "dinov2_vitb14",
+    "backbone_freeze": True,
+    "backbone_checkpoint_path": "",
 
     # Memory (C2) — v0.3 spatial memory
     "d_memory": 128,
@@ -38,6 +41,14 @@ DEFAULTS = {
     "nsa_confidence_bias_strength": 2.0,
     "nsa_geometry_bias_strength": 1.0,
     "nsa_top_k_branches": 2,
+    "grassmannian_strength": 0.1,
+    "anchor_spatial_bias_alpha": 1.0,
+    "anchor_spatial_retrieval_mode": "latent_plus_3d",
+    "active_to_stable_threshold": 0.6,
+    "stable_recall_threshold": -1.0,
+    "stable_recall_strength": 0.25,
+    "stability_prune_bonus": 1.0,
+    "state_recurrence_type": "cross_attention",
     "sliding_window": 4,
 
     # Memory (C2) — v0.1 legacy
@@ -54,6 +65,8 @@ DEFAULTS = {
     "d_critic": 256,
     "n_critic_heads": 4,
     "n_critic_layers": 2,
+    "critic_geometric_conflict_scale": 8.0,
+    "critic_geometric_clean_bias": -2.0,
 
     # Composer (C5) — v0.3 router
     "n_regimes": 5,
@@ -83,6 +96,8 @@ DEFAULTS = {
     "w_retrieval_quality": 0.05,
     "w_routing": 0.05,
     "w_geometric_consistency": 0.05,
+    "w_sampson_distance": 0.05,
+    "w_covisibility_consistency": 0.05,
     "w_drift_consistency": 0.1,
     "w_state_drift_regularization": 0.01,
 
@@ -183,9 +198,14 @@ def config_to_model_args(cfg: dict) -> dict:
         "d_slot": cfg["d_slot"],
         "n_slots": cfg["n_slots"],
         "d_critic": cfg["d_critic"],
+        "critic_geometric_conflict_scale": cfg.get("critic_geometric_conflict_scale", 8.0),
+        "critic_geometric_clean_bias": cfg.get("critic_geometric_clean_bias", -2.0),
         "n_regimes": cfg["n_regimes"],
         "use_backbone": cfg["use_backbone"],
         "img_size": cfg["img_size"],
+        "backbone_type": cfg.get("backbone_type", "dinov2_vitb14"),
+        "backbone_freeze": cfg.get("backbone_freeze", True),
+        "backbone_checkpoint_path": cfg.get("backbone_checkpoint_path", ""),
         "profile": cfg.get("profile", False),
     }
     if cfg.get("version", "v03") == "v01":
@@ -204,6 +224,14 @@ def config_to_model_args(cfg: dict) -> dict:
             "nsa_confidence_bias_strength": cfg.get("nsa_confidence_bias_strength", 2.0),
             "nsa_geometry_bias_strength": cfg.get("nsa_geometry_bias_strength", 1.0),
             "nsa_top_k_branches": cfg.get("nsa_top_k_branches", 2),
+            "grassmannian_strength": cfg.get("grassmannian_strength", 0.1),
+            "anchor_spatial_bias_alpha": cfg.get("anchor_spatial_bias_alpha", 1.0),
+            "anchor_spatial_retrieval_mode": cfg.get("anchor_spatial_retrieval_mode", "latent_plus_3d"),
+            "active_to_stable_threshold": cfg.get("active_to_stable_threshold", 0.6),
+            "stable_recall_threshold": cfg.get("stable_recall_threshold", -1.0),
+            "stable_recall_strength": cfg.get("stable_recall_strength", 0.25),
+            "stability_prune_bonus": cfg.get("stability_prune_bonus", 1.0),
+            "state_recurrence_type": cfg.get("state_recurrence_type", "cross_attention"),
             "sliding_window": cfg.get("sliding_window", 4),
             "d_routing": cfg.get("d_routing", 64),
             "cost_alpha": cfg.get("cost_alpha", 0.5),

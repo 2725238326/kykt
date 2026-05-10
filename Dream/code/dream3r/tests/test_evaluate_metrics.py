@@ -40,6 +40,11 @@ def test_evaluator_accumulates_geometry_and_architecture_metrics():
             "selected_3d_distances": torch.tensor([[[0.2, 0.3]]]),
             "geometry_bias_applied": torch.tensor(1.0),
         },
+        "critic_geometric_log": {
+            "sampson_distance": torch.tensor([0.2]),
+            "covisible_inconsistency": torch.tensor([0.1]),
+            "depth_inconsistency": torch.tensor([0.3]),
+        },
         "latent_drift_proxy": torch.tensor([[0.4]]),
         "bank_occupancy": torch.tensor([0.25]),
         "routing_logits": torch.tensor([[2.0, 0.0, -1.0]]),
@@ -58,6 +63,9 @@ def test_evaluator_accumulates_geometry_and_architecture_metrics():
     assert metrics.memory_branch_entropy > 0.0
     assert metrics.selected_anchor_3d_distance == 0.25
     assert metrics.geometry_bias_applied == 1.0
+    assert abs(metrics.critic_sampson_distance - 0.2) < 1e-6
+    assert abs(metrics.critic_covisible_inconsistency - 0.1) < 1e-6
+    assert abs(metrics.critic_depth_inconsistency - 0.3) < 1e-6
     assert abs(metrics.state_drift_magnitude - 0.4) < 1e-6
 
 

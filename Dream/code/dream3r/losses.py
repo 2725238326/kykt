@@ -32,9 +32,26 @@ class Dream3RLoss(nn.Module):
             "retrieval_quality": 0.05,
             "routing": 0.05,
             "geometric_consistency": 0.05,
+            "sampson_distance": 0.05,
+            "covisibility_consistency": 0.05,
             "drift_consistency": 0.1,
             "state_drift_regularization": 0.01,
         }
+
+    @staticmethod
+    def sampson_distance_loss(pointmap_pair: torch.Tensor,
+                              confidence_pair: torch.Tensor = None) -> torch.Tensor:
+        from dream3r.modules import Critic
+        return Critic.compute_geometric_consistency(
+            pointmap_pair, confidence_pair
+        )["sampson_distance"].mean()
+
+    @staticmethod
+    def covisibility_consistency_loss(pointmap_pair: torch.Tensor,
+                                      confidence_pair: torch.Tensor = None) -> torch.Tensor:
+        from dream3r.modules import Critic
+        log = Critic.compute_geometric_consistency(pointmap_pair, confidence_pair)
+        return (log["covisible_inconsistency"] + log["confidence_disagreement"]).mean()
 
     def forward(self, outputs: Dict[str, torch.Tensor],
                 targets: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
@@ -69,6 +86,21 @@ class Dream3RLoss(nn.Module):
             )
             losses["geometric_consistency"] = l_geo
             total = total + self.w.get("geometric_consistency", 0.05) * l_geo
+
+        critic_geo_log = outputs.get("critic_geometric_log", {})
+        if isinstance(critic_geo_log, dict):
+            sampson = critic_geo_log.get("sampson_distance")
+            if isinstance(sampson, torch.Tensor):
+                losses["sampson_distance"] = sampson.float().mean()
+                total = total + self.w.get("sampson_distance", 0.05) * losses["sampson_distance"]
+            covis = critic_geo_log.get("covisible_inconsistency")
+            conf_dis = critic_geo_log.get("confidence_disagreement")
+            if isinstance(covis, torch.Tensor):
+                l_covis = covis.float().mean()
+                if isinstance(conf_dis, torch.Tensor):
+                    l_covis = l_covis + conf_dis.float().mean()
+                losses["covisibility_consistency"] = l_covis
+                total = total + self.w.get("covisibility_consistency", 0.05) * l_covis
 
         # L_critic_P1: conflict detection (binary CE on conflict_score)
         if "conflict_label" in targets:

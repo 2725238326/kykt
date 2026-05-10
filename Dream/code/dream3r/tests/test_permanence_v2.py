@@ -51,9 +51,39 @@ def test_cr3_permanence_bias_aggregates_per_slot_dynamic_ratio():
     assert torch.allclose(bias, torch.tensor([[0.5]]))
 
 
+
+
+def test_slot_matching_is_one_to_one_assignment():
+    prev = torch.eye(4).view(1, 4, 4)
+    current = prev[:, [2, 0, 3, 1], :]
+
+    indices, scores = Permanence.match_slots(current, prev)
+
+    assert indices.tolist() == [[2, 0, 3, 1]]
+    assert torch.allclose(scores, torch.ones_like(scores), atol=1e-6)
+    assert len(set(indices[0].tolist())) == 4
+
+
+def test_anchor_write_uses_per_slot_dynamic_suppress():
+    from dream3r.anchor_bank import AnchorBank
+
+    bank = AnchorBank(capacity=8, d_key=8, d_value=8, dynamic_threshold=0.5)
+    bank.reset(batch_size=1)
+    keys = torch.randn(1, 4, 8)
+    values = torch.randn(1, 4, 8)
+    dynamic = torch.tensor([[[0.1], [0.9], [0.2], [0.8]]])
+
+    wr = bank.write(keys, values, bus_dynamic_ratio=dynamic)
+
+    assert wr.written_mask.tolist() == [[True, False, True, False]]
+    assert wr.n_written == 2
+    assert wr.n_suppressed == 2
+
 if __name__ == "__main__":
     test_permanence_returns_per_slot_dynamic_ratio_and_suppress()
     test_cr2_aggregation_is_not_any_slot_suppress()
     test_slot_matching_tracks_previous_slot_identity()
     test_cr3_permanence_bias_aggregates_per_slot_dynamic_ratio()
+    test_slot_matching_is_one_to_one_assignment()
+    test_anchor_write_uses_per_slot_dynamic_suppress()
     print("All Permanence v2 tests passed.")

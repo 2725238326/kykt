@@ -78,6 +78,8 @@ MASt3R is loadable through `DREAM3R_RUN_MAST3R_INTEGRATION=1`. Spann3R is loadab
 | `tests/test_mast3r_integration.py` | Optional real MASt3R checkpoint + dispatch path |
 | `tests/test_fast3r_integration.py` | Fast3R fallback contract + artifact/dependency status |
 | `tests/test_spann3r_integration.py` | Optional real Spann3R checkpoint + dispatch path |
+| `tests/test_drift_regularizer.py` | W14 Grassmannian state drift regularizer |
+| `tests/test_3d_retrieval.py` | W12 3D-aware AnchorBank retrieval |
 
 ## Key contracts to preserve
 
@@ -95,7 +97,7 @@ MASt3R is loadable through `DREAM3R_RUN_MAST3R_INTEGRATION=1`. Spann3R is loadab
 
 | ID | Gap | Priority |
 |----|-----|----------|
-| A4 | AnchorBank stores spatial payload; pose is still identity until real data loader provides poses | Medium |
+| A4 | AnchorBank stores spatial payload and supports 3D-aware retrieval; pose is still identity until real data loader provides poses | Medium |
 | A5 | DINOv3-S backbone not integrated (Perceiver still uses ViT-Base/identity) | Medium |
 | A6 | Test3R lazy invocation path (Critic triggers off-path verification) | Medium |
 | C1 | DTUDataset is a stub (returns random tensors) | Medium |
@@ -129,6 +131,8 @@ python -m dream3r.tests.test_spatial_memory
 python -m dream3r.tests.test_mast3r_integration
 python -m dream3r.tests.test_fast3r_integration
 python -m dream3r.tests.test_spann3r_integration
+python -m dream3r.tests.test_drift_regularizer
+python -m dream3r.tests.test_3d_retrieval
 
 # Optional real checkpoint integrations
 CUDA_VISIBLE_DEVICES=0 DREAM3R_RUN_MAST3R_INTEGRATION=1 python -m dream3r.tests.test_mast3r_integration

@@ -65,9 +65,28 @@ def test_cr1_blocks_reroute_when_capability_spread_is_low():
     assert out["recommended_action"].item() != 2
 
 
+
+
+def test_previous_noop_action_is_consumed_as_noop():
+    torch.manual_seed(0)
+    model = build_dream3r("small")
+    model.eval()
+    model.bus.publish("recommended_action", torch.tensor([[0.0]]),
+                      EvidenceLabel.INFERRED, "critic", timestep=0)
+
+    with torch.no_grad():
+        out = model(torch.randn(1, 4, 16, 768), timestep=1)
+
+    log = out["repair_action_log"]
+    assert log["noop"] is True
+    assert log["increase_retrieval"] is False
+    assert log["reroute"] is False
+    assert log["implemented_actions"] == [0, 1, 2]
+
 if __name__ == "__main__":
     test_high_conflict_recommends_increase_retrieval()
     test_previous_repair_action_increases_memory_retrieval()
     test_previous_reroute_action_reaches_composer_log()
+    test_previous_noop_action_is_consumed_as_noop()
     test_cr1_blocks_reroute_when_capability_spread_is_low()
     print("All Critic loop tests passed.")

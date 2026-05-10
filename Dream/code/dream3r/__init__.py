@@ -15,10 +15,12 @@ from dream3r.model import Dream3R, build_dream3r
 from dream3r.modules import (
     Perceiver, Permanence, Critic,
     SpatialMemory, ComposerRouter,
+    StateTokenRecurrence, MambaHybridRecurrence,
     MemorySSM_v01, Composer_v01,
 )
 from dream3r.anchor_bank import AnchorBank
 from dream3r.nsa_attention import NSAAttention
 from dream3r.losses import Dream3RLoss
+from dream3r.gaussian_head import GaussianHead
 
 __version__ = "0.3.0"

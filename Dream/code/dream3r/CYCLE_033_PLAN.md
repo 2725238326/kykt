@@ -1,6 +1,6 @@
 # Dream3R Cycle 033: Full Architecture Advancement Plan
 
-Status: **active implementation** (W1-W10 paths implemented; W4 multi-adapter expansion ongoing; W11-W18 breakthrough directions added 2026-05-10)
+Status: **active implementation** (W1-W16 implemented and verified; W17-W18 remain future P3 targets)
 
 Date: 2026-05-10 (updated with SOTA gap analysis and W11-W18 breakthrough workstreams)
 
@@ -343,6 +343,20 @@ The original first target was **MASt3R** because:
 
 ## W6: Permanence mechanism hardening (P1)
 
+### Implementation status update (2026-05-10)
+
+Implemented:
+- `Permanence.dynamic_ratio` and `suppress_static_write` are per-slot tensors, preserving object-level granularity.
+- `Permanence.match_slots()` performs one-to-one cosine assignment across windows using exact DP/Hungarian-equivalent matching for the small slot count.
+- `AnchorBank.write()` consumes per-entry/per-slot `bus_dynamic_ratio` when dimensions align, suppressing only affected entries.
+- `Dream3R.forward()` exposes `suppress_static_write` and `cr2_per_slot_suppress`; v0.1 keeps legacy aggregated dynamic ratio for backward compatibility.
+
+Verified on server:
+- `python -m dream3r.tests.test_permanence_v2`
+- `CUDA_VISIBLE_DEVICES=0 python -m dream3r.smoke_test`
+- full `dream3r.tests.test_*` suite
+
+
 ### Current problem
 
 Permanence (modules.py:257-349) implements Slot Attention correctly, but:
@@ -378,6 +392,21 @@ Permanence (modules.py:257-349) implements Slot Attention correctly, but:
 ---
 
 ## W7: Critic loop closing (P1)
+
+### Implementation status update (2026-05-10)
+
+Implemented:
+- Action 0 is now explicit `noop` in `repair_action_log`.
+- Action 1 (`increase_retrieval`) is consumed by Memory on the next tick and raises NSA selected top-k.
+- Action 2 (`reroute`) is consumed by Composer on the next tick and forces low critic confidence for routing.
+- Actions 3/4/5 remain documented stubs for later reset/refine/skip semantics.
+
+Verified on server:
+- `python -m dream3r.tests.test_critic_loop`
+- `python -m dream3r.tests.test_cr3_policy`
+- `CUDA_VISIBLE_DEVICES=0 python -m dream3r.smoke_test`
+- full `dream3r.tests.test_*` suite
+
 
 ### Current problem
 
@@ -543,6 +572,21 @@ Implemented:
 
 ## W11: DINOv2/v3 frozen encoder (P1 — highest single-item impact)
 
+### Implementation status update (2026-05-10)
+
+Implemented:
+- `Perceiver` accepts `backbone_type`, `backbone_freeze`, and `backbone_checkpoint_path`.
+- DINOv2 hub backbones are frozen by default and expose patch tokens through `forward_features()` when available.
+- Trainable pointmap/confidence heads and evidence projectors remain on top of the frozen backbone.
+- Fallback path preserves existing timm/random-feature behavior when the requested backbone cannot be loaded.
+- Config/model presets thread the new backbone options; `small` remains feature-input/no-backbone, `small_vit` uses DINOv2.
+
+Verified on server without downloading weights by monkeypatching `torch.hub.load`:
+- `python -m dream3r.tests.test_dinov2_backbone`
+- `CUDA_VISIBLE_DEVICES=0 python -m dream3r.smoke_test`
+- full `dream3r.tests.test_*` suite
+
+
 ### Why this matters
 
 Every competitive 3R method (VGGT, MASt3R, Depth Anything, CUT3R) uses DINOv2 or DINOv3 as its visual backbone. DINOv3 (late 2025, 7B teacher) introduced Gram Anchoring for stable patch features and RoPE for resolution robustness. Dream3R's current Perceiver uses either a randomly initialized ViT or raw pre-extracted features. Without foundation-model-quality features, all downstream modules (memory, matching, routing) operate on weak input representations. This is the single largest quality gap.
@@ -593,6 +637,21 @@ Every competitive 3R method (VGGT, MASt3R, Depth Anything, CUT3R) uses DINOv2 or
 
 Point3R (NeurIPS 2025) showed that adding 3D hierarchical position embeddings to memory pointers dramatically improves spatial retrieval. Dream3R's W3 adds `points3d_mean` storage to AnchorBank, but retrieval is still purely based on latent vector similarity. Without 3D-aware retrieval, the memory cannot answer "what did I see near this 3D location?" — it can only answer "what looks similar in latent space?"
 
+### Implementation status update (2026-05-10)
+
+Implemented:
+- `AnchorBank.encode_3d_position()` adds multi-frequency sinusoidal 3D position encoding.
+- `AnchorBank.read()` now supports `query_points3d`, `spatial_retrieval_mode`, and `spatial_bias_alpha`.
+- Supported modes: `latent_only`, `latent_plus_3d`, and `3d_only`.
+- `SpatialMemory` / config now expose `anchor_spatial_bias_alpha` and `anchor_spatial_retrieval_mode`.
+- Added `tests/test_3d_retrieval.py` for tied-latent spatial ranking and legacy latent-only equivalence.
+
+Verified on server:
+- `python -m dream3r.tests.test_3d_retrieval`
+- `python -m dream3r.tests.test_anchor_bank`
+- `python -m dream3r.tests.test_spatial_payload`
+- `CUDA_VISIBLE_DEVICES=0 python -m dream3r.smoke_test`
+
 ### Required changes
 
 **anchor_bank.py:**
@@ -624,6 +683,23 @@ Point3R (NeurIPS 2025) showed that adding 3D hierarchical position embeddings to
 ---
 
 ## W13: Active/stable state decoupling (P1, depends on W5)
+
+### Implementation status update (2026-05-10)
+
+Implemented:
+- `StateTokenRecurrence` is treated as active state; `AnchorBank` is treated as stable state.
+- `SpatialMemory.promote_to_stable()` promotes high-confidence active state tokens into AnchorBank.
+- `SpatialMemory.recall_from_stable()` injects retrieved stable anchors back into memory output on revisits.
+- `AnchorBank.stability_score` increments per tick for valid non-quarantined entries and protects stable entries during prune/evict.
+- Config/model expose `active_to_stable_threshold`, `stable_recall_threshold`, `stable_recall_strength`, and `stability_prune_bonus`.
+
+Verified on server:
+- `python -m dream3r.tests.test_active_stable`
+- `python -m dream3r.tests.test_anchor_bank`
+- `python -m dream3r.tests.test_spatial_memory`
+- `CUDA_VISIBLE_DEVICES=0 python -m dream3r.smoke_test`
+- full `dream3r.tests.test_*` suite
+
 
 ### Why this matters
 
@@ -662,6 +738,22 @@ OnlineX (March 2026) demonstrated that decoupling state into active (fast-changi
 
 SSR (March 2026) provides a training-free Grassmannian manifold regularizer that prevents geometric drift in streaming reconstruction. It constrains state updates to lie on a smooth manifold, preventing the kind of accumulating error that causes long-sequence degradation. This is the highest impact-to-effort ratio item: it requires no training, no new parameters, and can be added as a single function call in the state update path.
 
+### Implementation status update (2026-05-10)
+
+Implemented:
+- `StateTokenRecurrence.grassmannian_regularize()` removes a configurable parallel drift component from state updates.
+- `grassmannian_strength` is threaded through `config.py`, `model.py`, and `SpatialMemory`.
+- Default strength is `0.1`; `0.0` preserves the old update exactly.
+- Added `tests/test_drift_regularizer.py`.
+
+Verified on server:
+- `python -m dream3r.tests.test_drift_regularizer`
+- `CUDA_VISIBLE_DEVICES=0 python -m dream3r.smoke_test`
+- `python -m dream3r.tests.test_nsa_attention`
+- `python -m dream3r.tests.test_anchor_bank`
+- `python -m dream3r.tests.test_composer_experts`
+- `python -m dream3r.tests.test_spatial_memory`
+
 ### Required changes
 
 **modules.py (StateTokenRecurrence):**
@@ -694,6 +786,24 @@ SSR (March 2026) provides a training-free Grassmannian manifold regularizer that
 ---
 
 ## W15: Critic geometric consistency signals (P2, depends on W7)
+
+### Implementation status update (2026-05-10)
+
+Implemented:
+- `Critic` accepts `pointmap_pair` and `confidence_pair` alongside evidence tokens.
+- Added differentiable Sampson-like geometric residual, covisible inconsistency, confidence disagreement, and depth inconsistency features.
+- Geometry features are projected as an additional Critic transformer token and also bias `conflict_score`, so shifted/inconsistent pointmaps trigger repair pressure even before training.
+- `Dream3R.forward()` passes the first overlapping view pair into Critic and exposes `critic_geometric_log`.
+- `Dream3RLoss` now includes `sampson_distance` and `covisibility_consistency` losses; config/train weights are threaded.
+- Added `tests/test_geometric_critic.py`.
+
+Verified on server:
+- `python -m dream3r.tests.test_geometric_critic`
+- `python -m dream3r.tests.test_loss_advancement`
+- `python -m dream3r.tests.test_critic_loop`
+- `CUDA_VISIBLE_DEVICES=0 python -m dream3r.smoke_test`
+- full `dream3r.tests.test_*` suite
+
 
 ### Why this matters
 
@@ -729,6 +839,24 @@ Test3R (2025) and TTT3R (2025-2026) showed that pairwise geometric consistency i
 ---
 
 ## W16: ISA per-slot reference frames (P2, depends on W6)
+
+### Implementation status update (2026-05-10)
+
+Implemented:
+- `Permanence` now emits `object_slot_poses: [B, n_slots, 7]` with attention-weighted translation plus identity quaternion.
+- Slot attention incorporates pointmap-derived token positions via `position_proj`.
+- When previous slot poses are available, attention logits receive a pose-distance bias in each slot reference frame.
+- `Permanence.match_slots()` supports pose-aware one-to-one matching, combining feature cosine assignment with pose proximity.
+- `Dream3R.forward()` accepts `prev_object_slot_poses`, passes pointmap-derived positions into Permanence, and exposes `object_slot_poses`.
+- Added `tests/test_isa_slots.py`.
+
+Verified on server:
+- `python -m dream3r.tests.test_isa_slots`
+- `python -m dream3r.tests.test_permanence_v2`
+- `python -m dream3r.tests.test_sequence_training`
+- `CUDA_VISIBLE_DEVICES=0 python -m dream3r.smoke_test`
+- full `dream3r.tests.test_*` suite
+
 
 ### Why this matters
 
@@ -886,7 +1014,7 @@ Recommended parallel execution:
 
 - W1-W10 (original): ~800-1200 lines, 8 test files, 5-8 sessions
 - W11-W14 (P1 breakthroughs): ~300 lines, 4 test files, 3-4 sessions
-- W15-W16 (P2 breakthroughs): ~200 lines, 2 test files, 2 sessions
+- W15-W16 (P2 breakthroughs): completed 2026-05-10
 - W17-W18 (P3 future): ~350 lines, separate cycle if needed
 - Each workstream is independently testable and shippable
 

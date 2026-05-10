@@ -45,6 +45,9 @@ class EvalMetrics:
     memory_branch_entropy: float = 0.0
     selected_anchor_3d_distance: float = 0.0
     geometry_bias_applied: float = 0.0
+    critic_sampson_distance: float = 0.0
+    critic_covisible_inconsistency: float = 0.0
+    critic_depth_inconsistency: float = 0.0
     state_drift_magnitude: float = 0.0
     routing_entropy: float = 0.0
     routing_mean_regret: float = 0.0
@@ -82,6 +85,9 @@ class Evaluator:
         self._branch_weights: List[torch.Tensor] = []
         self._selected_3d_distances: List[float] = []
         self._geometry_biases: List[float] = []
+        self._critic_sampson: List[float] = []
+        self._critic_covisible: List[float] = []
+        self._critic_depth: List[float] = []
         self._state_drifts: List[float] = []
         self._occupancies: List[float] = []
         self._routing_logits: List[torch.Tensor] = []
@@ -141,6 +147,18 @@ class Evaluator:
             if isinstance(geo_bias, torch.Tensor):
                 self._geometry_biases.append(geo_bias.float().mean().item())
 
+        critic_geo = outputs.get("critic_geometric_log", {})
+        if isinstance(critic_geo, dict):
+            sampson = critic_geo.get("sampson_distance")
+            if isinstance(sampson, torch.Tensor):
+                self._critic_sampson.append(sampson.float().mean().item())
+            covisible = critic_geo.get("covisible_inconsistency")
+            if isinstance(covisible, torch.Tensor):
+                self._critic_covisible.append(covisible.float().mean().item())
+            depth = critic_geo.get("depth_inconsistency")
+            if isinstance(depth, torch.Tensor):
+                self._critic_depth.append(depth.float().mean().item())
+
         if "latent_drift_proxy" in outputs:
             self._state_drifts.append(outputs["latent_drift_proxy"].float().abs().mean().item())
 
@@ -192,6 +210,12 @@ class Evaluator:
             m.selected_anchor_3d_distance = sum(self._selected_3d_distances) / len(self._selected_3d_distances)
         if self._geometry_biases:
             m.geometry_bias_applied = sum(self._geometry_biases) / len(self._geometry_biases)
+        if self._critic_sampson:
+            m.critic_sampson_distance = sum(self._critic_sampson) / len(self._critic_sampson)
+        if self._critic_covisible:
+            m.critic_covisible_inconsistency = sum(self._critic_covisible) / len(self._critic_covisible)
+        if self._critic_depth:
+            m.critic_depth_inconsistency = sum(self._critic_depth) / len(self._critic_depth)
         if self._state_drifts:
             m.state_drift_magnitude = sum(self._state_drifts) / len(self._state_drifts)
 

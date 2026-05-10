@@ -312,6 +312,8 @@ def train(cfg: dict):
         "retrieval_quality": cfg.get("w_retrieval_quality", 0.05),
         "routing": cfg.get("w_routing", 0.05),
         "geometric_consistency": cfg.get("w_geometric_consistency", 0.05),
+        "sampson_distance": cfg.get("w_sampson_distance", 0.05),
+        "covisibility_consistency": cfg.get("w_covisibility_consistency", 0.05),
         "drift_consistency": cfg.get("w_drift_consistency", 0.1),
         "state_drift_regularization": cfg.get("w_state_drift_regularization", 0.01),
     }).to(device)
