@@ -16,6 +16,8 @@
   ],
 )
 
+#text(weight: "bold")[关键词：] 3R；feed-forward 3D reconstruction；pointmap；多视角重建；动态场景；长序列记忆；Gaussian Splatting
+
 = 引言：3R 方法的范式变化和综述范围
 
 传统基于图像的三维重建通常由若干相对独立的阶段组成：先提取局部特征并建立匹配，再估计相机内外参或相对位姿，随后通过三角化、多视图深度估计和全局优化得到点云、网格或可渲染表示。这一路线具有清晰的几何解释，也便于在 SfM、MVS 和 SLAM 系统中逐步调试；但它对纹理、视角覆盖、相机标定、外点剔除和全局优化质量较敏感。在低纹理、宽基线、稀疏视角、动态物体或长视频场景中，单个阶段的误差往往会沿流程累积，最终表现为漂移、尺度不稳、匹配断裂或局部几何污染。
@@ -25,6 +27,28 @@
 本文的目标不是给出一个简单的排行榜。不同模型面对的输入 regime 和输出需求并不相同：图像对匹配、稀疏多视角、千图级 batch、在线视频流、动态场景、可视化 Gaussian 输出，各自的约束差别很大。因而本文把模型组织为若干能力线索：pointmap 与 matching，多视角规模化，视频深度与动态场景，长序列状态和记忆，测试时验证与自适应，以及面向应用的输出表示。
 
 本文使用 Dream 长期调研中的经验作为方法论背景，而不把 Dream3R 写成综述中心。这里借鉴的主要是证据纪律：论文声称、代码可用、demo 可运行、本地流程跑通、真实质量领先，是五类不同判断。若没有直接来源或实验验证，本文不把它们合并成一个结论。
+
+= 研究问题、材料来源与筛选方法
+
+本文围绕三个研究问题展开。第一，DUSt3R 式 pointmap 表示如何改变传统三维重建的任务组织方式。第二，近期 3R 模型在 matching、多视角、动态、长序列、测试时验证和可视化输出上形成了哪些可区分的能力分支。第三，若面向真实应用，哪些输出和证据可以支持可查看、可复现、可报告的重建结果。
+
+材料来源包括 arXiv、CVF/ECCV、项目官网、官方 GitHub，以及 Dream 项目已有的 source registry、literature spine、reproduction readiness matrix 和本地 research notes。当前本地 `papers/` 中保存了 43 篇相关 PDF；这保证了后续可逐篇核对，但并不表示每篇论文都已经完成细读。本文的正文判断因此分为三层：论文标题、摘要和本地 registry 已能确认的内容；需要论文实验表支持的性能判断；需要代码、权重、许可证和本地运行记录支持的工程判断。第三类在本文中默认保守处理。
+
+筛选标准采用“相关性优先、机制分层”的方式。直接 3R / pointmap / feed-forward geometry 论文进入核心讨论；动态、长序列、测试时自适应和 prior-guided reconstruction 作为机制扩展讨论；3DGS/4DGS 与 pose-free Gaussian 方法作为输出表示和应用路径讨论；Depth Anything、DINO、CoTracker、SAM 2 等只作为支撑先验，不进入主线排名。主动感知、通用 MoE、语言模型 critic 和非 3R memory 方法若出现，只能作为类比或方法论背景，不作为 3R 模型证据。
+
+#figure(
+  table(
+    columns: (1.1fr, 2fr, 2.4fr),
+    inset: 6pt,
+    align: left,
+    [层级], [纳入对象], [正文使用方式],
+    [Tier A], [DUSt3R、MASt3R、Fast3R、VGGT、CUT3R、Spann3R 等直接 3R 方法], [核心章节讨论输入、输出、机制和局限。],
+    [Tier B], [MonST3R、POMATO、D^2USt3R、Easi3R、RayMap3R、Test3R、TTT3R、G-CUT3R 等扩展], [按动态、长序列、测试时验证等机制分组。],
+    [Tier C], [3DGS、4DGS、Splatt3R、InstantSplat、NoPoSplat], [作为可视化输出和应用桥接，不替代 3R 核心比较。],
+    [Tier D], [Depth Anything、DINO、CoTracker、SpatialTracker、SAM 2 等], [作为 depth、feature、tracking、mask priors。],
+  ),
+  caption: [本文使用的文献相关性分层。分层反映本文写作角色，不代表论文价值排序。],
+)
 
 = 从传统几何流程到 pointmap 表示
 
@@ -88,6 +112,28 @@ POMATO、D^2USt3R、Easi3R 和 RayMap3R 进一步说明动态 3R 尚未收敛为
 
 动态和 4D 章节还需要与 4DGS 输出区分开。D^2USt3R 的“4D”指随时间变化的 pointmap 表示；4D Gaussian Splatting 则是面向动态新视角合成和渲染的表示 @gaussian_splatting_4d @rotor_4dgs。前者更接近几何预测，后者更接近可视化资产。二者可以在应用链路上衔接，但不应在概念上混用。
 
+= 支撑先验：深度、特征、跟踪与分割
+
+3R 模型并不是孤立发展的。许多近期方法直接或间接依赖通用视觉先验，包括单目深度、视觉特征、点跟踪和视频分割。Depth Anything 及其 V2 版本展示了大规模无标注数据对单目深度估计的价值 @depth_anything @depth_anything_v2；Depth Pro 和 Metric3D v2 则强调 metric depth、focal 或 surface normal 等更接近几何使用的输出 @depth_pro @metric3dv2。这些模型可以为 3R 提供初始化、约束或辅助监督，但它们本身不解决多视角一致性和相机关系问题。
+
+DINOv2 和 DINOv3 代表了通用 dense visual features 的路线 @dinov2 @dinov3。对 3R 来说，这类特征的意义主要体现在匹配、检索、区域稳定性和跨图像语义结构上。需要注意的是，特征强并不直接等价于三维几何强；如果没有几何损失、跨视角约束或显式 3D 输出，DINO 类模型仍应被放在 backbone / prior 的位置，而不是作为 3R 模型比较。
+
+动态视频还需要跟踪和分割先验。CoTracker 关注长视频中的 joint point tracking @cotracker，SpatialTracker 将 2D pixel tracking 扩展到 3D space @spatialtracker，SAM 2 则提供图像和视频中的 promptable segmentation @sam2。这些工具有助于识别动态区域、维持点或物体的跨帧身份，并为 MonST3R、POMATO、RayMap3R 等动态 3R 方法提供外部证据。不过，mask 或 track 仍只是辅助信号；它们不能替代 pointmap、pose、depth consistency 或 Gaussian 输出的几何验证。
+
+#figure(
+  table(
+    columns: (1.2fr, 1.6fr, 2.2fr),
+    inset: 6pt,
+    align: left,
+    [先验类型], [代表方法], [在 3R 中的合理角色],
+    [单目深度], [Depth Anything, Depth Pro, Metric3D v2], [提供深度、尺度或法向线索；不能单独保证多视角一致。],
+    [视觉特征], [DINOv2, DINOv3], [提供匹配、检索和区域稳定性先验；不是 3R 输出。],
+    [点跟踪], [CoTracker, SpatialTracker], [辅助动态区域和跨帧点身份；需要与几何一致性结合。],
+    [视频分割], [SAM 2], [提供 mask prior；适合动态/静态分离和失败区域标注。],
+  ),
+  caption: [支撑先验在 3R 综述中的位置。它们是条件、特征或辅助证据，而不是主线模型。],
+)
+
 = 长序列重建中的状态、记忆和缓存机制
 
 长序列 3R 的核心问题是时间跨度。短视频或图像集合可以依赖一次前向预测或较小窗口；长视频则需要决定哪些历史信息保留、如何更新状态、如何控制缓存预算以及如何避免动态物体污染静态地图。近期模型在这里分化出多个概念：recurrent latent state、spatial memory、pointer memory、KV/cache、hybrid memory、pose-adaptive update 和 latent filtering。
@@ -145,32 +191,97 @@ Splatt3R、InstantSplat 和 NoPoSplat 分别提供了从少量或未标定图像
   caption: [从 3R 模型到可用产物的应用路径。质量证据用于辅助判断，不自动构成质量领先结论。],
 )
 
-= 方法比较表
+= 方法比较与分类
+
+综述比较应先按输入条件和输出表示分组，再讨论性能。许多论文在不同数据集、不同视角数量、不同相机假设和不同后处理条件下报告结果；如果忽略这些设置，跨论文横向比较会产生误导。下列各表因此只用于能力分类，不构成 SOTA 排名。
+
+== 基础重建、多视角与统一几何
 
 #table(
-  columns: (1fr, 1.2fr, 1.4fr, 1.2fr, 1.3fr, 1.5fr),
+  columns: (1fr, 1.3fr, 1.5fr, 1.6fr, 1.7fr),
   inset: 5pt,
   align: left,
-  [模型], [输入假设], [主要输出], [相机/位姿], [时间/动态], [应用备注],
-  [DUSt3R], [图像对/多视角], [pointmap, confidence], [pose-free], [静态为主], [基础线，代码和 demo 已列入 registry。],
-  [MASt3R], [图像对/集合], [3D-grounded matching], [pose-free], [静态匹配], [适合 matching 和 SfM 接口。],
-  [Fast3R], [many-view], [多视角重建], [弱化 pose 输入], [非流式], [规模化 baseline；本地依赖状态需保守记录。],
-  [VGGT], [多视角], [camera/depth/pointmap/tracks], [统一预测], [非专门动态], [强统一模型；具体 regime 需实验比较。],
-  [CUT3R], [连续视频], [pointmap/state], [pose-free/弱先验], [persistent state], [长序列状态 baseline。],
-  [Spann3R], [序列/多视角], [global pointmap], [pose-free], [spatial memory], [与 Point3R/Mem3R 机制需区分。],
-  [MonST3R], [动态视频], [geometry/masks/confidence], [pose-free], [动态场景], [动态 3R baseline，不等于 object memory。],
-  [Test3R], [3R 输出/图像 triplet], [consistency signal], [依赖 3R 输出], [测试时验证], [不是 test-time training。],
-  [TTT3R], [CUT3R-style cases], [updated state], [依赖基础模型], [测试时更新], [计算和稳定性需单独评估。],
-  [Splatt3R/InstantSplat/NoPoSplat], [未标定或稀疏图像], [3D Gaussians], [pose-free/sparse], [静态或短序列为主], [可视化输出强，质量和许可需分开确认。],
+  [模型], [输入假设], [主要输出], [核心位置], [应用备注],
+  [DUSt3R], [图像对/多视角], [pointmap, confidence], [pose-free pointmap 基座], [基础线；适合作为解释 3R 范式变化的起点。],
+  [MASt3R], [图像对/集合], [3D-grounded matching], [匹配增强], [适合 matching、retrieval 和 SfM 接口。],
+  [MASt3R-SfM], [无约束图像集合], [SfM-aligned reconstruction], [learned matching + classical alignment], [桥接 feed-forward 特征与传统全局几何。],
+  [Fast3R], [many-view], [多视角重建], [多图一次前向], [讨论 scale regime，不仅是速度。],
+  [MV-DUSt3R+], [sparse views], [scene reconstruction / NVS-related output], [稀疏多视角], [应用友好，但环境和许可需复核。],
+  [VGGT], [多视角], [camera, depth, pointmap, tracks], [统一视觉几何], [强 comparator；需按 regime 比较。],
+  [MapAnything], [单图/多图 + 可选先验], [metric 3D geometry], [通用 metric feed-forward 3D], [通用性需按输入条件解释。],
+  [Pow3R], [无约束输入 + camera/scene priors], [3D reconstruction], [先验增强], [应同时讨论先验错误和冲突。],
 )
 
-这个表只给出综述中的第一层分类。最终若要写性能或 SOTA 结论，需要回到每篇论文的实验设置：数据集、输入视角数、是否使用相机、是否包含动态场景、是否做全局优化、是否允许测试时更新、是否比较相同输出表示。缺少这些条件时，跨论文比较很容易变成不成立的横向排名。
+== 视频、动态和长序列
 
-= 图示计划
+#table(
+  columns: (1fr, 1.3fr, 1.6fr, 1.7fr, 1.8fr),
+  inset: 5pt,
+  align: left,
+  [模型], [输入假设], [主要输出], [时间机制], [注意事项],
+  [Align3R], [动态视频 + monocular depth], [aligned depth / pose clues], [跨帧深度对齐], [深度先验桥接，不是完整通用 3R。],
+  [MonST3R], [动态视频], [geometry, masks, confidence], [motion-aware geometry], [不等于长期 object identity memory。],
+  [POMATO], [动态 3D], [pointmap + temporal motion], [动态 motion modeling], [与 D^2USt3R 机制不同。],
+  [D^2USt3R], [动态场景], [4D pointmaps], [时序 pointmap], [4D pointmap 不是 4DGS。],
+  [Easi3R], [现有 3R + 动态区域], [disentangled motion], [training-free correction], [适合作为轻量动态修正线索。],
+  [RayMap3R], [动态 streaming], [RayMap / dynamic suppression], [ray-based inference-time separation], [与 pointmap 证据不同。],
+  [CUT3R], [连续序列], [pointmap + recurrent state], [persistent state], [状态不是外部空间数据库。],
+  [STream3R / LongStream], [长序列流], [streaming geometry], [causal/autoregressive route], [关注 session、cache 和因果处理。],
+  [LONG3R / LoGeR / Mem3R], [long-context sequence], [hybrid / long memory], [memory gating and hybrid memory], [存储对象和更新规则需分别写。],
+  [OVGGT / PAS3R / FILT3R], [streaming visual geometry], [cache/update/filtering], [budget, pose-adaptive, Kalman-style update], [属于状态治理，不是简单“记得更多”。],
+)
 
-本文最终建议保留五类图示。第一，3R 模型谱系图，从 DUSt3R 出发，分出 matching、多视角、长序列、动态、测试时验证和 Gaussian 输出几条线。第二，能力分类图，用输入 regime、输出表示、相机依赖、时间处理和应用状态组织模型。第三，传统流程与 pointmap pipeline 对照图，用于解释范式变化。第四，长序列 memory primitives 图，用于避免把 state、memory、cache 和 filtering 混写。第五，应用落地图，展示从图像/视频输入到几何预测、质量证据、输出表示和报告集成的路径。
+== 验证、自适应与可视化输出
 
-当前图示优先使用 Typst 原生表格和流程草图。若后续使用 AI 生成图，应使用 `notes/figure_prompts.md` 中记录的提示词，并在图注中明确该图是概念重绘，而不是某篇论文原图。
+#table(
+  columns: (1fr, 1.3fr, 1.6fr, 1.7fr, 1.8fr),
+  inset: 5pt,
+  align: left,
+  [模型/表示], [输入条件], [输出], [角色], [注意事项],
+  [Test3R], [3R 输出/图像 triplet], [consistency signal], [测试时一致性], [不是 test-time training。],
+  [TTT3R], [CUT3R-style state], [updated state / reconstruction], [测试时训练], [计算成本和稳定性需独立验证。],
+  [G-CUT3R], [camera/depth priors], [guided reconstruction], [先验引导], [先验冲突检测属于系统层扩展。],
+  [3DGS], [通常需要 pose/SfM], [3D Gaussians], [实时可渲染表示], [不是 pose-free 3R 本身。],
+  [4DGS], [动态场景视频], [dynamic Gaussians], [动态可视化输出], [与 4D pointmap 区分。],
+  [Splatt3R], [uncalibrated image pairs], [3D Gaussians], [pose-free Gaussian path], [视觉输出强，许可需复核。],
+  [InstantSplat], [sparse-view images], [3D Gaussians], [快速 sparse-view splatting], [依赖链和初始化条件需记录。],
+  [NoPoSplat], [sparse unposed images], [3D Gaussian splats], [unposed sparse-view Gaussian], [demo 成熟度和使用条件需确认。],
+)
+
+== 比较原则
+
+上述分类强调三条原则。第一，输入假设优先于模型名称：图像对、稀疏多视角、many-view、streaming 和 dynamic video 对应不同问题。第二，输出表示需要单独说明：pointmap、depth、camera、tracks、memory state、mesh 和 Gaussian 不能混作同一指标。第三，应用落地不能只看 demo：代码许可证、权重来源、CUDA/依赖、推理时间、失败样本记录和报告生成能力都属于工程判断。
+
+= 图示与应用路径
+
+本文使用三类概念图组织模型关系。第一类是谱系图，强调 DUSt3R 之后的能力分化；第二类是能力分类图，用输入和输出维度替代单一时间线；第三类是应用路径图，说明从图像/视频输入到几何预测、质量证据和报告产物的转化过程。
+
+#figure(
+  table(
+    columns: (1.2fr, 3.2fr),
+    inset: 6pt,
+    align: left,
+    [分支], [代表方法与关系],
+    [Pointmap / matching], [DUSt3R -> MASt3R -> MASt3R-SfM],
+    [Multi-view / unified geometry], [DUSt3R -> Fast3R / MV-DUSt3R+ -> VGGT / MapAnything; Pow3R 作为 prior-aware 分支],
+    [Streaming / memory], [DUSt3R -> CUT3R / Spann3R -> Point3R / STream3R / LONG3R / LoGeR / Mem3R / OVGGT],
+    [Dynamic / 4D], [DUSt3R -> MonST3R -> POMATO / D^2USt3R / Easi3R / RayMap3R],
+    [Test-time / prior-guided], [DUSt3R/MASt3R outputs -> Test3R / TTT3R / G-CUT3R],
+    [Gaussian output], [DUSt3R/MASt3R-style geometry -> Splatt3R / InstantSplat / NoPoSplat -> 3DGS / 4DGS visual assets],
+  ),
+  caption: [近期 3R 模型的谱系关系。表中箭头表示问题和表示的延伸，不必然表示代码继承。],
+)
+
+#figure(
+  table(
+    columns: (1fr, 1fr, 1fr, 1fr, 1fr),
+    inset: 5pt,
+    align: center,
+    [输入 regime], [几何预测], [质量证据], [输出表示], [记录/集成],
+    [图像对、多视角、视频、长流], [pointmap、depth、camera、tracks、state], [confidence、一致性、动态区域、先验冲突], [点云、mesh、3DGS、4DGS、截图], [表格、失败区域、复现脚本、证据日志],
+  ),
+  caption: [从 3R 模型到可用产物的应用路径。质量证据用于辅助判断，不自动构成质量领先结论。],
+)
 
 = 经验总结与开放问题
 
@@ -181,6 +292,16 @@ Splatt3R、InstantSplat 和 NoPoSplat 分别提供了从少量或未标定图像
 第三个问题是测试时机制。Test3R、TTT3R 和 G-CUT3R 表明测试阶段可以做一致性检查、状态更新或先验引导，但它们引入的额外计算、更新风险和先验冲突需要严格记录。第四个问题是应用输出。点云、深度图、confidence map、mesh 和 Gaussian 各有用处；对教学、报告、工程验收或系统集成来说，能否稳定产出可查看证据，常常比单张 demo 是否好看更重要。
 
 因此，后续工作不应只追求“一个模型覆盖所有场景”。更稳妥的路线是建立模型能力卡和样本 regime 卡：先判断输入条件，再选择合适模型或组合，最后用几何证据和可视化产物记录结果。这样的框架不替代论文实验，但能降低应用端把不同模型误用到不匹配场景的风险。
+
+= 审稿式质量检查与本文局限
+
+从领域覆盖看，本文已经覆盖 DUSt3R、MASt3R、Fast3R、VGGT、MapAnything、CUT3R、Spann3R、MonST3R、Test3R、Gaussian 输出和若干 2026 年长序列方法，能够呈现近期 3R 生态的主要分支。但它仍是一篇叙述性综述，而不是带完整检索式、排除记录和统计图的 PRISMA systematic review。因此，本文的覆盖充分性依赖当前 source registry 与本地 PDF corpus，不能声称已经穷尽所有相关论文。
+
+从证据充分性看，本文刻意不提供跨论文 SOTA 排名。原因是不同论文使用的数据集、输入视角、相机条件、后处理和输出表示并不一致。若要进行更强结论，需要建立统一表格：每个模型对应数据集、输入数量、是否使用相机、是否处理动态、是否进行全局优化、是否允许测试时更新、输出指标和代码状态。没有这些字段，横向比较只适合做能力分类，不适合做性能裁决。
+
+从最强反方意见看，读者可能会认为本文把过多近期工作纳入同一 3R 生态，导致边界偏宽。这个质疑成立一部分：Depth Anything、DINO、CoTracker、SAM 2 并非 3R 模型，3DGS/4DGS 也不是 pointmap reconstruction 方法。本文的处理方式是明确分层：支撑先验和输出表示只解释应用链路，不参与核心模型排名。若将来面向正式投稿，建议把这些内容进一步压缩到“supporting priors”和“output representations”两个小节，并把篇幅更多留给直接 3R 方法的实验对照。
+
+从写作质量看，当前稿件已经避免宣传式语言和未经验证的质量结论，但仍需要在最终版中补充更细的论文级细读：每个核心模型至少应列出训练数据、主要 benchmark、输出张量、是否开源、许可证、典型失败模式和适用输入。当前版本适合作为完整综述初稿；若要变成可投稿论文，还需要补充精确页码、图表来源、DOI/venue 校验和第三方评测引用。
 
 = 结论
 
