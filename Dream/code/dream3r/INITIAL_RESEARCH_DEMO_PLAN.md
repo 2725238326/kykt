@@ -1,24 +1,24 @@
 # Dream3R Initial Research Closure and Demo Plan
 
-Status: active for tonight closure and first public/internal demo.
+Status: formalized closure and presentation plan.
 
 Date: 2026-05-10
 
-## Research Thesis
+## Research thesis
 
-Dream3R 初代研究的核心主张不是再做一个单体 3R 模型，而是把现有 3R 方法的长处组织成一个可控、可验证、可扩展的架构：
+Dream3R 当前阶段的研究目标，是在长序列三维重建场景中，把感知、空间记忆、几何检查、多模型接口和结果输出组织成一个可以持续实验的原型系统。它不是为了替代所有现有 3R 方法，而是为后续比较、消融和应用展示提供一个统一的工作基础。
 
-- DINO/foundation encoder 提供视觉先验。
-- 3R expert adapters 提供 MASt3R / Spann3R / Fast3R 等方法的能力入口。
-- NSA sparse attention 负责长序列上下文的高效融合。
-- Active/Stable state memory 解决 streaming 过程中的短期更新与长期保留。
-- AnchorBank 用几何锚点承载 stable memory。
-- Critic 用几何一致性信号驱动 repair/reroute。
-- Permanence 用 slot 和 ISA-style reference frames 维护对象连续性。
-- Mamba hybrid recurrence 为 streaming state evolution 提供下一代时序路径。
-- GaussianHead 定义未来 3DGS 输出契约。
+- 视觉特征提取为重建提供基础输入。
+- 多模型接口保留 MASt3R、Spann3R、Fast3R 等方法的接入空间。
+- 稀疏记忆检索用于组织长序列上下文。
+- active/stable memory 区分短期状态更新和长期空间保留。
+- AnchorBank 负责保存可召回的稳定空间信息。
+- 几何自检模块根据一致性信号给出冲突和修正建议。
+- 对象状态模块用于维护动态对象和静态场景之间的关系。
+- Mamba hybrid recurrence 提供另一种时序状态更新路径。
+- GaussianHead 为后续三维可视化输出保留张量接口。
 
-初代目标：证明这些模块不是散装概念，而是已经接成一个可运行、可测试、可展示的系统原型。
+当前目标：证明这些模块已经形成可运行、可测试的原型，并为后续真实数据消融和应用展示打基础。
 
 ## Tonight Definition of Done
 
@@ -49,7 +49,7 @@ Dream3R 初代研究的核心主张不是再做一个单体 3R 模型，而是�
 - 对象级连续性
 - 面向未来 3DGS 输出
 
-Dream3R 的切入点是 control-graph architecture：把重建、记忆、验证、路由、对象保持都变成可交互的模块，而不是一个黑盒 forward。
+Dream3R 的切入点是把重建流程拆成可观察、可记录的环节，而不是只依赖一次黑盒前向计算。这样后续才能分析每个环节是否真的带来收益。
 
 ### 2. What We Borrowed From Existing 3R
 
@@ -60,16 +60,16 @@ Dream3R 的切入点是 control-graph architecture：把重建、记忆、验证
 - NSA sparse attention：compressed / selected / sliding 三路上下文融合。
 - Mamba trend：用 state-space path 改进长序列时序演化。
 
-### 3. What Dream3R Adds
+### 3. What Dream3R adds
 
-- MemoryBus：模块间 typed handoff 和 CR gates。
-- AnchorBank：stable spatial memory，而不是无边界 token cache。
-- Active/Stable state split：active state 负责窗口内演化，stable state 负责长期可召回。
-- Geometric Critic：Sampson/depth/covisibility 信号进入 conflict 和 repair loop。
-- Permanence + ISA slots：对象 slot 带 reference frame，能跨窗口匹配。
-- ComposerRouter：按能力和成本路由到 expert。
-- MambaHybridRecurrence：`state_recurrence_type="mamba_hybrid"` 已接入可运行。
-- GaussianHead contract：为 3DGS 输出保留明确 tensor schema。
+- 模块间信息传递机制：记录不同模块之间的读写和控制信号。
+- 长期空间记忆库：保存可召回的稳定空间信息。
+- 短期/长期状态分离：短期状态负责当前窗口更新，长期记忆负责跨窗口保留。
+- 几何自检：将几何一致性信号转化为冲突分数和修正建议。
+- 对象状态维护：用对象级状态辅助跨窗口匹配。
+- 多模型调度接口：为不同 3R 方法保留统一调用入口。
+- 时序状态更新：`state_recurrence_type="mamba_hybrid"` 已接入可运行路径。
+- 三维可视化接口：为后续 3DGS 输出保留明确张量格式。
 
 ## Live Demo Commands
 
@@ -156,6 +156,6 @@ Priority order:
 4. Fast3R dependency cleanup if approved.
 5. 3DGS renderer backend only after `gsplat` or equivalent is approved.
 
-## One-Sentence Summary
+## One-sentence summary
 
-Dream3R 初代研究已经完成从“架构设想”到“可运行控制图 3R 原型”的转变；今晚的任务是冻结范围、跑通展示、拿测试结果支撑这个结论。
+Dream3R 当前阶段已经从方案设计推进到可运行原型；下一步需要用真实数据消融、质量评估和可视化结果来支撑更强的研究结论。

@@ -1239,7 +1239,7 @@
       <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em">FEED-FORWARD 3D RECONSTRUCTION · CVPR 2026 HIGHLIGHT</div>
       <h1 data-anim="title" style="align-self:center;font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(8.4vw,14vh);line-height:.94;letter-spacing:-.025em;color:#fff">AMB3R<br/><span style="font-style:italic;font-weight:300">&amp;</span> ZipMap</h1>
       <div data-anim="bottom" style="display:grid;grid-template-rows:auto auto;gap:1.6vh;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh">
-        <div data-anim="lead" class="lead" style="max-width:52ch;color:rgba(255,255,255,.86);font-weight:300">一个把特征塞进体素，一个把场景写进权重。都想干掉 O(N²)。</div>
+        <div data-anim="lead" class="lead" style="max-width:52ch;color:rgba(255,255,255,.86);font-weight:300">一个用 sparse voxel 加强空间推理，一个用 TTT 实现线性时间重建。两篇 CVPR 2026 论文的调研汇报。</div>
         <div style="display:flex;justify-content:space-between;align-items:end">
           <div class="t-meta" style="color:rgba(255,255,255,.6)">KYKT Lab · 2026-05-11</div>
           <div class="t-meta" style="color:rgba(255,255,255,.6)">→ swipe / arrow keys</div>
@@ -1258,8 +1258,8 @@
     </div>
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:2.6vh">
       <div data-anim="kicker" class="t-meta" style="letter-spacing:.22em">AFTER DUST3R / VGGT</div>
-      <h1 data-anim="title" style="align-self:center;font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.6vw,8.2vh);line-height:1.08;letter-spacing:-.02em">问题不再是<br>"能不能 forward pass 出 3D"——<br>而是"凭什么跑到 <span style="color:var(--accent)">750 帧</span>还不崩"。</h1>
-      <div data-anim="line" class="lead" style="color:var(--text-secondary);max-width:64ch">Pointmap 范式已经赢了——深度、位姿、匹配、重建全在一个 forward pass 里。但空间融合、真实尺度和长序列的三座大山还在。</div>
+      <h1 data-anim="title" style="align-self:center;font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.6vw,8.2vh);line-height:1.08;letter-spacing:-.02em">DUSt3R 以来，前馈 3D 重建<br>已经走通了基本范式，<br>现在的核心问题是<br><span style="color:var(--accent)">精度、尺度和可扩展性</span>。</h1>
+      <div data-anim="line" class="lead" style="color:var(--text-secondary);max-width:64ch">Pointmap 范式把深度、位姿、匹配和重建统一到了 forward pass 中，但多视角空间融合、真实尺度恢复和长序列处理仍然是主要瓶颈。</div>
     </div>
   </div>
 </section>
@@ -1274,28 +1274,28 @@
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:9vh">
       <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
         <div style="width:80px;height:2px;background:var(--accent)"></div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">前馈模型的<br>四个瓶颈</h2>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">现有前馈模型的<br>主要局限</h2>
       </div>
       <div data-anim="up" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2vw;align-items:start">
         <div style="display:flex;flex-direction:column;gap:1.6vh;border-top:1px solid var(--border-subtle);padding-top:2vh">
           <div class="t-meta">— 01 / SPATIAL</div>
           <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.6vw);line-height:1.2">空间表示</h3>
-          <p class="body" style="color:var(--text-secondary)">2D attention 不知道两个像素看的是同一堵墙。多视角信号在 token 级被隐式消化，没有显式的空间紧凑性约束。</p>
+          <p class="body" style="color:var(--text-secondary)">现有模型（DUSt3R/VGGT 等）在 2D token grid 上做 attention，多个像素观测同一 3D 点时缺乏显式的空间一致性约束。</p>
         </div>
         <div style="display:flex;flex-direction:column;gap:1.6vh;border-top:1px solid var(--border-subtle);padding-top:2vh">
           <div class="t-meta">— 02 / SCALE</div>
           <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.6vw);line-height:1.2">度量尺度</h3>
-          <p class="body" style="color:var(--text-secondary)">Pointmap 的尺度还得 median-align 才能用——离真正的 metric reconstruction 差一个 scale head 的距离。</p>
+          <p class="body" style="color:var(--text-secondary)">Pointmap 输出的深度通常需要 median-scale alignment 才能与真实世界尺度对齐，尚未实现端到端的 metric reconstruction。</p>
         </div>
         <div style="display:flex;flex-direction:column;gap:1.6vh;border-top:1px solid var(--border-subtle);padding-top:2vh">
           <div class="t-meta">— 03 / COMPLEXITY</div>
           <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.6vw);line-height:1.2">计算复杂度</h3>
-          <p class="body" style="color:var(--text-secondary)">VGGT 跑 100 帧要算 100² 对 attention。给它 750 帧试试？内存和时间都会爆掉。</p>
+          <p class="body" style="color:var(--text-secondary)">VGGT/pi³ 等模型依赖全局 attention，计算量随输入帧数 O(N²) 增长，处理数百帧的长序列在时间和显存上都难以承受。</p>
         </div>
         <div style="display:flex;flex-direction:column;gap:1.6vh;border-top:1px solid var(--border-subtle);padding-top:2vh">
           <div class="t-meta">— 04 / SYSTEM</div>
           <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.6vw);line-height:1.2">系统扩展</h3>
-          <p class="body" style="color:var(--text-secondary)">能预测位姿 ≠ 能做 SLAM。在线 VO、大规模 SfM、无内参、无 BA——没有一个是白送的。</p>
+          <p class="body" style="color:var(--text-secondary)">单次多视角重建和完整的 VO/SfM 系统之间仍有明显距离，在线建图、无标定场景下的位姿估计等都需要额外的系统设计。</p>
         </div>
       </div>
     </div>
@@ -1334,8 +1334,8 @@
     <div style="flex:1;padding:0;display:grid;grid-template-columns:5fr 11fr;gap:3vw;align-items:start">
       <div data-anim="line" class="card-ink" style="padding:3vh 2vw;display:flex;flex-direction:column;gap:2vh;align-self:stretch">
         <div class="t-cat" style="color:rgba(255,255,255,.6)">Pipeline</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.6vw,8vh);line-height:1.05;color:var(--paper)">把前馈<br>变成<br>几何系统</h2>
-        <div class="frame-img r-16x10 fit-contain" style="margin-top:1.6vh;background:rgba(255,255,255,.08)"><img src="images/05-amb3r-voxel-pipeline.png" alt="AMB3R sparse voxel pipeline"></div>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.6vw,8vh);line-height:1.05;color:var(--paper)">AMB3R<br>方法概览</h2>
+        <div class="frame-img r-16x10 fit-contain" style="margin-top:1.6vh;background:rgba(255,255,255,.08)"><img src="images/05-amb3r-voxel-pipeline.png" alt="AMB3R sparse voxel pipeline" data-image-slot="s13-ink-16x10"></div>
         <div style="display:flex;gap:.6vw;flex-wrap:wrap;margin-top:auto">
           <span class="tag" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.25);font-size:9px">FROZEN VGGT</span>
           <span class="tag" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.25);font-size:9px">80 H100 HRS</span>
@@ -1346,21 +1346,21 @@
           <div style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,9.6vh);line-height:.9;color:var(--accent)">01</div>
           <div>
             <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">冻结前端 + 稀疏体素化</h4>
-            <p class="body-sm" style="color:var(--text-secondary)">VGGT 前端完全冻结——保护 confidence 函数不被破坏。Pointmap 和几何特征投进 sparse voxel grid（normalized 空间 0.01 分辨率），同一空间位置的多视角观测被<strong>强制合并</strong>。</p>
+            <p class="body-sm" style="color:var(--text-secondary)">VGGT 前端完全冻结以保留已有的 confidence 函数。将 pointmap 和几何特征投射到 sparse voxel grid（normalized 空间下分辨率 0.01），同一空间位置的多视角观测在 voxel 内被<strong>显式融合</strong>。</p>
           </div>
         </div>
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,9.6vh);line-height:.9">02</div>
           <div>
             <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">3D 空间推理</h4>
-            <p class="body-sm" style="color:var(--text-secondary)">Space-filling curve 把稀疏 voxel 序列化为 1D token，喂入 Point Transformer v3 风格的 U-Net。这才是真正在紧凑 3D 空间里做推理——不是 2D grid 上的 attention。</p>
+            <p class="body-sm" style="color:var(--text-secondary)">通过 space-filling curve 将稀疏 voxel 序列化为 1D token 序列，送入 Point Transformer v3 风格 U-Net 进行处理，在紧凑的 3D 空间中完成多视角几何推理。</p>
           </div>
         </div>
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,9.6vh);line-height:.9">03</div>
           <div>
             <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">Scale Head + Zero-Conv 注入</h4>
-            <p class="body-sm" style="color:var(--text-secondary)">每帧回归 median pixel 的 metric log-depth，推理时取多帧尺度中位数——这就是 "Metric" 的来源。KNN 插值回像素后，通过 zero convolution 注入冻结 decoder，不破坏预训练知识。</p>
+            <p class="body-sm" style="color:var(--text-secondary)">额外训练一个轻量 scale head：对每帧预测深度中位数像素的 metric log-depth，推理时取多帧中位数恢复全局尺度。处理后的 voxel 特征通过 KNN 插值回像素级，再经 zero convolution 注入冻结的 decoder。</p>
           </div>
         </div>
       </div>
@@ -1378,13 +1378,13 @@
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:5vh">
       <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
         <div class="t-meta">ZERO TASK-SPECIFIC FINETUNING</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">不只是 depth——<br>还能做 <span style="color:var(--accent)">VO</span> 和 <span style="color:var(--accent)">SfM</span></h2>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">仅按多视角重建训练，<br>直接泛化到 <span style="color:var(--accent)">VO</span> 和 <span style="color:var(--accent)">SfM</span></h2>
       </div>
       <div class="duo-compare">
         <div class="col">
           <div class="col-tag"><span class="num">01</span>Uncalibrated VO</div>
-          <h2 class="col-ttl">活跃关键帧记忆</h2>
-          <div class="col-desc">维护 active + global keyframe memory，利用 pointmap "输出在参考帧坐标系下"的先验估计相对尺度。不需要 Kabsch-Umeyama 刚体对齐。</div>
+          <h2 class="col-ttl">Keyframe Memory 机制</h2>
+          <div class="col-desc">维护 active 和 global 两级 keyframe memory，利用 pointmap 在参考帧坐标系下输出的先验来估计相对尺度，避免了传统的 Kabsch-Umeyama 刚体对齐步骤。</div>
           <ul class="col-list">
             <li>TUM RGB-D ATE: <strong>2.7 cm</strong>（优于 MASt3R-SLAM 3.0 cm）</li>
             <li>ETH3D VO ATE: <strong>2.0 cm</strong></li>
@@ -1394,8 +1394,8 @@
         <span class="vrule"></span>
         <div class="col accent">
           <div class="col-tag"><span class="num">02</span>Feed-forward SfM</div>
-          <h2 class="col-ttl">不做 BA 的 SfM</h2>
-          <div class="col-desc">Image clustering → coarse registration → global mapping。从高置信簇初始化，逐步扩张全局 keyframe list。整个流程 feed-forward，不做传统 Bundle Adjustment。</div>
+          <h2 class="col-ttl">无 BA 的前馈 SfM</h2>
+          <div class="col-desc">三阶段流程：image clustering → coarse registration → global mapping。从高置信度簇初始化，逐步注册新簇到全局 keyframe list。全流程前馈，不需要 Bundle Adjustment。</div>
           <ul class="col-list">
             <li>ETH3D RRA@5: <strong>98.2</strong>（显著超越 COLMAP）</li>
             <li>Tanks&amp;Temples Training: <strong>95.0 / 94.5</strong></li>
@@ -1417,22 +1417,23 @@
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:4vh">
       <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
         <div class="t-meta">SPATIAL REPRESENTATION</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">空间表示 <span style="color:var(--accent)">matters</span></h2>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">为什么需要 <span style="color:var(--accent)">3D 后端</span></h2>
       </div>
       <div class="duo-compare">
         <div class="col">
           <div class="col-tag"><span class="num">A</span>传统前馈</div>
           <h2 class="col-ttl">2D Grid 推理</h2>
-          <div class="col-desc">DUSt3R / VGGT 在 2D token 上做 attention。多个像素对应同一 3D 点时，网络隐式消化这些信号——但没有结构保证它学得好。</div>
+          <div class="col-desc">DUSt3R / VGGT 在 2D token grid 上做 cross-attention。当多个像素对应同一个 3D 点时，网络只能通过隐式学习来处理，缺乏结构性保证。</div>
         </div>
         <span class="vrule"></span>
         <div class="col accent">
           <div class="col-tag"><span class="num">B</span>AMB3R</div>
           <h2 class="col-ttl">3D Voxel 后端</h2>
-          <div class="col-desc">稀疏体素把多视角对应点落入同一 voxel。"同一空间位置只能有一组属性"——这个约束就是空间紧凑性。Ablation 里 3D 后端 substantially 优于 2D alternating attention。</div>
+          <div class="col-desc">将多视角观测投射到稀疏体素后，同一个 voxel 内的特征被显式融合，空间紧凑性由结构保证。消融实验显示 3D 后端在所有任务上都优于 2D alternating attention 方案。</div>
         </div>
       </div>
-      <div class="callout" data-anim="line" style="margin-top:0">空间表示不只是 nice-to-have——它是从"能用"到"好用"的分水岭。传统 voxel/TSDF/SDF/NeRF 天然有这个约束，前馈 pointmap 模型之前没有。<span class="cite">AMB3R paper, Section 3.1</span></div>
+      <div class="frame-img r-16x9 fit-contain" data-anim="line" style="margin-top:1vh;max-height:28vh"><img src="images/07-2d-vs-3d-compare.png" alt="2D Grid vs 3D Voxel Backend comparison" data-image-slot="s08-evidence-16x9"></div>
+      <div class="callout" data-anim="line" style="margin-top:0">显式的 3D 空间表示是 AMB3R 的核心贡献。传统体积表示（voxel、TSDF、NeRF）天然具有空间唯一性约束，而此前的前馈 pointmap 模型缺少这一结构。<span class="cite">AMB3R paper, Section 3.1</span></div>
     </div>
   </div>
 </section>
@@ -1447,11 +1448,12 @@
     <div style="flex:1;padding:0;display:grid;grid-template-columns:5fr 7fr;gap:4vw;align-items:start">
       <div data-anim="line" style="display:flex;flex-direction:column;gap:2vh">
         <div class="t-meta" style="color:rgba(255,255,255,.55)">7 TASKS · 13 DATASETS</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em;color:var(--paper)">用数字<br>说话</h2>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em;color:var(--paper)">实验结果<br>概览</h2>
         <p class="body" style="color:rgba(255,255,255,.6);margin-top:1vh">覆盖 camera pose、monocular/multi-view depth、3D reconstruction、video depth、VO/SLAM、SfM。</p>
         <div style="margin-top:2vh;padding:1.6vh 1.4vw;border-left:2px solid var(--accent-bright)">
-          <p class="body-sm" style="color:rgba(255,255,255,.7)">训练成本：约 <strong style="color:var(--accent-bright)">80 H100 hours</strong>。这是给 VGGT 加后端的 add-on 成本，不是从头训一个基础模型。</p>
+          <p class="body-sm" style="color:rgba(255,255,255,.7)">训练成本约 <strong style="color:var(--accent-bright)">80 H100 hours</strong>，属于在 VGGT 基础上加 backend 的增量成本，不用从头训练。</p>
         </div>
+        <div class="frame-img r-16x10 fit-contain" style="margin-top:2vh;background:rgba(255,255,255,.06)"><img src="images/08-reconstruction-quality.png" alt="Reconstruction quality: DUSt3R vs VGGT vs AMB3R" data-image-slot="s21-evidence-16x10"></div>
       </div>
       <div data-anim="up" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2vw;align-items:start">
         <div style="display:flex;flex-direction:column;gap:.8vh;border-top:1px solid rgba(255,255,255,.3);padding-top:2vh">
@@ -1499,21 +1501,21 @@
     <div style="flex:1;padding:0;display:grid;grid-template-columns:4fr 8fr;gap:4vw;align-items:start">
       <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
         <div class="t-meta">BOUNDARIES</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">AMB3R<br>的边界</h2>
-        <p class="body" style="color:var(--text-secondary);margin-top:2vh">不回避问题——知道边界才能用对。</p>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">AMB3R<br>局限性</h2>
+        <p class="body" style="color:var(--text-secondary);margin-top:2vh">主要局限集中在可扩展性和场景适用范围。</p>
       </div>
       <div data-anim="up" style="display:flex;flex-direction:column;gap:2vh">
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,8vh);line-height:.9;color:var(--accent)">01</div>
-          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">局部后端 + N² 复杂度</h4><p class="body-sm" style="color:var(--text-secondary)">Backend 是 local scene representation——不能跨 chunk 做全局联合推理。基础 VGGT 结构仍有 O(N²)，长序列的问题没有解决，需要 ZipMap 这样的方案。</p></div>
+          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">局部后端 + N² 复杂度</h4><p class="body-sm" style="color:var(--text-secondary)">Backend 作用于局部场景，无法跨 chunk 进行全局联合推理。同时基础的 VGGT 前端复杂度仍为 O(N²)，长序列可扩展性问题并未解决。</p></div>
         </div>
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,8vh);line-height:.9">02</div>
-          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">动态场景会翻车</h4><p class="body-sm" style="color:var(--text-secondary)">未针对动态场景训练。当动态物体占画面主导时，体素融合会把不同时刻的观测硬合并——输出就是鬼影。VO 在深度范围复杂的室外场景尺度对齐也不可靠。</p></div>
+          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">动态场景表现不佳</h4><p class="body-sm" style="color:var(--text-secondary)">未针对动态场景训练。动态物体主导画面时，体素融合会将不同时刻的观测合并到一起，导致重建出现伪影。VO 在深度变化剧烈的室外场景中尺度对齐也不够稳定。</p></div>
         </div>
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,8vh);line-height:.9">03</div>
-          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">无 Loop Closure</h4><p class="body-sm" style="color:var(--text-secondary)">没有显式 loop closure / relocalization，长期大场景一定会漂移。Feed-forward poses 不满足严格几何约束，NVS 等下游任务可能仍需要 BA 后处理。</p></div>
+          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">无 Loop Closure</h4><p class="body-sm" style="color:var(--text-secondary)">缺少 loop closure 和 relocalization 机制，长期建图必然存在累积漂移。前馈预测的位姿也不满足严格几何一致性约束，NVS 等下游任务可能仍需要后续优化。</p></div>
         </div>
       </div>
     </div>
@@ -1553,7 +1555,8 @@
     <div style="flex:1;padding:0;display:grid;grid-template-columns:5fr 11fr;gap:3vw;align-items:start">
       <div data-anim="line" class="card-ink" style="padding:3vh 2vw;display:flex;flex-direction:column;gap:2vh;align-self:stretch">
         <div class="t-cat" style="color:rgba(255,255,255,.6)">Core Design</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.6vw,8vh);line-height:1.05;color:var(--paper)">不是少看<br>一些帧，<br>而是压缩<br>所有帧</h2>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.6vw,8vh);line-height:1.05;color:var(--paper)">ZipMap<br>核心设计</h2>
+        <div class="frame-img r-16x10 fit-contain" style="margin-top:1.6vh;background:rgba(255,255,255,.08)"><img src="images/11-zipmap-ttt-concept.png" alt="TTT Fast Weights scene state compression" data-image-slot="s13-ink-16x10"></div>
         <div style="display:flex;gap:.6vw;flex-wrap:wrap;margin-top:auto">
           <span class="tag" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.25);font-size:9px">64 H100 GPUS</span>
           <span class="tag" style="color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.25);font-size:9px">29 DATASETS</span>
@@ -1563,24 +1566,25 @@
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,9.6vh);line-height:.9;color:var(--accent)">01</div>
           <div>
-            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">TTT Fast Weights = 隐式场景状态</h4>
-            <p class="body-sm" style="color:var(--text-secondary)">不存全局 token buffer。通过梯度更新把上下文写进 SwiGLU-MLP 的 fast weights——buffer 大小固定（6d² per layer，d=1024），但信息量随帧数递增。这就是 O(N) 的来源：每帧只做一次状态写入，不回头看所有历史。</p>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">TTT Fast Weights 作为隐式场景状态</h4>
+            <p class="body-sm" style="color:var(--text-secondary)">不维护全局 token buffer，而是通过梯度更新将上下文信息写入 SwiGLU-MLP 的 fast weights。状态大小固定（每层 6d²，d=1024），但编码的场景信息量随处理帧数持续增长。每帧仅需一次状态写入，复杂度为 O(N)。</p>
           </div>
         </div>
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,9.6vh);line-height:.9">02</div>
           <div>
             <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">线性时间 + 双向信息流</h4>
-            <p class="body-sm" style="color:var(--text-secondary)">24 层交替 per-frame local window attention + large-chunk TTT layer。不像 Mamba 那样只能单向——双向信息流避免了 CUT3R/TTT3R 的误差累积问题。Newton-Schulz 正交化 + 动态 per-token learning rate 保证训练稳定性。</p>
+            <p class="body-sm" style="color:var(--text-secondary)">Backbone 由 24 层组成，交替使用 per-frame local window attention 和 large-chunk TTT layer。与 Mamba 等单向模型不同，这种设计支持双向信息流，有效缓解了 CUT3R/TTT3R 中的误差累积问题。训练中使用 Newton-Schulz 正交化和动态 per-token learning rate 保持稳定性。</p>
           </div>
         </div>
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,9.6vh);line-height:.9">03</div>
           <div>
             <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">三阶段训练课程</h4>
-            <p class="body-sm" style="color:var(--text-secondary)">Stage 1: 23 个静态数据集 + reference view，学基础几何（80K iter）。Stage 2: 加入 6 个动态数据集（40K iter）。Stage 3: 去掉 reference view + affine-invariant loss，迫使模型学会在长序列中自行建立坐标系（60K iter）。</p>
+            <p class="body-sm" style="color:var(--text-secondary)">训练分三个阶段逐步增加难度：Stage 1 在 23 个静态数据集上带 reference view 训练基础几何能力（80K iter）；Stage 2 加入 6 个动态数据集（40K iter）；Stage 3 去掉 reference view 并使用 affine-invariant loss，让模型学会在长序列中自主建立坐标系（60K iter）。</p>
           </div>
         </div>
+        <div class="frame-img r-16x10 fit-contain" style="max-height:14vh"><img src="images/11-training-stages.png" alt="ZipMap 3-stage training curriculum" data-image-slot="s13-grid-16x10"></div>
       </div>
     </div>
   </div>
@@ -1593,14 +1597,15 @@
       <div class="l">ZipMap · Speed</div>
       <div class="r">12 / 16</div>
     </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:4vh">
+    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto auto 1fr;gap:3vh">
       <div data-anim="line" style="display:grid;grid-template-columns:5fr 7fr;gap:3vw;align-items:end">
         <div>
           <div class="t-meta" style="color:rgba(255,255,255,.55)">RUNTIME</div>
-          <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em;color:var(--paper)">速度是最强<br>辨识度</h2>
+          <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em;color:var(--paper)">推理速度<br>与状态查询</h2>
         </div>
-        <p class="body" style="color:rgba(255,255,255,.55)">Hidden state 就是一个 implicit SLAM map——大小固定，但可以随时查询任意 novel camera 的 RGB、depth 和 point map。</p>
+        <p class="body" style="color:rgba(255,255,255,.55)">ZipMap 的 hidden state 本质上是固定大小的隐式场景表示，支持在任意 novel camera 位姿下实时查询 RGB、depth 和 point map。</p>
       </div>
+      <div class="frame-img r-21x9 fit-contain" data-anim="line" style="max-height:16vh;background:rgba(255,255,255,.06)"><img src="images/12-speed-comparison.png" alt="Speed comparison: ZipMap vs VGGT vs DUSt3R" data-image-slot="s06-strip-21x9"></div>
       <div class="bar-towers" data-anim="up">
         <div class="bar-tower">
           <div class="cap"><i data-lucide="film"></i></div>
@@ -1649,10 +1654,10 @@
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto auto 1fr;gap:3vh">
       <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
         <div class="t-meta">BENCHMARK</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">两条路，<br>用数字说话</h2>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">AMB3R vs ZipMap<br>关键指标对比</h2>
       </div>
       <div data-anim="up" style="display:flex;align-items:center;gap:2vw">
-        <div class="t-cat" style="color:var(--accent)">各有强项</div>
+        <div class="t-cat" style="color:var(--accent)">两篇工作各有侧重</div>
         <div style="flex:1;height:1px;background:var(--border-subtle)"></div>
       </div>
       <div class="h-bar-chart" data-anim="up">
@@ -1694,27 +1699,27 @@
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:5vh">
       <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
         <div class="t-meta">NOT COMPETING · COMPLEMENTARY</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">不冲突，指向<br>同一个未来</h2>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">两个方向，<br>互补而非竞争</h2>
       </div>
       <div data-anim="up" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3vw;align-items:start">
         <div style="display:flex;flex-direction:column;gap:2vh">
           <div class="t-cat">几何后端</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(16px,1.4vw);line-height:1.3">AMB3R 让 pointmap 模型在 3D 空间推理，而不是在 2D grid 上猜</h3>
+          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(16px,1.4vw);line-height:1.3">AMB3R 为 pointmap 模型引入显式 3D 空间推理，在多个重建任务上提升精度</h3>
           <p class="body-sm" style="color:var(--text-secondary)">Sparse voxel backend 把多视角观测压进紧凑 3D 表示，zero-conv 把推理结果无损注入预训练前端。</p>
           <div style="font-family:var(--sans);font-weight:200;font-size:min(8.4vw,14vh);line-height:.9;letter-spacing:-.04em;margin-top:auto">1.7<small style="font-size:.25em;opacity:.5">%</small></div>
           <div class="t-meta" style="color:var(--text-helper)">multi-view depth rel</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:2vh">
           <div class="t-cat">状态压缩</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(16px,1.4vw);line-height:1.3">ZipMap 让强模型跑 750+ 帧而不爆炸——并且质量不掉</h3>
+          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(16px,1.4vw);line-height:1.3">ZipMap 将全局 attention 替换为线性时间的 TTT 机制，750 帧场景处理速度提升 20 倍</h3>
           <p class="body-sm" style="color:var(--text-secondary)">TTT fast weights 是固定大小的隐式场景表示，每帧 O(1) 写入，总复杂度 O(N)。100 FPS 实时查询任意视角。</p>
           <div style="font-family:var(--sans);font-weight:200;font-size:min(8.4vw,14vh);line-height:.9;letter-spacing:-.04em;margin-top:auto">20<small style="font-size:.25em;opacity:.5">×</small></div>
           <div class="t-meta" style="color:var(--text-helper)">vs VGGT speed</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:2vh">
-          <div class="t-cat" style="color:var(--accent)">融合可能</div>
+          <div class="t-cat" style="color:var(--accent)">潜在结合方向</div>
           <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(16px,1.4vw);line-height:1.3">Voxel backend + linear-time state = scalable 3D perception</h3>
-          <p class="body-sm" style="color:var(--text-secondary)">AMB3R 解决"怎么融合"，ZipMap 解决"融合多少帧"。二者的交集就是下一代前馈 3D 系统。</p>
+          <p class="body-sm" style="color:var(--text-secondary)">AMB3R 解决多视角融合的精度问题，ZipMap 解决长序列的效率问题。两者互补，分别对应下一代前馈 3D 系统的两个关键方向。</p>
           <div style="font-family:var(--sans);font-weight:200;font-size:min(8.4vw,14vh);line-height:.9;letter-spacing:-.04em;margin-top:auto;color:var(--accent)">O(N)</div>
           <div class="t-meta" style="color:var(--text-helper)">the endgame</div>
         </div>
@@ -1733,7 +1738,7 @@
     <div style="flex:1;padding:0;display:grid;grid-template-columns:4fr 8fr;gap:4vw;align-items:start">
       <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
         <div class="t-meta">BOUNDARIES</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">ZipMap<br>的边界</h2>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.035em">ZipMap<br>局限性</h2>
         <div style="display:flex;gap:.6vw;flex-wrap:wrap;margin-top:2vh">
           <span class="tag accent" style="font-size:9px">64 H100 GPUS</span>
           <span class="tag" style="font-size:9px">29 DATASETS</span>
@@ -1743,15 +1748,15 @@
       <div data-anim="up" style="display:flex;flex-direction:column;gap:2vh">
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,8vh);line-height:.9;color:var(--accent)">01</div>
-          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">超长分布外退化</h4><p class="body-sm" style="color:var(--text-secondary)">场景规模远超训练分布时仍会退化——这是所有 feed-forward 方法的共同天花板。训练本身也很重：64 H100 + 29 个公开数据集，并且需要 VGGT checkpoint 做初始化。</p></div>
+          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">超长分布外退化</h4><p class="body-sm" style="color:var(--text-secondary)">场景规模远超训练分布时重建质量会明显下降，这是当前所有 feed-forward 方法面临的共同问题。此外训练开销较大，需要 64 块 H100 和 29 个公开数据集，并依赖 VGGT checkpoint 初始化。</p></div>
         </div>
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,8vh);line-height:.9">02</div>
-          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">Query RGB 会模糊</h4><p class="body-sm" style="color:var(--text-secondary)">Scene state query 的 RGB 输出在高频区域模糊——deterministic model 不会幻想细节。当前定位是 colored point clouds，不是 unposed NVS SOTA。</p></div>
+          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">Query RGB 会模糊</h4><p class="body-sm" style="color:var(--text-secondary)">Novel view query 输出的 RGB 在高频纹理区域存在模糊，因为 deterministic 模型无法生成未观测到的细节。目前主要用于生成 colored point clouds，并非面向 novel view synthesis 的 SOTA 方案。</p></div>
         </div>
         <div class="card-fill" style="padding:2.4vh 2vw;display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start">
           <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,8vh);line-height:.9">03</div>
-          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">隐式状态 ≠ SLAM map</h4><p class="body-sm" style="color:var(--text-secondary)">Fast weights 是压缩状态，不等价于可编辑、可约束的传统 map。闭环修正、显式几何约束注入、增量更新——这些 SLAM 的必备能力还是开放问题。</p></div>
+          <div><h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.4vw);margin-bottom:.8vh">隐式状态与传统 SLAM Map</h4><p class="body-sm" style="color:var(--text-secondary)">Fast weights 编码的是压缩后的场景信息，与传统可编辑的地图表示有本质区别。回环检测、显式几何约束注入和增量式地图更新等 SLAM 系统的基础能力，在当前框架下仍是待解决的问题。</p></div>
         </div>
       </div>
     </div>
@@ -1771,7 +1776,7 @@
         <div data-anim="manifesto" style="display:flex;flex-direction:column;gap:2vh;position:relative;z-index:1">
           <div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">TAKEAWAY</div>
           <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.4vw,11.2vh);line-height:.94;letter-spacing:-.025em;font-weight:200;color:#fff">Build in <span style="font-style:italic;font-weight:300">3D</span>.<br>Scale to <span style="font-style:italic;font-weight:300">∞</span>.</h2>
-          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(13px,1vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:300;max-width:36ch;margin-top:1.4vh">体素融合几何，权重压缩场景。前馈 3D 的两条腿。</div>
+          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(13px,1vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:300;max-width:36ch;margin-top:1.4vh">体素后端强化空间推理，TTT 状态实现线性扩展。前馈 3D 重建的两个关键方向。</div>
         </div>
         <div data-anim="signature" style="display:flex;justify-content:space-between;align-items:end;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh;position:relative;z-index:1">
           <div class="t-meta" style="color:rgba(255,255,255,.62)">KYKT Lab</div>
@@ -1788,21 +1793,21 @@
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div>
             <div>
               <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">空间紧凑性 · AMB3R</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(12px,.92vw);line-height:1.6;color:var(--text-secondary);font-weight:300">Sparse voxel 把多视角观测压进 3D 表示，赋予 pointmap 模型空间推理和 metric scale 能力。训练仅需 80 H100 hours。</p>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(12px,.92vw);line-height:1.6;color:var(--text-secondary);font-weight:300">Sparse voxel 后端为 pointmap 模型引入显式 3D 空间融合和 metric scale 恢复能力。整体训练增量仅 80 H100 hours。</p>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div>
             <div>
               <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">状态写入 · ZipMap</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(12px,.92vw);line-height:1.6;color:var(--text-secondary);font-weight:300">TTT fast weights = 固定大小的可查询场景状态。O(N) 线性时间，20× 速度提升，750 帧 10 秒完成。</p>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(12px,.92vw);line-height:1.6;color:var(--text-secondary);font-weight:300">TTT fast weights 提供固定大小的可查询场景状态，实现 O(N) 线性时间处理。750 帧重建在 H100 上仅需不到 10 秒，比 VGGT 快约 20 倍。</p>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div>
             <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">二者不冲突，指向同一未来</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(12px,.92vw);line-height:1.6;color:var(--text-secondary);font-weight:300">几何后端解决"怎么融合"，线性时间解决"融合多少帧"。交集就是下一代可扩展前馈 3D perception。</p>
+              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">两个互补方向</h3>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(12px,.92vw);line-height:1.6;color:var(--text-secondary);font-weight:300">几何后端提升融合精度，线性时间架构解决长序列扩展性。两者分别解决前馈 3D 重建中最关键的两类问题。</p>
             </div>
           </div>
         </div>
@@ -1812,7 +1817,6 @@
   </div>
 </section>
 
-</content>
 </div>
 
 <div id="nav"></div>

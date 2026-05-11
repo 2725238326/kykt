@@ -1,25 +1,24 @@
 # Dream3R Demo Summary
 
-Status: ready for first-generation research demo; includes first real-data smoke evidence.
+Status: formal presentation summary; includes first real-data smoke evidence.
 
 Date: 2026-05-10
 
-## 30-Second Opening
+## 30-second opening
 
-Dream3R 的初代目标不是做一个孤立的 3R 模型，而是把现有 3R 家族的长处综合成一个可控、可验证、可扩展的重建系统。现在代码已经把 Perceiver、NSA SpatialMemory、Active/Stable AnchorBank、Geometric Critic、Permanence slots、Composer expert routing、Mamba hybrid recurrence 和 GaussianHead contract 接成一个可运行原型。
+这项工作的目标不是简单复现某一个三维重建模型，而是围绕长序列场景中的重建稳定性、空间状态保留和错误检查，搭建一个可以继续实验和扩展的原型系统。当前代码已经实现了连续窗口处理、空间记忆、几何自检、多模型接口和真实数据初步运行流程。
 
-## Main Claim
+## Main claim
 
-Dream3R 已经完成从架构设想到可运行 control-graph 3R prototype 的第一阶段闭环，并且已经开始从 synthetic integration evidence 走向 real-data smoke evidence：
+当前阶段可以说明的是：Dream3R 已经从方案设计推进到可运行代码，并且开始从合成输入验证过渡到真实数据流程验证。
 
-- 能 forward。
-- 能跨窗口 streaming。
-- 能 active state 更新并 promote 到 stable memory。
-- 能让 NSA 同时融合 compressed / selected / sliding context。
-- 能通过 Critic 产生 conflict 和 repair action。
-- 能切换 `cross_attention` 与 `mamba_hybrid` state recurrence。
-- 能在服务器 KITTI rectified RGB/depth 序列上跑真实窗口 smoke。
-- 能通过 smoke 和 full unit test suite。
+- 模型可以完成前向和反向计算。
+- 支持连续窗口输入和状态传递。
+- 空间记忆模块可以写入、召回并记录状态。
+- 几何自检模块可以输出冲突分数和修正建议。
+- 状态更新路径可以在 `cross_attention` 和 `mamba_hybrid` 之间切换。
+- 服务器上已跑通 KITTI rectified RGB/depth 的两窗口真实数据流程。
+- smoke test 和完整单元测试已通过。
 
 ## Live Command
 
@@ -86,34 +85,34 @@ Latest captured output:
 }
 ```
 
-## How To Explain The Output
+## How to explain the output
 
-- `device: cuda`: demo runs on GPU.
-- `recurrence_type`: same Dream3R model can switch state recurrence backend.
-- `backend: mamba_ssm`: Mamba path uses the server's real `mamba_ssm` package.
-- `latent_state_tokens: [1, 32, 128]`: streaming state shape is stable.
-- `state_delta_mean_abs`: state changes across windows, so recurrence is active.
-- `stable_promotion_rate: 1.0`: demo threshold makes active-to-stable memory promotion visible.
-- `nsa_branch_mean`: NSA is mixing compressed state, selected AnchorBank memory, and sliding recent context.
-- `recommended_action`: Critic repair loop is producing an action, not a dead output.
+- `device: cuda`: 运行发生在服务器 GPU 环境中。
+- `recurrence_type`: 同一套模型可以切换不同的时序状态更新方式。
+- `backend: mamba_ssm`: Mamba 路径使用服务器已有的 `mamba_ssm` 包。
+- `latent_state_tokens: [1, 32, 128]`: 连续处理时状态张量形状保持稳定。
+- `state_delta_mean_abs`: 状态在窗口之间发生变化，说明时序更新路径被实际调用。
+- `stable_promotion_rate`: 空间记忆写入路径被触发。
+- `nsa_branch_mean`: 记忆检索的不同分支参与了融合。
+- `recommended_action`: 几何自检模块输出了修正动作，不是空接口。
 
-## Important Caveats
+## Important caveats
 
 - Mamba uses `mamba_ssm.Mamba(use_fast_path=False)`. The installed fast CUDA path has a `causal_conv1d` ABI mismatch, so we use the compatible path.
-- The Mamba demo inputs are synthetic. This proves architecture integration, not final reconstruction quality.
-- The KITTI run is a real-data smoke path using deterministic RGB/depth patch features and approximate scaled KITTI intrinsics. It proves real data flows through the control graph; it is not a trained-quality benchmark.
+- The Mamba demo inputs are synthetic. This verifies integration behavior, not final reconstruction quality.
+- The KITTI run is a real-data smoke path using deterministic RGB/depth patch features and approximate scaled KITTI intrinsics. It verifies that real data can pass through the current processing path; it is not a trained-quality benchmark.
 - GaussianHead is a tensor contract for future 3DGS output. It is not a renderer yet.
 - Full 3R quality claims need real data evaluation and ablations.
 
-## 8-Minute Demo Flow
+## 8-minute demo flow
 
-1. **Problem, 60s**: existing 3R methods are strong but fragmented across quality, streaming, memory, verification, and output representation.
-2. **Architecture, 90s**: show Perceiver, SpatialMemory, AnchorBank, Critic, Permanence, ComposerRouter, MemoryBus.
-3. **Borrowed strengths, 90s**: MASt3R/Spann3R experts, CUT3R recurrence, NSA sparse attention, Mamba state-space trend, 3DGS output direction.
-4. **Live demo, 90s**: run `dream3r.demo_mamba_path` and point to backend/state/NSA/promotion/action.
-5. **Verification, 60s**: smoke and full tests pass on server.
-6. **Real-data smoke, 60s**: show `REAL_DATA_SMOKE.md` and `demo_artifacts/real_sequence/kitti_metrics.json`.
-7. **Next phase, 60s**: real-data ablations, Critic calibration, expert routing quality, 3DGS renderer.
+1. **问题背景，60s**: 长序列三维重建中容易出现状态遗忘、漂移和错误累积。
+2. **方案结构，90s**: 展示感知、空间记忆、几何自检、多模型接口和模块间信息传递。
+3. **已完成工作，90s**: 说明代码原型、测试、合成演示和真实数据初步运行。
+4. **演示，90s**: 运行 `dream3r.demo_mamba_path`，解释状态更新、记忆写入和自检输出。
+5. **验证结果，60s**: 说明服务器 smoke test 和完整单元测试通过。
+6. **真实数据流程，60s**: 展示 `REAL_DATA_SMOKE.md` 和 `demo_artifacts/real_sequence/kitti_metrics.json`。
+7. **后续计划，60s**: 真实数据消融、自检校准、多模型调度评估和三维可视化接入。
 
 ## Verification Snapshot
 
@@ -138,11 +137,11 @@ Latest KITTI smoke:
 - stable promotion rate: `1.0`
 - output: `/hdd3/kykt26/code/dream3r/demo_artifacts/real_sequence/kitti_metrics.json`
 
-Interpretation: integration evidence only; geometry quality is expected to be poor before real-data training/checkpoints.
+Interpretation: this is integration evidence only. Geometry quality is expected to be limited before real-data training, checkpoint integration, and calibration.
 
 ## Next Phase
 
-Priority after demo:
+Priority after the current demo:
 
 1. Real-data ablation: `cross_attention` vs `mamba_hybrid`.
 2. Real-data ablation: NSA on/off, active/stable on/off, Critic on/off.

@@ -1,12 +1,12 @@
 # Dream3R Research Base and Innovation Brief
 
-Status: first-generation research baseline ready for demo with first real-data smoke evidence.
+Status: research baseline summary with first real-data smoke evidence.
 
 Date: 2026-05-10
 
-## One-Sentence Positioning
+## One-sentence positioning
 
-Dream3R upgrades 3R from a single pointmap prediction model into a control-graph reconstruction system with long-term spatial memory, geometric self-critique, expert routing, object permanence, and switchable state recurrence.
+Dream3R is a prototype for studying long-sequence 3D reconstruction with explicit spatial memory, geometry-based checking, multi-model interfaces, and switchable state recurrence.
 
 ## Architecture Update
 
@@ -291,7 +291,7 @@ Dream3R initial research does not yet claim:
 - Fast CUDA Mamba path stability.
 - Fully calibrated Critic thresholds on real datasets.
 
-The current claim is architecture integration: the control graph is implemented, runnable, test-covered, and ready for real-data evaluation.
+The current claim is implementation and integration readiness: the main processing path is runnable, covered by tests, and ready for more systematic real-data evaluation.
 
 ## Next Research Milestones
 
@@ -347,6 +347,6 @@ Proposed sections:
 8. Experiments: synthetic integration now, real-data ablation next.
 9. Limitations and Roadmap.
 
-## Final Demo Line
+## Formal presentation summary
 
-Dream3R 初代研究已经证明：我们可以把 3R expert、长期空间记忆、稀疏注意力、几何自检、对象连续性和 Mamba 时序演化接成一个可运行的控制图系统；下一阶段要用真实数据和 ablation 验证它的质量收益。
+本阶段完成了从研究路线、架构设计到可运行原型的推进。当前结果说明系统流程已经打通，并且可以在合成输入和 KITTI 真实数据上记录关键中间信号。下一阶段的重点是用真实数据消融、几何自检校准和多模型调度评估，验证这些设计是否能带来稳定的质量或效率收益。

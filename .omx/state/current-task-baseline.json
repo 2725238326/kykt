@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "tasks": [
+    {
+      "branch_name": "main",
+      "worktree_path": "E:\\kykt",
+      "status": "active",
+      "created_at": "2026-05-11T10:10:48.169Z",
+      "updated_at": "2026-05-11T10:10:48.169Z"
+    }
+  ]
+}
