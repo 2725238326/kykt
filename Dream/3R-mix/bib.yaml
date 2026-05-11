@@ -1,0 +1,62 @@
+dust3r:
+    type: Article
+    title: "DUSt3R: Geometric 3D Vision Made Easy"
+    author: ["Wang, Shuzhe", "Leroy, Vincent", "Cabon, Yohann", "Chidlovskii, Boris", "Revaud, Jerome"]
+    date: 2023
+    url: https://arxiv.org/abs/2312.14132
+
+mast3r:
+    type: Article
+    title: "MASt3R: Grounding Image Matching in 3D"
+    author: ["Leroy, Vincent", "Cabon, Yohann", "Revaud, Jerome"]
+    date: 2024
+    url: https://arxiv.org/abs/2406.09756
+
+spann3r:
+    type: Article
+    title: "Spann3R: 3D Reconstruction with Spatial Memory"
+    author: ["Wang, Hengyi"]
+    date: 2024
+    url: https://arxiv.org/abs/2408.16061
+
+monst3r:
+    type: Article
+    title: "MonST3R: A Simple Approach for Estimating Geometry in the Presence of Motion"
+    author: ["Zhang, Junyi"]
+    date: 2024
+    url: https://arxiv.org/abs/2410.03825
+
+cut3r:
+    type: Article
+    title: "CUT3R: Continuous 3D Perception Model with Persistent State"
+    author: ["CUT3R Authors"]
+    date: 2025
+    url: https://arxiv.org/abs/2501.12387
+
+fast3r:
+    type: Article
+    title: "Fast3R: Towards 3D Reconstruction of 1000+ Images in One Forward Pass"
+    author: ["Fast3R Authors"]
+    date: 2025
+    url: https://arxiv.org/abs/2501.13928
+
+vggt:
+    type: Article
+    title: "VGGT: Visual Geometry Grounded Transformer"
+    author: ["Wang, Jianyuan"]
+    date: 2025
+    url: https://arxiv.org/abs/2503.11651
+
+align3r:
+    type: Article
+    title: "Align3R: Aligned Monocular Depth Estimation for Dynamic Videos"
+    author: ["Lu, Yuxuan"]
+    date: 2024
+    url: https://arxiv.org/abs/2412.03079
+
+pow3r:
+    type: Article
+    title: "Pow3R: Empowering Unconstrained 3D Reconstruction with Camera and Scene Priors"
+    author: ["Pow3R Authors"]
+    date: 2025
+    url: https://arxiv.org/abs/2503.17316
