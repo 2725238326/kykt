@@ -1,6 +1,6 @@
 # Dream3R Real Data Smoke
 
-Status: W19 first slice in progress.
+Status: W19 first slice done.
 
 Date: 2026-05-11
 
@@ -44,3 +44,28 @@ The JSON contains:
 ## Interpretation Boundary
 
 This path proves that real RGB/depth windows now flow through Dream3R's Perceiver-free feature path, SpatialMemory, AnchorBank, Permanence, Composer, and Critic. It does not claim trained accuracy until weights and real-data training/evaluation are added.
+
+## Server Run
+
+Completed on 2026-05-11:
+
+- dataset: `kitti_rectified`
+- sequence: `2011_09_26_drive_0001_sync_02`
+- windows: 2, each with 4 frames
+- device: `cuda`
+- recurrence: `mamba_hybrid`
+- backend: `mamba_ssm`
+- output: `/hdd3/kykt26/code/dream3r/demo_artifacts/real_sequence/kitti_metrics.json`
+
+Observed integration signals:
+
+- pointmap L2: `20.4747`
+- depth RMSE: `21.8658`
+- memory occupancy: `60.0`
+- NSA branch mean: compressed `0.3927`, selected `0.6073`, sliding `0.0`
+- stable promotion rate: `1.0`
+- selected anchor 3D distance: `0.0653`
+- state drift magnitude: `0.7299`
+- recommended action: `2` on both windows
+
+These numbers are expected to be poor as geometry accuracy because no real-data training/checkpoint was introduced. The important result for this slice is that real RGB/depth windows now produce measurable geometry, memory, NSA, Critic, and repair-action logs through the same Dream3R path used by synthetic demos.

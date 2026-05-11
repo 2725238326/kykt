@@ -1,6 +1,6 @@
 # Dream3R SOTA Feature Matrix
 
-Status: first mapping for demo and paper framing.
+Status: first mapping for demo and paper framing, updated with real-data smoke evidence.
 
 Date: 2026-05-10
 
@@ -62,6 +62,7 @@ Dream3R's claim is not that every borrowed idea is individually new. The claim i
 | Slot reference poses work | `test_isa_slots` |
 | Expert adapters are represented | `test_composer_experts`, integration tests |
 | 3DGS path is bounded | `test_gaussian_head_contract` |
+| Real RGB/depth sequence can execute | `evaluate_real_sequence`, `test_kitti_loader_contract`, `test_real_sequence_eval_contract` |
 
 ## Missing Evidence
 

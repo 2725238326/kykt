@@ -1,6 +1,6 @@
 # Dream3R Research Base and Innovation Brief
 
-Status: first-generation research baseline ready for demo.
+Status: first-generation research baseline ready for demo with first real-data smoke evidence.
 
 Date: 2026-05-10
 
@@ -66,12 +66,16 @@ Implemented and tested:
 - Renderer-free GaussianHead tensor contract for future 3DGS output.
 - Server sync and verification script.
 - Demo script comparing cross-attention vs Mamba hybrid recurrence.
+- Synthetic ablation runner, visualization pack, and artifact exporter.
+- KITTI real-data smoke loader and evaluation entry.
 
 Current verification:
 
 - Smoke test passes.
 - Full `dream3r.tests.test_*` suite passes.
 - `dream3r.demo_mamba_path` passes.
+- `dream3r.ablate_recurrence` passes.
+- `dream3r.evaluate_real_sequence` passes on two KITTI windows.
 - Local/server package file hashes match.
 
 ## Code Structure
@@ -87,12 +91,19 @@ Core files:
 - `gaussian_head.py`: W18 Gaussian tensor contract.
 - `losses.py`: pointmap, geometry, retrieval, routing, drift losses.
 - `evaluate.py`: metrics including geometric Critic logs.
+- `data_kitti.py`: KITTI rectified RGB/depth loader and depth-to-pointmap projection.
+- `evaluate_real_sequence.py`: real sequence smoke/evaluation entry.
 - `composer_experts/`: adapter registry and expert integration points.
 
 Demo and planning files:
 
 - `demo_mamba_path.py`: runnable Mamba-vs-cross-attention demo.
+- `ablate_recurrence.py`: synthetic recurrence/memory ablation runner.
+- `visualize_ablation.py`: SVG and markdown chart generation from ablation JSON.
+- `export_demo_artifacts.py`: showcase artifact export.
 - `DEMO_SUMMARY.md`: concise presentation summary and captured output.
+- `RECENT_PROGRESS.md`: current canonical progress ledger.
+- `REAL_DATA_SMOKE.md`: KITTI real-data smoke command, metrics, and caveats.
 - `INITIAL_RESEARCH_DEMO_PLAN.md`: tonight closure and demo plan.
 - `CYCLE_033_PLAN.md`: full workstream plan.
 - `CYCLE_034_PLAN.md`: stabilization and Mamba path record.
@@ -106,6 +117,8 @@ Key tests:
 - `test_isa_slots.py`: ISA slot pose and matching behavior.
 - `test_gaussian_head_contract.py`: 3DGS tensor schema.
 - `test_sequence_training.py`: streaming sequence training smoke.
+- `test_kitti_loader_contract.py`: real-data loader contract.
+- `test_real_sequence_eval_contract.py`: real-sequence eval orchestration contract.
 
 ## Research Base
 
@@ -245,6 +258,29 @@ Expected evidence:
 - `nsa_branch_mean` shows active branch mixing.
 - `recommended_action` is emitted by the Critic loop.
 
+## Current Real-Data Smoke Evidence
+
+Run:
+
+```bash
+cd /hdd3/kykt26/code/dream3r
+conda run -n dream3r python -m dream3r.evaluate_real_sequence \
+  --data-root /hdd3/kykt26/data \
+  --max-sequences 1 \
+  --max-windows 2 \
+  --recurrence mamba_hybrid \
+  --output demo_artifacts/real_sequence/kitti_metrics.json
+```
+
+Latest evidence:
+
+- KITTI sequence `2011_09_26_drive_0001_sync_02`.
+- Two real RGB/depth windows pass through Dream3R.
+- `mamba_hybrid` uses backend `mamba_ssm`.
+- Metrics include pointmap/depth error, memory occupancy, NSA branch weights, selected-anchor distance, Critic conflict, and repair action.
+
+This is a real-data execution claim, not a quality claim.
+
 ## What This Does Not Claim Yet
 
 Dream3R initial research does not yet claim:
@@ -261,13 +297,13 @@ The current claim is architecture integration: the control graph is implemented,
 
 ### M1. Real Data Path
 
-- Replace synthetic DTU stub with real image/depth/pose loading.
-- Add real sequence streaming evaluation.
-- Report pose/depth/pointmap metrics.
+- Done first slice: KITTI RGB/depth loading and real sequence streaming evaluation.
+- Next: DTU non-random depth/pointmap path when usable depth files exist.
+- Next: expand real sequence metrics and add pose transform support.
 
 ### M2. Ablation Table
 
-Run:
+Run synthetic and real-data variants:
 
 - `cross_attention` vs `mamba_hybrid`.
 - NSA on/off.

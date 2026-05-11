@@ -1,6 +1,6 @@
 # Dream3R Cycle 034: Stabilization, Sync Discipline, and Dependency-Gated Planning
 
-Status: **S1-S5 complete; W17 Mamba demo path runnable**
+Status: **S1-S5 complete; W17-W19/W21-W22 demo evidence paths runnable**
 
 Date: 2026-05-10
 
@@ -19,9 +19,9 @@ Those items are allowed only after explicit approval.
 
 ## Current Baseline
 
-Cycle 033 has W1-W16 implemented and verified on server. Smoke test and the full `dream3r.tests.test_*` suite passed after W15/W16.
+Cycle 033 has W1-W16 implemented and verified on server. Cycle 034 added stabilization, Mamba hybrid recurrence, GaussianHead tensor contract, synthetic ablation/export tooling, and the first KITTI real-data smoke path.
 
-Local source has been brought back in sync with the server-verified code for the W11-W16 Python changes and tests. Use `scripts/sync_verify_server.ps1` for future pushes/pulls/verification.
+Local source has been brought back in sync with the server-verified package. Use `scripts/sync_verify_server.ps1` for future pushes/pulls/verification. Server git must not be used.
 
 ## Immediate Work
 
@@ -210,15 +210,53 @@ Verification:
 - `dream3r.smoke_test`: pass
 - Full `dream3r.tests.test_*` suite: pass
 
+### S6: W21/W22 Evidence Pack
+
+Status: **done for synthetic demo evidence**
+
+Implementation notes:
+
+- `ablate_recurrence.py` compares `baseline_cross_attention`, `mamba_hybrid`, `no_nsa`, and `no_stable_memory`.
+- `visualize_ablation.py` turns ablation JSON into SVG charts and a markdown summary.
+- `export_demo_artifacts.py` builds a showcase folder with demo JSON, ablation JSON, charts, manifest, and copied docs.
+- The table is documented in `ABLATION_BASELINE.md`.
+
+Verification:
+
+- `dream3r.tests.test_visualization_contract`: pass
+- `dream3r.tests.test_export_demo_artifacts_contract`: pass
+- Full `dream3r.tests.test_*` suite: pass
+
+### S7: W19 Real-Data Smoke
+
+Status: **first slice done**
+
+Implementation notes:
+
+- `data_kitti.py` loads server KITTI rectified RGB/depth pairs.
+- Depth maps are projected into sampled pointmaps with approximate scaled KITTI intrinsics.
+- `evaluate_real_sequence.py` runs real windows through Dream3R and saves metric/debug JSON.
+- The current first slice uses the no-backbone feature path with deterministic RGB/depth patch features, so it is a real-data integration smoke, not a trained quality benchmark.
+- `REAL_DATA_SMOKE.md` records the command, output path, metrics, and interpretation boundary.
+
+Verification:
+
+- `dream3r.tests.test_kitti_loader_contract`: pass
+- `dream3r.tests.test_real_sequence_eval_contract`: pass
+- `dream3r.evaluate_real_sequence`: pass on two KITTI windows with `mamba_hybrid` backend `mamba_ssm`
+- `dream3r.smoke_test`: pass
+- Full `dream3r.tests.test_*` suite: pass
+
 ## Recommended Next Execution Order
 
-1. Use `dream3r.demo_mamba_path` as the short demo entry tomorrow.
-2. If time permits, tune Mamba-vs-cross-attention training behavior on synthetic streaming.
-3. Stop before W18 renderer work unless `gsplat` or another renderer backend is explicitly approved.
+1. Use `dream3r.demo_mamba_path` as the short synthetic architecture demo.
+2. Use `dream3r.evaluate_real_sequence` as the real-data smoke demo.
+3. Build the next evidence table from real-data ablations before adding new architecture breadth.
+4. Stop before renderer work unless `gsplat` or another renderer backend is explicitly approved.
 
 ## Latest Verification Log
 
-Completed on 2026-05-10:
+Completed on 2026-05-10/2026-05-11:
 
 - `scripts/sync_verify_server.ps1 -Mode push`: local/server package files match.
 - `scripts/sync_verify_server.ps1 -Mode verify`: local/server package files match.
@@ -233,3 +271,8 @@ Additional dependency-free contract tests added:
 Mamba demo added:
 
 - `dream3r.demo_mamba_path`: pass; server output shows CUDA device and `mamba_hybrid` backend `mamba_ssm`.
+
+Real-data smoke added:
+
+- `dream3r.evaluate_real_sequence`: pass on KITTI `2011_09_26_drive_0001_sync_02`, two windows, CUDA, `mamba_hybrid` backend `mamba_ssm`.
+- Output JSON: `/hdd3/kykt26/code/dream3r/demo_artifacts/real_sequence/kitti_metrics.json`.

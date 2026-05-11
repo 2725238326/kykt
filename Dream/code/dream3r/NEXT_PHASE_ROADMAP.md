@@ -1,6 +1,6 @@
 # Dream3R Next Phase Roadmap
 
-Status: W19 real-data smoke path started; W20-W22 baseline complete.
+Status: W19 first real-data smoke complete; W20-W22 baseline complete.
 
 Date: 2026-05-10
 
@@ -31,6 +31,8 @@ Implemented:
 - Composer expert routing and adapter contracts.
 - GaussianHead tensor contract.
 - Synthetic ablation runner for recurrence / NSA / stable memory.
+- KITTI real-data smoke loader and `evaluate_real_sequence.py` entry.
+- Demo artifact visualization/export pack.
 
 Verified:
 
@@ -38,6 +40,8 @@ Verified:
 - Full `dream3r.tests.test_*` suite passes.
 - `dream3r.demo_mamba_path` passes.
 - `dream3r.ablate_recurrence` passes.
+- `dream3r.evaluate_real_sequence` runs two real KITTI windows with `mamba_hybrid`.
+- `dream3r.export_demo_artifacts` produces showcase JSON/charts/docs.
 - Local/server package files match.
 
 ## Strategic Priorities
@@ -97,9 +101,9 @@ Replace synthetic-only evidence with real image/depth/pose sequence evaluation.
 
 ### Exit Criteria
 
-- First slice: KITTI rectified RGB/depth windows load without random tensors.
-- First slice: one or more real sequence windows run through Dream3R.
-- First slice: evaluation JSON is produced by `evaluate_real_sequence.py`.
+- Done first slice: KITTI rectified RGB/depth windows load without random tensors.
+- Done first slice: two real sequence windows run through Dream3R.
+- Done first slice: evaluation JSON is produced by `evaluate_real_sequence.py`.
 - Remaining: DTU scene loader needs non-random depth/pointmap targets when depth files are available.
 - Smoke and full tests remain passing.
 
@@ -186,9 +190,9 @@ Synthetic now:
 - conflict score
 - recommended action distribution
 
-Real data later:
+Real data now available for next table:
 
-- pointmap/depth error
+- pointmap/depth error via `evaluate_real_sequence.py`
 - drift
 - quality/runtime tradeoff
 
@@ -450,12 +454,13 @@ Priority: continuous.
 1. W20 SOTA feature matrix.
 2. W22 visualization pack from existing demo/ablation JSON.
 3. Keep W21 synthetic ablation baseline updated.
+4. Use W19 KITTI smoke as real-data proof of execution, not quality.
 
 ### First research sprint
 
-1. W19 real data path.
-2. W21 real-data ablations.
-3. W24 Critic calibration.
+1. W21 real-data ablations.
+2. W24 Critic calibration.
+3. W23 expert routing quality.
 
 ### Second research sprint
 

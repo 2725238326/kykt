@@ -1,6 +1,6 @@
 # Dream3R Demo Summary
 
-Status: ready for first-generation research demo.
+Status: ready for first-generation research demo; includes first real-data smoke evidence.
 
 Date: 2026-05-10
 
@@ -10,7 +10,7 @@ Dream3R 的初代目标不是做一个孤立的 3R 模型，而是把现有 3R �
 
 ## Main Claim
 
-Dream3R 已经完成从架构设想到可运行 control-graph 3R prototype 的第一阶段闭环：
+Dream3R 已经完成从架构设想到可运行 control-graph 3R prototype 的第一阶段闭环，并且已经开始从 synthetic integration evidence 走向 real-data smoke evidence：
 
 - 能 forward。
 - 能跨窗口 streaming。
@@ -18,15 +18,28 @@ Dream3R 已经完成从架构设想到可运行 control-graph 3R prototype 的�
 - 能让 NSA 同时融合 compressed / selected / sliding context。
 - 能通过 Critic 产生 conflict 和 repair action。
 - 能切换 `cross_attention` 与 `mamba_hybrid` state recurrence。
+- 能在服务器 KITTI rectified RGB/depth 序列上跑真实窗口 smoke。
 - 能通过 smoke 和 full unit test suite。
 
 ## Live Command
 
-Run on server:
+Run synthetic architecture demo on server:
 
 ```bash
 cd /hdd3/kykt26/code/dream3r
 conda run -n dream3r python -m dream3r.demo_mamba_path
+```
+
+Run real-data smoke on server:
+
+```bash
+cd /hdd3/kykt26/code/dream3r
+conda run -n dream3r python -m dream3r.evaluate_real_sequence \
+  --data-root /hdd3/kykt26/data \
+  --max-sequences 1 \
+  --max-windows 2 \
+  --recurrence mamba_hybrid \
+  --output demo_artifacts/real_sequence/kitti_metrics.json
 ```
 
 ## Captured Demo Output
@@ -87,7 +100,8 @@ Latest captured output:
 ## Important Caveats
 
 - Mamba uses `mamba_ssm.Mamba(use_fast_path=False)`. The installed fast CUDA path has a `causal_conv1d` ABI mismatch, so we use the compatible path.
-- Demo inputs are synthetic. This proves architecture integration, not final reconstruction quality.
+- The Mamba demo inputs are synthetic. This proves architecture integration, not final reconstruction quality.
+- The KITTI run is a real-data smoke path using deterministic RGB/depth patch features and approximate scaled KITTI intrinsics. It proves real data flows through the control graph; it is not a trained-quality benchmark.
 - GaussianHead is a tensor contract for future 3DGS output. It is not a renderer yet.
 - Full 3R quality claims need real data evaluation and ablations.
 
@@ -98,7 +112,8 @@ Latest captured output:
 3. **Borrowed strengths, 90s**: MASt3R/Spann3R experts, CUT3R recurrence, NSA sparse attention, Mamba state-space trend, 3DGS output direction.
 4. **Live demo, 90s**: run `dream3r.demo_mamba_path` and point to backend/state/NSA/promotion/action.
 5. **Verification, 60s**: smoke and full tests pass on server.
-6. **Next phase, 90s**: real data loader, ablations, Critic calibration, expert routing quality, 3DGS renderer.
+6. **Real-data smoke, 60s**: show `REAL_DATA_SMOKE.md` and `demo_artifacts/real_sequence/kitti_metrics.json`.
+7. **Next phase, 60s**: real-data ablations, Critic calibration, expert routing quality, 3DGS renderer.
 
 ## Verification Snapshot
 
@@ -108,13 +123,29 @@ Last verified on server:
 - `scripts/sync_verify_server.ps1 -Mode test`: smoke pass.
 - `scripts/sync_verify_server.ps1 -Mode test -FullTests`: smoke plus all `dream3r.tests.test_*` pass.
 - `dream3r.demo_mamba_path`: pass.
+- `dream3r.evaluate_real_sequence`: pass on two KITTI windows with `mamba_hybrid` / `mamba_ssm`.
+
+## Real-Data Smoke Snapshot
+
+Latest KITTI smoke:
+
+- sequence: `2011_09_26_drive_0001_sync_02`
+- windows: 2, four frames each
+- backend: `mamba_ssm`
+- pointmap L2: `20.4747`
+- depth RMSE: `21.8658`
+- memory occupancy: `60.0`
+- stable promotion rate: `1.0`
+- output: `/hdd3/kykt26/code/dream3r/demo_artifacts/real_sequence/kitti_metrics.json`
+
+Interpretation: integration evidence only; geometry quality is expected to be poor before real-data training/checkpoints.
 
 ## Next Phase
 
 Priority after demo:
 
-1. Real sequence data loader and metrics.
-2. Ablation: `cross_attention` vs `mamba_hybrid`.
-3. Ablation: NSA on/off, active/stable on/off, Critic on/off.
-4. Critic calibration on real geometric distributions.
+1. Real-data ablation: `cross_attention` vs `mamba_hybrid`.
+2. Real-data ablation: NSA on/off, active/stable on/off, Critic on/off.
+3. Critic calibration on real geometric distributions.
+4. Expert routing quality report.
 5. Renderer-backed 3DGS only after dependency approval.

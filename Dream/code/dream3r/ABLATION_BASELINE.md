@@ -47,14 +47,14 @@ conda run -n dream3r python -m dream3r.ablate_recurrence --windows 3 --seeds 33 
 - Inputs are synthetic random tensors.
 - The demo sets `active_to_stable_threshold=0.0` so stable promotion is visible.
 - Runtime includes full model forward, not isolated recurrence kernel profiling.
-- Real reconstruction quality requires real image/depth/pose data and metrics.
+- Real reconstruction quality requires real image/depth/pose data and metrics. The first KITTI smoke path now exists in `evaluate_real_sequence.py`, so the next ablation table should reuse these variant names on real windows.
 
 ## Next Ablations
 
-Minimum next table after real-data path exists:
+Minimum next table now that the KITTI real-data smoke path exists:
 
-1. Repeat this table on real sequences.
-2. Add reconstruction metrics, not just integration signals.
+1. Repeat this table on KITTI real windows.
+2. Add reconstruction metrics from `evaluate_real_sequence.py`, not just integration signals.
 3. Compare NSA enabled vs disabled with learned gate calibration.
 4. Geometric Critic repair enabled vs disabled.
 5. Expert routing enabled vs fixed expert.
