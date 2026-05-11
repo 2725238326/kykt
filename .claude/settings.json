@@ -5,7 +5,8 @@
       "Read(//tmp/**)",
       "Read(//e/tmp/**)",
       "Bash(grep -v '^\\\\s*$')",
-      "Bash(mkdir -p \"e:/kykt/ppt/dream3r_swiss/images\" && head -n 1228 \"e:/kykt/ppt/amb3r_zipmap_swiss/index.html\" > \"e:/kykt/ppt/dream3r_swiss/_header.tmp\" && tail -n +1820 \"e:/kykt/ppt/amb3r_zipmap_swiss/index.html\" > \"e:/kykt/ppt/dream3r_swiss/_footer.tmp\" && cp \"C:/Users/27252/.claude/skills/guizang-ppt-skill/assets/motion.min.js\" \"e:/kykt/ppt/dream3r_swiss/motion.min.js\" && echo \"done\")"
+      "Bash(mkdir -p \"e:/kykt/ppt/dream3r_swiss/images\" && head -n 1228 \"e:/kykt/ppt/amb3r_zipmap_swiss/index.html\" > \"e:/kykt/ppt/dream3r_swiss/_header.tmp\" && tail -n +1820 \"e:/kykt/ppt/amb3r_zipmap_swiss/index.html\" > \"e:/kykt/ppt/dream3r_swiss/_footer.tmp\" && cp \"C:/Users/27252/.claude/skills/guizang-ppt-skill/assets/motion.min.js\" \"e:/kykt/ppt/dream3r_swiss/motion.min.js\" && echo \"done\")",
+      "Bash(node \"C:/Users/27252/.claude/skills/guizang-ppt-skill/scripts/validate-swiss-deck.mjs\" \"e:/kykt/ppt/dream3r_swiss/index.html\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\27252\\.claude\\skills\\guizang-ppt-skill\\assets"
