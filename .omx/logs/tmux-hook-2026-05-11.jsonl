@@ -44,3 +44,13 @@
 {"timestamp":"2026-05-11T13:15:24.149Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
 {"timestamp":"2026-05-11T13:18:34.849Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e172d-e771-7d20-83bb-75e504658d65","thread_id":"019e1715-aba7-7f93-94ef-652a70eebd4d","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
 {"timestamp":"2026-05-11T13:18:35.126Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-11T13:56:12.123Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e174b-ac4d-7061-95f2-65d232f116ed","thread_id":"019e1715-aba7-7f93-94ef-652a70eebd4d","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-11T13:56:12.471Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-11T13:58:27.379Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e1754-997f-75c2-aa3b-0f5238c29c35","thread_id":"019e1715-aba7-7f93-94ef-652a70eebd4d","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-11T13:58:27.580Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-11T14:07:22.206Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e1757-ca7d-7b12-b9ae-90a704536ed9","thread_id":"019e1715-aba7-7f93-94ef-652a70eebd4d","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-11T14:07:22.663Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-11T14:39:13.193Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e1778-4042-70b3-a649-acee0a582172","thread_id":"019e1715-aba7-7f93-94ef-652a70eebd4d","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-11T14:39:13.478Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}
+{"timestamp":"2026-05-11T14:40:10.527Z","type":"tmux_hook","mode":null,"reason":"mode_not_allowed","turn_id":"019e177b-0c88-7dd1-afe5-a101d0f90a6c","thread_id":"019e1715-aba7-7f93-94ef-652a70eebd4d","target":null,"dry_run":false,"sent":false,"event":"injection_skipped"}
+{"timestamp":"2026-05-11T14:40:10.783Z","type":"auto_nudge_skipped","reason":"unmanaged_session"}

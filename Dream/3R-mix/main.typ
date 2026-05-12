@@ -36,6 +36,8 @@
 
 筛选标准采用“相关性优先、机制分层”的方式。直接 3R / pointmap / feed-forward geometry 论文进入核心讨论；动态、长序列、测试时自适应和 prior-guided reconstruction 作为机制扩展讨论；3DGS/4DGS 与 pose-free Gaussian 方法作为输出表示和应用路径讨论；Depth Anything、DINO、CoTracker、SAM 2 等只作为支撑先验，不进入主线排名。主动感知、通用 MoE、语言模型 critic 和非 3R memory 方法若出现，只能作为类比或方法论背景，不作为 3R 模型证据。
 
+为降低综述写作中的概念泛化风险，本文对若干核心判断做了基于本地 PDF 的摘要层核验。DUSt3R 将问题表述为无相机先验的 pointmap regression @dust3r；MASt3R 把 matching 改写为 3D task，并增加 dense local features 与 reciprocal matching @mast3r；Fast3R 针对 pairwise DUSt3R 在多视角下的扩展成本 @fast3r；VGGT 同时预测 camera、depth、pointmap 和 point tracks @vggt；CUT3R 的 persistent state 是随新观测更新的 recurrent state @cut3r；Spann3R 的 spatial memory 则是外部空间记忆 @spann3r；Test3R 使用图像三元组和几何一致性做 test-time prompt tuning @test3r；TTT3R 则从长序列 recurrent memory update 的角度讨论 test-time training @ttt3r。本文在后文保留这些差异，而不把它们合并为同一种“记忆”或“测试时修正”。
+
 #figure(
   table(
     columns: (1.1fr, 2fr, 2.4fr),
@@ -108,9 +110,23 @@ Pow3R 则更直接地讨论 camera 和 scene priors 如何增强无约束重建 
 
 MonST3R 是动态场景中最直接的 DUSt3R 后继之一。它把 geometry estimation 放到 presence of motion 的条件下处理 @monst3r，提供动态视频中的几何输出、dynamic masks 和 confidence 线索。需要注意的是，MonST3R 的输出可以作为动态区域分析的输入，但它本身并不等于长期 object identity memory；这一点在应用系统中尤其容易混淆。
 
-POMATO、D^2USt3R、Easi3R 和 RayMap3R 进一步说明动态 3R 尚未收敛为单一机制。POMATO 将 pointmap matching 与 temporal motion 结合 @pomato；D^2USt3R 以 4D pointmaps 处理动态场景 @d2ust3r；Easi3R 从 DUSt3R 出发做 training-free motion disentanglement @easi3r；RayMap3R 则使用 inference-time RayMap 来区分静态和动态结构 @raymap3r。它们共同面对的是静态几何被运动破坏的问题，但采用的表示和代价不同。
+POMATO、D^2USt3R、Easi3R 和 RayMap3R 进一步说明动态 3R 尚未收敛为单一机制。POMATO 将 pointmap matching 与 temporal motion 结合 @pomato；D^2USt3R 以 4D pointmaps 处理动态场景 @d2ust3r；RayMap3R 则使用 inference-time RayMap 来区分静态和动态结构 @raymap3r。它们共同面对的是静态几何被运动破坏的问题，但采用的表示和代价不同。
+
+Easi3R 在这一组方法中位置特殊。它不是重新训练一个动态 3R foundation model，而是从 DUSt3R 的注意力表示中提取相机与物体运动线索，并在推理时做 attention adaptation，以 training-free 方式得到动态区域分割、相机位姿和 4D dense point map @easi3r。因此，Easi3R 适合被写作“动态修正和运动解耦”路线，而不应和 MonST3R 这类经过动态数据 fine-tuning 的方法合并成同一种训练范式。它的应用价值在于轻量接入现有 3R 输出；局限则在于这种推理时适配对输入运动、遮挡和原始 DUSt3R 表征质量仍然敏感，不能直接推导为通用动态重建能力。
 
 动态和 4D 章节还需要与 4DGS 输出区分开。D^2USt3R 的“4D”指随时间变化的 pointmap 表示；4D Gaussian Splatting 则是面向动态新视角合成和渲染的表示 @gaussian_splatting_4d @rotor_4dgs。前者更接近几何预测，后者更接近可视化资产。二者可以在应用链路上衔接，但不应在概念上混用。
+
+#table(
+  columns: (1fr, 1.3fr, 1.5fr, 1.7fr),
+  inset: 5pt,
+  align: left,
+  [方法], [动态处理机制], [主要输出], [写作边界],
+  [MonST3R], [动态数据 fine-tuning + per-timestep pointmap], [geometry, masks, confidence], [motion-aware geometry，不是长期物体身份记忆。],
+  [POMATO], [pointmap matching + temporal motion], [dynamic reconstruction clues], [强调 3D matching 与 motion，不等同于 4D pointmap。],
+  [D^2USt3R], [static-dynamic aligned pointmaps], [4D pointmaps], [4D pointmap 不是 4DGS 可渲染资产。],
+  [Easi3R], [training-free attention adaptation], [dynamic segmentation, pose, 4D dense point map], [轻量动态修正路线，不是重新训练的动态 foundation model。],
+  [RayMap3R], [RayMap/image dual-branch dynamic suppression], [dynamic-aware streaming reconstruction], [training-free streaming framework；代码成熟度仍需验证。],
+)
 
 = 支撑先验：深度、特征、跟踪与分割
 
@@ -164,7 +180,7 @@ OVGGT、PAS3R 和 FILT3R 提供了更细的状态治理视角。OVGGT 关注 O(1
 
 当 3R 模型进入真实应用时，错误检测和修正机制往往比单次重建指标更接近系统需求。Test3R、TTT3R、G-CUT3R 和 MASt3R-SfM 从不同角度触及这个问题，但它们的作用范围不同。
 
-Test3R 的名称容易造成误解。按 Dream 本地文献板的区分，它侧重 test-time geometric consistency，对 DUSt3R/MASt3R family 输出进行一致性评分和重建质量相关性建模 @test3r；它不是对模型参数或状态进行训练式更新。TTT3R 则明确把 3D reconstruction 作为 test-time training 问题处理 @ttt3r。二者都发生在测试阶段，但一个偏验证和评分，一个偏状态/模型更新，计算代价和失败模式不同。
+Test3R 的名称容易造成误解。它确实属于 test-time learning：论文使用图像三元组生成共享参考图像下的两组重建，并通过 prompt tuning 最大化 cross-pair geometric consistency @test3r。它与 TTT3R 的差别不在于“是否发生测试时更新”，而在于更新对象和问题设置不同：Test3R 以局部三元组一致性修正 DUSt3R/MASt3R 式 pairwise 输出，TTT3R 则把长序列 recurrent memory update 表述为 test-time training，并使用 observation-memory alignment confidence 推导更新率 @ttt3r。二者都发生在测试阶段，但一个偏跨对几何一致性，一个偏长序列状态更新，计算代价和失败模式不同。
 
 G-CUT3R 讨论 camera 和 depth priors 的 guided reconstruction @gcut3r。它适合放在先验使用和测试时修正之间：当有相机、深度或校准信息时，模型可以受先验约束；但先验本身也可能错误或与 RGB evidence 冲突。本文只把“先验冲突检测”作为系统设计层面的推论，不写成 G-CUT3R 论文已经直接解决的问题。
 
@@ -179,17 +195,6 @@ MASt3R-SfM 提供了另一种传统几何式一致性路径 @mast3r_sfm。它通
 Splatt3R、InstantSplat 和 NoPoSplat 分别提供了从少量或未标定图像到 Gaussian 表示的路线。Splatt3R 处理 uncalibrated image pairs 到 zero-shot Gaussian splatting @splatt3r；InstantSplat 强调 sparse-view Gaussian Splatting in seconds @instantsplat；NoPoSplat 处理 sparse unposed images 到 3D Gaussian splats @noposplat。这一分支对演示和应用很重要，因为它能把几何预测转为更容易观察的资产。但可视化吸引力不等于几何质量领先，许可证、依赖、权重和本地复现状态也必须分开记录。
 
 应用路径可以概括为：输入图像或视频首先被识别为图像对、稀疏多视角、many-view、streaming 或 dynamic video；模型输出 pointmap、depth、camera、tracks 或 memory state；随后根据 confidence、一致性残差、动态区域和先验冲突等证据判断是否接受、修正或换模型；最终再转为点云、mesh、Gaussian、截图或报告。KYKT 类系统可以承担结果记录、失败样本归档和证据日志，但不应把系统流程跑通写成模型质量结论。
-
-#figure(
-  table(
-    columns: (1fr, 1fr, 1fr, 1fr, 1fr),
-    inset: 6pt,
-    align: center,
-    [输入], [几何预测], [质量证据], [输出表示], [报告/集成],
-    [图像对、多视角、视频], [pointmap、depth、camera、tracks], [confidence、一致性、动态区域、先验冲突], [点云、mesh、3DGS、4DGS], [截图、表格、失败区域、证据日志],
-  ),
-  caption: [从 3R 模型到可用产物的应用路径。质量证据用于辅助判断，不自动构成质量领先结论。],
-)
 
 = 方法比较与分类
 
@@ -238,7 +243,7 @@ Splatt3R、InstantSplat 和 NoPoSplat 分别提供了从少量或未标定图像
   inset: 5pt,
   align: left,
   [模型/表示], [输入条件], [输出], [角色], [注意事项],
-  [Test3R], [3R 输出/图像 triplet], [consistency signal], [测试时一致性], [不是 test-time training。],
+  [Test3R], [3R 输出/图像 triplet], [consistency signal / prompt tuning], [测试时几何一致性学习], [不同于 TTT3R 的长序列 memory update。],
   [TTT3R], [CUT3R-style state], [updated state / reconstruction], [测试时训练], [计算成本和稳定性需独立验证。],
   [G-CUT3R], [camera/depth priors], [guided reconstruction], [先验引导], [先验冲突检测属于系统层扩展。],
   [3DGS], [通常需要 pose/SfM], [3D Gaussians], [实时可渲染表示], [不是 pose-free 3R 本身。],
@@ -254,7 +259,7 @@ Splatt3R、InstantSplat 和 NoPoSplat 分别提供了从少量或未标定图像
 
 = 图示与应用路径
 
-本文使用三类概念图组织模型关系。第一类是谱系图，强调 DUSt3R 之后的能力分化；第二类是能力分类图，用输入和输出维度替代单一时间线；第三类是应用路径图，说明从图像/视频输入到几何预测、质量证据和报告产物的转化过程。
+本文使用两类概念图组织模型关系。第一类是谱系图，强调 DUSt3R 之后的能力分化，并用输入和输出维度替代单一时间线；第二类是应用路径图，说明从图像/视频输入到几何预测、质量证据和报告产物的转化过程。
 
 #figure(
   table(
@@ -301,7 +306,7 @@ Splatt3R、InstantSplat 和 NoPoSplat 分别提供了从少量或未标定图像
 
 从最强反方意见看，读者可能会认为本文把过多近期工作纳入同一 3R 生态，导致边界偏宽。这个质疑成立一部分：Depth Anything、DINO、CoTracker、SAM 2 并非 3R 模型，3DGS/4DGS 也不是 pointmap reconstruction 方法。本文的处理方式是明确分层：支撑先验和输出表示只解释应用链路，不参与核心模型排名。若将来面向正式投稿，建议把这些内容进一步压缩到“supporting priors”和“output representations”两个小节，并把篇幅更多留给直接 3R 方法的实验对照。
 
-从写作质量看，当前稿件已经避免宣传式语言和未经验证的质量结论，但仍需要在最终版中补充更细的论文级细读：每个核心模型至少应列出训练数据、主要 benchmark、输出张量、是否开源、许可证、典型失败模式和适用输入。当前版本适合作为完整综述初稿；若要变成可投稿论文，还需要补充精确页码、图表来源、DOI/venue 校验和第三方评测引用。
+从写作质量看，本文已尽量避免宣传式语言和未经验证的质量结论；但作为面向快速调研的综述稿，它仍把部分细粒度实验事实保留为待核对项：每个核心模型的训练数据、主要 benchmark、输出张量、许可证、典型失败模式和适用输入，应在投稿或公开发布前逐项校验。这里的限制不影响本文的谱系整理功能，但限制了本文进行性能裁决的能力。
 
 = 结论
 

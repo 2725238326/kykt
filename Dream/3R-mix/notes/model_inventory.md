@@ -88,7 +88,7 @@ Evidence labels used here:
 
 | 模型/机制 | 年份 | 输入假设 | 输出表示 | 核心机制 | 局限/注意 | 应用状态 |
 |---|---:|---|---|---|---|---|
-| Test3R | 2025 | DUSt3R/MASt3R family outputs, triplet consistency | consistency score / test-time reconstruction signal | `paper-proven`: geometric consistency at test time | Dream notes提醒：不是 test-time training；不要与 TTT3R 混写 | PDF 已下载；code listed，集成成本尚需确认 |
+| Test3R | 2025 | DUSt3R/MASt3R family outputs, image triplets | consistency signal / prompt tuning | `paper-proven`: test-time learning via cross-pair geometric consistency | 应区分为 triplet consistency / prompt tuning，不同于 TTT3R 的长序列 memory update | PDF 已下载；code listed，集成成本尚需确认 |
 | TTT3R | 2025/2026 | CUT3R-style state / hard cases | updated state / reconstruction | `paper-proven`: 3D reconstruction as test-time training | 更新 internal state；计算和失败模式不同于 Test3R | PDF 已下载；code/demo listed，依赖 CUT3R |
 | G-CUT3R | 2025 | guided reconstruction with camera/depth priors | guided 3D reconstruction | `paper-proven`: camera and depth prior integration | 先验冲突检测属于 review/Dream inferred extension，不是论文直接结论 | PDF 已下载；代码状态未知 |
 | MASt3R-SfM | 2024 | image collection | SfM-aligned reconstruction | `paper-proven`: matching + global SfM consistency | 可作为验证/修正参照，但不是轻量 per-window critic | 见基础线条目 |
@@ -113,7 +113,7 @@ Evidence labels used here:
 | DINOv2/v3 | 2023/2025 | dense visual feature prior | backbone / matching / depth prior | 不是 3R 方法；性能判断要引用原论文或具体实验 |
 | Depth Anything / V2, Depth Pro, Metric3D v2 | 2024 | monocular depth / metric geometry | 作为 3R 的条件输入、初始化或一致性检查 | 单帧深度质量不等于多视角一致性 |
 
-## 章节结构草案
+## 章节结构记录
 
 1. 引言：说明 3R 的范式变化、综述范围和证据边界。
 2. 从传统几何流程到 pointmap 表示：解释 SfM/MVS 的中间变量和 DUSt3R 的重新组织。

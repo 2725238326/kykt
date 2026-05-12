@@ -4,6 +4,8 @@ Status: first-stage bibliography and PDF intake log for the 3R survey.
 
 Inventory date: 2026-05-11.
 
+Second-pass note: selected core papers have now been abstract/front-matter extracted into `notes/fact_cards.md`. This upgrades mechanism-level wording in `main.typ`, but benchmark tables, licenses, and full limitations remain pending full-paper/repository checks.
+
 Source policy:
 
 - Primary source is arXiv, CVF/ECCV, official project page, or official GitHub.

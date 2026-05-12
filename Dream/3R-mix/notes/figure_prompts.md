@@ -1,6 +1,6 @@
 # Figure plan and prompts
 
-Status: first-stage figure plan. No AI-generated image has been created yet.
+Status: figure/table planning document. No AI-generated image has been created yet. Current `main.typ` already contains Typst tables and table-based figures, but the survey still needs clearer route-map style figures before it reads like a mature review article.
 
 Figure policy:
 
@@ -8,6 +8,65 @@ Figure policy:
 - Use paper figures only after checking the original paper license/venue policy and keeping attribution clear.
 - If a raster AI figure is later generated, record the exact prompt, model/tool, date, and output filename here before using it in the survey.
 - Do not use decorative images. Every figure must explain a relation that the text uses.
+
+## Current gap and implementation priorities
+
+The current PDF has enough textual comparison, but its visuals are still too table-like. The next revision should turn the most important relations into explicit diagrams and keep supporting tables for evidence. Priority order:
+
+1. Replace or supplement the lineage table with a true route-map figure: DUSt3R root, branches for matching, many-view, streaming memory, dynamic 4D, test-time mechanisms, and Gaussian output.
+2. Add a dynamic 3R mechanism figure/table where Easi3R is visible as a separate training-free attention-adaptation route, not merely a name in a row.
+3. Add an evidence matrix table for application claims: output artifact, quality signal, reproducibility evidence, license/dependency status, and whether the claim is paper-level or locally observed.
+4. Keep all performance numbers out of figures unless the exact benchmark table has been checked.
+
+## Planned figure/table inventory
+
+| id | type | title / purpose | status | target location |
+|---|---|---|---|---|
+| Figure 1 | diagram | 3R model lineage from DUSt3R to major branches | planned; currently approximated by a Typst table | after method comparison or before taxonomy |
+| Figure 2 | diagram/table hybrid | capability taxonomy by input/output/temporal/prior axes | planned | method comparison section |
+| Figure 3 | flowchart | application path from images/video to usable artifacts and evidence logs | present as table; needs flowchart redraw | application path section |
+| Figure 4 | two-column diagram | traditional geometry pipeline vs learned pointmap pipeline | present as table; can be improved | pointmap section |
+| Figure 5 | diagram/table hybrid | long-sequence memory primitives | present as table; acceptable but can be redrawn | memory section |
+| Figure 6 | diagram | dynamic 3R mechanism map, including Easi3R | new priority | dynamic/4D section |
+| Table 1 | table | literature relevance tiers | present | methods section |
+| Table 2 | table | supporting priors and their roles | present | priors section |
+| Table 3 | table | dynamic 3R mechanism comparison with Easi3R | present after latest revision | dynamic/4D section |
+| Table 4 | table | core/many-view/unified models | present | method comparison section |
+| Table 5 | table | video/dynamic/long-sequence models | present | method comparison section |
+| Table 6 | table | verification/adaptation/Gaussian output | present | method comparison section |
+| Table 7 | evidence matrix | application readiness and claim evidence | planned | quality/limitations or appendix |
+
+## Figure 6: Dynamic 3R mechanism map
+
+Purpose: make the dynamic branch readable and prevent Easi3R from being lost inside a list.
+
+Preferred rendering: Typst diagram or Mermaid-rendered draft.
+
+```mermaid
+flowchart LR
+  A["DUSt3R-style pointmap<br/>static-scene basis"] --> B["MonST3R<br/>dynamic fine-tuning<br/>per-timestep geometry"]
+  A --> C["POMATO<br/>pointmap matching<br/>+ temporal motion"]
+  A --> D["D^2USt3R<br/>static-dynamic aligned<br/>4D pointmaps"]
+  A --> E["Easi3R<br/>training-free attention adaptation<br/>motion disentanglement"]
+  A --> F["RayMap3R<br/>RayMap/image contrast<br/>dynamic suppression"]
+  B --> G["Dynamic reconstruction evidence<br/>geometry, masks, confidence, motion cues"]
+  C --> G
+  D --> G
+  E --> G
+  F --> G
+```
+
+Draft caption:
+
+```text
+动态 3R 方法并非同一条技术路线。MonST3R 倾向通过动态数据 fine-tuning 扩展 pointmap，POMATO 引入 pointmap matching 与 temporal motion，D^2USt3R 输出 static-dynamic aligned 4D pointmaps，Easi3R 通过推理时 attention adaptation 做 training-free motion disentanglement，RayMap3R 则利用 RayMap/image contrast 抑制动态区域对 streaming memory 的干扰。
+```
+
+Optional AI image prompt:
+
+```text
+Create a restrained academic diagram showing five mechanisms for dynamic feed-forward 3D reconstruction after DUSt3R. Use a white background, compact boxes, thin arrows, and muted colors. Center-left root box: "DUSt3R-style pointmap". Five branches: "MonST3R: dynamic fine-tuning", "POMATO: pointmap matching + temporal motion", "D^2USt3R: static-dynamic aligned 4D pointmaps", "Easi3R: training-free attention adaptation", "RayMap3R: RayMap/image contrast dynamic suppression". End with a small evidence box: "geometry, masks, confidence, motion cues". No decorative icons, no 3D rendering, no slogans.
+```
 
 ## Figure 1: 3R model lineage
 

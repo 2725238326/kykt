@@ -76,9 +76,10 @@ Status: first-stage structure plan. This file guides `main.typ`; it is not final
 
 - POMATO：pointmap matching + temporal motion。
 - D^2USt3R：4D pointmaps。
-- Easi3R：training-free dynamic adaptation。
+- Easi3R：training-free attention adaptation；需要在正文中单独说明它不是重新训练的动态 foundation model，而是从 DUSt3R 注意力中做 motion disentanglement。
 - RayMap3R：RayMap static-scene bias and dynamic suppression。
 - 本节重点是机制差异，不做未验证排行。
+- 必备表：动态 3R 机制对照表，列出 MonST3R、POMATO、D^2USt3R、Easi3R、RayMap3R 的机制、输出和写作边界。
 
 ## 6. 长序列重建中的状态、记忆和缓存机制
 
@@ -110,9 +111,9 @@ Status: first-stage structure plan. This file guides `main.typ`; it is not final
 
 ## 7. 测试时验证、修正和自适应
 
-### 7.1 Test3R：一致性评分而非训练
+### 7.1 Test3R：test-time consistency learning
 
-- 强调 Test3R 与 TTT3R 的边界。
+- 强调 Test3R 使用 triplet consistency / prompt tuning，和 TTT3R 的长序列 memory update 不同。
 
 ### 7.2 TTT3R：state update at test time
 
@@ -159,11 +160,24 @@ Status: first-stage structure plan. This file guides `main.typ`; it is not final
 
 ## 10. 图示和应用路径
 
-- Figure 1：3R 模型谱系图。
-- Figure 2：能力分类图。
-- Figure 3：应用落地图。
-- Figure 4：传统流程 vs pointmap 流程。
-- Figure 5：长序列 memory primitive 区分图。
+- Figure 1：3R 模型谱系图。必须是可读的路线图，而不是单列表格；DUSt3R 是根节点，Dream 不进入模型谱系。
+- Figure 2：能力分类图。按 input regime、output representation、camera/prior、temporal handling、verification/adaptation 分层。
+- Figure 3：应用落地图。从输入 regime 到几何预测、质量证据、输出资产和报告记录，明确“可运行不等于质量领先”。
+- Figure 4：传统流程 vs pointmap 流程。服务引言，不使用论文截图，优先 Typst 原生绘制。
+- Figure 5：长序列 memory primitive 区分图。区分 recurrent state、spatial/pointer memory、hybrid memory、cache/update policy。
+- Figure 6：动态 3R 机制图。突出 MonST3R、POMATO、D^2USt3R、Easi3R、RayMap3R 的不同路径，避免把 Easi3R 淹没在列表里。
+
+## 10.1 表格交付清单
+
+- Table 1：文献相关性分层，支撑纳入/排除标准。
+- Table 2：传统流程与 pointmap 路线对比。
+- Table 3：支撑先验角色表，区分 depth、feature、tracking、segmentation。
+- Table 4：动态 3R 机制对照表，必须包含 Easi3R。
+- Table 5：长序列 memory primitive 对照表。
+- Table 6：基础/多视角/统一几何模型比较。
+- Table 7：视频/动态/长序列模型比较。
+- Table 8：测试时验证、自适应与可视化输出比较。
+- Table 9：应用证据矩阵，列出输出表示、质量证据、复现记录和许可证/依赖状态。
 
 ## 11. 经验总结与开放问题
 
