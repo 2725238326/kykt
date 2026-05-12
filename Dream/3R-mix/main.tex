@@ -13,6 +13,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{tikz}
+\usepackage{placeins}
 \usepackage{xurl}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!45!black]{hyperref}
@@ -140,6 +141,28 @@ MASt3R 在此基础上把匹配视为三维问题，将描述子与三维几何 
 
 VGGT 将 camera、depth、pointmap 与 tracks 放在统一视觉几何预测框架下，体现了 3R 从“点图重建模型”向“通用几何预测模型”的扩展\citep{vggt}。MapAnything 进一步强调 metric feed-forward reconstruction，并允许内参、位姿、深度、部分重建等多种可选条件作为输入\citep{mapanything}。Pow3R 则探讨 camera 与 scene priors 如何改变无约束重建的问题设置：先验作为可选模态进入模型，提高约束的同时也引入条件依赖与潜在的先验冲突\citep{pow3r}。这一组工作的共同启示是，多视角 3R 的关键不在于输入更多图片，而在于如何同时处理相机、深度、轨迹、尺度与外部先验之间的约束关系，并把“可选输入”转化为可控的几何输出。
 
+实验数字需要按输入规模和硬件设置读。MV-DUSt3R+ 在论文中报告 12/20 视角场景的秒级重建示例，并在 HM3D、ScanNet、MP3D 等场景级数据上比较 MVS、位姿与 NVS 指标；Fast3R 的系统表在单张 A100 上比较 2 到 1500 视角的耗时与显存，说明其核心贡献是从成对全局对齐转向一次多视角前馈；VGGT 则在一张、少量到数百张图像的设定下共同预测相机、深度、点图与轨迹\citep{mvdust3rplus,fast3r,vggt}。这些数字均作为“论文实验条件下的报告值”使用，不直接外推为任意输入、任意硬件或应用系统中的质量结论。DUSt3R 与 VGGT 的原论文示意图见图\,\ref{fig:paper-core}。
+
+\begin{figure}[p]
+\centering
+\begin{subfigure}{0.96\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/dust3r_fig1.png}
+\caption{DUSt3R}
+\label{fig:paper-dust3r}
+\end{subfigure}
+\vspace{0.8em}
+\begin{subfigure}{0.96\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/vggt_fig1.png}
+\caption{VGGT}
+\label{fig:paper-vggt}
+\end{subfigure}
+\caption{DUSt3R 与 VGGT 原论文 Fig.1 的方法示意。图像分别摘自 \citet{dust3r} 与 \citet{vggt}，仅用于综述说明，版权归原作者。}
+\label{fig:paper-core}
+\end{figure}
+\FloatBarrier
+
 \begin{table}[t]
 \centering
 \small
@@ -152,9 +175,9 @@ VGGT 将 camera、depth、pointmap 与 tracks 放在统一视觉几何预测框�
 DUSt3R & 图像对/多视角 & pointmap、confidence、派生深度与位姿 & pose-free dense pointmap regression & 可作为范式起点；不写为完整替代 SfM/MVS \\
 MASt3R & 图像对/集合 & 3D-grounded correspondences & 在几何 grounding 上增强匹配 & 强调匹配与 SfM 接口，不写为单纯重建模型 \\
 MASt3R-SfM & 无约束图像集合 & SfM 对齐结果 & 将 MASt3R 接入传统全局流程 & 属于桥接与校正环节，不是纯前馈模型 \\
-Fast3R & 多图集合 & 多视角几何 & many-view one-forward-pass & 关注规模化输入，不代表所有质量指标更优 \\
-MV-DUSt3R+ & 稀疏视角 & pointmap、NVS/Gaussian 相关输出 & 多视角 decoder 与参考视角融合 & 区分论文结果、代码成熟度与本地复现 \\
-VGGT & 多视角视觉输入 & camera、depth、pointmap、tracks & 统一 visual geometry prediction & 可作为强基线和趋势代表；具体优劣需按实验表引用 \\
+Fast3R & 多图集合 & 多视角几何 & many-view one-forward-pass & 论文表格报告 1000+ 视角扩展；需保留单 A100 与分辨率条件 \\
+MV-DUSt3R+ & 稀疏视角 & pointmap、NVS/Gaussian 相关输出 & 多视角 decoder 与参考视角融合 & 论文报告 12/20 视角秒级示例；官方仓库含 demo/权重 \\
+VGGT & 多视角视觉输入 & camera、depth、pointmap、tracks & 统一 visual geometry prediction & 论文和仓库均公开；代码/权重许可需按版本区分 \\
 \makecell[l]{MapAnything\\Pow3R} & 多种可选条件 & metric geometry、深度、相机等 & 引入 metric/scene/camera priors & 先验提高约束，也引入条件依赖与冲突风险 \\
 \bottomrule
 \end{tabularx}
@@ -164,7 +187,7 @@ VGGT & 多视角视觉输入 & camera、depth、pointmap、tracks & 统一 visua
 
 静态场景假设是许多三维重建流程的隐含前提。视频输入中一旦出现移动物体、非刚体运动或相机快速运动，单一静态点图会把时间变化错误地吸收进几何结构。Align3R 从动态视频的单目深度对齐入手，说明 Depth Anything 这类深度先验可为跨帧一致性提供有用约束，但单帧深度本身并不等价于完整多视角重建\citep{align3r,depth_anything_v2}。
 
-MonST3R 在 DUSt3R 风格的点图上微调，针对运动存在时的每帧几何估计给出 dynamic confidence 与 mask\citep{monst3r}。POMATO 将 pointmap matching 与 temporal motion 结合，关注动态场景中三维对应的稳定性；D\textsuperscript{2}USt3R 则把动态场景扩展到 4D pointmap 表示，区分静态与动态像素的几何回归\citep{pomato,d2ust3r}。Easi3R 不属于重新训练的动态 foundation model，而是利用推理时的注意力调整，从既有 DUSt3R 表征中分离运动，可视为 training-free 的动态修正机制\citep{easi3r}。RayMap3R 则从 inference-time 的 RayMap 与图像双分支对比入手，利用静态场景偏置识别和抑制动态干扰\citep{raymap3r}。需要注意的是，4D pointmap、dynamic mask 与 4DGS 渲染资产并非同一类输出：前两者属于几何中间量，后者属于可渲染表示，本文在动态分支中只讨论几何侧。
+MonST3R 在 DUSt3R 风格的点图上微调，针对运动存在时的每帧几何估计给出 dynamic confidence 与 mask\citep{monst3r}。POMATO 将 pointmap matching 与 temporal motion 结合，关注动态场景中三维对应的稳定性；D\textsuperscript{2}USt3R 则把动态场景扩展到 4D pointmap 表示，区分静态与动态像素的几何回归\citep{pomato,d2ust3r}。Easi3R 不属于重新训练的动态 foundation model，而是利用推理时的注意力调整，从既有 DUSt3R 表征中分离运动，可视为 training-free 的动态修正机制\citep{easi3r}。RayMap3R 则从 inference-time 的 RayMap 与图像双分支对比入手，利用静态场景偏置识别和抑制动态干扰；其项目页明确把 RayMap-only 分支的静态偏置用作动态区域识别信号，并给出代码入口\citep{raymap3r}。需要注意的是，4D pointmap、dynamic mask 与 4DGS 渲染资产并非同一类输出：前两者属于几何中间量，后者属于可渲染表示，本文在动态分支中只讨论几何侧。
 
 \begin{table}[t]
 \centering
@@ -180,16 +203,36 @@ MonST3R & 运动物体破坏静态点图 & per-frame geometry、dynamic confiden
 POMATO & pointmap matching 与 temporal motion 结合 & 动态重建相关点图/运动线索 & 机制应与 MonST3R、D\textsuperscript{2}USt3R 区分 \\
 D\textsuperscript{2}USt3R & 动态场景的 4D pointmap & time-aware pointmap & 4D pointmap 不等同于 4DGS 渲染资产 \\
 Easi3R & 从既有 DUSt3R 注意力中分离运动 & training-free dynamic correction & 作为轻量修正机制讨论，不作为全文中心 \\
-RayMap3R & 利用 RayMap 的静态偏置识别动态区域 & ray/image dual-branch signal & 适合说明 inference-time 动态抑制，代码成熟度尚需确认 \\
+RayMap3R & 利用 RayMap 的静态偏置识别动态区域 & ray/image dual-branch signal & 项目页有论文与代码入口；应用质量仍需独立复验 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{长序列重建中的状态、记忆与缓存}
 
-长序列输入暴露 3R 模型的第二个核心矛盾：模型需要在有限计算预算内保留足够多的几何上下文，同时避免错误状态被长期传播。CUT3R 以 persistent recurrent state 将连续 3D perception 组织为带状态的模型，在输入流上递推更新；Spann3R 则引入外部 spatial memory，用于全局 pointmap 重建\citep{cut3r,spann3r}。两者经常被笼统地称为“记忆增强”，但机制截然不同：CUT3R 的状态接近压缩历史，Spann3R 的记忆更接近一个可寻址的空间存储。
+长序列输入暴露 3R 模型的第二个核心矛盾：模型需要在有限计算预算内保留足够多的几何上下文，同时避免错误状态被长期传播。CUT3R 以 persistent recurrent state 将连续 3D perception 组织为带状态的模型，在输入流上递推更新；Spann3R 则引入外部 spatial memory，用于全局 pointmap 重建\citep{cut3r,spann3r}。两者经常被笼统地称为“记忆增强”，但机制截然不同：CUT3R 的状态接近压缩历史，Spann3R 的记忆更接近一个可寻址的空间存储。MonST3R 与 CUT3R 的原论文视觉示意见图\,\ref{fig:paper-dynamic-stream}。
 
-进入近一年的工作可分为四类。第一类是显式空间记忆的扩展，Point3R 引入与三维场景结构相关联的指针记忆，用于流式稠密重建\citep{point3r}。第二类是顺序输入下的因果或自回归路线，STream3R 在 causal transformer 框架下实现可扩展的逐帧重建，LongStream 则通过 gauge-decoupled 的关键帧位姿和正交尺度学习处理长在线序列\citep{stream3r,longstream}。第三类是混合记忆：LONG3R 通过 memory gating 与 dual-source decoder 维持长序列上下文，LoGeR 把 parametric TTT memory 与滑动窗口注意力组合，Mem3R 则把 tracking 与 mapping 的记忆解耦\citep{long3r,loger,mem3r}。第四类是预算治理与滤波：OVGGT 通过自选择缓存和动态锚点保护实现固定计算预算，PAS3R 按位姿变化与图像频域线索调整状态更新，FILT3R 在递推状态上加一层免训练的 Kalman 式潜变量滤波\citep{ovggt,pas3r,filt3r}。把这些工作按“更新规则与预算管理”而非“记忆更强”加以区分，更便于看清各自的局限。
+\begin{figure}[p]
+\centering
+\begin{subfigure}{0.96\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/monst3r_fig1.png}
+\caption{MonST3R}
+\label{fig:paper-monst3r}
+\end{subfigure}
+\vspace{0.8em}
+\begin{subfigure}{0.96\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/cut3r_fig1.png}
+\caption{CUT3R}
+\label{fig:paper-cut3r}
+\end{subfigure}
+\caption{MonST3R 与 CUT3R 原论文 Fig.1 的动态/连续重建示意。图像分别摘自 \citet{monst3r} 与 \citet{cut3r}，仅用于综述说明，版权归原作者。}
+\label{fig:paper-dynamic-stream}
+\end{figure}
+\FloatBarrier
+
+进入近一年的工作可分为四类。第一类是显式空间记忆的扩展，Point3R 引入与三维场景结构相关联的指针记忆，用于流式稠密重建\citep{point3r}。第二类是顺序输入下的因果或自回归路线，STream3R 在 causal transformer 框架下实现可扩展的逐帧重建，LongStream 则通过 gauge-decoupled 的关键帧位姿和正交尺度学习处理长在线序列\citep{stream3r,longstream}。第三类是混合记忆：LONG3R 通过 memory gating 与 dual-source decoder 维持长序列上下文，LoGeR 把 parametric TTT memory 与滑动窗口注意力组合，Mem3R 则把 tracking 与 mapping 的记忆解耦\citep{long3r,loger,mem3r}。第四类是预算治理与滤波：OVGGT 通过自选择缓存和动态锚点保护实现固定计算预算，PAS3R 按位姿变化与图像频域线索调整状态更新，FILT3R 在递推状态上加一层免训练的 Kalman 式潜变量滤波\citep{ovggt,pas3r,filt3r}。项目页和 arXiv 元数据核对显示，LoGeR、Mem3R、RayMap3R 与 OVGGT 已提供项目或代码入口，LongStream 有项目页，FILT3R 标注代码将发布，PAS3R 当前可稳定引用的是 arXiv 论文页；因此这些工作在正文中仍按“机制已核对、代码与应用质量另行验证”的边界书写。把这些工作按“更新规则与预算管理”而非“记忆更强”加以区分，更便于看清各自的局限。
 
 \begin{figure}[t]
 \centering
@@ -252,7 +295,7 @@ G-CUT3R 在 CUT3R 之上引入模态特异的先验编码器，使深度、相�
 方法或先验 & 进入位置 & 修正/约束信号 & 证据边界与风险 \\
 \midrule
 Test3R & 测试时 prompt tuning & image triplet 的几何一致性最大化 & 属于测试时一致性学习，不等同于状态更新；计算开销随输入数量增长 \\
-TTT3R & 在线测试时训练 & 递推状态按对齐置信度更新 & 显存与吞吐量数据为论文声称，需独立核对；状态更新可能放大早期错误 \\
+TTT3R & 在线测试时训练 & 递推状态按对齐置信度更新 & 论文和项目页报告 20 FPS / 6 GB；仍需按硬件与序列设置引用 \\
 G-CUT3R & 推理时 prior guidance & 深度/相机/位姿先验进入 CUT3R 解码 & 先验缺失或冲突时的回退行为需要在系统层处理 \\
 Pow3R & 训练时条件输入 & 内参/位姿/深度等可选模态 & 先验可用性与正确性是独立假设，不可混同 \\
 MASt3R-SfM & SfM 阶段后处理 & 经典 BA 与检索一致性回路 & 属于全局 SfM 校验，不是 per-window critic \\
@@ -271,7 +314,7 @@ Splatt3R 在 MASt3R 风格几何上预测高斯属性，把未标定图像对直
 
 \section{应用证据、复现边界与失败样本记录}
 
-将 3R 模型转化为可交付系统时，证据组织本身是综述的一部分。本文按四个层级区分证据：(1) paper-proven，可直接引用论文方法图、摘要、章节中关于机制和实验设置的描述；(2) official-code，仅说明仓库提供了对应代码、权重或 demo，而不等同于功能或质量得到独立验证；(3) local-smoke-test，仅说明本地环境下接口、依赖与默认输入可以运行通过，不构成几何质量结论；(4) application-validated，需要逐项核对实验表、跨场景失败样本与许可证之后才能下结论。无法稳定落入上述任一层级的事项标注为“尚需确认”，避免推断超出证据。
+将 3R 模型转化为可交付系统时，证据组织本身是综述的一部分。本文按四个层级区分证据：(1) paper-proven，可直接引用论文方法图、摘要、章节中关于机制和实验设置的描述；(2) official-code，仅说明仓库提供了对应代码、权重或 demo，而不等同于功能或质量得到独立验证；(3) local-smoke-test，仅说明本地环境下接口、依赖与默认输入可以运行通过，不构成几何质量结论；(4) application-validated，需要逐项核对实验表、跨场景失败样本与许可证之后才能下结论。无法稳定落入上述任一层级的事项标注为“尚需确认”，避免推断超出证据。对论文原图，本文只在复用许可已确认的前提下嵌入，并在 caption 中保留来源归属。
 
 在这一框架下，图\,\ref{fig:application} 描绘了从输入到报告的应用路径：3R 模型只是中间环节，输出表示之前必须有一致性与置信度检查，并伴随来源记录、失败样本与许可证标记；不存在“一次运行成功”就能取代实验报告的捷径。表\,\ref{tab:application} 给出按输出层组织的证据矩阵，可作为写作时核对“可用质量信号”和“需要避免的过度表述”的清单。
 
