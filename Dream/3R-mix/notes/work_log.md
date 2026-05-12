@@ -74,3 +74,16 @@ Append-only log of substantive editing passes. Replaces verbal handoff for fine-
 - 2026 preprints (LoGeR, Mem3R, OVGGT, PAS3R, FILT3R, RayMap3R, LongStream): code/checkpoint status not independently verified. Sentence-level claims are already kept neutral, but a targeted repository check before any external sharing remains warranted.
 - D²USt3R bibliographic title contains `\textsuperscript{2}`; renders correctly under `unsrtnat`, but if the bib style is later changed (`acm`, `ieeetran`, etc.), revisit.
 - Figure 1 (`fig:lineage`) currently lists all members per branch; once the survey is read by a third reviewer, consider compressing the long memory-branch list into a representative subset to avoid label crowding.
+
+## 2026-05-13 — Figure optimization round (LaTeX)
+
+- **Files edited**: `main.tex` (added `fig:paradigm` + small `fig:lineage` label tweak); `notes/figure_prompts.md` (full rewrite for current LaTeX state); `NEW_CHAT_HANDOFF.md` (figure-optimization subsection + updated未完成任务 + bumped timestamp).
+- **New artifact**: `fig:paradigm` in §2 — TikZ two-row pipeline diagram. Top row: 特征提取与匹配 → 相机位姿估计 → 稀疏三角化 → 稠密 MVS/深度融合 → 全局 BA. Bottom row: 图像/图像对 → pointmap/深度/相机/置信度 → 对齐与一致性检查 → 点云/相机/匹配/Gaussian. Reused existing `arrows.meta`, `positioning`, `calc` libraries; no new package needed. Position: between the "三个直接后果" paragraph and the lineage paragraph; the consequences paragraph now opens with `这种变化的整体对照见图\,\ref{fig:paradigm}`.
+- **Figure tweak**: `fig:lineage` streaming-branch label wraps to two lines (4+4 models) with trailing `等` to acknowledge §6 includes more models (PAS3R/FILT3R/LongStream) than fit the diagram.
+- **Paper-figure embedding deferred**: `figures/` retains the DUSt3R/VGGT/MonST3R/CUT3R Fig.1 crops from the previous attempt, plus raw page-1 rasters. They are **not** referenced from `main.tex`. Reason: (1) prior crops were mixed quality — VGGT captured the title block, DUSt3R included caption tail, MonST3R/CUT3R were never visually verified; (2) per-paper reuse licenses for these arXiv preprints have not been independently confirmed; (3) the optimization prompt §0.4 defaults to "no embedded paper screenshots unless license confirmed". `notes/figure_prompts.md` records candidate re-crop coordinates (`crops_v2`) for any future attempt.
+- **Compile**:
+  - Same four-step pipeline as 2026-05-13 (xelatex / bibtex / xelatex / xelatex).
+  - `build/main.pdf` is still 13 pages — `fig:paradigm` fit without page bloat.
+  - Log: 0 errors, 0 undefined references/citations, 0 Overfull, 7 Underfull (same `tab:testtime` CJK column wraps as before; no new warning).
+  - MiKTeX "unsupported Windows" message persists; PDF unaffected.
+- **Caveat to user**: the chosen scope was "both new paradigm figure and embed paper figures"; only the first half landed in `main.tex`. The second half is staged in `figures/` but deferred pending license confirmation and crop re-verification. To proceed, follow `notes/figure_prompts.md` § "Paper-figure cache".

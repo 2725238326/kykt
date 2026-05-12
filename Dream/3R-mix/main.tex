@@ -57,7 +57,37 @@ DUSt3R 将这一问题重新组织为稠密 pointmap 预测：给定图像输入
 
 前馈式三维重建的核心变化不是“用网络替代几何”，而是改变几何量被预测和校正的顺序。传统 SfM/MVS 把匹配、位姿、三角化、稠密化和融合分为若干显式阶段；pointmap 路线则把每个像素的三维落点作为中间语言，使深度、对应关系、点云和局部相机关系可以在同一表示下讨论。
 
-这种变化带来三个直接后果。第一，模型可以在弱化相机先验的条件下工作，适合无序图像、稀疏视角和未知内参的输入。第二，匹配不再只是二维 descriptor 检索，MASt3R 等工作将匹配和三维几何 grounding 绑定，使对应关系可以服务于后续 SfM 或全局对齐\citep{mast3r,mast3r_sfm}。第三，多视角和视频扩展需要新的状态管理机制，因为成对 pointmap 的简单拼接不能自动保证长序列的一致性。
+这种变化的整体对照见图\,\ref{fig:paradigm}。它带来三个直接后果。第一，模型可以在弱化相机先验的条件下工作，适合无序图像、稀疏视角和未知内参的输入。第二，匹配不再只是二维 descriptor 检索，MASt3R 等工作将匹配和三维几何 grounding 绑定，使对应关系可以服务于后续 SfM 或全局对齐\citep{mast3r,mast3r_sfm}。第三，多视角和视频扩展需要新的状态管理机制，因为成对 pointmap 的简单拼接不能自动保证长序列的一致性。
+
+\begin{figure}[t]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+  stage/.style={draw, rounded corners=2pt, minimum width=2.55cm, minimum height=0.9cm, align=center, font=\small},
+  trad/.style={stage, fill=gray!5},
+  fr/.style={stage, fill=blue!4},
+  rowlab/.style={font=\small\bfseries, anchor=east},
+  arrow/.style={-{Stealth[length=2mm]}, line width=0.45pt}
+]
+\node[trad] (t1) at (0,0) {特征提取\\与匹配};
+\node[trad, right=0.35cm of t1] (t2) {相机位姿\\估计};
+\node[trad, right=0.35cm of t2] (t3) {稀疏三角化};
+\node[trad, right=0.35cm of t3] (t4) {稠密 MVS\\或深度融合};
+\node[trad, right=0.35cm of t4] (t5) {全局 BA\\与稀疏点云};
+\foreach \a/\b in {t1/t2, t2/t3, t3/t4, t4/t5} \draw[arrow] (\a) -- (\b);
+
+\node[fr] (r1) at (0,-2.1) {图像 / 图像对\\或多视角};
+\node[fr, right=0.35cm of r1] (r2) {pointmap / 深度\\相机 / 置信度};
+\node[fr, right=0.35cm of r2] (r3) {对齐与\\一致性检查};
+\node[fr, right=0.35cm of r3] (r4) {点云 / 相机 /\\匹配 / Gaussian};
+\foreach \a/\b in {r1/r2, r2/r3, r3/r4} \draw[arrow] (\a) -- (\b);
+
+\node[rowlab] at ($(t1.west)+(-0.25,0)$) {传统 SfM/MVS};
+\node[rowlab] at ($(r1.west)+(-0.25,0)$) {3R 前馈};
+\end{tikzpicture}}
+\caption{传统 SfM/MVS 流程（上）与 3R 前馈预测流程（下）的对照。上排把几何量按显式阶段依次估计；下排把多个中间量压缩为单次前馈预测，再借对齐与一致性检查派生下游表示。两种路线并非替代关系，3R 表示在系统层仍常依赖匹配、闭环与全局优化作为接口或验证手段。}
+\label{fig:paradigm}
+\end{figure}
 
 因此，DUSt3R 之后的研究并不是沿一条单线演进，而是分化为若干互补方向：匹配增强、多视角规模化、统一视觉几何预测、动态场景、长序列记忆、测试时修正和可渲染输出。图 \ref{fig:lineage} 给出本文采用的综述性谱系。
 
@@ -83,7 +113,7 @@ DUSt3R 将这一问题重新组织为稠密 pointmap 预测：给定图像输入
 \node[item, right=0.7cm of dyn] (dyni) {MonST3R；POMATO；D\textsuperscript{2}USt3R；Easi3R；RayMap3R};
 
 \node[branch, right=1.4cm of dust, yshift=-0.75cm] (stream) {长序列状态与记忆};
-\node[item, right=0.7cm of stream] (streami) {CUT3R；Spann3R；Point3R；STream3R；LONG3R；LoGeR；Mem3R；OVGGT};
+\node[item, right=0.7cm of stream] (streami) {CUT3R；Spann3R；Point3R；STream3R\\LONG3R；LoGeR；Mem3R；OVGGT 等};
 
 \node[branch, right=1.4cm of dust, yshift=-1.9cm] (test) {测试时验证与更新};
 \node[item, right=0.7cm of test] (testi) {Test3R；TTT3R；G-CUT3R；SfM consistency};

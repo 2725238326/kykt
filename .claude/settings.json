@@ -15,7 +15,9 @@
       "Bash(echo \"Pass 2 exit: $?\")",
       "Bash(echo \"Pass 3 exit: $?\")",
       "Bash(grep -iv \"infwarerr\\\\|warning$ --\\\\|2019/12/03\\\\|fileinfo\\\\|Underfull\")",
-      "Bash(python -c \"from PIL import Image; import os; [print\\(f, Image.open\\(f\\).size\\) for f in sorted\\(os.listdir\\('.'\\)\\) if f.endswith\\('.png'\\)]\")"
+      "Bash(python -c \"from PIL import Image; import os; [print\\(f, Image.open\\(f\\).size\\) for f in sorted\\(os.listdir\\('.'\\)\\) if f.endswith\\('.png'\\)]\")",
+      "Bash(sort -k9)",
+      "Bash(python)"
     ],
     "additionalDirectories": [
       "C:\\Users\\27252\\.claude\\skills\\guizang-ppt-skill\\assets"

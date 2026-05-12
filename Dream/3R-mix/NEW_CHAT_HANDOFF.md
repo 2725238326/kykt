@@ -10,7 +10,7 @@ It is updated after every substantive editing pass. For fine-grained history see
 ## 当前稿件状态
 
 - 框架：LaTeX（`ctexart`，`xelatex` 编译，`natbib`/`unsrtnat`）。已彻底放弃 Typst 路线，`main.typ` 仅作为历史快照保留，不再维护。
-- 主稿：`main.tex`，最后更新 2026-05-13。
+- 主稿：`main.tex`，最后更新 2026-05-13（含图像优化轮次）。
 - PDF：`build/main.pdf`，13 页，可正常打开。
 - 章节结构（共 10 节）：
   1. 引言
@@ -24,8 +24,9 @@ It is updated after every substantive editing pass. For fine-grained history see
   9. 应用证据、复现边界与失败样本记录
   10. 开放问题与结论
 - 表格：5 张（`tab:foundation`, `tab:dynamic`, `tab:memory`, `tab:testtime`, `tab:application`），均使用 booktabs。
-- 图：4 张（`fig:lineage` 谱系图、`fig:memory` 长序列记忆机制图、`fig:application` 应用路径图，外加 §2 末 TikZ 谱系图）。所有图均为内嵌 TikZ，无外部图片依赖。
+- 图：4 张 TikZ（`fig:lineage` 谱系图、`fig:paradigm` 传统/3R 流程对照图、`fig:memory` 长序列记忆机制图、`fig:application` 应用路径图）。所有图均为内嵌 TikZ，无外部图片依赖。
 - 参考文献：43 条，全部在正文中至少被引用一次，已移除 `\nocite{*}`。
+- `figures/` 中保留四篇论文 Fig.1 的裁切缓存（DUSt3R / VGGT / MonST3R / CUT3R），未在 `main.tex` 中嵌入；详见“图像优化轮次决策”小节。
 
 ## 本轮已完成修改（2026-05-13）
 
@@ -51,6 +52,13 @@ It is updated after every substantive editing pass. For fine-grained history see
   - `tab:application` 同样把"领先"替换为"更优"，并把"系统报告"行的过度表述改为"质量已验证"。
   - **新增** `tab:testtime`（测试时机制与先验输入的进入位置和证据边界，9 行）。
 - **参考文献**：删除 `\nocite{*}`；确认 43 个 bib key 都在正文显式引用，BibTeX 0 warning。
+
+## 图像优化轮次（2026-05-13 续编）
+
+- **新增** `fig:paradigm`（TikZ，§2 内）：两行对照——上排为传统 SfM/MVS 五阶段，下排为 3R 前馈四阶段。位置在"三个直接后果"段与谱系段之间，§2 末段加了 `\,\ref{fig:paradigm}` 引用。配色与既有 TikZ 图一致（细线、白底、灰蓝弱填充）。
+- **微调** `fig:lineage` 中长序列分支标签：原 `CUT3R；Spann3R；Point3R；STream3R；LONG3R；LoGeR；Mem3R；OVGGT` 单行，改为两行（每行四个），并补 `等` 字以反映 §6 正文实际覆盖（含 PAS3R/FILT3R/LongStream）。
+- **重写** `notes/figure_prompts.md`：清除残留的 Typst 路线、KYKT 字眼与已过时的 Figure 6 计划；补当前 TikZ 图/booktabs 表清单，补 `figures/` 缓存说明与可选再裁切坐标。
+- **暂不嵌入论文原图**：`figures/` 中保留 DUSt3R / VGGT / MonST3R / CUT3R 各自 Fig.1 的 PNG 缓存（外加 `*_p1-01.png` 原始页面位图），未在 `main.tex` 中插入 `\includegraphics`。理由：上一轮裁切质量混合（VGGT 截到了标题栏，DUSt3R 含一截 caption 文本，MonST3R/CUT3R 未视觉复核），且各论文复用许可证未独立核对，按优化提示词 §0.4 默认保守处理。再裁切坐标参考已写入 `notes/figure_prompts.md`。
 
 ## 关键决策
 
@@ -93,7 +101,7 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 1. **逐篇核对核心论文实验表**：尤其 MV-DUSt3R+、VGGT、Fast3R 之间的可对照基准；TTT3R 的硬件/吞吐声称。完成后可把若干处"尚需确认"升级为具体引用。
 2. **2026 预印本代码与许可证核对**：LoGeR、Mem3R、OVGGT、PAS3R、FILT3R、RayMap3R、LongStream 的官方仓库与协议；目前正文用语已保守，无需立即修正，但发表前应一次性核对。
-3. **图 1 可读性回访**：长序列分支当前列出 8 个模型，未来若读者反馈密集，可裁剪到代表 3–4 个 + "等"。
+3. **论文 Fig.1 嵌入决策**：若希望保留四张论文原图，需先逐论文核对复用许可（arXiv 预印本各自版权独立），再按 `notes/figure_prompts.md` 中的 `crops_v2` 重新裁切并视觉复核，最后以"图 X. 摘自 \citet{KEY}"形式插入。当前 PDF 不依赖这些图。
 4. **样式备份**：如计划改投，提前确认 `unsrtnat` 与 `ctex` 是否在目标期刊/会议模板兼容。
 
 ## 风险与注意事项
@@ -105,4 +113,4 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 最后更新时间
 
-2026-05-13（绝对日期；操作日内）。
+2026-05-13（图像优化轮次后；当日内）。
