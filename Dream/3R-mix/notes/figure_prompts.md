@@ -18,6 +18,8 @@ The current PDF has enough textual comparison, but its visuals are still too tab
 3. Add an evidence matrix table for application claims: output artifact, quality signal, reproducibility evidence, license/dependency status, and whether the claim is paper-level or locally observed.
 4. Keep all performance numbers out of figures unless the exact benchmark table has been checked.
 
+Source candidates from local PDFs are tracked in `notes/figure_selection.md`. That file should be consulted before embedding or redrawing any paper-derived figure.
+
 ## Planned figure/table inventory
 
 | id | type | title / purpose | status | target location |

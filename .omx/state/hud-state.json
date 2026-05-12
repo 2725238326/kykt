@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-05-11T14:40:10.497Z",
-  "turn_count": 299,
-  "last_progress_at": "2026-05-11T14:40:10.497Z",
-  "last_agent_output": "明白。Easi3R 不需要拔高，我后面会把它控制在动态分支中的一个机制点，不再单独放大成重点模型。\n\n等你给新规划后，我会按“让综述更像正式论文”的方向推进：结构、图表、章节衔接、证据矩阵和语言精修优"
+  "last_turn_at": "2026-05-12T06:16:38.175Z",
+  "turn_count": 301,
+  "last_progress_at": "2026-05-12T06:16:38.175Z",
+  "last_agent_output": "我已经从本地论文 PDF 里先挑了一轮图，记录到 [notes/figure_selection.md](E:/kykt/Dream/3R-mix/notes/figure_selection.md)"
 }

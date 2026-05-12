@@ -1,22 +1,29 @@
-#import "simple-typst-thesis/template.typ": project
+#import "typst-apa7ish-main/src/apa7ish.typ": *
 
-#show: project.with(
+#show: conf.with(
   title: "近期 3R 模型及其应用路径综述",
+  subtitle: "面向 feed-forward 3D reconstruction 谱系的叙述性综述",
+  documenttype: "Review Article",
+  anonymous: false,
   authors: (
     (
       name: "KYKT Dream",
       email: "",
       affiliation: "Internal research draft",
       postal: "",
-      phone: "",
+      corresponding: true,
     ),
   ),
   abstract: [
     近年来，基于图像的三维重建逐渐从显式匹配、相机位姿估计、三角化和多视图融合流程，转向以可学习几何表示为核心的 feed-forward 3D reconstruction 路线。DUSt3R 以 pointmap 形式把深度、位姿、匹配和稠密重建纳入同一几何输出，随后 MASt3R、Fast3R、CUT3R、Spann3R、MonST3R、VGGT 等工作分别沿匹配增强、多视角规模化、长序列状态、空间记忆、动态场景和统一视觉几何预测展开。本文围绕近期 3R 模型谱系进行综述，重点比较输入假设、输出表示、相机依赖、动态和长序列能力、测试时验证机制以及可视化输出路径。文中区分原论文结论、代码或 demo 状态、本地流程验证和应用可行性判断；对尚未直接验证的性能、SOTA、许可证和工程复现信息，保留“尚需确认”的标注。
   ],
+  date: "May 12, 2026",
+  keywords: [3R；feed-forward 3D reconstruction；pointmap；多视角重建；动态场景；长序列记忆；Gaussian Splatting],
+  disclosure: [本文为内部研究综述草稿，不包含商业利益声明。],
+  funding: [本文未获得外部专项资助。],
+  language: "zh",
+  fontfamily: ("Times New Roman", "SimSun"),
 )
-
-#text(weight: "bold")[关键词：] 3R；feed-forward 3D reconstruction；pointmap；多视角重建；动态场景；长序列记忆；Gaussian Splatting
 
 = 引言：3R 方法的范式变化和综述范围
 
@@ -315,6 +322,5 @@ DUSt3R 之后的 3R 模型谱系已经从单一 pointmap 重建扩展为一个�
 这一领域的关键不在于寻找一个可以覆盖所有输入的单一答案，而在于理解不同方法的输入假设、输出表示和失败边界。对应用系统而言，可信的 3R 结果需要同时包含几何预测、质量证据、可视化输出和复现记录。性能排名、SOTA 判断和部署建议只有在实验设置、代码状态与许可证条件同时明确时才具有实际意义；在这些条件缺失时，保守的证据标注比概括性结论更可靠。
 
 #pagebreak(weak: true)
-#set page(header: [])
-= Bibliography
-#bibliography("bib.yaml", style: "apa", title: none)
+= 参考文献
+#bibliography("bib.yaml", style: "american-psychological-association", title: none)
