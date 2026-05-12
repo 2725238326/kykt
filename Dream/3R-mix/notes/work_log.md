@@ -1,0 +1,76 @@
+# Work log for 3R survey
+
+Append-only log of substantive editing passes. Replaces verbal handoff for fine-grained history; `NEW_CHAT_HANDOFF.md` carries the latest top-level status.
+
+## 2026-05-13 — Comprehensive optimization pass (LaTeX)
+
+- **Files edited**: `main.tex`.
+- **Files written**: `notes/work_log.md` (new), `NEW_CHAT_HANDOFF.md` (rewritten for LaTeX track).
+- **Drivers**: `COMPREHENSIVE_OPTIMIZATION_PROMPT.md` (sections 1–12); `notes/fact_cards.md` and `notes/review_quality_audit.md` used as evidence-discipline references.
+
+### Structural changes
+
+- Author removed: `\author{KYKT Dream 调研组}` → `\author{}` to drop the internal project name from the title block. No other KYKT/Dream/Dream3R/agent/skill/workflow strings remain in `main.tex` (`Grep` verified).
+- Section list aligned to the prompt's 10-section plan:
+  1. 引言
+  2. 从传统几何流程到点图表示
+  3. 基础谱系：DUSt3R、MASt3R 与 SfM 接口  *(split from old §3.1)*
+  4. 多视角规模化与统一视觉几何  *(split from old §3.2; now a section, not a subsection)*
+  5. 视频、动态场景与 4D 重建
+  6. 长序列重建中的状态、记忆与缓存
+  7. 测试时验证、修正与先验输入  *(rewritten as three paragraphs covering Test3R/TTT3R/G-CUT3R/Pow3R/MASt3R-SfM and external priors)*
+  8. 从几何预测到可查看输出
+  9. 应用证据、复现边界与失败样本记录  *(new dedicated section; absorbs the application figure and matrix table)*
+  10. 开放问题与结论  *(merged previous "讨论" four-point structure into the conclusion, dropping the standalone "结论" section)*
+
+### Prose changes
+
+- Abstract reworded to lead with the problem-branch organization principle (rather than the bare model list) and to make the three-tier evidence labeling (paper / official-code / local-smoke) explicit.
+- Intro evidence-boundary paragraph rewritten to drop "本地流程跑通...质量领先" phrasing in favor of "可运行的本地复现只说明接口和依赖成立，不说明几何质量更优".
+- Dynamic section: removed "通常被视为...重要代表" and "应更克制地理解"; replaced with direct mechanism descriptions for MonST3R/POMATO/D²USt3R/Easi3R/RayMap3R; added explicit "4D pointmap ≠ 4DGS asset" closing sentence.
+- Long-sequence section: replaced the run-on model-listing paragraph with a four-class breakdown (spatial-pointer / causal-autoregressive / hybrid memory / budget-and-filter), each with one-sentence mechanism description and citation cluster.
+- Test-time section: introduced three paragraphs covering (a) Test3R vs TTT3R consistency-vs-state distinction, (b) G-CUT3R/Pow3R/MASt3R-SfM differing prior-entry positions, (c) external auxiliary priors (Depth Pro / Metric3Dv2 / DINO / CoTracker / SpatialTracker / SAM2) framed as system-layer signals subject to prior conflicts.
+- Output section: tightened Splatt3R/InstantSplat/NoPoSplat distinctions (uncalibrated pair vs. dense-stereo+GBA vs. canonical-frame unposed) and the rendering-vs-geometry caveat.
+- New §9 prose explicitly defines the four evidence tiers (paper-proven, official-code, local-smoke-test, application-validated) plus "尚需确认", and ties them to figure / matrix table.
+- Open-problems-and-conclusion section consolidates the previous four discussion points into one flowing paragraph plus a closing summary; both pieces avoid superlatives ("最强 / 领先 / 突破" — `Grep`-verified absent).
+
+### New artifact
+
+- Table 4: `tab:testtime` — "测试时机制与先验输入的进入位置和证据边界". Columns: 方法或先验 / 进入位置 / 修正约束信号 / 证据边界与风险. Rows cover Test3R, TTT3R, G-CUT3R, Pow3R, MASt3R-SfM, depth priors group, DINO group, tracking/segmentation group.
+
+### Figure and table changes (summary)
+
+- `fig:lineage` (Fig. 1) unchanged: DUSt3R-root taxonomy with six branches.
+- `fig:memory` (Fig. 2 → still Fig. 2 by appearance order; in the new structure it appears in §6) unchanged: recurrent / spatial / hybrid / cache-policy quartet.
+- `fig:application` (Fig. 4 by appearance) moved from §8 to new §9.
+- `tab:foundation` rows tightened (replaced "领先" / "SOTA" wording with "更优" / "具体优劣需按实验表引用").
+- `tab:dynamic` unchanged.
+- `tab:memory` unchanged.
+- `tab:testtime` added (new).
+- `tab:application` moved to §9; "领先" cell text softened to "重建质量更优".
+
+### Citation hygiene
+
+- Removed `\nocite{*}`. All 43 bib keys in `references.bib` are now explicitly cited at least once (verified by comparing `grep` of `\citep{...}` against `@misc{...,}` entries).
+- BibTeX style: `unsrtnat` (preserved).
+
+### Build outcome
+
+- Pipeline (manual, no `latexmk`):
+  - `xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex`
+  - `bibtex build/main`
+  - `xelatex` × 2
+- Final PDF: `build/main.pdf`, 13 pages, ~240 KB.
+- Log status:
+  - No `LaTeX Error`.
+  - No `Undefined citation` or `Undefined reference`.
+  - No `Overfull \hbox`.
+  - 7 × `Underfull \hbox` warnings — all CJK column-wrap inside `tab:foundation` (line 130) and `tab:testtime` (line 233); accepted per the prompt's stated tolerance for table-induced underfulls.
+- Environment noise: MiKTeX prints "running on an unsupported version of Windows" at every xelatex/bibtex invocation (Windows 11 Home China 10.0.29585). PDF generation is unaffected; recorded as environment warning, not a manuscript issue.
+
+### Next-step candidates
+
+- Per-paper benchmark reading: `notes/fact_cards.md` still flags benchmark numbers, license terms, and exact training-data details as "尚需确认". A targeted reading of 5–8 core PDFs would let us upgrade specific claims (e.g., MV-DUSt3R+ "2 seconds" hardware context, VGGT vs Fast3R quality comparison, TTT3R 20 FPS / 6 GB claims).
+- 2026 preprints (LoGeR, Mem3R, OVGGT, PAS3R, FILT3R, RayMap3R, LongStream): code/checkpoint status not independently verified. Sentence-level claims are already kept neutral, but a targeted repository check before any external sharing remains warranted.
+- D²USt3R bibliographic title contains `\textsuperscript{2}`; renders correctly under `unsrtnat`, but if the bib style is later changed (`acm`, `ieeetran`, etc.), revisit.
+- Figure 1 (`fig:lineage`) currently lists all members per branch; once the survey is read by a third reviewer, consider compressing the long memory-branch list into a representative subset to avoid label crowding.

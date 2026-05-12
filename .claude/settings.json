@@ -6,7 +6,16 @@
       "Read(//e/tmp/**)",
       "Bash(grep -v '^\\\\s*$')",
       "Bash(mkdir -p \"e:/kykt/ppt/dream3r_swiss/images\" && head -n 1228 \"e:/kykt/ppt/amb3r_zipmap_swiss/index.html\" > \"e:/kykt/ppt/dream3r_swiss/_header.tmp\" && tail -n +1820 \"e:/kykt/ppt/amb3r_zipmap_swiss/index.html\" > \"e:/kykt/ppt/dream3r_swiss/_footer.tmp\" && cp \"C:/Users/27252/.claude/skills/guizang-ppt-skill/assets/motion.min.js\" \"e:/kykt/ppt/dream3r_swiss/motion.min.js\" && echo \"done\")",
-      "Bash(node \"C:/Users/27252/.claude/skills/guizang-ppt-skill/scripts/validate-swiss-deck.mjs\" \"e:/kykt/ppt/dream3r_swiss/index.html\")"
+      "Bash(node \"C:/Users/27252/.claude/skills/guizang-ppt-skill/scripts/validate-swiss-deck.mjs\" \"e:/kykt/ppt/dream3r_swiss/index.html\")",
+      "Bash(cd /e/kykt/Dream/3R-mix && ls -la)",
+      "Read(//e/e/kykt/Dream/**)",
+      "Bash(grep -oE '\\\\\\\\citep\\\\{[^}]+\\\\}' main.tex)",
+      "Bash(xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex)",
+      "Bash(bibtex build/main)",
+      "Bash(echo \"Pass 2 exit: $?\")",
+      "Bash(echo \"Pass 3 exit: $?\")",
+      "Bash(grep -iv \"infwarerr\\\\|warning$ --\\\\|2019/12/03\\\\|fileinfo\\\\|Underfull\")",
+      "Bash(python -c \"from PIL import Image; import os; [print\\(f, Image.open\\(f\\).size\\) for f in sorted\\(os.listdir\\('.'\\)\\) if f.endswith\\('.png'\\)]\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\27252\\.claude\\skills\\guizang-ppt-skill\\assets"
