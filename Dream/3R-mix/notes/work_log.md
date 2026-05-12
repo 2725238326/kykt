@@ -123,3 +123,62 @@ Read each cropped PNG one at a time (the previous attempt at multi-image Read hi
 1. Per-paper license/reuse confirmation for DUSt3R / VGGT / MonST3R / CUT3R before any `\includegraphics` embedding.
 2. Visually re-verify `cut3r_fig1.png`.
 3. If license cleared, insert four `\figure` blocks with attribution captions: 「图 X. 摘自 \citet{KEY}，仅用于综述说明，版权归原作者。」 — likely positions: DUSt3R/VGGT in §3–§4, MonST3R in §5, CUT3R in §6. Then xelatex × 3 + bibtex.
+
+## 2026-05-13 — Paper figures embedded and evidence gates advanced
+
+- **Files edited**: `main.tex`, `figures/cut3r_fig1.png`, `notes/figure_prompts.md`, `notes/paper_inventory.md`, `notes/model_inventory.md`, `notes/work_log.md`, `NEW_CHAT_HANDOFF.md`.
+- **Driver**: user requested full continuation and explicitly confirmed that the paper-figure reuse/license gate is cleared. `$imagegen` skill was read; no generated image was needed because the paper crops were already available and more appropriate than synthetic replacements.
+
+### Figure embedding
+
+- Re-verified `figures/cut3r_fig1.png` visually. It was readable in the clean context; it showed three CUT3R examples but retained a left page-edge/date residue.
+- Cropped `cut3r_fig1.png` from 1385 × 360 to 1340 × 360 to remove the page-edge residue while preserving all three example panels.
+- Inserted two composite paper-figure floats in `main.tex`:
+  - `fig:paper-core`: `dust3r_fig1.png` + `vggt_fig1.png`, caption attributed to `\citet{dust3r}` and `\citet{vggt}`.
+  - `fig:paper-dynamic-stream`: `monst3r_fig1.png` + `cut3r_fig1.png`, caption attributed to `\citet{monst3r}` and `\citet{cut3r}`.
+- Added `placeins` and `\FloatBarrier` so the paper figures remain near their relevant sections instead of floating past the bibliography.
+
+### Evidence and wording updates
+
+- §4 now states that MV-DUSt3R+, Fast3R, and VGGT experimental numbers must be read under their paper-specific input/hardware settings.
+- `tab:foundation` now records:
+  - Fast3R: 1000+ view expansion, with single-A100 and resolution caveats.
+  - MV-DUSt3R+: 12/20-view second-level examples and official demo/checkpoint repository.
+  - VGGT: paper and repository are public, but code/checkpoint license terms differ by version.
+- §5 and `tab:dynamic` now distinguish RayMap3R's project-page/code-entry signal from application-quality validation.
+- §6 now records 2026 project/code status from primary pages:
+  - LoGeR: project page and code entry; hybrid SWA + TTT memory.
+  - Mem3R: project page; decoupled camera-tracking fast-weight memory and mapping token state.
+  - OVGGT: arXiv page lists project and code links; fixed-budget cache governance.
+  - RayMap3R: project page lists arXiv and code links; dynamic suppression via RayMap/image dual branch.
+  - LongStream: arXiv lists a project page; code maturity not upgraded beyond that.
+  - FILT3R: arXiv says code will be released.
+  - PAS3R: arXiv page verified; no stronger code claim written.
+- `tab:testtime` now keeps TTT3R's `20 FPS / 6 GB` as a paper/project-page reported value, tied to hardware and sequence conditions rather than generalized throughput.
+
+### Sources checked
+
+- Local PDFs: `papers/mvdust3rplus_2412.06974.pdf`, `papers/fast3r_2501.13928.pdf`, `papers/vggt_2503.11651.pdf`, `papers/ttt3r_2509.26645.pdf`.
+- Primary web pages: `https://github.com/facebookresearch/mvdust3r`, `https://github.com/facebookresearch/fast3r`, `https://github.com/facebookresearch/vggt`, `https://rover-xingyu.github.io/TTT3R/`, `https://loger-project.github.io/`, `https://lck666666.github.io/Mem3R/`, `https://raymap3r.github.io/`, `https://arxiv.org/abs/2603.05959`, `https://arxiv.org/abs/2603.21436`, `https://arxiv.org/abs/2603.18493`, `https://arxiv.org/abs/2602.13172`.
+
+### Compile and visual QA
+
+- Pipeline:
+  - `xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex`
+  - `bibtex build/main`
+  - `xelatex` × 2
+- Final PDF: `build/main.pdf`, 17 pages.
+- Log status:
+  - 0 LaTeX errors.
+  - 0 undefined references/citations after final pass.
+  - 0 Overfull hbox.
+  - 7 Underfull hbox warnings, still confined to CJK table wrapping (`tab:foundation`, `tab:testtime`).
+  - MiKTeX unsupported-Windows warning persists and remains an environment warning.
+- Visual spot check rendered pages 5 and 8: `fig:paper-core` and `fig:paper-dynamic-stream` are visible, attributed, and no longer float after the bibliography.
+
+### Remaining work
+
+- The figure-embedding task is complete for the four approved Fig.1 crops.
+- Core experiment-table checking is advanced but not a full benchmark meta-analysis; no new ranking claims were introduced.
+- 2026 preprint project/code status is advanced from unknown to source-scoped status, but licenses for code/checkpoints should still be read from each repository before any software redistribution or reuse.
+- Style-template compatibility remains unchanged and should be checked only if a target venue/template is chosen.

@@ -10,8 +10,8 @@ It is updated after every substantive editing pass. For fine-grained history see
 ## 当前稿件状态
 
 - 框架：LaTeX（`ctexart`，`xelatex` 编译，`natbib`/`unsrtnat`）。已彻底放弃 Typst 路线，`main.typ` 仅作为历史快照保留，不再维护。
-- 主稿：`main.tex`，最后更新 2026-05-13（含图像优化轮次）。
-- PDF：`build/main.pdf`，13 页，可正常打开。
+- 主稿：`main.tex`，最后更新 2026-05-13（含论文 Fig.1 嵌入与证据核对轮次）。
+- PDF：`build/main.pdf`，17 页，可正常打开。
 - 章节结构（共 10 节）：
   1. 引言
   2. 从传统几何流程到点图表示
@@ -24,9 +24,9 @@ It is updated after every substantive editing pass. For fine-grained history see
   9. 应用证据、复现边界与失败样本记录
   10. 开放问题与结论
 - 表格：5 张（`tab:foundation`, `tab:dynamic`, `tab:memory`, `tab:testtime`, `tab:application`），均使用 booktabs。
-- 图：4 张 TikZ（`fig:lineage` 谱系图、`fig:paradigm` 传统/3R 流程对照图、`fig:memory` 长序列记忆机制图、`fig:application` 应用路径图）。所有图均为内嵌 TikZ，无外部图片依赖。
+- 图：6 张 figure 环境。其中 4 张 TikZ（`fig:lineage`、`fig:paradigm`、`fig:memory`、`fig:application`），2 张论文原图复合图（`fig:paper-core` 含 DUSt3R/VGGT Fig.1，`fig:paper-dynamic-stream` 含 MonST3R/CUT3R Fig.1）。论文图均在 caption 中以 `\citet{...}` 归属。
 - 参考文献：43 条，全部在正文中至少被引用一次，已移除 `\nocite{*}`。
-- `figures/` 中保留四篇论文 Fig.1 的裁切缓存（DUSt3R / VGGT / MonST3R / CUT3R），未在 `main.tex` 中嵌入；详见“图像优化轮次决策”小节。
+- `figures/` 中四篇论文 Fig.1 裁切缓存（DUSt3R / VGGT / MonST3R / CUT3R）已嵌入 `main.tex`。嵌入 gate 根据用户 2026-05-13 的复用许可确认解除；详见“论文 Fig.1 嵌入与证据核对轮次”小节。
 
 ## 本轮已完成修改（2026-05-13）
 
@@ -70,11 +70,27 @@ It is updated after every substantive editing pass. For fine-grained history see
 - **本轮没改 `main.tex`、没重新编译**：四张图仍然没有以 `\includegraphics` 形式嵌入。按 `notes/figure_prompts.md` § "Figure policy"，嵌入需先逐篇核对复用许可证。该核对未做。
 - `build/main.pdf` 仍为上一轮的 13 页版本，未变。
 
+## 论文 Fig.1 嵌入与证据核对轮次（2026-05-13 续编）
+
+- 用户明确确认 DUSt3R / VGGT / MonST3R / CUT3R 四张论文 Fig.1 的复用许可没问题；据此解除嵌入 gate。
+- `cut3r_fig1.png` 已在干净上下文视觉复核通过，并裁掉左侧页边残留；当前尺寸 1340 × 360。
+- `main.tex` 新增 `\usepackage{placeins}`，用 `\FloatBarrier` 避免论文图漂到参考文献后。
+- 新增两组论文图：
+  - `fig:paper-core`：DUSt3R + VGGT 原论文 Fig.1。
+  - `fig:paper-dynamic-stream`：MonST3R + CUT3R 原论文 Fig.1。
+- 逐项推进了核心实验与项目状态核对：
+  - MV-DUSt3R+：本地 PDF + 官方 GitHub 核对；正文只写 12/20 视角秒级示例、demo/权重存在，并保留实验条件边界。
+  - Fast3R：本地 PDF + 官方 GitHub 核对；正文只写 1000+ 视角扩展和单 A100/分辨率条件，不写泛化排名。
+  - VGGT：本地 PDF + 官方 GitHub 核对；正文写统一输出 camera/depth/pointmap/tracks，并指出代码/权重许可按版本区分。
+  - TTT3R：本地 PDF + 项目页核对；`20 FPS / 6 GB` 已写成论文/项目页报告值，绑定硬件与序列设置。
+  - 2026 预印本：LoGeR、Mem3R、OVGGT、RayMap3R 有项目/代码入口信号；LongStream 有项目页；FILT3R 标注 code will be released；PAS3R 仅稳定核到 arXiv 论文页。正文保持“机制已核对、代码与应用质量另行验证”的边界。
+- `$imagegen` 技能已读取；本轮没有生成新图，因为论文来源图已满足需求，合成图会弱化论文证据链。
+
 ## 关键决策
 
 - 继续使用 LaTeX，不回到 Typst。
 - Easi3R 仅在动态 3R / training-free motion disentanglement 机制中讨论；不放在主线中心。
-- 不直接嵌入论文 PDF 截图。所有图均为 TikZ 概念图。
+- 论文 Fig.1 可在复用许可确认后嵌入；当前四张已嵌入并在 caption 中保留来源归属。其他新增论文截图仍需逐项确认许可。
 - 应用证据矩阵明确标注"系统报告"行，把"流程跑通≠质量已验证"作为系统层规则写入正文。
 - 正文中不出现 KYKT / Dream / Dream3R / agent / skill / workflow / 本地项目 等内部语境词（已 `Grep` 校验）。
 
@@ -83,9 +99,9 @@ It is updated after every substantive editing pass. For fine-grained history see
 正文按四级证据标注：
 
 - **paper-proven**：DUSt3R / MASt3R / Fast3R / VGGT / CUT3R / Spann3R / MonST3R / Test3R 等核心模型的"机制描述"段都来自论文 abstract/方法图，可放心引用。
-- **official-code**：仅说明仓库存在，不构成质量结论；具体许可证、显存、依赖未全部独立核对。
+- **official-code / project-page**：仅说明仓库、项目页、权重或 demo 入口存在，不构成质量结论；具体许可证、显存、依赖仍需按仓库版本独立核对。
 - **local-smoke-test**：在正文中以"接口和依赖成立"形式出现，未与"质量更优"绑定。
-- **尚需确认**：2026 年预印本（LoGeR、Mem3R、OVGGT、PAS3R、FILT3R、RayMap3R、LongStream）的代码状态、许可、实验表细节尚未独立核对；MV-DUSt3R+ 的"2 秒"、TTT3R 的"20 FPS / 6 GB"等具体数字均未引用进正文。
+- **source-scoped checked**：MV-DUSt3R+、Fast3R、VGGT、TTT3R 的关键数字已按论文/项目页条件写入正文；LoGeR、Mem3R、OVGGT、RayMap3R、LongStream、FILT3R、PAS3R 已推进到“来源级状态”描述，但不等同于本地复验或软件复用许可结论。
 
 ## 编译命令与结果
 
@@ -100,7 +116,7 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 结果：
 
-- 13 页 PDF 正常输出至 `build/main.pdf`。
+- 17 页 PDF 正常输出至 `build/main.pdf`。
 - 0 × undefined citation / undefined reference。
 - 0 × LaTeX Error。
 - 0 × `Overfull \hbox`。
@@ -109,10 +125,9 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 未完成任务（按优先级）
 
-1. **论文 Fig.1 嵌入决策（gated）**：四张裁切图已在 `figures/` 就位，但未嵌入 `main.tex`。下一步前置条件——逐篇确认 DUSt3R / VGGT / MonST3R / CUT3R arXiv 预印本的复用/版权条款；CUT3R 还需视觉复核。许可证清楚后再插入 `\includegraphics`，并加归属 caption「图 X. 摘自 \citet{KEY}，仅用于综述说明，版权归原作者。」。
-2. **逐篇核对核心论文实验表**：尤其 MV-DUSt3R+、VGGT、Fast3R 之间的可对照基准；TTT3R 的硬件/吞吐声称。完成后可把若干处"尚需确认"升级为具体引用。
-3. **2026 预印本代码与许可证核对**：LoGeR、Mem3R、OVGGT、PAS3R、FILT3R、RayMap3R、LongStream 的官方仓库与协议；目前正文用语已保守，无需立即修正，但发表前应一次性核对。
-4. **样式备份**：如计划改投，提前确认 `unsrtnat` 与 `ctex` 是否在目标期刊/会议模板兼容。
+1. **更深的 benchmark meta-analysis（可选）**：MV-DUSt3R+ / Fast3R / VGGT / TTT3R 已做来源级核对；若要写更强结论，需要逐表抽取数据集、视角数、分辨率、硬件、指标口径并做横向表。
+2. **2026 预印本软件许可细读**：LoGeR、Mem3R、OVGGT、RayMap3R、LongStream、FILT3R、PAS3R 已推进到项目/论文来源状态；若要复用代码、权重或截图，需要逐仓库读 LICENSE / checkpoint terms。
+3. **样式备份**：如计划改投，提前确认 `unsrtnat` 与 `ctex` 是否在目标期刊/会议模板兼容。
 
 ## 风险与注意事项
 
@@ -123,4 +138,4 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 最后更新时间
 
-2026-05-13（论文 Fig.1 重新裁切轮次后；当日内，未重新编译 LaTeX）。
+2026-05-13（论文 Fig.1 嵌入、核心实验来源核对、2026 项目状态核对后；已重新编译 LaTeX）。

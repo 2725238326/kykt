@@ -43,7 +43,7 @@ Evidence labels used here:
 | 模型 | 年份 | 输入假设 | 输出表示 | 核心机制 | 局限/注意 | 应用状态 |
 |---|---:|---|---|---|---|---|
 | Fast3R | 2025 | 多图集合，目标是大规模图像数 | 多视角 3D 重建结果 | `paper-proven`: 1000+ images in one forward pass 的 many-view 路线 | 不是流式模型；本地 Dream 记录有依赖阻塞 | `registry-listed`: code/checkpoint/demo；P1 scale baseline |
-| MV-DUSt3R+ | 2024/2025 | sparse views，pose-free RGB | pointmap、pose/NVS 相关输出、Gaussian heads | `paper-proven`: multi-view decoder + cross-reference-view fusion | 论文与 README 代码状态需分开引用；环境约束需确认 | `registry-listed`: code/checkpoints/Gradio；P1 visual/geometry |
+| MV-DUSt3R+ | 2024/2025 | sparse views，pose-free RGB | pointmap、pose/NVS 相关输出、Gaussian heads | `paper-proven`: multi-view decoder + cross-reference-view fusion；12/20-view examples checked | 论文与 README 代码状态需分开引用；环境约束需确认 | `repo-checked 2026-05-13`: code/checkpoints/Gradio；README lists CC BY-NC 4.0 |
 | VGGT | 2025 | 多视角 feed-forward visual geometry | camera、depth、pointmap、tracks | `paper-proven`: unified feed-forward geometry prediction | 不宜写成“一步替代全部 3R”；仍需按输入 regime 比较 | `registry-listed`: Meta repo；Dream 记录为强 comparator，尚未做本地质量表 |
 | MapAnything | 2025/2026 | 一张或多张图，允许可选 intrinsics/pose/depth/partial recon | metric scene geometry、camera、depth/ray map 等 | `paper-proven`: universal feed-forward metric 3D reconstruction | 其“通用性”需按论文实验和输入条件解释；不要泛化为所有应用可用 | PDF 已下载；代码/许可状态尚需确认 |
 
@@ -69,10 +69,10 @@ Evidence labels used here:
 | LONG3R | 2025 | long sequence stream | 3D spatio-temporal memory | `paper-proven`: long-sequence streaming memory with gating/pruning | gate 是模型机制，不等同于外部 controller | PDF 已下载；project/code 状态需确认 |
 | LoGeR | 2026 | long-context geometric reconstruction | local + global hybrid memory | `paper-proven`: TTT global memory + sliding-window local memory | 不等同于 Mem3R；混合轴不同 | PDF 已下载；project/code 状态需确认 |
 | Mem3R | 2026 | streaming 3D reconstruction | hybrid memory, tracking + mapping decoupled | `paper-proven`: KV cache for tracking + map memory | 不等同于 OVGGT anchor cache 或 Point3R pointer memory | PDF 已下载；project/code 状态需确认 |
-| OVGGT | 2026 | streaming visual geometry with fixed compute budget | compressed cache / protected dynamic anchors | `paper-proven`: O(1) constant-cost cache governance | 是 cache/anchor budget 机制，不是泛泛“记忆更强” | PDF 已下载；代码状态需确认 |
-| PAS3R | 2026 | long monocular stream | pose-adaptive streaming state update | `paper-proven`: update gain depends on pose novelty | 不应写成 Mamba/SSM 路线 | PDF 已下载；代码状态未知 |
-| FILT3R | 2026 | streaming 3D reconstruction | latent state filtering | `paper-proven`: Kalman-style latent adaptive filter | 不是传统 SLAM graph Kalman filter | PDF 已下载；代码状态未知 |
-| LongStream | 2026 | long sequence autoregressive visual geometry | streaming geometry with cache refresh | `paper-proven`: gauge-decoupled streaming and cache refresh | 与 STream3R/CUT3R 的状态范围需在正文区分 | PDF 已下载；project/code 状态需确认 |
+| OVGGT | 2026 | streaming visual geometry with fixed compute budget | compressed cache / protected dynamic anchors | `paper-proven`: O(1) constant-cost cache governance | 是 cache/anchor budget 机制，不是泛泛“记忆更强” | `source-checked 2026-05-13`: arXiv lists project/code links; repo license not read |
+| PAS3R | 2026 | long monocular stream | pose-adaptive streaming state update | `paper-proven`: update gain depends on pose novelty | 不应写成 Mamba/SSM 路线 | `source-checked 2026-05-13`: arXiv page only; no stronger code claim |
+| FILT3R | 2026 | streaming 3D reconstruction | latent state filtering | `paper-proven`: Kalman-style latent adaptive filter | 不是传统 SLAM graph Kalman filter | `source-checked 2026-05-13`: arXiv says code will be released |
+| LongStream | 2026 | long sequence autoregressive visual geometry | streaming geometry with cache refresh | `paper-proven`: gauge-decoupled streaming and cache refresh | 与 STream3R/CUT3R 的状态范围需在正文区分 | `source-checked 2026-05-13`: arXiv lists project page; code/license not upgraded |
 
 ## 动态场景与 4D reconstruction
 
@@ -82,14 +82,14 @@ Evidence labels used here:
 | POMATO | 2025 | dynamic 3D reconstruction | pointmap matching + temporal motion | `paper-proven`: pointmap matching with temporal motion | 与 D^2USt3R 机制不同，不能只归为“动态版 DUSt3R” | PDF 已下载；code/location 尚需确认 |
 | D^2USt3R | 2025 | dynamic scenes | 4D pointmaps | `paper-proven`: dynamic-aware 4D pointmap extension | 4D 指时序点图，不是 4DGS asset | PDF 已下载；代码状态需确认 |
 | Easi3R | 2025 | existing 3R output + dynamic regions | disentangled motion / dynamic correction | `paper-proven`: training-free adaptation from DUSt3R | 与 MonST3R 的训练式动态建模不同 | PDF 已下载；project/code 状态需确认 |
-| RayMap3R | 2026 | streaming dynamic reconstruction | ray/image dual-branch dynamic suppression | `paper-proven`: training-free RayMap-based dynamic identification | ray representation 与 pointmap representation 的证据信号不同 | PDF 已下载；project page claims code，需确认成熟度 |
+| RayMap3R | 2026 | streaming dynamic reconstruction | ray/image dual-branch dynamic suppression | `paper-proven`: training-free RayMap-based dynamic identification | ray representation 与 pointmap representation 的证据信号不同 | `source-checked 2026-05-13`: project page lists arXiv/code; local quality not verified |
 
 ## 测试时验证、修正和自适应
 
 | 模型/机制 | 年份 | 输入假设 | 输出表示 | 核心机制 | 局限/注意 | 应用状态 |
 |---|---:|---|---|---|---|---|
 | Test3R | 2025 | DUSt3R/MASt3R family outputs, image triplets | consistency signal / prompt tuning | `paper-proven`: test-time learning via cross-pair geometric consistency | 应区分为 triplet consistency / prompt tuning，不同于 TTT3R 的长序列 memory update | PDF 已下载；code listed，集成成本尚需确认 |
-| TTT3R | 2025/2026 | CUT3R-style state / hard cases | updated state / reconstruction | `paper-proven`: 3D reconstruction as test-time training | 更新 internal state；计算和失败模式不同于 Test3R | PDF 已下载；code/demo listed，依赖 CUT3R |
+| TTT3R | 2025/2026 | CUT3R-style state / hard cases | updated state / reconstruction | `paper-proven`: 3D reconstruction as test-time training；20 FPS / 6 GB source-checked | 更新 internal state；计算和失败模式不同于 Test3R；吞吐数字需带条件引用 | `source-checked 2026-05-13`: project page + PDF front matter |
 | G-CUT3R | 2025 | guided reconstruction with camera/depth priors | guided 3D reconstruction | `paper-proven`: camera and depth prior integration | 先验冲突检测属于 review/Dream inferred extension，不是论文直接结论 | PDF 已下载；代码状态未知 |
 | MASt3R-SfM | 2024 | image collection | SfM-aligned reconstruction | `paper-proven`: matching + global SfM consistency | 可作为验证/修正参照，但不是轻量 per-window critic | 见基础线条目 |
 
@@ -132,4 +132,4 @@ Evidence labels used here:
 - 逐篇读取 PDF 后再写性能/benchmark 结论；当前仅完成元数据、摘要和本地资料的第一轮核对。
 - 代码许可证、权重许可证、demo 成熟度需从官方仓库文件直接确认。
 - 对 VGGT、MapAnything、MV-DUSt3R+ 等统一/多视角模型的比较需要引用原论文实验表或第三方评测。
-- 对 2026 年模型（LoGeR、Mem3R、OVGGT、PAS3R、FILT3R、LongStream、RayMap3R）先保持“论文已下载、代码状态待确认”的保守表述。
+- 对 2026 年模型（LoGeR、Mem3R、OVGGT、PAS3R、FILT3R、LongStream、RayMap3R）已推进到来源级状态；仍需在复用代码/权重前逐仓库读 license 和 checkpoint terms。
