@@ -60,6 +60,16 @@ It is updated after every substantive editing pass. For fine-grained history see
 - **重写** `notes/figure_prompts.md`：清除残留的 Typst 路线、KYKT 字眼与已过时的 Figure 6 计划；补当前 TikZ 图/booktabs 表清单，补 `figures/` 缓存说明与可选再裁切坐标。
 - **暂不嵌入论文原图**：`figures/` 中保留 DUSt3R / VGGT / MonST3R / CUT3R 各自 Fig.1 的 PNG 缓存（外加 `*_p1-01.png` 原始页面位图），未在 `main.tex` 中插入 `\includegraphics`。理由：上一轮裁切质量混合（VGGT 截到了标题栏，DUSt3R 含一截 caption 文本，MonST3R/CUT3R 未视觉复核），且各论文复用许可证未独立核对，按优化提示词 §0.4 默认保守处理。再裁切坐标参考已写入 `notes/figure_prompts.md`。
 
+## 论文 Fig.1 重新裁切轮次（2026-05-13 再续编）
+
+- 用 `notes/figure_prompts.md` 中的 `crops_v2` 重跑了一遍 PIL 裁切，覆盖了 `figures/` 内四张 `*_fig1.png`。当前文件状态：
+  - `dust3r_fig1.png` —— 1365 × 630，视觉复核通过（pointmap 输出+点云渲染，无 caption 残留）。
+  - `vggt_fig1.png` —— 1380 × 465，视觉复核通过（房屋/花园重建+相机锥+深度图，已无标题栏）。
+  - `monst3r_fig1.png` —— 1310 × 435，视觉复核通过（视频帧条+动态点云+输出标签 Video Depth / Camera Intrinsics / Dynamic & Static Mask）。
+  - `cut3r_fig1.png` —— 1385 × 360，**未视觉复核**：Read 返回 `(media removed — rejected by API)`，原因未明（文件仅 623 KB）。下次在干净上下文里重试，或外部打开核对。
+- **本轮没改 `main.tex`、没重新编译**：四张图仍然没有以 `\includegraphics` 形式嵌入。按 `notes/figure_prompts.md` § "Figure policy"，嵌入需先逐篇核对复用许可证。该核对未做。
+- `build/main.pdf` 仍为上一轮的 13 页版本，未变。
+
 ## 关键决策
 
 - 继续使用 LaTeX，不回到 Typst。
@@ -99,9 +109,9 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 未完成任务（按优先级）
 
-1. **逐篇核对核心论文实验表**：尤其 MV-DUSt3R+、VGGT、Fast3R 之间的可对照基准；TTT3R 的硬件/吞吐声称。完成后可把若干处"尚需确认"升级为具体引用。
-2. **2026 预印本代码与许可证核对**：LoGeR、Mem3R、OVGGT、PAS3R、FILT3R、RayMap3R、LongStream 的官方仓库与协议；目前正文用语已保守，无需立即修正，但发表前应一次性核对。
-3. **论文 Fig.1 嵌入决策**：若希望保留四张论文原图，需先逐论文核对复用许可（arXiv 预印本各自版权独立），再按 `notes/figure_prompts.md` 中的 `crops_v2` 重新裁切并视觉复核，最后以"图 X. 摘自 \citet{KEY}"形式插入。当前 PDF 不依赖这些图。
+1. **论文 Fig.1 嵌入决策（gated）**：四张裁切图已在 `figures/` 就位，但未嵌入 `main.tex`。下一步前置条件——逐篇确认 DUSt3R / VGGT / MonST3R / CUT3R arXiv 预印本的复用/版权条款；CUT3R 还需视觉复核。许可证清楚后再插入 `\includegraphics`，并加归属 caption「图 X. 摘自 \citet{KEY}，仅用于综述说明，版权归原作者。」。
+2. **逐篇核对核心论文实验表**：尤其 MV-DUSt3R+、VGGT、Fast3R 之间的可对照基准；TTT3R 的硬件/吞吐声称。完成后可把若干处"尚需确认"升级为具体引用。
+3. **2026 预印本代码与许可证核对**：LoGeR、Mem3R、OVGGT、PAS3R、FILT3R、RayMap3R、LongStream 的官方仓库与协议；目前正文用语已保守，无需立即修正，但发表前应一次性核对。
 4. **样式备份**：如计划改投，提前确认 `unsrtnat` 与 `ctex` 是否在目标期刊/会议模板兼容。
 
 ## 风险与注意事项
@@ -113,4 +123,4 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 最后更新时间
 
-2026-05-13（图像优化轮次后；当日内）。
+2026-05-13（论文 Fig.1 重新裁切轮次后；当日内，未重新编译 LaTeX）。

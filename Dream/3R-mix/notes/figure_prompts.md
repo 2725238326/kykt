@@ -30,14 +30,16 @@ Status (2026-05-13): the survey is built in LaTeX; `main.tex` carries four TikZ 
 
 ## Paper-figure cache
 
-`figures/` contains cached crops from page 1 of four foundational papers:
+`figures/` contains re-cropped Fig.1 images from page 1 of four foundational papers. State as of 2026-05-13 re-crop pass:
 
-- `dust3r_fig1.png` — DUSt3R Fig.1 (1350×720). Includes a small strip of caption text below the figure.
-- `vggt_fig1.png` — VGGT Fig.1 (1000×820). Last crop coordinates captured the title block instead of the figure; needs re-crop before use.
-- `monst3r_fig1.png` — MonST3R Fig.1 (1230×760). Not visually verified.
-- `cut3r_fig1.png` — CUT3R Fig.1 (1410×650). Not visually verified.
+| file | size on disk | visual-verification status | notes |
+|---|---|---|---|
+| `dust3r_fig1.png` | 1365 × 630 | ✓ verified clean | pointmap outputs + rendered point clouds; no caption tail; no title block |
+| `vggt_fig1.png` | 1380 × 465 | ✓ verified clean | house/garden reconstruction + camera frusta + depth map; prior title-block issue resolved |
+| `monst3r_fig1.png` | 1310 × 435 | ✓ verified clean | video strip + dynamic point cloud + output labels (Video Depth / Intrinsics / Dynamic & Static Mask) |
+| `cut3r_fig1.png` | 1385 × 360 | ⚠ unverified | Read returned `(media removed — rejected by API)`; dimensions plausible but not visually confirmed |
 
-Raw page rasters (`*_p1-01.png`) are kept alongside for re-cropping. Generated via `pdftocairo -r 150 -singlefile -png` on the corresponding paper PDFs.
+Raw page rasters (`*_p1-01.png`, 1530 × 1980) are kept alongside for re-cropping. Generated via `pdftocairo -r 150 -singlefile -png` on the corresponding paper PDFs.
 
 These crops are **not** referenced from `main.tex`. To embed any of them later:
 

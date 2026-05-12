@@ -87,3 +87,39 @@ Append-only log of substantive editing passes. Replaces verbal handoff for fine-
   - Log: 0 errors, 0 undefined references/citations, 0 Overfull, 7 Underfull (same `tab:testtime` CJK column wraps as before; no new warning).
   - MiKTeX "unsupported Windows" message persists; PDF unaffected.
 - **Caveat to user**: the chosen scope was "both new paradigm figure and embed paper figures"; only the first half landed in `main.tex`. The second half is staged in `figures/` but deferred pending license confirmation and crop re-verification. To proceed, follow `notes/figure_prompts.md` § "Paper-figure cache".
+
+## 2026-05-13 — Paper-figure re-crop pass (not embedded)
+
+- **Files edited**: none in `main.tex` this round. Only re-ran the PIL crop on the four cached page-1 rasters and overwrote `figures/<name>_fig1.png`.
+- **Files written**: this `work_log.md` entry; `NEW_CHAT_HANDOFF.md` (timestamp + figure-cache subsection refreshed); `notes/figure_prompts.md` (cache table refreshed with new dimensions and visual-verification status).
+- **Driver**: previous chat's handoff item "论文 Fig.1 嵌入决策" — re-crop with `crops_v2` coordinates, verify visually, then decide whether to embed.
+
+### What changed on disk
+
+- Re-applied `crops_v2` (plus minor manual tweaks) to the four `figures/<name>_p1-01.png` rasters. New dimensions on disk:
+  - `dust3r_fig1.png` — 1365 × 630
+  - `vggt_fig1.png` — 1380 × 465
+  - `monst3r_fig1.png` — 1310 × 435
+  - `cut3r_fig1.png` — 1385 × 360
+- Raw page-1 rasters (`*_p1-01.png`, 1530 × 1980) are unchanged and remain alongside.
+
+### Visual verification status
+
+Read each cropped PNG one at a time (the previous attempt at multi-image Read hit a 32 MB request cap):
+
+- `dust3r_fig1.png` — verified clean. Captures DUSt3R Fig.1 with pointmap outputs and rendered point clouds; no caption tail; no title-block fragment.
+- `vggt_fig1.png` — verified clean. Captures the house/garden reconstruction with camera frusta and depth map; prior title-block issue is resolved.
+- `monst3r_fig1.png` — verified clean. Captures the video-input strip, dynamic point cloud, and output labels (Video Depth / Camera Intrinsics / Dynamic & Static Masks).
+- `cut3r_fig1.png` — **not yet visually verified**. The Read call returned `(media removed — rejected by API)` despite the file being only 623 KB on disk; cause unclear. Dimensions on disk look plausible (1385 × 360 — wide-and-short, consistent with a horizontal pipeline figure). Re-verification deferred.
+
+### Not done this round (intentional)
+
+- No `\includegraphics` blocks inserted into `main.tex`. Per `notes/figure_prompts.md` § "Figure policy", embedding is gated on independent license/reuse confirmation per paper. That check has not been performed.
+- No xelatex/bibtex recompile. `build/main.pdf` is unchanged from the 2026-05-13 figure-optimization round (still 13 pages, same TikZ-only figure set).
+- CUT3R crop visual confirmation still pending; if a future round wants to embed it, redo the Read in a clean context or open it in a viewer.
+
+### Next-step candidates (unchanged in priority from prior entry)
+
+1. Per-paper license/reuse confirmation for DUSt3R / VGGT / MonST3R / CUT3R before any `\includegraphics` embedding.
+2. Visually re-verify `cut3r_fig1.png`.
+3. If license cleared, insert four `\figure` blocks with attribution captions: 「图 X. 摘自 \citet{KEY}，仅用于综述说明，版权归原作者。」 — likely positions: DUSt3R/VGGT in §3–§4, MonST3R in §5, CUT3R in §6. Then xelatex × 3 + bibtex.
