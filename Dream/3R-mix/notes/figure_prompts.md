@@ -1,6 +1,6 @@
 # Figure plan and prompts
 
-Status (2026-05-13): the survey is built in LaTeX; `main.tex` carries four TikZ figures, two embedded paper-figure composite figures, and five booktabs tables. AI-generated raster figures are not used in the current manuscript. The embedded paper crops live in `figures/` (see "Paper-figure cache" below).
+Status (2026-05-13): the survey is built in LaTeX; `main.tex` carries four TikZ figures, two embedded paper-figure composite figures, and five booktabs tables. AI-generated raster figures are not used in the current manuscript. The embedded paper crops live in `figures/` (see "Paper-figure cache" below). Figure captions were shortened in the caption/prose polish pass and refined again in the final refinement pass on 2026-05-13.
 
 ## Figure policy
 
@@ -13,12 +13,22 @@ Status (2026-05-13): the survey is built in LaTeX; `main.tex` carries four TikZ 
 
 | id | type | location | purpose |
 |---|---|---|---|
-| `fig:lineage` | TikZ taxonomy | end of §2 | DUSt3R-rooted six-branch lineage (matching/SfM, many-view/unified, dynamic/4D, streaming memory, test-time, Gaussian output) |
 | `fig:paradigm` | TikZ two-row pipeline | §2 (after the three-consequences paragraph) | Traditional SfM/MVS pipeline vs 3R feed-forward pipeline |
+| `fig:lineage` | TikZ taxonomy | end of §2 | DUSt3R-rooted six-branch lineage (matching/SfM, many-view/unified, dynamic/4D, streaming memory, test-time, Gaussian output) |
 | `fig:paper-core` | embedded paper crops | §4 float page | DUSt3R and VGGT original Fig.1 visual references, attributed via `\citet{dust3r}` / `\citet{vggt}` |
 | `fig:paper-dynamic-stream` | embedded paper crops | §6 float page | MonST3R and CUT3R original Fig.1 visual references, attributed via `\citet{monst3r}` / `\citet{cut3r}` |
 | `fig:memory` | TikZ block diagram | §6 | Long-sequence memory primitives: recurrent state / spatial pointer / hybrid memory / cache-and-filter |
 | `fig:application` | TikZ flow + evidence note | §9 | Application path from images to report, with evidence-logging branch |
+
+## Figure reading order
+
+The manuscript now states this relation explicitly in §2:
+
+- `fig:paradigm` + `fig:lineage`: conceptual frames for the survey's problem organization.
+- `fig:paper-core` + `fig:paper-dynamic-stream`: paper-figure visual anchors for representative input/output forms; these do not support performance or deployment claims.
+- `fig:memory` + `fig:application`: author-redrawn system abstractions for long-sequence state mechanisms and application evidence flow.
+
+`fig:lineage` is followed by `\FloatBarrier` so the three-layer reading-order paragraph is not split ahead of the taxonomy figure.
 
 ## Current table inventory (matches `main.tex`)
 
@@ -70,5 +80,5 @@ These have not been re-applied yet; they are a starting point for the next attem
 - [x] If embedding paper figures, confirm per-paper reuse license (DUSt3R, VGGT, CUT3R, MonST3R cleared by user confirmation on 2026-05-13).
 - [x] Re-crop and re-verify visually before inserting.
 - [ ] Add a generated/derived asset to `figures/` with a source note.
-- [ ] Captions for paper figures must attribute the source paper via `\citet{...}` and avoid any quality claim.
-- [ ] Do not let figure captions assert performance or deployment claims that the prose does not support.
+- [x] Captions for paper figures must attribute the source paper via `\citet{...}` and avoid any quality claim.
+- [x] Do not let figure captions assert performance or deployment claims that the prose does not support.

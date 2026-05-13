@@ -10,8 +10,12 @@ It is updated after every substantive editing pass. For fine-grained history see
 ## 当前稿件状态
 
 - 框架：LaTeX（`ctexart`，`xelatex` 编译，`natbib`/`unsrtnat`）。已彻底放弃 Typst 路线，`main.typ` 仅作为历史快照保留，不再维护。
-- 主稿：`main.tex`，最后更新 2026-05-13（含论文 Fig.1 嵌入与证据核对轮次）。
-- PDF：`build/main.pdf`，17 页，可正常打开。
+- 主稿：`main.tex`，最后更新 2026-05-13（含论文 Fig.1 嵌入、证据核对、叙述结构/图文关系优化、图注压缩、语言自然化与终稿再精炼轮次）。
+- PDF：`build/main.pdf`，16 页，可正常打开。
+- 阶段终稿输出：`deliverables/3r_survey_stage_final_2026-05-13.pdf`，17 页 A4，已按最终编译结果复制。
+- 阶段终稿优化版：`deliverables/3r_survey_stage_final_2026-05-13_polished.pdf`，17 页 A4，已写入 PDF 元数据，LaTeX 日志清至 0 warnings / 0 underfull / 0 overfull。
+- 图注与语言优化版：`deliverables/3r_survey_stage_final_2026-05-13_caption_polished.pdf`，16 页 A4，图注更短，正文去掉了偏过程汇报的“边界/不是/不把”式表述。
+- 当前推荐交付版：`deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`，16 页 A4，摘要、图注来源、表格列名、第 9 节复现模板和结论均已再精炼。
 - 章节结构（共 10 节）：
   1. 引言
   2. 从传统几何流程到点图表示
@@ -21,7 +25,7 @@ It is updated after every substantive editing pass. For fine-grained history see
   6. 长序列重建中的状态、记忆与缓存
   7. 测试时验证、修正与先验输入
   8. 从几何预测到可查看输出
-  9. 应用证据、复现边界与失败样本记录
+  9. 应用证据、复现与失败样本记录
   10. 开放问题与结论
 - 表格：5 张（`tab:foundation`, `tab:dynamic`, `tab:memory`, `tab:testtime`, `tab:application`），均使用 booktabs。
 - 图：6 张 figure 环境。其中 4 张 TikZ（`fig:lineage`、`fig:paradigm`、`fig:memory`、`fig:application`），2 张论文原图复合图（`fig:paper-core` 含 DUSt3R/VGGT Fig.1，`fig:paper-dynamic-stream` 含 MonST3R/CUT3R Fig.1）。论文图均在 caption 中以 `\citet{...}` 归属。
@@ -86,6 +90,63 @@ It is updated after every substantive editing pass. For fine-grained history see
   - 2026 预印本：LoGeR、Mem3R、OVGGT、RayMap3R 有项目/代码入口信号；LongStream 有项目页；FILT3R 标注 code will be released；PAS3R 仅稳定核到 arXiv 论文页。正文保持“机制已核对、代码与应用质量另行验证”的边界。
 - `$imagegen` 技能已读取；本轮没有生成新图，因为论文来源图已满足需求，合成图会弱化论文证据链。
 
+## 叙述结构与图文关系优化轮次（2026-05-13 再续编）
+
+- `main.tex` 引言新增全文路线图：按“表示基础—输入扩展—时间机制—测试时校正—输出与证据”组织，而不是把模型排列成独立清单。
+- §2 新增“图像材料三层使用”段落：
+  - `fig:paradigm` + `fig:lineage`：综述重绘的概念框架。
+  - `fig:paper-core` + `fig:paper-dynamic-stream`：原论文方法图的视觉锚点，只说明输入/几何中间量/输出形态，不作为性能或工程成熟度证据。
+  - `fig:memory` + `fig:application`：本文重绘的系统抽象，分别对应长序列状态机制和应用证据路径。
+- `fig:lineage` 后新增 `\FloatBarrier`，避免新增读图段落被谱系图浮动切开。
+- §4 围绕 `fig:paper-core` 改写过渡：DUSt3R 对应 pointmap 中间语言，VGGT 对应 camera/depth/pointmap/tracks 统一预测；随后用 `tab:foundation` 汇总输入情形、主要输出、机制定位和证据边界。
+- §6 围绕 `fig:paper-dynamic-stream` 改写过渡：MonST3R 对应动态几何估计，CUT3R 对应连续输入状态更新；原论文视觉锚点之后再回到四类状态/记忆机制。
+- `notes/figure_prompts.md` 已补 Figure reading order 小节，并修正当前图清单顺序。
+
+## 阶段终稿输出轮次（2026-05-13 最终收口）
+
+- 按用户要求输出本阶段成果终稿。
+- `main.tex` 做了最后一轮轻量论文语言收口：
+  - 摘要中的证据口径改为“论文机制、官方仓库与复现记录”。
+  - §9 的 evidence tier 从英文工作流标签改为中文论文表述：论文可证、官方代码、复现烟测、应用验证。
+  - `tab:application` 的系统报告行改为“不把‘可运行’写为‘质量已验证’”。
+- 最终 PDF 复制到 `deliverables/3r_survey_stage_final_2026-05-13.pdf`。
+
+## 阶段终稿后优化轮次（2026-05-13 再收口）
+
+- 用户确认继续推进四项优化：表格排版、证据术语统一、结论压缩、PDF 元数据。
+- `main.tex` 改动：
+  - 在 `hyperref` 后补 `\hypersetup`，写入 PDF Title / Subject / Keywords。
+  - `tab:foundation` 与 `tab:testtime` 使用显式 `\makecell` 换行，解决中英文混排窄列拉伸。
+  - §9、`fig:application`、`tab:application` 与结论统一使用“接口烟测 / 应用验证”口径。
+  - 结论末段压缩模型名枚举，保留核心判断：3R 的问题是组织几何中间量与证据链，而不是端到端替代所有几何流程。
+- 重新编译后，`build/main.pdf` 仍为 17 页 A4。
+- 最终日志扫描结果：0 LaTeX errors，0 undefined refs/cites，0 Overfull，0 Underfull，0 matched LaTeX warnings。
+- `pdfinfo` 已确认 PDF metadata 生效。
+- `deliverables/3r_survey_stage_final_2026-05-13.pdf` 被其他进程占用，未能覆盖；优化版另存为 `deliverables/3r_survey_stage_final_2026-05-13_polished.pdf`。
+
+## 图注与语言自然化轮次（2026-05-13 再再收口）
+
+- 按用户反馈压缩所有主要 figure/table caption，尤其是 `fig:paradigm`、`fig:lineage`、`fig:paper-core`、`fig:paper-dynamic-stream`、`fig:memory`、`fig:application` 与 `tab:application`。
+- 正文进一步去掉偏过程汇报的写法：将“证据边界”“不是/而非/不把/不写”等框架化句式改为更自然的论文叙述。
+- `tab:foundation`、`tab:dynamic`、`tab:testtime`、`tab:application` 的最后一列统一为“使用口径/使用提示”一类表达，减少告诫式措辞。
+- 第 9 节标题固定为“应用证据、复现与失败样本记录”，正文使用“论文可证 / 官方代码 / 跑通记录 / 应用验证”四类材料组织判断。
+- 重新编译后 `build/main.pdf` 为 16 页 A4，另存为 `deliverables/3r_survey_stage_final_2026-05-13_caption_polished.pdf`。
+- 最终日志扫描：0 LaTeX errors，0 undefined refs/cites，0 Overfull，0 Underfull，0 matched LaTeX warnings。内部语境词扫描和“证据边界/不是/而非/不把/接口烟测”等旧表述扫描均无命中。
+- 视觉抽查渲染 pages 5、8、10：两组论文图、长序列图和应用证据段落排版正常，图注已明显缩短。
+
+## 终稿再精炼轮次（2026-05-13 最后优化）
+
+- 摘要重写为更标准的论文摘要结构：问题背景、分支谱系、证据来源、核心判断。
+- 图 3 / 图 4 caption 继续缩短，但保留明确来源归属：
+  - `DUSt3R 与 VGGT 方法图对照。来源：DUSt3R \citet{dust3r}，VGGT \citet{vggt}。`
+  - `MonST3R 与 CUT3R 方法图对照。来源：MonST3R \citet{monst3r}，CUT3R \citet{cut3r}。`
+- 表格最后一列统一为更自然的“记录要点”；`tab:memory` 的最后一列改为“典型风险”。
+- 第 9 节新增一条六项复现记录模板：输入来源与规模、模型和权重版本、运行环境、主要输出、失败样本、许可证与耗时/显存。
+- 结论末段强化核心判断：3R 的主要贡献既来自模型指标提升，也来自对中间表示、状态更新、外部先验和可查看资产的重新编排。
+- 重新编译后 `build/main.pdf` 仍为 16 页 A4，另存为 `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`。
+- 最终日志扫描：0 LaTeX errors，0 undefined refs/cites，0 Overfull，0 Underfull，0 matched LaTeX warnings。内部语境词和旧式汇报词扫描均无命中。
+- 视觉抽查 pages 1、5、8、10：摘要、两组论文图和应用段落排版正常。
+
 ## 关键决策
 
 - 继续使用 LaTeX，不回到 Typst。
@@ -94,18 +155,18 @@ It is updated after every substantive editing pass. For fine-grained history see
 - 应用证据矩阵明确标注"系统报告"行，把"流程跑通≠质量已验证"作为系统层规则写入正文。
 - 正文中不出现 KYKT / Dream / Dream3R / agent / skill / workflow / 本地项目 等内部语境词（已 `Grep` 校验）。
 
-## 证据边界
+## 证据口径
 
-正文按四级证据标注：
+正文按四类材料组织判断：
 
-- **paper-proven**：DUSt3R / MASt3R / Fast3R / VGGT / CUT3R / Spann3R / MonST3R / Test3R 等核心模型的"机制描述"段都来自论文 abstract/方法图，可放心引用。
-- **official-code / project-page**：仅说明仓库、项目页、权重或 demo 入口存在，不构成质量结论；具体许可证、显存、依赖仍需按仓库版本独立核对。
-- **local-smoke-test**：在正文中以"接口和依赖成立"形式出现，未与"质量更优"绑定。
-- **source-scoped checked**：MV-DUSt3R+、Fast3R、VGGT、TTT3R 的关键数字已按论文/项目页条件写入正文；LoGeR、Mem3R、OVGGT、RayMap3R、LongStream、FILT3R、PAS3R 已推进到“来源级状态”描述，但不等同于本地复验或软件复用许可结论。
+- **论文可证**：DUSt3R / MASt3R / Fast3R / VGGT / CUT3R / Spann3R / MonST3R / Test3R 等核心模型的机制描述来自论文摘要、正文或方法图。
+- **官方代码 / 项目页**：说明仓库、项目页、权重或 demo 入口存在；具体许可证、显存、依赖按仓库版本另行核对。
+- **跑通记录**：记录特定环境下接口、依赖和默认输入是否成立，不直接扩展为质量判断。
+- **来源级核对**：MV-DUSt3R+、Fast3R、VGGT、TTT3R 的关键数字已按论文/项目页条件写入正文；LoGeR、Mem3R、OVGGT、RayMap3R、LongStream、FILT3R、PAS3R 已推进到来源状态描述。
 
 ## 编译命令与结果
 
-最近一次（2026-05-13）：
+最近一次（2026-05-13，终稿再精炼后）：
 
 ```bash
 xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
@@ -116,12 +177,13 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 结果：
 
-- 17 页 PDF 正常输出至 `build/main.pdf`。
+- 16 页 PDF 正常输出至 `build/main.pdf`。
 - 0 × undefined citation / undefined reference。
 - 0 × LaTeX Error。
 - 0 × `Overfull \hbox`。
-- 7 × `Underfull \hbox` —— 均为 `tab:foundation` 和 `tab:testtime` 的 CJK 列宽伸缩，符合优化提示词中"少量表格断行可接受"的容忍。
+- 0 × `Underfull \hbox`（阶段终稿后优化轮次已清理表格窄列拉伸）。
 - MiKTeX 在 Windows 11 Home China 10.0.29585 上仍打印 "running on an unsupported version of Windows"。PDF 正常生成，记录为环境警告，不视为稿件失败。
+- 视觉 QA：渲染 pages 1、5、8、10，确认摘要、两组论文复合图、长序列图和应用证据段落排版正常，caption 已压缩且来源归属仍保留。
 
 ## 未完成任务（按优先级）
 
@@ -138,4 +200,4 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 最后更新时间
 
-2026-05-13（论文 Fig.1 嵌入、核心实验来源核对、2026 项目状态核对后；已重新编译 LaTeX）。
+2026-05-13（当前推荐交付版 `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` 已输出；已重新编译 LaTeX，日志清至 0 Underfull/Overfull/warnings）。

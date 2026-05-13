@@ -182,3 +182,112 @@ Read each cropped PNG one at a time (the previous attempt at multi-image Read hi
 - Core experiment-table checking is advanced but not a full benchmark meta-analysis; no new ranking claims were introduced.
 - 2026 preprint project/code status is advanced from unknown to source-scoped status, but licenses for code/checkpoints should still be read from each repository before any software redistribution or reuse.
 - Style-template compatibility remains unchanged and should be checked only if a target venue/template is chosen.
+
+## 2026-05-13 — Narrative structure and figure-relation polish
+
+- **Files edited**: `main.tex`, `notes/figure_prompts.md`, `notes/work_log.md`, `NEW_CHAT_HANDOFF.md`.
+- Added an introduction roadmap that frames the paper as "representation basis -> input expansion -> temporal mechanisms -> test-time correction -> output and evidence" rather than a model list.
+- Added an explicit §2 figure-reading paragraph:
+  - `fig:paradigm` and `fig:lineage` are conceptual frames.
+  - `fig:paper-core` and `fig:paper-dynamic-stream` are paper-figure visual anchors, not performance evidence.
+  - `fig:memory` and `fig:application` are author-redrawn system abstractions.
+- Added `\FloatBarrier` after `fig:lineage` so the reading-order paragraph appears after the taxonomy figure instead of being split by the float.
+- Refined §4 prose around `fig:paper-core`: DUSt3R is described as pointmap intermediate language; VGGT as unified prediction of camera/depth/pointmap/tracks. The figure is explicitly scoped to problem statement/output form, not performance comparison.
+- Added a transition sentence before `tab:foundation` to connect the paper figure to the evidence-boundary table.
+- Refined §6 prose around `fig:paper-dynamic-stream`: MonST3R is framed as dynamic geometry estimation; CUT3R as continuous-input state update. The following paragraph now returns from paper visual anchors to mechanism-level taxonomy before `fig:memory`.
+
+### Verification
+
+- Recompiled with the required 4-step pipeline: `xelatex`, `bibtex`, `xelatex`, `xelatex`.
+- Final PDF remains `build/main.pdf`, 17 pages.
+- Log check: 0 LaTeX errors, 0 undefined references/citations, 0 Overfull hbox; 7 existing Underfull hbox warnings remain in `tab:foundation` and `tab:testtime`.
+- Forbidden internal terms check against `main.tex` returned no matches for `KYKT`, `Dream`, `Dream3R`, `agent`, `skill`, `workflow`, or `本地项目`.
+- Rendered pages 2--8 for visual QA; confirmed the figure-reading paragraph now follows `fig:lineage`, and both paper composite figures remain visible and attributed.
+
+## 2026-05-13 — Stage-final output
+
+- **Files edited/output**: `main.tex`, `notes/work_log.md`, `NEW_CHAT_HANDOFF.md`, `deliverables/3r_survey_stage_final_2026-05-13.pdf`.
+- Per final-stage request, performed a light terminal polish:
+  - Abstract evidence wording changed from "local record" style to "论文机制、官方仓库与复现记录".
+  - §9 evidence tiers rewritten as Chinese paper prose: 论文可证 / 官方代码 / 复现烟测 / 应用验证.
+  - `tab:application` final row now says not to write "可运行" as "质量已验证".
+- Recompiled with the required 4-step pipeline. Output remains 17 A4 pages.
+- Final checks:
+  - 0 LaTeX errors.
+  - 0 undefined references/citations.
+  - 0 Overfull hbox.
+  - 7 known Underfull hbox warnings in tables only.
+  - Forbidden internal-term scan on `main.tex` returned no matches.
+  - Rendered page 1 for visual QA; title, abstract, keywords, and start of §1 render normally.
+- Stage-final PDF copied to `deliverables/3r_survey_stage_final_2026-05-13.pdf` (2,849,136 bytes).
+
+## 2026-05-13 — Post-final polish pass
+
+- **Files edited/output**: `main.tex`, `notes/work_log.md`, `NEW_CHAT_HANDOFF.md`, `deliverables/3r_survey_stage_final_2026-05-13_polished.pdf`.
+- Implemented the four optional polish items requested after the stage-final review:
+  - Cleaned table typography by using explicit `\makecell` line breaks in `tab:foundation` and `tab:testtime`.
+  - Unified the evidence tier wording around "接口烟测" / "应用验证" in §9, `fig:application`, `tab:application`, and the conclusion.
+  - Compressed the final conclusion paragraph to reduce repeated model-name enumeration and foreground the paper's main judgment.
+  - Added PDF metadata through `\hypersetup` (`Title`, `Subject`, `Keywords`).
+- Recompiled with the required 4-step pipeline.
+- Final log check after this pass:
+  - 0 LaTeX errors.
+  - 0 undefined references/citations.
+  - 0 Overfull hbox.
+  - 0 Underfull hbox.
+  - 0 LaTeX warnings matched by the final `rg` log scan.
+  - Forbidden internal-term scan on `main.tex` returned no matches.
+- `pdfinfo` confirms metadata and 17 A4 pages.
+- Rendered pages 6--9 for visual QA; table/section flow remained normal.
+- Could not overwrite `deliverables/3r_survey_stage_final_2026-05-13.pdf` because it was open/locked by another process. Wrote the polished deliverable as `deliverables/3r_survey_stage_final_2026-05-13_polished.pdf` instead.
+
+## 2026-05-13 — Caption and prose naturalization pass
+
+- **Files edited/output**: `main.tex`, `notes/work_log.md`, `NEW_CHAT_HANDOFF.md`, `notes/figure_prompts.md`, `deliverables/3r_survey_stage_final_2026-05-13_caption_polished.pdf`.
+- Shortened the main figure/table captions:
+  - `fig:paradigm`, `fig:lineage`, `fig:paper-core`, `fig:paper-dynamic-stream`, `fig:memory`, `fig:application`.
+  - `tab:foundation`, `tab:dynamic`, `tab:testtime`, `tab:application`.
+- Reworked prose that sounded like process reporting:
+  - Replaced "证据边界" framing in the manuscript with source-based judgment / evidence wording.
+  - Removed old "不是 / 而非 / 不把 / 不写 / 接口烟测" style phrases from `main.tex`.
+  - Made the abstract, DUSt3R/MASt3R discussion, test-time section, external-prior paragraph, and conclusion more natural.
+- Kept paper-figure source attribution in captions while removing redundant explanation.
+- Recompiled with the required 4-step pipeline. Final PDF: `build/main.pdf`, 16 A4 pages.
+- Final checks:
+  - 0 LaTeX errors.
+  - 0 undefined references/citations.
+  - 0 Overfull hbox.
+  - 0 Underfull hbox.
+  - 0 matched LaTeX warnings in the final log scan.
+  - Forbidden internal-term scan on `main.tex` returned no matches.
+  - Old phrasing scan on `main.tex` returned no matches for `证据边界`, `应用边界`, `不是`, `而非`, `不把`, `不写`, `接口烟测`, `质量已验证`, or `流程可运行`.
+- Rendered pages 5, 8, and 10 for visual QA; paper composite figures and the application/long-sequence pages remain readable, with shorter captions.
+
+## 2026-05-13 — Final refinement pass
+
+- **Files edited/output**: `main.tex`, `notes/work_log.md`, `NEW_CHAT_HANDOFF.md`, `notes/figure_prompts.md`, `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`.
+- Reworked the abstract into a tighter paper-style structure:
+  - 3R background and central representation shift.
+  - Main branches and representative models.
+  - Evidence sources used for claims.
+  - Core judgment about intermediate representations, state, priors, and visible outputs.
+- Refined paper-figure captions:
+  - `fig:paper-core` now names DUSt3R and VGGT sources directly.
+  - `fig:paper-dynamic-stream` now names MonST3R and CUT3R sources directly.
+  - Captions remain short and keep explicit attribution.
+- Unified table language:
+  - Last columns in `tab:foundation`, `tab:dynamic`, `tab:testtime`, and `tab:application` now use "记录要点".
+  - `tab:memory` uses "典型风险" instead of "潜在失败点".
+- Added a compact six-item reproduction-record template in §9: input source/scale, model and weight version, runtime environment, outputs, failure samples, license plus runtime/memory.
+- Strengthened the final conclusion around the main claim: 3R reorganizes intermediate representations, state updates, priors, and visible assets, not just model rankings.
+- Recompiled with the required 4-step pipeline. Final PDF: `build/main.pdf`, 16 A4 pages.
+- Final checks:
+  - 0 LaTeX errors.
+  - 0 undefined references/citations.
+  - 0 Overfull hbox.
+  - 0 Underfull hbox.
+  - 0 matched LaTeX warnings in the final log scan.
+  - Forbidden internal-term scan on `main.tex` returned no matches.
+  - Old phrasing scan on `main.tex` returned no matches for `证据边界`, `应用边界`, `不是`, `而非`, `不把`, `不写`, `接口烟测`, `质量已验证`, `流程可运行`, `使用口径`, `使用提示`, or `潜在失败点`.
+- Rendered pages 1, 5, 8, and 10 for visual QA; abstract, paper composite figures, and application/long-sequence pages remained readable.
+- Wrote current recommended deliverable to `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` (2,838,654 bytes).
