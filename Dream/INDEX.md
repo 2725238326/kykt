@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-13 (cycles 033 + 034 retroactively logged today; Track A Dream3R v0.3 server-verified with first KITTI real-data smoke; Track B 3R-mix Chinese survey polished to refined deliverable; current recommended Track B output `3R-mix/deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`)
+Last updated: 2026-05-14 (Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14 to arXiv-only route, then same-day quality optimization pass produced new recommended deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`, 18 A4 pages, 44 references)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -119,13 +119,13 @@ Separate LaTeX workspace deliberately decoupled from Dream / KYKT internal vocab
 | File | Role |
 |---|---|
 | `NEW_CHAT_HANDOFF.md` | Canonical top-level handoff for the survey workspace |
-| `main.tex` | 16-page LaTeX (`ctexart` + `xelatex` + `unsrtnat`); 10 sections; 6 figures (4 TikZ/composite + 2 paper Fig.1 composites); 5 booktabs tables |
-| `references.bib` | 43 BibTeX entries, all cited (no `\nocite{*}`) |
+| `main.tex` | 18-page LaTeX (`ctexart` + `xelatex` + `unsrtnat`); 10 sections; 6 figures (4 TikZ + 2 paper Fig.1 composites); 5 booktabs tables (last column unified to "适用条件与局限") |
+| `references.bib` | 44 BibTeX entries, all cited (no `\nocite{*}`); CroCo added 2026-05-14 |
 | `notes/work_log.md` | Append-only fine-grained editing log |
 | `notes/{paper_inventory,model_inventory,chapter_structure,fact_cards,figure_prompts,figure_selection,review_quality_audit}.md` | Per-axis working notes |
 | `figures/{dust3r,vggt,monst3r,cut3r}_fig1.png` | Paper Fig.1 crops embedded after user-confirmed reuse license |
-| `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` | Current recommended deliverable (16 A4 pages, 0 LaTeX errors / 0 warnings) |
-| `deliverables/3r_survey_stage_final_2026-05-13{,_polished,_caption_polished}.pdf` | Earlier polish-pass snapshots |
+| `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf` | Current recommended deliverable (18 A4 pages, 44 refs, 0 LaTeX errors / 0 warnings; 2026-05-14 wind-down + quality pass) |
+| `deliverables/3r_survey_stage_final_2026-05-13{,_polished,_caption_polished,_refined}.pdf` | Earlier polish-pass snapshots |
 | `COMPREHENSIVE_OPTIMIZATION_PROMPT.md` | Driving prompt for the 2026-05-13 comprehensive optimization pass |
 | `GENERATION_PROMPT.md` | Original generation prompt |
 

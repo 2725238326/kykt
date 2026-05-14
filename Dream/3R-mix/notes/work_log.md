@@ -308,3 +308,51 @@ Read each cropped PNG one at a time (the previous attempt at multi-image Read hi
   - Updated 最后更新时间 to 2026-05-14.
 - No LaTeX recompile or PDF change this pass. Current deliverable `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` remains canonical.
 - Forbidden internal-term scan not re-run because `main.tex` was not edited; last clean scan stands.
+
+## 2026-05-14 — Quality pass after wind-down
+
+- **Files edited/output**: `main.tex`, `references.bib`, `notes/work_log.md`, `NEW_CHAT_HANDOFF.md`, `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`; sync edits to `Dream/WORKFLOW_STATUS.md` and the Track B memory file (`project_track_b_3r_mix_survey.md`).
+- **Driver**: after the 2026-05-14 wind-down (route C, arXiv-only) the user requested a final quality pass without restarting Track B. Plan file: `C:\Users\27252\.claude\plans\greedy-petting-lemur.md` (17 items grouped A/B/C; Tier-C content like evaluation/dataset sections, critical-evaluation column, narrative restructuring deliberately deferred).
+
+### A 组 — 去重与删除（5 项）
+
+- **A1**: removed `fig:application` TikZ flow diagram (24 lines) since it duplicated `tab:application`. Added one-sentence transition before the table: "在这一框架下，3R 模型是中间环节：输入经过几何预测，输出之前需要一致性与置信度检查，并伴随来源、失败样本与许可证记录。"
+- **A2**: removed the §1 末段 "四类证据材料" re-definition. The abstract still flags four evidence tiers; the canonical definition stays in §9.
+- **A3**: removed §2 末段 "本文的图像材料分三层使用..." which duplicated §1 末段 roadmap function.
+- **A4**: dropped "应用质量另行复验" / "代码许可需按版本区分" cautionary tails from `tab:foundation` (VGGT row), `tab:dynamic` (RayMap3R row), and §6 closing line. Kept §9 as the single normative place where evidence-validation language lives.
+- **A5**: merged the two-paragraph §10 conclusion into a single paragraph whose closing sentence carries the central judgment about intermediate representations / state / priors / visible assets and the failure-sample-and-license caveat.
+
+### B 组 — 语言精修与表头统一（8 项）
+
+- **B-Abstract**: "三类依据，用于说明性能结论、工程成熟度和应用可行性的来源" → "四类依据，便于追溯性能结论、实现状态与失败样本的来源".
+- **B2**: §3 sentence "DUSt3R 打开的是一种接口转向" → "DUSt3R 引入了一种新的几何中间层"。Removed the manufactured term "接口转向".
+- **B3**: dropped legal-style "代码/权重许可需按版本区分" from the `tab:foundation` VGGT row body (replaced with mechanism-level description; license framing kept only in §9).
+- **B5 + B5b**: §7 "测试时 prompt tuning" → "测试时一致性优化", with the same change in the `tab:testtime` Test3R row. Avoids the prompt-learning misnomer.
+- **B6 + B7**: §9 opening rewritten from a meta sentence + numbered list of four evidence tiers into a single prose paragraph: "将 3R 模型转化为可交付系统时，证据来源至少分布在四个层面：论文方法图与章节描述支撑公开机制，官方仓库说明代码、权重与 demo 状态，复现记录验证依赖与默认输入，跨场景实验表、失败样本与许可证则用于支撑应用判断。" Followed by paper-figure attribution sentence.
+- **B8**: unified the last-column header of all 5 booktabs tables (`tab:foundation`, `tab:dynamic`, `tab:memory`, `tab:testtime`, `tab:application`) to "适用条件与局限". Body cells reworded from caution-style ("应配合 X / 需另行验证") to mechanism-style ("适合 Y 输入条件下使用 / 对 Z 域分布敏感").
+
+### C 组 — 内容补充（4 项）
+
+- **C1**: added `croco` entry to `references.bib`. `references.bib` total entries now 44 (one of the prior count discrepancies surfaced too — the handoff said 43 but the actual file had pre-existing 43; +1 CroCo → 44). §3 opens with one CroCo citation sentence: "DUSt3R 在此之前由 CroCo 的跨视角补全自监督预训练奠定基础，把 cross-view 视觉对应能力迁移到稠密 pointmap 预测上\citep{croco}。"
+- **C2**: §3 expanded with one MASt3R mechanism paragraph (~5 lines): dense local feature head + contrastive descriptor loss + mutual-nearest-neighbor correspondence at inference + Sinkhorn refinement; explains why a feature head was added on top of the DUSt3R pointmap head.
+- **C3**: added a 6-category failure-modes paragraph at the head of §10 (before the consolidated conclusion paragraph): 弱纹理/纯色区域 / 镜面与玻璃 / 快速运动与严重遮挡 / 长基线大视差 / 长序列尺度漂移 / 域外场景。 Each category one sentence; provides concrete cautions before the abstract "tension" framing.
+- **C4**: added `fig:timeline` (TikZ) after `fig:lineage` in §2. Horizontal axis 2023–2026 × 5 tracks (基础 / 多视角 / 动态 / 长序列 / 测试时与输出). Nodes cover all 32 models cited in the paper, each in its publication year. §2 sentence updated: "图 \ref{fig:lineage} 给出本文采用的综述性谱系，图 \ref{fig:timeline} 进一步给出其时间分布。" `\resizebox{\textwidth}{!}{...}` keeps the figure inside the text width; track y-spacing tightened to `{0, -1.3, -2.6, -4.3, -6.0}` cm to limit page bloat.
+
+### Build outcome
+
+- Pipeline: `xelatex` → `bibtex build/main` → `xelatex` × 2 (4-step manual sequence).
+- Final `build/main.pdf`: 18 A4 pages, 2,847,531 bytes (≈ 2.85 MB).
+- LaTeX log:
+  - 0 LaTeX errors.
+  - 0 undefined references / undefined citations (CroCo entry resolved after the bibtex pass).
+  - 0 Overfull hbox.
+  - 0 Underfull hbox.
+  - 0 LaTeX warnings matched by final log scan.
+  - MiKTeX "unsupported Windows" environment warning persists as before; not a manuscript issue.
+- Forbidden internal-term scan on `main.tex`: 0 hits for `KYKT`, `Dream`, `Dream3R`, `agent`, `skill`, `workflow`, `本地项目`. Old workflow-style phrasing scan: 0 hits for `工程成熟度`, `接口转向`, `代码/权重许可`, `prompt tuning`, `证据组织本身`, `应用质量另行验证`.
+- `pdfinfo` confirms PDF metadata (Title / Subject / Keywords) is intact.
+- Page count: 18 pages, +1 over the prior 16/17-page versions. The added page comes from §10 failure-modes paragraph, §3 MASt3R mechanism paragraph, and `fig:timeline` figure; the new content is plan-internal additions, not redundancy, so 18 pages is accepted.
+
+### Deliverable
+
+- `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf` (2,847,531 bytes) is the new recommended deliverable. Prior 2026-05-13 versions are preserved alongside.

@@ -10,12 +10,12 @@ It is updated after every substantive editing pass. For fine-grained history see
 ## 当前稿件状态
 
 - 框架：LaTeX（`ctexart`，`xelatex` 编译，`natbib`/`unsrtnat`）。已彻底放弃 Typst 路线，`main.typ` 仅作为历史快照保留，不再维护。
-- 主稿：`main.tex`，最后更新 2026-05-13（含论文 Fig.1 嵌入、证据核对、叙述结构/图文关系优化、图注压缩、语言自然化与终稿再精炼轮次）。
-- PDF：`build/main.pdf`，16 页，可正常打开。
+- 主稿：`main.tex`，最后更新 2026-05-14（在 2026-05-13 终稿再精炼基础上做了一次 wind-down 后质量优化：删 `fig:application` 与三处定义重述、统一表头为"适用条件与局限"、补 CroCo 与 MASt3R 机制段、加 §10 failure modes 段与 `fig:timeline`）。
+- PDF：`build/main.pdf`，18 页，可正常打开。
 - 阶段终稿输出：`deliverables/3r_survey_stage_final_2026-05-13.pdf`，17 页 A4，已按最终编译结果复制。
 - 阶段终稿优化版：`deliverables/3r_survey_stage_final_2026-05-13_polished.pdf`，17 页 A4，已写入 PDF 元数据，LaTeX 日志清至 0 warnings / 0 underfull / 0 overfull。
 - 图注与语言优化版：`deliverables/3r_survey_stage_final_2026-05-13_caption_polished.pdf`，16 页 A4，图注更短，正文去掉了偏过程汇报的“边界/不是/不把”式表述。
-- 当前推荐交付版：`deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`，16 页 A4，摘要、图注来源、表格列名、第 9 节复现模板和结论均已再精炼。
+- 当前推荐交付版：`deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`，18 页 A4，2026-05-14 wind-down 后质量优化轮次产出（在 2026-05-13 refined 版基础上做了 17 项 A/B/C 改动）。
 - 章节结构（共 10 节）：
   1. 引言
   2. 从传统几何流程到点图表示
@@ -27,9 +27,9 @@ It is updated after every substantive editing pass. For fine-grained history see
   8. 从几何预测到可查看输出
   9. 应用证据、复现与失败样本记录
   10. 开放问题与结论
-- 表格：5 张（`tab:foundation`, `tab:dynamic`, `tab:memory`, `tab:testtime`, `tab:application`），均使用 booktabs。
-- 图：6 张 figure 环境。其中 4 张 TikZ（`fig:lineage`、`fig:paradigm`、`fig:memory`、`fig:application`），2 张论文原图复合图（`fig:paper-core` 含 DUSt3R/VGGT Fig.1，`fig:paper-dynamic-stream` 含 MonST3R/CUT3R Fig.1）。论文图均在 caption 中以 `\citet{...}` 归属。
-- 参考文献：43 条，全部在正文中至少被引用一次，已移除 `\nocite{*}`。
+- 表格：5 张（`tab:foundation`, `tab:dynamic`, `tab:memory`, `tab:testtime`, `tab:application`），均使用 booktabs，最后一列统一为"适用条件与局限"。
+- 图：6 张 figure 环境。其中 4 张 TikZ（`fig:lineage`、`fig:paradigm`、`fig:memory`、`fig:timeline`），2 张论文原图复合图（`fig:paper-core` 含 DUSt3R/VGGT Fig.1，`fig:paper-dynamic-stream` 含 MonST3R/CUT3R Fig.1）。论文图均在 caption 中以 `\citet{...}` 归属。原 `fig:application` 在 2026-05-14 质量优化轮次中删除（与 `tab:application` 信息重叠）。
+- 参考文献：44 条，全部在正文中至少被引用一次，已移除 `\nocite{*}`；2026-05-14 加入 CroCo 后从 43 → 44。
 - `figures/` 中四篇论文 Fig.1 裁切缓存（DUSt3R / VGGT / MonST3R / CUT3R）已嵌入 `main.tex`。嵌入 gate 根据用户 2026-05-13 的复用许可确认解除；详见“论文 Fig.1 嵌入与证据核对轮次”小节。
 
 ## 本轮已完成修改（2026-05-13）
@@ -163,7 +163,7 @@ It is updated after every substantive editing pass. For fine-grained history see
 
 1. **重新编译**：`xelatex` → `bibtex build/main` → `xelatex` → `xelatex`，确认 0 errors / 0 undefined refs/cites / 0 Overfull / 0 Underfull / 0 warnings。
 2. **禁用词扫描**（`Grep` `main.tex`）：`KYKT`、`Dream`、`Dream3R`、`agent`、`skill`、`workflow`、`本地项目` 不应出现。
-3. **页数与文件大小**：`build/main.pdf` 应为 16 A4 页，约 2.8 MB；与 `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` 对齐。
+3. **页数与文件大小**：`build/main.pdf` 当前为 18 A4 页，约 2.85 MB；与 `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf` 对齐。
 4. **图引用检查**：6 张 figure（4 张 TikZ + 2 张论文 Fig.1 复合）的 caption 均保留来源 `\citet{...}`。
 5. **PDF metadata**：`pdfinfo` 应显示 Title / Subject / Keywords。
 6. **论文截图许可证**：当前嵌入的 DUSt3R / VGGT / MonST3R / CUT3R 已确认复用许可。若新增任何论文截图，须逐篇重新确认。
@@ -221,6 +221,18 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 - `papers/`、`build/`、`guidance_skills/` 仍按 `.gitignore` 排除；不要无意中把生成 PDF 或第三方 PDF 提交进版本控制。
 - 原 Typst 稿（`main.typ`、`review-template.typ`、`bib.yaml` 等）保留为历史快照，不再维护；如未来仍需 Typst 版本，应在 handoff 中重新声明。
 
+## 质量优化轮次（2026-05-14 wind-down 后）
+
+用户在 wind-down 后追加要求做一轮批判性质量复审。我识别了三档问题，按 Tier A 全部 + Tier B 高杠杆部分执行（计划文件 `C:\Users\27252\.claude\plans\greedy-petting-lemur.md`，17 项归 A/B/C 三组）；Tier C（评测/数据集章节、critical evaluation、narrative restructuring）按 wind-down 节奏跳过。
+
+- **A 组（去重 5 项）**：删 `fig:application`（与 `tab:application` 重叠）；删 §1 末段四类材料重述与 §2 末段"图像材料三层使用"段（与摘要 / §1 / §9 重复）；剥离 `tab:foundation` / `tab:dynamic` / §6 末段三处"应用质量另行复验"变体（§9 保留唯一权威说明）；§10 两段合并为一段，把核心判断与失败/许可证注脚收束在一起。
+- **B 组（语言精修与表头统一 8 项）**：摘要"三类依据 / 工程成熟度"改为"四类依据 / 实现状态"；§3 删生造词"接口转向"改为"几何中间层"；表格里删法律语言"代码/权重许可需按版本区分"；§7 与 `tab:testtime` 中的 "prompt tuning" 改为"一致性优化"（避免与 prompt learning 混淆）；§9 开头由列表式定义改写为一段散文；5 张表最后一列统一为**"适用条件与局限"**，正文从告诫语气改为机制语气。
+- **C 组（内容补充 4 项）**：补 CroCo 引用（`@misc{croco}` + §3 一句话），bib 43 → 44；§3 加一段 MASt3R 机制说明（dense local feature head + descriptor 对比损失 + 互最近邻 + Sinkhorn）；§10 首段加 6 类典型失败 modes（弱纹理 / 镜面玻璃 / 快速运动 / 长基线 / 尺度漂移 / 域外场景）；§2 `fig:lineage` 之后新增 `fig:timeline`（TikZ，2023–2026 横轴 × 5 track，覆盖所有引用模型）。
+
+**编译结果**：18 页 A4，2.85 MB；0 errors / 0 undefined / 0 Overfull / 0 Underfull / 0 warnings；禁用词与旧式工作流措辞扫描均 0 命中。
+
+**新交付**：`deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`（2,847,531 bytes）。supersedes 2026-05-13 refined 版。页数从 16 → 18 的增量来自新增 §3 MASt3R 段、§10 failure modes 段与 `fig:timeline`；非冗余增长，按 wind-down 节奏接受。
+
 ## 最后更新时间
 
-2026-05-14（项目按 route C arXiv-only 收口；README 重写、GENERATION_PROMPT 缩为历史指针、Typst legacy 标记 deprecation、发布前检查清单写入本文件；推荐交付版仍为 `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`，未重新编译）。
+2026-05-14（wind-down 后再做一轮质量优化：删 `fig:application` 与 3 处定义重述、统一 5 张表最后一列为"适用条件与局限"、补 CroCo + MASt3R 机制段、加 §10 failure modes 段与 `fig:timeline`；bib 43 → 44；PDF 16 → 18 页；新推荐交付版 `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`）。

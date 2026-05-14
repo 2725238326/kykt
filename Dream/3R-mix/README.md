@@ -4,9 +4,9 @@ LaTeX 中文综述：近期 3R / feed-forward 3D reconstruction 模型的表示�
 
 ## 当前交付
 
-- 推荐版本：`deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`（16 A4 页，43 条参考文献，6 张图，5 张表）。
+- 推荐版本：`deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`（18 A4 页，44 条参考文献，6 张图，5 张表；2026-05-14 wind-down 后质量优化轮次产出）。
 - 主稿：`main.tex`（`ctexart` + `xelatex` + `unsrtnat`）。
-- 参考文献：`references.bib`（43 条，全部在正文显式引用）。
+- 参考文献：`references.bib`（44 条，全部在正文显式引用）。
 
 ## 编译
 
