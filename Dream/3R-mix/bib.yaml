@@ -1,3 +1,7 @@
+# DEPRECATED — Typst-era bibliography snapshot, no longer maintained.
+# Current canonical bibliography is `references.bib` (BibTeX, used by main.tex).
+# See README.md and NEW_CHAT_HANDOFF.md.
+
 dust3r:
     type: Article
     title: "DUSt3R: Geometric 3D Vision Made Easy"

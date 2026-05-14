@@ -291,3 +291,20 @@ Read each cropped PNG one at a time (the previous attempt at multi-image Read hi
   - Old phrasing scan on `main.tex` returned no matches for `证据边界`, `应用边界`, `不是`, `而非`, `不把`, `不写`, `接口烟测`, `质量已验证`, `流程可运行`, `使用口径`, `使用提示`, or `潜在失败点`.
 - Rendered pages 1, 5, 8, and 10 for visual QA; abstract, paper composite figures, and application/long-sequence pages remained readable.
 - Wrote current recommended deliverable to `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` (2,838,654 bytes).
+
+## 2026-05-14 — Project closeout to arXiv-only route
+
+- **Files edited/output**: `README.md` (rewritten), `GENERATION_PROMPT.md` (shrunk to historical pointer), `main.typ` (DEPRECATED header), `bib.yaml` (DEPRECATED header), `NEW_CHAT_HANDOFF.md` (added 项目收口 section + release checklist + 未完成任务 closeout note + 最后更新时间), `notes/work_log.md` (this entry).
+- User confirmed wind-down route: arXiv-only, no venue submission (route C). Phase 1 hygiene items also requested in same turn.
+- README.md rewritten as canonical entry: declares LaTeX-only canonical pipeline, current deliverable PDF, 4-step xelatex/bibtex compile, `.gitignore` policy, paper Fig.1 license note (DUSt3R / VGGT / MonST3R / CUT3R), Typst legacy snapshot status.
+- GENERATION_PROMPT.md shrunk to a short historical-note paragraph pointing to NEW_CHAT_HANDOFF.md and README.md.
+- Top-level Typst legacy files (`main.typ`, `bib.yaml`) received DEPRECATED comment headers; `review-template.typ` left intact as it is template machinery subordinate to `main.typ`.
+- `.gitignore` reverified: `/papers/`, `/build/`, `/guidance_skills/` — all three exclusions in place.
+- `references.bib` quick dedup pass: 43 unique bib keys confirmed (foundation 7 + long-seq 7 + 2026 preprints 6 + dynamic 5 + test-time 3 + gaussian-splatting outputs 3 + base 3DGS/4DGS 3 + backbone/depth 4 + tracking 3 + metric depth 2 = 43).
+- NEW_CHAT_HANDOFF.md additions:
+  - New 项目收口 / Release Closeout section dated 2026-05-14.
+  - New 发布前检查清单 (release checklist) — recompile / forbidden-term grep / page-count + file-size / figure citation / PDF metadata / paper-image license.
+  - Note above 未完成任务 indicating all 3 items are post-closeout optional under route C.
+  - Updated 最后更新时间 to 2026-05-14.
+- No LaTeX recompile or PDF change this pass. Current deliverable `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` remains canonical.
+- Forbidden internal-term scan not re-run because `main.tex` was not edited; last clean scan stands.

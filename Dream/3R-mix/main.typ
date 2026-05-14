@@ -1,3 +1,7 @@
+// DEPRECATED — Typst-era historical snapshot, no longer maintained.
+// Current canonical manuscript is `main.tex` (LaTeX, ctexart + xelatex + unsrtnat).
+// See README.md and NEW_CHAT_HANDOFF.md.
+
 #import "review-template.typ": *
 
 #show: review.with(

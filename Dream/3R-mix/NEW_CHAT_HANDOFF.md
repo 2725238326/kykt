@@ -147,6 +147,27 @@ It is updated after every substantive editing pass. For fine-grained history see
 - 最终日志扫描：0 LaTeX errors，0 undefined refs/cites，0 Overfull，0 Underfull，0 matched LaTeX warnings。内部语境词和旧式汇报词扫描均无命中。
 - 视觉抽查 pages 1、5、8、10：摘要、两组论文图和应用段落排版正常。
 
+## 项目收口 / Release Closeout（2026-05-14）
+
+用户确认综述以 arXiv-only 自存档为终点，不再投递期刊或会议（route C）。本轮按"尽快收口"原则做卫生项与历史标记：
+
+- **README.md** 重写为 LaTeX-only 入口，明确当前交付、编译命令、目录约定与 Typst 时代历史快照说明。
+- **GENERATION_PROMPT.md** 缩为一句话历史指针，原 Typst-era 生成提示词不再作为活动指引。
+- **顶层 Typst legacy**（`main.typ`、`bib.yaml`）添加 DEPRECATED 头注，`review-template.typ` 作为 `main.typ` 的从属模板未单独标注。
+- **`.gitignore`** 复核通过：`/papers/`、`/build/`、`/guidance_skills/` 三项排除条目齐全。
+- **`references.bib`** 复核：43 个唯一 bib key，无重复。
+
+### 发布前检查清单（Release checklist）
+
+任何打算公开（含 arXiv 上传）的版本，按下面流程过一遍：
+
+1. **重新编译**：`xelatex` → `bibtex build/main` → `xelatex` → `xelatex`，确认 0 errors / 0 undefined refs/cites / 0 Overfull / 0 Underfull / 0 warnings。
+2. **禁用词扫描**（`Grep` `main.tex`）：`KYKT`、`Dream`、`Dream3R`、`agent`、`skill`、`workflow`、`本地项目` 不应出现。
+3. **页数与文件大小**：`build/main.pdf` 应为 16 A4 页，约 2.8 MB；与 `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` 对齐。
+4. **图引用检查**：6 张 figure（4 张 TikZ + 2 张论文 Fig.1 复合）的 caption 均保留来源 `\citet{...}`。
+5. **PDF metadata**：`pdfinfo` 应显示 Title / Subject / Keywords。
+6. **论文截图许可证**：当前嵌入的 DUSt3R / VGGT / MonST3R / CUT3R 已确认复用许可。若新增任何论文截图，须逐篇重新确认。
+
 ## 关键决策
 
 - 继续使用 LaTeX，不回到 Typst。
@@ -187,6 +208,8 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 未完成任务（按优先级）
 
+> **注**：项目已按 route C（arXiv-only）收口于 2026-05-14。以下三项均为"如未来想再展开"的可选工作，不在当前推进清单中。
+
 1. **更深的 benchmark meta-analysis（可选）**：MV-DUSt3R+ / Fast3R / VGGT / TTT3R 已做来源级核对；若要写更强结论，需要逐表抽取数据集、视角数、分辨率、硬件、指标口径并做横向表。
 2. **2026 预印本软件许可细读**：LoGeR、Mem3R、OVGGT、RayMap3R、LongStream、FILT3R、PAS3R 已推进到项目/论文来源状态；若要复用代码、权重或截图，需要逐仓库读 LICENSE / checkpoint terms。
 3. **样式备份**：如计划改投，提前确认 `unsrtnat` 与 `ctex` 是否在目标期刊/会议模板兼容。
@@ -200,4 +223,4 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 最后更新时间
 
-2026-05-13（当前推荐交付版 `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` 已输出；已重新编译 LaTeX，日志清至 0 Underfull/Overfull/warnings）。
+2026-05-14（项目按 route C arXiv-only 收口；README 重写、GENERATION_PROMPT 缩为历史指针、Typst legacy 标记 deprecation、发布前检查清单写入本文件；推荐交付版仍为 `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`，未重新编译）。

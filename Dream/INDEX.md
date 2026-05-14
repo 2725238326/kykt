@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-08 (cycle 031 DONE: Memory v0.3 local P0 scaffold NEW; ABL-memory-0 passed as fixture/logging validity gate; next recommended = ABL-memory-1 local vector baseline)
+Last updated: 2026-05-13 (cycles 033 + 034 retroactively logged today; Track A Dream3R v0.3 server-verified with first KITTI real-data smoke; Track B 3R-mix Chinese survey polished to refined deliverable; current recommended Track B output `3R-mix/deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -101,6 +101,33 @@ Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is
 ### `cycles/` - Per-Cycle Research Logs
 
 Format: `CYCLE-YYYYMMDD-NNN.md`. Newest is the active cycle.
+
+Recent (most relevant for resume):
+
+| File | Cycle | Role |
+|---|---|---|
+| `CYCLE-20260511-001.md` | 034 | Stabilization + Mamba/GaussianHead + KITTI real-data smoke + Track B 3R-mix survey kickoff (retroactively logged 2026-05-13) |
+| `CYCLE-20260510-001.md` | 033 | Dream3R v0.3 architecture advancement W1-W16 on server (DINOv2 backbone, 3D-aware retrieval, active/stable state, Grassmannian regularizer, geometric Critic, ISA slots, real MASt3R + Spann3R adapters) (retroactively logged 2026-05-13) |
+| `CYCLE-20260508-008.md` | 031 | Local Memory v0.3 P0 scaffold + ABL-memory-0 validity gate |
+
+Cycle 032 (v0.3 codebase implementation, optimization, server verification; 2026-05-09) was closed via `TASK_SNAPSHOT.md` update without a dedicated cycle log; its onboarding successor is `code/dream3r/REVIEW_PROMPT.md`.
+
+### `3R-mix/` - Chinese 3R / feed-forward 3D reconstruction survey (Track B, parallel workspace)
+
+Separate LaTeX workspace deliberately decoupled from Dream / KYKT internal vocabulary. Manuscript surface contains no `KYKT` / `Dream` / `Dream3R` / `agent` / `skill` / `workflow` / `本地项目` strings (`Grep`-verified). Track A architecture-first mainline remains primary per DEC-20260506-001; Track B is a separate survey product, not a Dream3R paper.
+
+| File | Role |
+|---|---|
+| `NEW_CHAT_HANDOFF.md` | Canonical top-level handoff for the survey workspace |
+| `main.tex` | 16-page LaTeX (`ctexart` + `xelatex` + `unsrtnat`); 10 sections; 6 figures (4 TikZ/composite + 2 paper Fig.1 composites); 5 booktabs tables |
+| `references.bib` | 43 BibTeX entries, all cited (no `\nocite{*}`) |
+| `notes/work_log.md` | Append-only fine-grained editing log |
+| `notes/{paper_inventory,model_inventory,chapter_structure,fact_cards,figure_prompts,figure_selection,review_quality_audit}.md` | Per-axis working notes |
+| `figures/{dust3r,vggt,monst3r,cut3r}_fig1.png` | Paper Fig.1 crops embedded after user-confirmed reuse license |
+| `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` | Current recommended deliverable (16 A4 pages, 0 LaTeX errors / 0 warnings) |
+| `deliverables/3r_survey_stage_final_2026-05-13{,_polished,_caption_polished}.pdf` | Earlier polish-pass snapshots |
+| `COMPREHENSIVE_OPTIMIZATION_PROMPT.md` | Driving prompt for the 2026-05-13 comprehensive optimization pass |
+| `GENERATION_PROMPT.md` | Original generation prompt |
 
 ### `decisions/` - Decision Memos
 
@@ -232,7 +259,7 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | Question | Where to look |
 |---|---|
 | What phase are we in? | `WORKFLOW_STATUS.md` |
-| What is the next user decision? | `WORKFLOW_STATUS.md` -> Recommended Next User Decision; current default is cycle 032 local `ABL-memory-1` or review of `experiments/prototypes/memory_v03_p0/outputs/` |
+| What is the next user decision? | `WORKFLOW_STATUS.md` -> Recommended Next User Decision; current default is cycle 035 launch on one of: KITTI real-data ablation table, Critic real-geometry calibration, Track B per-paper benchmark meta-analysis or 2026-preprint LICENSE confirmation, Fast3R `omegaconf` install DEC, or pause-and-redesign |
 | What sources do we know about? | `sources/FRONTIER_SOURCE_MAP.md` and `registry/source_registry.md` |
 | What ideas are on the table? | `units/RESEARCH_UNIT_BANK.md`, `units/IDEA_SCOREBOARD.md` |
 | Why this branch and not that one? | `planning/BRANCH_COMPARISON_MATRIX.md`, `planning/BRANCH_SHORTLIST_DECISION_SURFACE.md` |
@@ -240,7 +267,7 @@ Format: `STORY-YYYYMMDD-NNN-<slug>.md`. One file per finalist teacher demo. Crea
 | What can Dream do without asking the user? | `AGENT_MASTER_PROMPT.md` section 6 |
 | What requires user approval? | `AGENT_MASTER_PROMPT.md` section 6 + `WORKFLOW_STATUS.md` Blocked Until User Decision |
 | How should I behave when synthesizing or editing files? | `paradigm/RESEARCH_CODE_DISCIPLINE.md` |
-| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260508-008.md` (cycle 031 local P0 scaffold + ABL-memory-0 pass) |
+| What is the latest research result? | newest file under `cycles/`; current latest is `cycles/CYCLE-20260511-001.md` (cycle 034 done; KITTI real-data smoke + Mamba/Gaussian + Track B 3R-mix kickoff; full Track B finalization to refined deliverable on 2026-05-13) |
 | What did we decide? | `registry/decision_registry.md` and files under `decisions/` |
 | What experiments are planned or locally scaffolded? | files under `experiments/` plus C2 v0.3 prototype sequence in `specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md`, P0 plan in `planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md`, reviewed ablation map in `specs/SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md`, review in `planning/MEMORY_V03_ABLATION_REVIEW.md`, execution template in `planning/MEMORY_V03_P0_EXECUTION_DEC_TEMPLATE.md`, and local `ABL-memory-0` scaffold under `experiments/prototypes/memory_v03_p0/`; later ablations still require separate DEC + per-step gate |
 | How should the frontend agent work? | `handoff/FRONTEND_DESIGN_HANDOFF_PROMPT.md` |

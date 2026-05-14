@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-08 (cycle 031 DONE: local Memory v0.3 P0 scaffold created; ABL-memory-0 passed as fixture/logging validity gate; next recommended = ABL-memory-1 local vector baseline under a new DEC)
+Last updated: 2026-05-14 (Track B 3R-mix wound down to arXiv-only route on 2026-05-14; README rewritten as canonical entry, Typst legacy files marked deprecated, release checklist appended to NEW_CHAT_HANDOFF.md; Track A Dream3R v0.3 server-verified through cycle 034 unchanged)
 
 ## Current Phase
 
@@ -11,13 +11,28 @@ Phase 1.5: Research Workflow Deployment
 ## Current Mode
 
 ```text
-No new reproduction or heavy install is currently authorized.
-Cycle 024 server scaffold is a historical engineering baseline, not the current research direction.
-No KYKT app redesign.
-Architecture-first design is the mainline (per DEC-20260506-001).
-Paper writing is support, not primary output.
-Backend/research pipeline work is support infrastructure.
-Frontend implementation is delegated to Gemini CLI / designated frontend agent.
+Two parallel tracks at a checkpoint:
+  Track A (Dream3R v0.3 code, architecture-first mainline per DEC-20260506-001):
+    server-verified on synthetic + first KITTI real-data smoke; W1-W18
+    implementation present (W17-W18 tensor-contract level only); MASt3R +
+    Spann3R real adapters loaded; Fast3R real path blocked on `omegaconf`
+    in dream3r conda env; CUT3R / MoGe-2 / DepthAnything / Test3R remain
+    deterministic fallback.
+  Track B (3R-mix Chinese survey, separate workspace Dream/3R-mix/):
+    16-page LaTeX manuscript; recommended deliverable
+    `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`.
+    **Wound down 2026-05-14 to arXiv-only route (route C, no venue
+    submission)**; README rewritten as canonical entry, Typst legacy
+    files marked deprecated, release checklist appended to
+    NEW_CHAT_HANDOFF.md. Internal terms deliberately absent from
+    manuscript surface.
+
+No new reproduction or heavy install authorized.
+No real-data training authorized.
+No 3DGS renderer install authorized.
+Paper writing is now a separate workstream (Track B) but still support, not
+primary; Track A architecture-first mainline holds.
+Frontend implementation remains delegated to Gemini CLI / designated frontend agent.
 ```
 
 ## Active Thesis Candidate
@@ -66,7 +81,9 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Source registry | active; cycle 013 mining pass added SRC-2026-009..015 (7 new rows: MapAnything / Julian Ost AAAI-2026 driving permanence / tttLRM / awesome-dust3r curated index / DUSt3R-MASt3R-VGGT MVS evaluation / NTIRE 2026 / VGGT) | `registry/source_registry.md` |
 | Research unit registry | seeded | `registry/research_unit_registry.md` |
 | Decision registry | seeded | `registry/decision_registry.md` |
-| Cycle logs | active | `cycles/CYCLE-20260508-008.md` (cycle 031 done; local P0 scaffold + ABL-memory-0 validity gate) |
+| Cycle logs | active | `cycles/CYCLE-20260511-001.md` (cycle 034 done; KITTI real-data smoke + Mamba/Gaussian + Track B 3R-mix kickoff); `cycles/CYCLE-20260510-001.md` (cycle 033 done; W1-W16 v0.3 architecture advancement); `cycles/CYCLE-20260508-008.md` (cycle 031 local Memory v0.3 P0 scaffold) |
+| Dream3R v0.3 code (Track A) | active; server-verified at `/hdd3/kykt26/code/dream3r/`; first KITTI real-data smoke on `2011_09_26_drive_0001_sync_02` window pair (pointmap L2 20.47 = integration evidence, not trained quality) | `code/dream3r/REVIEW_PROMPT.md`, `code/dream3r/RECENT_PROGRESS.md`, `code/dream3r/NEXT_PHASE_ROADMAP.md` |
+| 3R-mix Chinese survey (Track B) | **wound down 2026-05-14 (route C: arXiv-only, no venue submission)**; 16 A4 pages, 43 references, 6 figures (4 TikZ/composite + 2 paper-Fig.1 composites), 5 booktabs tables, 0 LaTeX errors / 0 warnings; release checklist + Typst legacy deprecation markers added; deliberately decoupled from Dream/KYKT internal vocabulary | `Dream/3R-mix/README.md`, `Dream/3R-mix/NEW_CHAT_HANDOFF.md`, `Dream/3R-mix/main.tex`, `Dream/3R-mix/deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` |
 | Experiment planning | active; local v0.3 P0 scaffold now exists and ABL-memory-0 passed, but later ablations still require separate DEC + gate | `experiments/prototypes/memory_v03_p0/outputs/summary_go_no_go.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | C2 Memory v0.3 | active architecture addendum + P0 plan + reviewed ablation addendum + local P0 scaffold. ABL-memory-0 passed as a fixture/logging gate only; C2 memory quality remains unvalidated | `specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md` + `planning/MEMORY_V03_DESIGN_STUDY.md` + `planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md` + `specs/SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md` + `planning/MEMORY_V03_ABLATION_REVIEW.md` + `experiments/prototypes/memory_v03_p0/README.md` |
@@ -112,24 +129,32 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 031 closeout recommendation:
+Cycle 034 closeout recommendation (no active cycle; cycles 033 + 034 retroactively logged 2026-05-13; Track B 3R-mix wound down 2026-05-14 to arXiv-only route):
 
 ```text
-Choose one next step:
-  A. Start cycle 032 for local ABL-memory-1:
-     vector AnchorBank baseline + retrieval metrics on the existing P0 fixtures.
+Track B 3R-mix Chinese survey wound down on 2026-05-14 (route C:
+arXiv-only, no venue submission). Options below are now narrowed to
+Track A and meta-decisions; pick at most one to launch next.
 
-  B. Review the ABL-memory-0 output artifacts before implementing
-     later ablations.
+  A. Real-data ablation table on KITTI using the 4 existing synthetic
+     ablation variants (baseline_cross_attention / mamba_hybrid /
+     no_nsa / no_stable_memory) to produce paired pointmap-L2 /
+     depth-RMSE numbers.
 
-  C. Pause local execution and return to research design.
+  B. Critic threshold calibration on real KITTI geometry distributions
+     (Sampson / covisibility / depth-inconsistency histograms; pick
+     thresholds; no training, just statistics).
+
+  C. (removed — Track B survey wound down on 2026-05-14)
+
+  D. Resolve Fast3R `omegaconf` dependency in dream3r conda env
+     (requires a separate install-authorizing DEC).
+
+  E. Pause and return to research design / paper writing direction
+     choice.
 ```
 
-The local P0 scaffold and ABL-memory-0 validity gate are complete. This
-does not validate memory quality, reconstruction quality, recurrence, or
-paper claims. Any ABL-memory-1..8 execution, server-side prototype, model
-run, checkpoint use, training, or `Dream/code/` edit needs a separate DEC
-and per-step gate.
+Track A architecture-first remains the mainline per DEC-20260506-001. Track B paper writing remains support; it is not the project's primary output.
 
 Still blocked on user approval:
 

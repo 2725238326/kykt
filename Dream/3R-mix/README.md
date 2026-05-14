@@ -1,43 +1,31 @@
-# 3R-mix review workspace
+# 3R-mix survey
 
-Status: initialized 2026-05-11.
+LaTeX 中文综述：近期 3R / feed-forward 3D reconstruction 模型的表示、序列机制与应用证据。
 
-This directory is for a Typst-based survey on recent 3R / feed-forward 3D
-reconstruction models and their surrounding lines: pointmap-based
-reconstruction, dense matching, streaming memory, dynamic reconstruction,
-test-time verification, pose-free Gaussian outputs, and application-facing
-result delivery.
+## 当前交付
 
-## Directory layout
+- 推荐版本：`deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`（16 A4 页，43 条参考文献，6 张图，5 张表）。
+- 主稿：`main.tex`（`ctexart` + `xelatex` + `unsrtnat`）。
+- 参考文献：`references.bib`（43 条，全部在正文显式引用）。
 
-- `main.typ`: current Typst survey scaffold.
-- `bib.yaml`: starter bibliography in Typst YAML format.
-- `src/`: future chapter files if the survey is split out of `main.typ`.
-- `papers/`: local PDFs to be downloaded or copied from existing assets.
-- `figures/`: generated or extracted figures.
-- `notes/`: reading notes, paper cards, and model comparison tables.
-- `simple-typst-thesis/`: upstream template clone from `zagoli/simple-typst-thesis`.
-- `GENERATION_PROMPT.md`: prompt for the agent that will generate the survey.
-- `NEW_CHAT_HANDOFF.md`: short handoff text for a fresh conversation.
+## 编译
 
-## Current writing standard
+```bash
+xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
+bibtex  build/main
+xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
+xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
+```
 
-Use normal academic Chinese. Avoid marketing phrases, slogans, and obvious AI
-prose. Do not claim performance or novelty beyond the evidence. The survey can
-state that Dream accumulated a comparative perspective through implementation
-and planning work, but Dream3R itself should be used as experience/context, not
-as the centerpiece of the 3R literature survey.
+输出位置：`build/main.pdf`。MiKTeX 在 Windows 11 Home China 上会打印 "running on an unsupported version of Windows" 警告，PDF 正常生成；如换为 TeXLive 可消除该警告。
 
-## Immediate next tasks
+## 目录约定
 
-1. Build a complete model inventory from Dream documents and the prior
-   `ppt/3r_models_survey/research_notes.md` notes.
-2. Download missing papers into `papers/`, prioritizing official arXiv or
-   conference PDFs.
-3. Convert the starter outline in `main.typ` into a full review.
-4. Generate at least three figures:
-   - lineage map from DUSt3R to related models,
-   - capability taxonomy by reconstruction regime,
-   - application pipeline from inputs to deployable 3D results.
-5. Compile with Typst and check that bibliography, figures, and cross-references
-   render correctly.
+- `papers/`、`build/`、`guidance_skills/` 已在 `.gitignore` 中排除；不要把生成 PDF 或第三方论文 PDF 提交进版本控制。
+- 任何新增论文截图都需要逐篇确认复用许可证。当前已确认：DUSt3R / VGGT / MonST3R / CUT3R。
+
+## 历史与开发说明
+
+- 阶段终稿已收口；当前规划为 arXiv-only 自存档，不投递期刊或会议。
+- 早期 Typst 路线（`main.typ`、`review-template.typ`、`bib.yaml`、`GENERATION_PROMPT.md`）保留为历史快照，不再维护。
+- 完整状态、细粒度修改记录与发布前检查清单：`NEW_CHAT_HANDOFF.md`、`notes/work_log.md`。

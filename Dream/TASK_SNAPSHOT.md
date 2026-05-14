@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-09 (cycle 032 DONE: full v0.3 code architecture implemented, optimized, and server-verified; 29 Python files; smoke test 9/9, unit tests 4/4, 8.4ms/frame, 10-epoch training converged; CR-3 + gradient checkpointing + freeze schedule wired; REVIEW_PROMPT.md written for agent collaboration)
+Last updated: 2026-05-13 (cycles 033 + 034 retroactively logged today; Dream3R v0.3 server-verified with first KITTI real-data smoke; 3R-mix Chinese survey track in deliverable polish; current recommended deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-13_refined.pdf`)
 
-Status: **idle** (cycle 032 closed; ready for ablation experiments or expert adapter integration)
+Status: **idle** (cycles 033 + 034 closed; 3R-mix Track B polished to refined deliverable on 2026-05-13; awaiting user direction on next workstream)
 
 ## Why this file exists
 
@@ -21,39 +21,46 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ## Current task
 
 ```text
-task_id:    cycle-032
-phase:      Full v0.3 code architecture implementation + server verification
-cycle:      032
-status:     done
+task_id:    none-active
+phase:      idle between cycles
+cycles:     032 + 033 + 034 closed; Track B 3R-mix survey polished
+status:     idle
 ```
 
 One-line description:
 
 ```text
-Cycle 032 implemented the complete Dream3R v0.3 codebase: NSA 3-branch
-attention, AnchorBank spatial memory, 7 expert adapters, SpatialMemory,
-ComposerRouter, training pipeline, evaluation, profiler, and tests.
-Code was optimized (Memory 117ms->4ms), server-verified (smoke 9/9,
-unit 4/4, training converged), and CR-3/gradient-checkpointing/freeze
-wired. REVIEW_PROMPT.md written for multi-agent collaboration.
+No active cycle. Two parallel tracks are at a checkpoint:
+  - Track A (Dream3R v0.3 code): server-verified; first KITTI real-data
+    smoke run; canonical onboarding doc REVIEW_PROMPT.md; RECENT_PROGRESS.md
+    is the canonical W19-W22 ledger; NEXT_PHASE_ROADMAP.md lists post-demo
+    candidates (real-data ablation table / Critic calibration / DTU loader
+    / 3DGS renderer / TTT).
+  - Track B (3R-mix Chinese survey, separate workspace at Dream/3R-mix/):
+    16-page LaTeX manuscript with 4 paper Fig.1 crops embedded, 6 TikZ/
+    composite figures, 5 booktabs tables, 43 references all cited; current
+    recommended deliverable `deliverables/3r_survey_stage_final_2026-05-13_
+    refined.pdf`; remaining work documented in
+    3R-mix/NEW_CHAT_HANDOFF.md "未完成任务".
 ```
 
-## Subtask board (cycle 032 v0.3 code architecture; 2026-05-09)
+## Subtask board (none active; last cycle 034 board preserved as the most recent reference)
 
 | ID | Subtask | Status | Canonical artifact |
 | --- | --- | --- | --- |
-| S1 | Create NSA attention + AnchorBank + expert adapters | done | `nsa_attention.py`, `anchor_bank.py`, `composer_experts/` |
-| S2 | Upgrade modules.py (SpatialMemory + ComposerRouter) | done | `modules.py` |
-| S3 | Upgrade model.py + bus.py + config.py + losses.py | done | `model.py`, `bus.py`, `config.py`, `losses.py` |
-| S4 | Create training infra (data/ + train.py + evaluate.py + bench) | done | `data/`, `train.py`, `evaluate.py`, `bench_frame_budget.py` |
-| S5 | Write smoke_test.py + unit tests | done | `smoke_test.py`, `tests/` |
-| S6 | Optimize Memory (117ms -> 4ms) | done | vectorized AnchorBank + efficient NSA gather |
-| S7 | Fix AMP overflow + dtype mismatch | done | `finfo(dtype).min` + `.float()` casts |
-| S8 | Server sync + smoke test + training verification | done | `/hdd3/kykt26/code/dream3r/` |
-| S9 | Fix A1-A3 (CR-3 + NSA retrieval bias wiring) | done | `bus.py:gate_cr3`, `nsa_attention.py`, `modules.py` |
-| S10 | Fix B1-B2 (gradient checkpointing + freeze schedule) | done | `model.py`, `train.py` |
-| S11 | Fix F1-F3 (interface cleanup + __init__.py) | done | `__init__.py` v0.3.0 |
-| S12 | Write REVIEW_PROMPT.md for agent collaboration | done | `REVIEW_PROMPT.md` |
+| C034-S1 | Sync discipline via `sync_verify_server.ps1` | done | `code/dream3r/scripts/sync_verify_server.ps1` |
+| C034-S2 | W15 calibration (config-threaded geometric thresholds) | done | `code/dream3r/modules.py`, `code/dream3r/config.py` |
+| C034-S3 | W16 ISA pose stress tests | done | `code/dream3r/tests/test_isa_slots.py` |
+| C034-S4 | W17 Mamba-Transformer hybrid recurrence | done | `code/dream3r/mamba_block.py` |
+| C034-S5 | W18 GaussianHead tensor contract (no renderer) | done | `code/dream3r/gaussian_head.py` |
+| C034-S6 | KITTI real-data loader + `evaluate_real_sequence` | done | `code/dream3r/data/kitti_real.py`, `evaluate_real_sequence.py` |
+| C034-S7 | Synthetic ablation runner + demo export pack | done | `ablate_recurrence.py`, `export_demo_artifacts.py` |
+| C034-S8 | 3R-mix Track B kickoff (LaTeX skeleton + bib + notes) | done | `Dream/3R-mix/main.tex`, `references.bib`, `notes/` |
+| 0513-S1 | 3R-mix structural overhaul (10-section plan + new §9 + new `tab:testtime`) | done | `Dream/3R-mix/main.tex` |
+| 0513-S2 | 3R-mix `fig:paradigm` TikZ + lineage label refresh | done | `Dream/3R-mix/main.tex` |
+| 0513-S3 | 3R-mix paper Fig.1 embedding (DUSt3R / VGGT / MonST3R / CUT3R) | done | `figures/`, `main.tex` |
+| 0513-S4 | 3R-mix source-checked rewrites (MV-DUSt3R+ / Fast3R / VGGT / TTT3R + 7 × 2026 preprints) | done | `Dream/3R-mix/main.tex`, `notes/paper_inventory.md` |
+| 0513-S5 | 3R-mix three refinement passes (caption shortening + language naturalization + final refine) | done | `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` (16 A4 pages, 0 errors / 0 warnings) |
 
 Cycle 031 active boundary:
 
