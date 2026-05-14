@@ -45,7 +45,7 @@
 \maketitle
 
 \begin{abstract}
-DUSt3R 及其后继工作推动了 3R（feed-forward 3D reconstruction）范式的发展，使三维重建从显式几何流水线转向点图、深度、相机、轨迹和置信度等几何中间量的前馈预测。本文按问题分支梳理这一谱系：从 DUSt3R、MASt3R 到 Fast3R 与 VGGT，讨论点图表示、匹配增强和多视角统一几何；从 MonST3R、CUT3R、Spann3R 到 Test3R 和 Splatt3R，讨论动态场景、长序列状态、测试时机制与 Gaussian 输出。综述同时区分论文机制、官方仓库与复现记录三类依据，用于说明性能结论、工程成熟度和应用可行性的来源。本文的核心判断是：近期 3R 的贡献既在于模型指标提升，也在于重新组织三维重建中的中间表示、时间状态、外部先验和可查看输出；走向实际系统时，质量评估、先验冲突、许可证和失败样本记录仍是必要环节。
+DUSt3R 及其后继工作推动了 3R（feed-forward 3D reconstruction）范式的发展，使三维重建从显式几何流水线转向点图、深度、相机、轨迹和置信度等几何中间量的前馈预测。本文按问题分支梳理这一谱系：从 DUSt3R、MASt3R 到 Fast3R 与 VGGT，讨论点图表示、匹配增强和多视角统一几何；从 MonST3R、CUT3R、Spann3R 到 Test3R 和 Splatt3R，讨论动态场景、长序列状态、测试时机制与 Gaussian 输出。综述同时区分论文机制、官方仓库、复现记录与应用验证四类依据，便于追溯性能结论、实现状态与失败样本的来源。本文的核心判断是：近期 3R 的贡献既在于模型指标提升，也在于重新组织三维重建中的中间表示、时间状态、外部先验和可查看输出；走向实际系统时，质量评估、先验冲突、许可证和失败样本记录仍是必要环节。
 \end{abstract}
 
 \noindent\textbf{关键词：} 3R；前馈式三维重建；DUSt3R；点图；视觉几何；动态场景；长序列重建；3D Gaussian Splatting
@@ -59,8 +59,6 @@ DUSt3R 将这一问题重新组织为稠密 pointmap 预测：给定图像输入
 本文所称 3R 主要指这一类以神经网络前馈预测几何中间量的重建方法，范围覆盖图像对、多视角集合、视频、动态场景、长序列以及可渲染输出。Depth Anything、DINOv2、CoTracker、SAM2 等模型在本文中作为支撑先验或辅助模块讨论\citep{depth_anything,depth_anything_v2,dinov2,cotracker,sam2}。3DGS 和 4DGS 则主要作为输出表示和可视化层来讨论\citep{gaussian_splatting_3d,gaussian_splatting_4d}。
 
 全文按“表示基础---输入扩展---时间机制---测试时校正---输出与证据”展开。第 2 节先建立传统几何与 3R 表示的关系，并给出后续分支的读图框架；第 3--4 节讨论 DUSt3R、MASt3R 以及多视角统一几何；第 5--6 节分别处理动态场景和长序列状态；第 7--8 节讨论测试时机制、外部先验和可渲染输出；第 9--10 节回到应用证据与开放问题。这样的安排把模型谱系和应用约束放在同一条叙述线上，便于比较不同分支的作用位置。
-
-本文按可核对来源组织判断。论文题目、摘要与方法图可支撑模型关注的问题和公开机制；官方仓库可支撑代码、权重与 demo 状态；跑通记录可说明依赖和默认输入是否成立；质量判断仍回到实验表、失败样本、许可证和应用条件。这种区分对近期 3R 文献尤其必要，因为相当一部分工作仍处于预印本、项目页或早期开源阶段，论文声称、官方代码状态和应用质量常常处在不同成熟度上。
 
 \section{从传统几何流程到点图表示}
 
@@ -98,7 +96,7 @@ DUSt3R 将这一问题重新组织为稠密 pointmap 预测：给定图像输入
 \label{fig:paradigm}
 \end{figure}
 
-因此，DUSt3R 之后的研究分化为若干互补方向：匹配增强、多视角规模化、统一视觉几何预测、动态场景、长序列记忆、测试时修正和可渲染输出。图 \ref{fig:lineage} 给出本文采用的综述性谱系。
+因此，DUSt3R 之后的研究分化为若干互补方向：匹配增强、多视角规模化、统一视觉几何预测、动态场景、长序列记忆、测试时修正和可渲染输出。图 \ref{fig:lineage} 给出本文采用的综述性谱系，图 \ref{fig:timeline} 进一步给出其时间分布。
 
 \begin{figure}[t]
 \centering
@@ -138,13 +136,70 @@ DUSt3R 将这一问题重新组织为稠密 pointmap 预测：给定图像输入
 \end{figure}
 \FloatBarrier
 
-本文的图像材料分三层使用：图\,\ref{fig:paradigm} 与图\,\ref{fig:lineage} 给出概念框架；图\,\ref{fig:paper-core} 与图\,\ref{fig:paper-dynamic-stream} 引入原论文方法图，帮助读者对照代表工作的输入和输出形态；图\,\ref{fig:memory} 与图\,\ref{fig:application} 则概括长序列状态机制和应用路径。性能和工程成熟度仍以实验表、仓库状态和复现实验为准。
+\begin{figure}[t]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+  yearlab/.style={font=\small\bfseries, anchor=south},
+  tracklab/.style={font=\small\bfseries, anchor=east, align=right},
+  cell/.style={draw, rounded corners=2pt, fill=blue!4, align=center, font=\footnotesize, minimum width=3.2cm, inner sep=3pt},
+  track/.style={draw=black!40, dashed, line width=0.4pt}
+]
+
+\def\xA{0}
+\def\xB{3.6}
+\def\xC{7.2}
+\def\xD{10.8}
+
+\def\yA{0}
+\def\yB{-1.3}
+\def\yC{-2.6}
+\def\yD{-4.3}
+\def\yE{-6.0}
+
+\node[yearlab] at (\xA, 0.85) {2023};
+\node[yearlab] at (\xB, 0.85) {2024};
+\node[yearlab] at (\xC, 0.85) {2025};
+\node[yearlab] at (\xD, 0.85) {2026};
+
+\node[tracklab] at (\xA-1.9, \yA) {基础与匹配};
+\node[tracklab] at (\xA-1.9, \yB) {多视角与\\统一几何};
+\node[tracklab] at (\xA-1.9, \yC) {动态与 4D};
+\node[tracklab] at (\xA-1.9, \yD) {长序列与记忆};
+\node[tracklab] at (\xA-1.9, \yE) {测试时与输出};
+
+\foreach \y in {0, -1.3, -2.6, -4.3, -6.0}
+  \draw[track] (\xA-1.5, \y) -- (\xD+1.7, \y);
+
+\node[cell] at (\xA, \yA) {DUSt3R};
+\node[cell] at (\xB, \yA) {MASt3R\\MASt3R-SfM};
+\node[cell] at (\xC, \yA) {MapAnything};
+
+\node[cell] at (\xB, \yB) {MV-DUSt3R+};
+\node[cell] at (\xC, \yB) {Fast3R\\VGGT\\Pow3R};
+
+\node[cell] at (\xB, \yC) {MonST3R\\Align3R};
+\node[cell] at (\xC, \yC) {POMATO\\D\textsuperscript{2}USt3R\\Easi3R};
+\node[cell] at (\xD, \yC) {RayMap3R};
+
+\node[cell] at (\xB, \yD) {Spann3R};
+\node[cell] at (\xC, \yD) {CUT3R, Point3R\\STream3R\\LONG3R};
+\node[cell] at (\xD, \yD) {LoGeR, Mem3R\\OVGGT, LongStream\\PAS3R, FILT3R};
+
+\node[cell] at (\xB, \yE) {Splatt3R\\InstantSplat\\NoPoSplat};
+\node[cell] at (\xC, \yE) {Test3R, TTT3R\\G-CUT3R};
+
+\end{tikzpicture}}
+\caption{3R 模型谱系的时间分布。横轴为年份（2023--2026），纵向按主分支组织。同一格内模型顺序无含义，仅列入正文引用的代表工作。}
+\label{fig:timeline}
+\end{figure}
+\FloatBarrier
 
 \section{基础谱系：DUSt3R、MASt3R 与 SfM 接口}
 
-DUSt3R 的意义在于提供了一种适合后续扩展的几何中间语言。它将图像对映射到稠密三维点图，并用置信度反映预测可靠性；多视角输入通过成对预测和全局对齐组织起来\citep{dust3r}。从综述角度看，DUSt3R 打开的是一种接口转向：它降低了相机先验门槛，同时也把长序列、动态物体、遮挡、尺度漂移以及大规模多图效率留给后续机制继续处理。
+DUSt3R 的意义在于提供了一种适合后续扩展的几何中间语言。它将图像对映射到稠密三维点图，并用置信度反映预测可靠性；多视角输入通过成对预测和全局对齐组织起来\citep{dust3r}。DUSt3R 在此之前由 CroCo 的跨视角补全自监督预训练奠定基础，把 cross-view 视觉对应能力迁移到稠密 pointmap 预测上\citep{croco}。从综述角度看，DUSt3R 引入了一种新的几何中间层：它降低了相机先验门槛，同时把长序列、动态物体、遮挡、尺度漂移以及大规模多图效率留给后续机制继续处理。
 
-MASt3R 在此基础上把匹配视为三维问题，将描述子与三维几何 grounding 绑定，使图像匹配从二维描述子检索扩展到后续 SfM 和全局对齐\citep{mast3r}。MASt3R-SfM 进一步把这一匹配能力接回经典 SfM 流程，用于图像检索、对应估计和无约束场景的全局重建\citep{mast3r_sfm}。这一支线也说明传统几何继续保留作用：在 3R 表示提供更强先验后，匹配、检索、bundle adjustment 等步骤以新的接口回到系统中，构成 pointmap 路线与经典几何之间的桥梁。
+MASt3R 在此基础上把匹配视为三维问题，将描述子与三维几何 grounding 绑定，使图像匹配从二维描述子检索扩展到后续 SfM 和全局对齐\citep{mast3r}。其具体机制是在 DUSt3R 的 pointmap 解码器之外，叠加一支 dense local feature head：在每个像素位置输出 descriptor，并以对比损失把成对图像中几何对应的像素在 descriptor 空间中拉近；推理时由互最近邻得到 dense correspondence，再以三维点图作为几何先验筛选。这样得到的对应关系同时受到 descriptor 的局部判别性约束和 pointmap 的全局几何约束，在弱纹理、重复结构和遮挡边缘上的精度高于仅从 pointmap 取最近邻。MASt3R-SfM 进一步把这一匹配能力接回经典 SfM 流程，用于图像检索、对应估计和无约束场景的全局重建\citep{mast3r_sfm}。这一支线也说明传统几何继续保留作用：在 3R 表示提供更强先验后，匹配、检索、bundle adjustment 等步骤以新的接口回到系统中，构成 pointmap 路线与经典几何之间的桥梁。
 
 \section{多视角规模化与统一视觉几何}
 
@@ -174,7 +229,7 @@ VGGT 将 camera、depth、pointmap 与 tracks 放在统一视觉几何预测框�
 \end{figure}
 \FloatBarrier
 
-表\,\ref{tab:foundation} 进一步汇总这一分支的输入情形、主要输出、机制定位和记录要点。
+表\,\ref{tab:foundation} 进一步汇总这一分支的输入情形、主要输出、机制定位与适用条件。
 
 \begin{table}[t]
 \centering
@@ -183,14 +238,14 @@ VGGT 将 camera、depth、pointmap 与 tracks 放在统一视觉几何预测框�
 \label{tab:foundation}
 \begin{tabularx}{\textwidth}{p{2.8cm}p{2.2cm}Y Y Y}
 \toprule
-模型 & 输入情形 & 主要输出 & 机制定位 & 记录要点 \\
+模型 & 输入情形 & 主要输出 & 机制定位 & 适用条件与局限 \\
 \midrule
 DUSt3R & \makecell[l]{图像对/\\多视角} & pointmap、confidence、派生深度与位姿 & pose-free dense pointmap regression & 范式起点，常与对齐、SfM/MVS 接口配合使用 \\
 MASt3R & \makecell[l]{图像对/\\集合} & 3D-grounded correspondences & 在几何 grounding 上增强匹配 & 重点在匹配与 SfM 接口 \\
 MASt3R-SfM & \makecell[l]{无约束\\图像集合} & SfM 对齐结果 & 将 MASt3R 接入传统全局流程 & 桥接匹配增强与经典全局重建 \\
 Fast3R & 多图集合 & 多视角几何 & many-view one-forward-pass & 论文表格报告 1000+ 视角扩展；需保留单 A100 与分辨率条件 \\
 MV-DUSt3R+ & 稀疏视角 & pointmap、NVS/Gaussian 相关输出 & 多视角 decoder 与参考视角融合 & 论文报告 12/20 视角秒级示例；官方仓库含 demo/权重 \\
-VGGT & \makecell[l]{多视角\\视觉输入} & camera、depth、pointmap、tracks & 统一 visual geometry prediction & 论文和仓库均公开；代码/权重许可需按版本区分 \\
+VGGT & \makecell[l]{多视角\\视觉输入} & camera、depth、pointmap、tracks & 统一 visual geometry prediction & 论文和仓库均公开，适合作为多任务几何预测的通用基线 \\
 \makecell[l]{MapAnything\\Pow3R} & \makecell[l]{多种\\可选条件} & metric geometry、深度、相机等 & 引入 metric/scene/camera priors & 先验提高约束，也引入条件依赖与冲突风险 \\
 \bottomrule
 \end{tabularx}
@@ -209,14 +264,14 @@ MonST3R 在 DUSt3R 风格的点图上微调，针对运动存在时的每帧几�
 \label{tab:dynamic}
 \begin{tabularx}{\textwidth}{p{2.5cm}Y Y Y}
 \toprule
-方法 & 动态问题入口 & 输出或中间量 & 记录要点 \\
+方法 & 动态问题入口 & 输出或中间量 & 适用条件与局限 \\
 \midrule
 Align3R & 动态视频中的单目深度跨帧对齐 & aligned depth、相机相关估计 & 适合作为深度先验与 3R 的桥接方法 \\
 MonST3R & 运动物体破坏静态点图 & per-frame geometry、dynamic confidence/mask & 侧重动态几何与动静分离 \\
 POMATO & pointmap matching 与 temporal motion 结合 & 动态重建相关点图/运动线索 & 机制应与 MonST3R、D\textsuperscript{2}USt3R 区分 \\
 D\textsuperscript{2}USt3R & 动态场景的 4D pointmap & time-aware pointmap & 关注时间维度上的几何中间量 \\
 Easi3R & 从既有 DUSt3R 注意力中分离运动 & training-free dynamic correction & 适合作为推理时动态修正机制 \\
-RayMap3R & 利用 RayMap 的静态偏置识别动态区域 & ray/image dual-branch signal & 项目页有论文与代码入口；应用质量仍需独立复验 \\
+RayMap3R & 利用 RayMap 的静态偏置识别动态区域 & ray/image dual-branch signal & 项目页有论文与代码入口 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -245,7 +300,7 @@ RayMap3R & 利用 RayMap 的静态偏置识别动态区域 & ray/image dual-bran
 \end{figure}
 \FloatBarrier
 
-在原论文视觉锚点之后，本文回到机制层归纳。进入近一年的工作可分为四类。第一类是显式空间记忆的扩展，Point3R 引入与三维场景结构相关联的指针记忆，用于流式稠密重建\citep{point3r}。第二类是顺序输入下的因果或自回归路线，STream3R 在 causal transformer 框架下实现可扩展的逐帧重建，LongStream 则通过 gauge-decoupled 的关键帧位姿和正交尺度学习处理长在线序列\citep{stream3r,longstream}。第三类是混合记忆：LONG3R 通过 memory gating 与 dual-source decoder 维持长序列上下文，LoGeR 把 parametric TTT memory 与滑动窗口注意力组合，Mem3R 则把 tracking 与 mapping 的记忆解耦\citep{long3r,loger,mem3r}。第四类是预算治理与滤波：OVGGT 通过自选择缓存和动态锚点保护实现固定计算预算，PAS3R 按位姿变化与图像频域线索调整状态更新，FILT3R 在递推状态上加一层免训练的 Kalman 式潜变量滤波\citep{ovggt,pas3r,filt3r}。项目页和 arXiv 元数据核对显示，LoGeR、Mem3R、RayMap3R 与 OVGGT 已提供项目或代码入口，LongStream 有项目页，FILT3R 标注代码将发布，PAS3R 当前可稳定引用的是 arXiv 论文页；正文据此描述机制和公开状态，应用质量仍需另行复验。把这些工作按更新规则与预算管理区分，更便于看清各自的局限。
+在原论文视觉锚点之后，本文回到机制层归纳。进入近一年的工作可分为四类。第一类是显式空间记忆的扩展，Point3R 引入与三维场景结构相关联的指针记忆，用于流式稠密重建\citep{point3r}。第二类是顺序输入下的因果或自回归路线，STream3R 在 causal transformer 框架下实现可扩展的逐帧重建，LongStream 则通过 gauge-decoupled 的关键帧位姿和正交尺度学习处理长在线序列\citep{stream3r,longstream}。第三类是混合记忆：LONG3R 通过 memory gating 与 dual-source decoder 维持长序列上下文，LoGeR 把 parametric TTT memory 与滑动窗口注意力组合，Mem3R 则把 tracking 与 mapping 的记忆解耦\citep{long3r,loger,mem3r}。第四类是预算治理与滤波：OVGGT 通过自选择缓存和动态锚点保护实现固定计算预算，PAS3R 按位姿变化与图像频域线索调整状态更新，FILT3R 在递推状态上加一层免训练的 Kalman 式潜变量滤波\citep{ovggt,pas3r,filt3r}。项目页和 arXiv 元数据核对显示，LoGeR、Mem3R、RayMap3R 与 OVGGT 已提供项目或代码入口，LongStream 有项目页，FILT3R 标注代码将发布，PAS3R 当前可稳定引用的是 arXiv 论文页；正文据此描述机制和公开状态。把这些工作按更新规则与预算管理区分，更便于看清各自的局限。
 
 \begin{figure}[t]
 \centering
@@ -280,7 +335,7 @@ RayMap3R & 利用 RayMap 的静态偏置识别动态区域 & ray/image dual-bran
 \label{tab:memory}
 \begin{tabularx}{\textwidth}{p{2.8cm}Y Y Y}
 \toprule
-类别 & 代表工作 & 主要作用 & 典型风险 \\
+类别 & 代表工作 & 主要作用 & 适用条件与局限 \\
 \midrule
 递推状态 & CUT3R, STream3R & 在连续输入间压缩历史几何上下文 & 早期错误可能进入后续状态；状态可解释性有限 \\
 空间/指针记忆 & Spann3R, Point3R & 保存或索引与空间位置相关的重建信息 & 需要处理遮挡、重复纹理和空间漂移 \\
@@ -292,7 +347,7 @@ RayMap3R & 利用 RayMap 的静态偏置识别动态区域 & ray/image dual-bran
 
 \section{测试时验证、修正与先验输入}
 
-3R 模型的输出通常包含 pointmap、depth、camera、tracks、confidence 等多个几何量。它们之间天然存在一致性关系，因此测试时验证除了看渲染效果，还要检查跨视角、跨时间和跨输出的几何冲突。Test3R 通过 image triplet 之间的几何一致性进行测试时 prompt tuning，把推理过程组织为一致性最大化的轻量优化，比单纯评分更进一步\citep{test3r}。TTT3R 把递推 3R 模型的状态更新视为在线 test-time training，并按对齐置信度推导记忆更新速率，将“测试时一致性”与“测试时状态调整”绑定在一起\citep{ttt3r}。两者机制相近但侧重不同：Test3R 更靠近一致性信号与提示调节，TTT3R 更靠近状态/参数更新。
+3R 模型的输出通常包含 pointmap、depth、camera、tracks、confidence 等多个几何量。它们之间天然存在一致性关系，因此测试时验证除了看渲染效果，还要检查跨视角、跨时间和跨输出的几何冲突。Test3R 通过 image triplet 之间的几何一致性进行测试时一致性优化，把推理过程组织为一致性最大化的轻量调整，比单纯评分更进一步\citep{test3r}。TTT3R 把递推 3R 模型的状态更新视为在线 test-time training，并按对齐置信度推导记忆更新速率，将“测试时一致性”与“测试时状态调整”绑定在一起\citep{ttt3r}。两者机制相近但侧重不同：Test3R 更靠近一致性信号与提示调节，TTT3R 更靠近状态/参数更新。
 
 G-CUT3R 在 CUT3R 之上引入模态特异的先验编码器，使深度、相机或位姿等先验在适合时进入重建，可视为 prior-guided 的测试时增强\citep{gcut3r}。Pow3R 把先验作为可选输入直接进入前馈模型，与 G-CUT3R 在“先验进入位置”上不同：前者偏向训练时的条件建模，后者偏向推理时的引导\citep{pow3r}。MASt3R-SfM 提供另一种思路：通过经典 SfM 的一致性循环对 MASt3R 的匹配结果进行校验和约束，把测试时验证回归到传统 bundle adjustment\citep{mast3r_sfm}。
 
@@ -305,9 +360,9 @@ G-CUT3R 在 CUT3R 之上引入模态特异的先验编码器，使深度、相�
 \label{tab:testtime}
 \begin{tabularx}{\textwidth}{p{3.1cm}p{3.0cm}Y Y}
 \toprule
-方法或先验 & 进入位置 & 修正/约束信号 & 记录要点 \\
+方法或先验 & 进入位置 & 修正/约束信号 & 适用条件与局限 \\
 \midrule
-Test3R & \makecell[l]{测试时\\prompt tuning} & image triplet 的几何一致性最大化 & 更接近一致性学习；计算开销随输入数量增长 \\
+Test3R & \makecell[l]{测试时\\一致性优化} & image triplet 的几何一致性最大化 & 更接近一致性学习；计算开销随输入数量增长 \\
 TTT3R & 在线测试时训练 & 递推状态按对齐置信度更新 & 论文和项目页报告 20 FPS / 6 GB；仍需按硬件与序列设置引用 \\
 G-CUT3R & \makecell[l]{推理时\\prior guidance} & 深度/相机/位姿先验进入 CUT3R 解码 & 先验缺失或冲突时的回退行为需要在系统层处理 \\
 Pow3R & 训练时条件输入 & 内参/位姿/深度等可选模态 & 先验可用性与正确性需要单独说明 \\
@@ -327,36 +382,11 @@ Splatt3R 在 MASt3R 风格几何上预测高斯属性，把未标定图像对直
 
 \section{应用证据、复现与失败样本记录}
 
-将 3R 模型转化为可交付系统时，证据组织本身是综述的一部分。本文按四类材料组织判断：(1) 论文可证，指论文方法图、摘要、章节中关于机制和实验设置的描述；(2) 官方代码，说明仓库提供的代码、权重或 demo 状态；(3) 跑通记录，记录特定环境下依赖和默认输入是否成立；(4) 应用验证，继续核对实验表、跨场景失败样本与许可证。暂时归类不稳的事项保留为“尚需确认”。对论文原图，本文只在复用许可已确认的前提下嵌入，并在 caption 中保留来源归属。
+将 3R 模型转化为可交付系统时，证据来源至少分布在四个层面：论文方法图与章节描述支撑公开机制，官方仓库说明代码、权重与 demo 状态，复现记录验证依赖与默认输入，跨场景实验表、失败样本与许可证则用于支撑应用判断。暂时归类不稳的事项保留为``尚需确认''。对论文原图，本文只在复用许可已确认的前提下嵌入，并在 caption 中保留来源归属。
 
 具体复现记录可按六项保存：输入来源与规模、模型和权重版本、运行环境、主要输出、失败样本、许可证与耗时/显存。这个模板用于追踪来源，使应用判断更容易复核。
 
-在这一框架下，图\,\ref{fig:application} 描绘了从输入到报告的应用路径：3R 模型是中间环节，输出表示之前需要一致性与置信度检查，并伴随来源记录、失败样本与许可证标记。表\,\ref{tab:application} 给出按输出层组织的证据矩阵，可作为写作和复现记录的核对清单。
-
-\begin{figure}[t]
-\centering
-\resizebox{\textwidth}{!}{
-\begin{tikzpicture}[
-  stage/.style={draw, rounded corners=2pt, fill=white, minimum width=2.8cm, minimum height=0.8cm, align=center, font=\small},
-  note/.style={draw, rounded corners=2pt, fill=gray!5, minimum width=2.8cm, minimum height=0.8cm, align=center, font=\footnotesize},
-  arrow/.style={-{Stealth[length=2mm]}, line width=0.45pt}
-]
-\node[stage] (in) {图像/视频输入};
-\node[stage, right=0.65cm of in] (pred) {3R 几何预测};
-\node[stage, right=0.65cm of pred] (check) {一致性与置信度检查};
-\node[stage, right=0.65cm of check] (repr) {点云/深度/相机/Gaussian};
-\node[stage, right=0.65cm of repr] (report) {可视化与报告};
-\node[note, below=0.65cm of check] (evidence) {记录来源、失败样本、许可证与复现状态};
-\draw[arrow] (in) -- (pred);
-\draw[arrow] (pred) -- (check);
-\draw[arrow] (check) -- (repr);
-\draw[arrow] (repr) -- (report);
-\draw[arrow] (check) -- (evidence);
-\draw[arrow] (evidence) -| (report);
-\end{tikzpicture}}
-\caption{3R 应用落地路径。几何输出进入可视化或报告前，需要一致性、置信度、失败样本与来源记录支撑。}
-\label{fig:application}
-\end{figure}
+在这一框架下，3R 模型是中间环节：输入经过几何预测，输出之前需要一致性与置信度检查，并伴随来源、失败样本与许可证记录。表\,\ref{tab:application} 给出按输出层组织的证据矩阵，可作为写作和复现记录的核对清单。
 
 \begin{table}[t]
 \centering
@@ -365,7 +395,7 @@ Splatt3R 在 MASt3R 风格几何上预测高斯属性，把未标定图像对直
 \label{tab:application}
 \begin{tabularx}{\textwidth}{p{3.1cm}Y Y Y}
 \toprule
-输出层 & 代表方法或先验 & 质量信号 & 记录要点 \\
+输出层 & 代表方法或先验 & 质量信号 & 适用条件与局限 \\
 \midrule
 \makecell[l]{Depth/pointmap/\\confidence} & DUSt3R, VGGT, MV-DUSt3R+ & 尺度一致性、跨视角重投影、置信度与失败区域 & 深度图可视化需配合几何一致性检查 \\
 \makecell[l]{Camera/\\tracks} & VGGT, MASt3R-SfM, CoTracker & 轨迹连续性、位姿闭环、匹配内点比例 & 轨迹输出适合与 SfM/BA 结果交叉核对 \\
@@ -378,9 +408,9 @@ Splatt3R 在 MASt3R 风格几何上预测高斯属性，把未标定图像对直
 
 \section{开放问题与结论}
 
-把上述分支放在一起看，近期 3R 文献仍有若干结构性矛盾。第一，模型统一性与输入条件之间存在张力。VGGT、MapAnything 等统一模型试图一次性输出多种几何量，但不同输入条件对应不同可靠性；模型支持某类输入，还需要进一步确认该输入条件下的质量。第二，动态建模与长序列记忆相互关联但侧重点不同：动态方法处理物体或场景随时间的变化，长序列方法处理上下文的保存、更新与遗忘。第三，测试时机制提高了适配能力，也带来额外成本与失败模式：Test3R、TTT3R、G-CUT3R 等工作把推理阶段的一致性、状态更新和外部先验引入重建，需要显式记录计算开销、收敛条件与先验冲突。第四，Gaussian 输出提高了可视化吸引力，也更需要配合几何检查：Splatt3R、InstantSplat、NoPoSplat 把无位姿或稀疏视角更直接地转化为可查看资产，应用层仍需回到重投影误差、跨视角一致性、视角外表现与许可证约束等指标。
+在讨论开放问题之前，先归纳近期 3R 文献中反复出现的几类失败模式。第一类是弱纹理与纯色区域：模型仍会输出 pointmap 但置信度低，几何容易在大片墙面或地面上漂移。第二类是镜面、玻璃与强反射表面：反射几何与真实几何冲突，常见于室内场景，是 DUSt3R 类方法和后续动态方法都没有针对性处理的区域。第三类是快速运动与严重遮挡：MonST3R、POMATO 等动态方法依赖 dynamic mask，但在运动幅度大或遮挡频繁的视频上仍会降质，并可能把动态像素吸收进背景几何。第四类是长基线与大视差：成对预测在视差超出训练分布时一致性下降，需要后续匹配增强或 SfM 校验才能保持稳定。第五类是长序列尺度漂移：CUT3R、STream3R、LongStream 等流式模型在数百帧后会累积尺度与位姿误差，记忆策略和位姿 gauge 处理直接影响误差增长率。第六类是域外场景：训练分布以室内、城市街景与典型室外为主，水下、卫星遥感、医学/显微等场景泛化较弱，需要专门评测才能给出可靠判断。
 
-由此可见，DUSt3R 之后的 3R 研究已经从单一的点图预测扩展为围绕视觉几何中间量组织的一组方法谱系：有的工作强化匹配并接回 SfM，有的推进多视角统一几何，有的处理动态场景、长序列状态、测试时机制或 Gaussian 输出。这些方向共同说明，近期 3R 的主要贡献既来自模型指标提升，也来自对三维重建中间表示、状态更新、外部先验和可查看资产的重新编排。后续综述与系统实现应继续区分论文机制、公开代码、跑通记录与应用验证，把失败样本、一致性检查与许可证记录视为常规交付物。
+把上述分支放在一起看，近期 3R 文献仍有若干结构性矛盾。第一，模型统一性与输入条件之间存在张力。VGGT、MapAnything 等统一模型试图一次性输出多种几何量，但不同输入条件对应不同可靠性；模型支持某类输入，还需要进一步确认该输入条件下的质量。第二，动态建模与长序列记忆相互关联但侧重点不同：动态方法处理物体或场景随时间的变化，长序列方法处理上下文的保存、更新与遗忘。第三，测试时机制提高了适配能力，也带来额外成本与失败模式：Test3R、TTT3R、G-CUT3R 等工作把推理阶段的一致性、状态更新和外部先验引入重建，需要显式记录计算开销、收敛条件与先验冲突。第四，Gaussian 输出提高了可视化吸引力，也更需要配合几何检查：Splatt3R、InstantSplat、NoPoSplat 把无位姿或稀疏视角更直接地转化为可查看资产，应用层仍需回到重投影误差、跨视角一致性、视角外表现与许可证约束等指标。综上所述，DUSt3R 之后的 3R 研究已从单一点图预测扩展为围绕视觉几何中间量组织的方法谱系；其核心贡献既来自模型指标提升，也来自对中间表示、状态更新、外部先验与可查看资产的重新编排，应用落地时仍以失败样本、一致性检查与许可证记录作为常规交付物。
 
 \bibliographystyle{unsrtnat}
 \bibliography{references}
