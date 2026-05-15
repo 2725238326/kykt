@@ -1,6 +1,6 @@
 # Dream Index
 
-Last updated: 2026-05-14 (Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14 to arXiv-only route, then same-day quality optimization pass produced new recommended deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`, 18 A4 pages, 44 references)
+Last updated: 2026-05-15 (Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14, followed by 2026-05-15 prose naturalization pass — 10 paragraphs rewritten to drop LLM-style enumerated structures, parallel patterns and workflow vocabulary; new recommended deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`, 18 A4 pages, 44 references)
 
 Quick navigation for humans and agents. **Read `TASK_SNAPSHOT.md` first** (it is the highest-authority resume pointer; if its status is `in_progress` or `blocked`, do not start new work). Then read `AGENT_MASTER_PROMPT.md` for full operating rules.
 
@@ -124,7 +124,8 @@ Separate LaTeX workspace deliberately decoupled from Dream / KYKT internal vocab
 | `notes/work_log.md` | Append-only fine-grained editing log |
 | `notes/{paper_inventory,model_inventory,chapter_structure,fact_cards,figure_prompts,figure_selection,review_quality_audit}.md` | Per-axis working notes |
 | `figures/{dust3r,vggt,monst3r,cut3r}_fig1.png` | Paper Fig.1 crops embedded after user-confirmed reuse license |
-| `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf` | Current recommended deliverable (18 A4 pages, 44 refs, 0 LaTeX errors / 0 warnings; 2026-05-14 wind-down + quality pass) |
+| `deliverables/3r_survey_stage_final_2026-05-15_natural.pdf` | Current recommended deliverable (18 A4 pages, 44 refs, 0 LaTeX errors / 0 warnings; 2026-05-15 prose naturalization pass on top of 2026-05-14 quality pass) |
+| `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf` | Earlier 2026-05-14 quality pass snapshot |
 | `deliverables/3r_survey_stage_final_2026-05-13{,_polished,_caption_polished,_refined}.pdf` | Earlier polish-pass snapshots |
 | `COMPREHENSIVE_OPTIMIZATION_PROMPT.md` | Driving prompt for the 2026-05-13 comprehensive optimization pass |
 | `GENERATION_PROMPT.md` | Original generation prompt |

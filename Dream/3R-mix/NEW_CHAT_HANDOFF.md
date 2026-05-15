@@ -15,7 +15,7 @@ It is updated after every substantive editing pass. For fine-grained history see
 - 阶段终稿输出：`deliverables/3r_survey_stage_final_2026-05-13.pdf`，17 页 A4，已按最终编译结果复制。
 - 阶段终稿优化版：`deliverables/3r_survey_stage_final_2026-05-13_polished.pdf`，17 页 A4，已写入 PDF 元数据，LaTeX 日志清至 0 warnings / 0 underfull / 0 overfull。
 - 图注与语言优化版：`deliverables/3r_survey_stage_final_2026-05-13_caption_polished.pdf`，16 页 A4，图注更短，正文去掉了偏过程汇报的“边界/不是/不把”式表述。
-- 当前推荐交付版：`deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`，18 页 A4，2026-05-14 wind-down 后质量优化轮次产出（在 2026-05-13 refined 版基础上做了 17 项 A/B/C 改动）。
+- 当前推荐交付版：`deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`，18 页 A4，2026-05-15 prose naturalization 轮次产出（在 2026-05-14 quality 版基础上重写了 10 个段落，清掉编号列表式骨架、平行对仗、"X 的意义在于 / 综上所述"等 LLM 套话、以及"承接 / 消费 / 交付物"等工作流词汇）。
 - 章节结构（共 10 节）：
   1. 引言
   2. 从传统几何流程到点图表示
@@ -235,4 +235,4 @@ xelatex -interaction=nonstopmode -halt-on-error -output-directory=build main.tex
 
 ## 最后更新时间
 
-2026-05-14（wind-down 后再做一轮质量优化：删 `fig:application` 与 3 处定义重述、统一 5 张表最后一列为"适用条件与局限"、补 CroCo + MASt3R 机制段、加 §10 failure modes 段与 `fig:timeline`；bib 43 → 44；PDF 16 → 18 页；新推荐交付版 `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`）。
+2026-05-15（在 2026-05-14 quality 版基础上做 prose naturalization 轮次：重写摘要 / §1 / §2 / §3 / §4 / §5 / §6 / §7 / §8 / §9 / §10 共 10 个段落，删 LLM 套话、平行对仗、编号列表骨架、工作流词汇；编译 0 errors / 0 warnings；PDF 仍 18 页 2.85 MB；新推荐交付版 `deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`）。

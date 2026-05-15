@@ -1,6 +1,6 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-14 (Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14 to arXiv-only route, then same-day quality optimization pass — added CroCo + MASt3R mechanism paragraph + §10 failure modes + `fig:timeline`; current recommended deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`, 18 A4 pages, 44 references)
+Last updated: 2026-05-15 (Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14, followed by 2026-05-15 prose naturalization pass — 10 paragraphs rewritten to drop LLM tells; current recommended deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`, 18 A4 pages, 44 references)
 
 Status: **idle** (cycles 033 + 034 closed; 3R-mix Track B polished to refined deliverable on 2026-05-13; awaiting user direction on next workstream)
 
@@ -40,7 +40,7 @@ No active cycle. Two parallel tracks are at a checkpoint:
     18-page LaTeX manuscript with 4 paper Fig.1 crops embedded, 6
     figures (4 TikZ + 2 paper-Fig.1 composites), 5 booktabs tables, 44
     references all cited; current recommended deliverable
-    `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`;
+    `deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`;
     remaining work documented in
     3R-mix/NEW_CHAT_HANDOFF.md "未完成任务".
 ```

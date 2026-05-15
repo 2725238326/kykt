@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-14 (Track B 3R-mix wound down 2026-05-14 to arXiv-only route; subsequent same-day quality optimization pass added CroCo + MASt3R mechanism paragraph + §10 failure modes + `fig:timeline` and unified table headers, producing new recommended deliverable `3r_survey_stage_final_2026-05-14_quality.pdf` (18 A4 pages, 44 references); Track A Dream3R v0.3 server-verified through cycle 034 unchanged)
+Last updated: 2026-05-15 (Track B 3R-mix prose naturalization pass on top of the 2026-05-14 quality version — rewrote 10 paragraphs to drop LLM-style enumerated structures, parallel "former/latter" patterns and workflow vocabulary; new recommended deliverable `3r_survey_stage_final_2026-05-15_natural.pdf`, still 18 A4 pages, 44 references; Track A Dream3R v0.3 server-verified through cycle 034 unchanged)
 
 ## Current Phase
 
@@ -20,7 +20,7 @@ Two parallel tracks at a checkpoint:
     deterministic fallback.
   Track B (3R-mix Chinese survey, separate workspace Dream/3R-mix/):
     18-page LaTeX manuscript; recommended deliverable
-    `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf`.
+    `deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`.
     **Wound down 2026-05-14 to arXiv-only route (route C, no venue
     submission)**; README rewritten as canonical entry, Typst legacy
     files marked deprecated, release checklist appended to
@@ -83,7 +83,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Decision registry | seeded | `registry/decision_registry.md` |
 | Cycle logs | active | `cycles/CYCLE-20260511-001.md` (cycle 034 done; KITTI real-data smoke + Mamba/Gaussian + Track B 3R-mix kickoff); `cycles/CYCLE-20260510-001.md` (cycle 033 done; W1-W16 v0.3 architecture advancement); `cycles/CYCLE-20260508-008.md` (cycle 031 local Memory v0.3 P0 scaffold) |
 | Dream3R v0.3 code (Track A) | active; server-verified at `/hdd3/kykt26/code/dream3r/`; first KITTI real-data smoke on `2011_09_26_drive_0001_sync_02` window pair (pointmap L2 20.47 = integration evidence, not trained quality) | `code/dream3r/REVIEW_PROMPT.md`, `code/dream3r/RECENT_PROGRESS.md`, `code/dream3r/NEXT_PHASE_ROADMAP.md` |
-| 3R-mix Chinese survey (Track B) | **wound down 2026-05-14 (route C: arXiv-only, no venue submission)**; final quality pass same day added CroCo + MASt3R mechanism paragraph + §10 failure modes + `fig:timeline`, removed `fig:application`, unified table headers; 18 A4 pages, 44 references, 6 figures (5 TikZ + 2 paper-Fig.1 composites — `fig:application` deleted, `fig:timeline` added), 5 booktabs tables, 0 LaTeX errors / 0 warnings; deliberately decoupled from Dream/KYKT internal vocabulary | `Dream/3R-mix/README.md`, `Dream/3R-mix/NEW_CHAT_HANDOFF.md`, `Dream/3R-mix/main.tex`, `Dream/3R-mix/deliverables/3r_survey_stage_final_2026-05-14_quality.pdf` |
+| 3R-mix Chinese survey (Track B) | **wound down 2026-05-14 (route C: arXiv-only)**; 2026-05-14 quality pass added CroCo + MASt3R mechanism + §10 failure modes + `fig:timeline`; 2026-05-15 prose naturalization pass rewrote 10 paragraphs to drop LLM-style enumerated structures, parallel patterns and workflow vocabulary; 18 A4 pages, 44 references, 6 figures (4 TikZ + 2 paper-Fig.1 composites), 5 booktabs tables, 0 LaTeX errors / 0 warnings; deliberately decoupled from Dream/KYKT internal vocabulary | `Dream/3R-mix/README.md`, `Dream/3R-mix/NEW_CHAT_HANDOFF.md`, `Dream/3R-mix/main.tex`, `Dream/3R-mix/deliverables/3r_survey_stage_final_2026-05-15_natural.pdf` |
 | Experiment planning | active; local v0.3 P0 scaffold now exists and ABL-memory-0 passed, but later ablations still require separate DEC + gate | `experiments/prototypes/memory_v03_p0/outputs/summary_go_no_go.md` |
 | Agent master prompt | active | `AGENT_MASTER_PROMPT.md` |
 | C2 Memory v0.3 | active architecture addendum + P0 plan + reviewed ablation addendum + local P0 scaffold. ABL-memory-0 passed as a fixture/logging gate only; C2 memory quality remains unvalidated | `specs/SPEC-20260508-001-dream3r-c2-memory-v03-addendum.md` + `planning/MEMORY_V03_DESIGN_STUDY.md` + `planning/MEMORY_V03_P0_PROTOTYPE_PLAN.md` + `specs/SPEC-20260508-002-dream3r-memory-v03-ablation-addendum.md` + `planning/MEMORY_V03_ABLATION_REVIEW.md` + `experiments/prototypes/memory_v03_p0/README.md` |

@@ -356,3 +356,36 @@ Read each cropped PNG one at a time (the previous attempt at multi-image Read hi
 ### Deliverable
 
 - `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf` (2,847,531 bytes) is the new recommended deliverable. Prior 2026-05-13 versions are preserved alongside.
+
+## 2026-05-15 — Prose naturalization pass
+
+- **Files edited/output**: `main.tex` (10 paragraph rewrites), `deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`; sync edits to `NEW_CHAT_HANDOFF.md`, `README.md`, `notes/work_log.md` (this entry), and the Track B memory + Dream top-level docs (`Dream/INDEX.md`, `Dream/TASK_SNAPSHOT.md`, `Dream/WORKFLOW_STATUS.md`).
+- **Driver**: user feedback "内容还是没那么自然，此外一些 AI 风格的语言表述还是有点严重，不像人写的". The 2026-05-14 quality pass had cleared workflow-style vocabulary but the prose still had visible LLM tells. Scope confirmed via single-question prompt: "按示范力度全文改".
+
+### What was rewritten
+
+Targeting six recurring AI-tell patterns: enumerated "第一类/第二类/..." paragraphs, "前者...后者..." / "既...也..." parallel constructions, "X 的意义在于" / "关键在于" / "综上所述" cliché openings, meta-commentary like "本文按..." / "这样的安排...", workflow vocabulary ("承接", "消费", "交付物"), and "扮演...角色" / "起到...作用" stock phrasing.
+
+- **Abstract**: dropped "本文的核心判断是：" + "既在于...也在于..." structure; rewrote around a single narrative claim about evidence sources and what really decides deployment.
+- **§1 intro**: rewrote the Depth Anything / DINOv2 / SAM2 / 3DGS framing sentence to remove "在本文中作为支撑先验或辅助模块讨论" / "作为输出表示和可视化层来讨论" parallel; dropped the trailing meta-commentary sentence "这样的安排把模型谱系和应用约束放在同一条叙述线上...".
+- **§2**: replaced "前馈式三维重建的核心变化在于..." with "差别集中在..."; killed the "它带来三个直接后果。第一... 第二... 第三..." enumerated paragraph and merged into one continuous paragraph that describes the same three consequences in prose.
+- **§3 DUSt3R/MASt3R**: replaced "DUSt3R 的意义在于..." and "从综述角度看..." openings; rewrote MASt3R paragraph to drop "这一支线也说明..." meta-commentary; phrased the "traditional geometry returning via new interface" point as a noted phenomenon rather than a moral.
+- **§4 multi-view**: rewrote two paragraphs to drop "这一组工作的共同启示是..." + "前者强调... 后者强调..." patterns; kept the concrete content (Fast3R many-view / MV-DUSt3R+ sparse-view / VGGT / MapAnything / Pow3R).
+- **§6 long-sequence categories paragraph**: this was the most LLM-shaped paragraph in the manuscript ("进入近一年的工作可分为四类。第一类是...第二类是...第三类是...第四类是..."). Rewrote as continuous narrative with "一条延续... 另一条... 再有一类... 还有一条线..." flow; preserved every model citation.
+- **§7 test-time**: rewrote three paragraphs; dropped "两者机制相近但侧重不同：Test3R 更靠近... TTT3R 更靠近..." and "前者偏向... 后者偏向..." parallels; replaced "外部先验在 3R 系统中扮演辅助角色" + "当先验与模型预测冲突时，系统层需要给出取舍规则" with a more direct phrasing.
+- **§8 output**: replaced "实际应用很少直接消费模型内部的 pointmap" ("消费" calque) with "很少直接面向"; rewrote "这些方法属于输出与资产层，承接 3R 几何结果" to drop the workflow framing; killed "应用时还需要看两类信号：一是... 二是..." enumeration.
+- **§9 application evidence**: rewrote three paragraphs to drop "证据来源至少分布在四个层面" framing, "这个模板用于追踪来源，使应用判断更容易复核" workflow sentence, and "在这一框架下，3R 模型是中间环节" / "可作为写作和复现记录的核对清单" meta-commentary.
+- **§5 dynamic** (small): replaced "这里需要区分三类输出：4D pointmap 和 dynamic mask 属于几何中间量，4DGS 属于可渲染表示" with em-dash phrasing.
+- **§10 conclusion** (largest): the original §10 had two enumerated paragraphs back-to-back ("第一类是... 第六类是..." for failure modes, then "第一... 第二... 第三... 第四..." for structural tensions, plus a "综上所述..." closing sentence). Rewrote as three flowing paragraphs — six failure modes as a narrative sweep using em-dashes and rhythm variation, four tensions as a continuous "更高一层" paragraph using different connective phrasing per item ("但 / 一个... 一个... / 也让 / 但要避免"), and a separate closing paragraph that drops "综上所述" entirely and ends on "失败样本与许可证往往比 benchmark 数字更先暴露问题".
+
+### Build outcome
+
+- Pipeline: `xelatex` → `bibtex build/main` → `xelatex` × 2.
+- Final `build/main.pdf`: 18 A4 pages, 2,854,049 bytes (≈ 2.85 MB; same page count as 2026-05-14 quality version; the prose rewrites compensated for each other in length).
+- LaTeX log: 0 errors, 0 undefined references/citations, 0 Overfull, 0 Underfull, 0 LaTeX warnings.
+- AI-tell residue scan (`Grep` `main.tex` for patterns `综上所述|意义在于|关键在于|核心变化在于|核心判断|前者.{1,15}后者|第[一二三四五六]类|继续处理|工程成熟度|这一组工作的共同|消费.*pointmap`): 0 hits for all targeted patterns.
+- Forbidden internal-term scan (`KYKT|Dream|Dream3R|agent|skill|workflow|本地项目`): 0 hits, unchanged from prior passes.
+
+### Deliverable
+
+- `deliverables/3r_survey_stage_final_2026-05-15_natural.pdf` (2,854,049 bytes) is the new recommended deliverable. The 2026-05-14 quality version and the 2026-05-13 trio remain in place as earlier snapshots.
