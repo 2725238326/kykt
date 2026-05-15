@@ -1,0 +1,147 @@
+# STYLE_CONTRACT — Dream3R 开题报告双稿语言风格契约
+
+| 字段 | 取值 |
+|---|---|
+| 文件类型 | planning artifact (双稿语言风格契约 + sync rule) |
+| 创建日期 | 2026-05-16 |
+| 状态 | v1 active (cycle 036 启动; cycle 037+ 扩充 vocab 替换表 + sync log) |
+| 授权根 | DEC-20260516-001 (cycle 036 launch) |
+| 触及范围 | 仅本文件; 同步规则约束 DRAFT_INTERNAL_V1.md ↔ DRAFT_EXTERNAL_V1.md |
+
+## 1. 契约目的
+
+Dream3R 开题报告按用户决策采用双稿:
+
+- 内部稿 `DRAFT_INTERNAL_V1.md` — Dream-vocabulary 内部使用; 含 Dream / Dream3R / cycle / SPEC / DEC / CR / Track A / W1-W22 等内部 workflow 术语; 直接引用 Dream 项目工件路径与 ID; 对内部审计 + 后续 cycle 回溯友好
+- 外部稿 `DRAFT_EXTERNAL_V1.md` — 学术中文; 完全剥离 Dream-vocabulary; 用 "候选架构 X" / "本研究架构" 替代 Dream3R; 用学术化通用词汇替代 SPEC/DEC/CR/W-task 等编号; 对外审阅友好 (导师 / 学院 / 论文评审)
+
+本契约规定: (a) 双稿之间的 vocabulary 一一映射 (§2 替换表); (b) 双稿同步规则 (§3 internal-is-master + 周期性 external 快照); (c) 候选架构 X 命名引入规则 (§4); (d) candidate-not-final 关键句式表 (§5)。
+
+## 2. Vocabulary 替换表 (seed; cycle 037+ 扩充)
+
+下表是双稿对译规则。新增条目按 cycle 编号在 §6 sync log 中记录。
+
+| 内部稿 (DRAFT_INTERNAL) | 外部稿 (DRAFT_EXTERNAL) | 备注 / 决策来源 |
+|---|---|---|
+| Dream3R | 候选架构 X / 本研究架构 | 用户 2026-05-16 AskUserQuestion 决定 |
+| Dream / Dream 项目 | (omit; 改写为 "本研究" / "该研究项目") | 内部 framework 名称不外露 |
+| Track A / Track B | 主线工作 / 综述工作 | 仅在叙述上下文中使用; 否则 omit |
+| SPEC-YYYYMMDD-NNN | "体系结构设计文档 v0.X" / "消融实验方案 v0.X" / "比较方法图谱 v0.X" 等中文化 | 不暴露 SPEC ID |
+| DEC-YYYYMMDD-NNN | "项目关键决策 N" / "本研究的设计决策" | 不暴露 DEC ID; 必要时仅说 "项目决策" |
+| CYCLE-YYYYMMDD-NNN | "研发周期 N" / "项目阶段 N" | 不暴露 cycle ID |
+| CR-1 .. CR-6 | "信号校验规则族 (1-6)" / "跨模块信号契约的六条规则" | 集体名称替代; 不暴露 CR-N 编号 |
+| W1 .. W22 / W19-W30 | "实现里程碑 1-22" / "近期工作里程碑 19-30" | 中文化 + 高层化 |
+| F-001 / F-002 | "内部工作规则" / "算力部署约束 (远端服务器执行)" | 高层化 |
+| agent / Dream agent / 子智能体 | (omit; 改写为 "本研究的执行流程" / "作者") | 内部 workflow 词汇 |
+| skill / Claude skill | (omit; 改写为 "工具" / "脚本") | 同上 |
+| workflow / research workflow | (omit; 改写为 "研究流程" / "研究方法") | 同上 |
+| 本地项目 / 项目内部 | (omit; 改写为 "本研究") | 内部上下文术语 |
+| KYKT / KYKT 服务器 | (omit; 改写为 "远端服务器" / "实验环境") | 内部服务器名称 |
+| ablate_recurrence.py | "消融实验脚本" | 文件名中文化 |
+| ABL-memory-N / ABL-v02-N | "记忆模块消融实验 N" / "架构 v0.2 消融实验 N" | 编号中文化 |
+| evaluate_real_sequence.py | "真实数据评测脚本" | 文件名中文化 |
+| AnchorBank / K=256 | "空间锚点存储 / 容量 256" | 中文化 |
+| NSA three-branch | "三分支稀疏注意力 (压缩 / 选择 / 滑窗)" | 中文化 + 子结构展开 |
+| StateToken / Mamba hybrid | "状态记忆向量" / "Mamba-Transformer 混合循环结构" | 中文化 |
+| pointmap L2 = 20.47 | "点图 L2 误差 20.47 (作为集成证据, 非训练后质量)" | 数值保留, 上下文标注 |
+| 4DGS asset | "四维高斯渲染资产 (4D Gaussian Splatting)" | 首次出现展开英文 |
+
+**新增规则**: 任何上表未列出的内部术语在内部稿首次出现时, 在外部稿同步出现时必须在本表追加一行, 并在 §6 sync log 记录新增。
+
+## 3. 双稿同步规则 (internal-is-master + 周期性 external 快照)
+
+```text
+规则 1: 内部稿是 master.
+  - 任何研究内容变更先落 DRAFT_INTERNAL_V1.md
+  - 内部稿可以独立编辑 (无需立即同步外部稿)
+
+规则 2: 外部稿是 internal 的周期性快照.
+  - cycle 末尾 (在 cycle log close 之前) 把内部稿当前 cycle 新增 / 修订的内容快照到外部稿
+  - 快照时按 §2 vocab 替换表逐项替换
+  - 快照后在本文件 §6 sync log 追加一行
+
+规则 3: 外部稿 standalone 编辑限制.
+  - 允许: 语序调整 / 标点修订 / 段落分割 / 字体强调标记 (这些是 prose smoothing)
+  - 不允许: 增删段落 / 修改技术claim / 新增 / 删除 example / 引入新方法名
+  - 任何语义变更必须先在内部稿落地, 然后整段重新快照到外部稿
+
+规则 4: 每次 sync 后跑 vocab 防火墙 grep 验证.
+  - 命令: Grep 在 DRAFT_EXTERNAL_V1.md 上跑 pattern `cycle|SPEC-|DEC-|CR-N|agent|skill|workflow|本地项目` (返回应为 0 hits)
+  - 加跑: Grep 在 DRAFT_EXTERNAL_V1.md 主体上跑 pattern `Dream3R` (case-insensitive; 返回应为 0 hits except references 区域)
+  - 失败则回滚该 sync 并修订
+
+规则 5: cycle 末尾的 sync 操作本身不构成 cycle log 的 "subtask"; 它是 cycle close 的前提条件之一.
+```
+
+## 4. 候选架构 X 命名引入规则
+
+外部稿 §1 首次提及代号时, 必须用如下句式引入:
+
+```text
+本研究提出并评估一个代号为 "候选架构 X" (Candidate Architecture X) 的前馈式
+3R 架构. 为简洁计, 以下正文均以 "候选架构 X" 或 "本研究架构" 指代该架构.
+```
+
+之后正文使用规则:
+
+- 一种主用词为主 (建议 "候选架构 X" 是主用; "本研究架构" 是次用, 用于句法变换避免重复)
+- 不混用其他指代 (e.g., 不出现 "我们的架构" / "Dream3R" / "X 系统" 等)
+- 在 §6 预期成果 + §3 候选研究问题 等位置, 强调 "候选" 字义 (与 candidate-not-final 配合, 见 §5)
+
+内部稿首次提及时直接用 "Dream3R", 不需引入代号。
+
+**references.bib 例外**: 如果引文标题中本身包含 "Dream3R" 字符串 (例如假设未来 Dream3R 正式发表), 该字符串作为 paper-derived bibliography 字段不受本规则约束。但目前 (2026-05-16) Dream3R 尚未正式发表, references.bib 中也不应出现 Dream3R 字符串。
+
+## 5. Candidate-not-final 关键句式对比表
+
+per DEC-20260501-011 (thesis reframe; Dream3R 为 candidate-not-final) + DEC-20260504-002 (no-all-in; 不收敛到单一 finalist), 开题报告语言必须避免 "Dream3R / 候选架构 X 是最终方案" 的暗示。下表给出禁用 / 允许句式对照:
+
+| 禁用句式 (over-claim) | 允许句式 (candidate-not-final) |
+|---|---|
+| "证明 X 优于 SOTA" | "评估 X 在 ... 维度上是否相对 SOTA 呈现优势" |
+| "X 是最佳架构" | "X 是被评估的候选架构之一" |
+| "X 解决了 OOD 问题" | "X 设计了 OOD 检测路径的候选方案; 实证效果待验证" |
+| "X 是最终设计" | "X 是当前迭代的候选; 后续版本可能修订或替换" |
+| "本研究将证明 ..." | "本研究将考察 X 在 ... 维度上的表现" |
+| "X 显著优于 baseline" | "X 与 baseline 在 ... 指标上的对比结果将作为评估依据" |
+| "X 不存在 OOD 问题" | "X 对 OOD 场景的鲁棒性是后续验证目标之一" |
+| "唯一可行的方案" | "本研究探索的候选方案之一" |
+| "完全解决了长序列内存问题" | "针对长序列内存机制提出了候选架构层方案" |
+
+外部稿与内部稿同时受本句式表约束 (内部稿即使用 Dream3R 命名, 也应避免 over-claim, 因为 candidate-not-final 是研究决策而非语言决策)。
+
+## 6. Sync log (append-only)
+
+按时序追加。每行记录: `cycle NNN · §X · sync direction · vocab substitutions · vocab-grep verification`。
+
+```text
+2026-05-16 · cycle 036 close · §1 initial draft created in both internal and external · 13 vocab substitutions seeded in §2 · DRAFT_EXTERNAL_V1.md §1 grep verified clean (0 hits on cycle|SPEC-|DEC-|CR-N|agent|skill|workflow|本地项目 + 0 hits on Dream3R case-insensitive)
+```
+
+cycle 037+ 起草 §2 后追加。
+
+## 7. 不在本契约范围内的事项
+
+本契约 **不** 规定:
+
+- 开题报告的章节结构 (那是 OUTLINE_V1.md 的范围)
+- 开题报告的技术内容 (那是 DRAFT_INTERNAL_V1.md / DRAFT_EXTERNAL_V1.md 各章节的范围)
+- 开题报告的字数 / 篇幅总量 (那是 OUTLINE_V1.md 的估算范围)
+- 引文管理与 references.bib 结构 (留给 cycle 037+ §2 国内外研究现状起草时定型)
+- 图表生成 (留给 cycle 037+; 可能复用 Track B 综述 TikZ 图源, 但需在内部稿明确引用关系)
+
+## 8. 元数据与上游链接
+
+| 字段 | 取值 |
+|---|---|
+| 文件路径 | `Dream/planning/proposal_dream3r/STYLE_CONTRACT.md` |
+| 创建日期 | 2026-05-16 |
+| 状态 | v1 active |
+| 作者 | Dream agent (cycle 036) |
+| 上游决策 | DEC-20260516-001 (cycle 036 launch) + DEC-20260501-011 (candidate-not-final) + DEC-20260504-002 (no-all-in) + 用户 2026-05-16 AskUserQuestion 答案 |
+| 相邻工件 | OUTLINE_V1.md (章节结构) / DRAFT_INTERNAL_V1.md (内部稿) / DRAFT_EXTERNAL_V1.md (外部稿) |
+| 下游 | cycle 037+ §2-§9 起草将持续扩充 §2 替换表 + §6 sync log |
+
+---
+
+**End of style contract v1.** 本契约是 cycle 036 P0-B 子任务 deliverable; cycle 037+ 起草 §2 时按 §3 sync 规则同步并扩充本契约。
