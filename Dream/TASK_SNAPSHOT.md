@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-15 (cycle 035 closed: survey-driven markdown deliverables landed — `planning/SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md` proposal + 3 new planning files (SOTA_MATRIX_V2 / CRITIC_CALIBRATION_PLAN_V1 / LONG_SEQ_REAL_TABLE_PLAN) + 4 new cross-spec risk rows in WORK_RISK_REGISTER + DEC-20260515-001; status flipped idle → cycle 035 in_progress → idle on close; Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14 + 2026-05-15 prose naturalization pass — 10 paragraphs rewritten to drop LLM tells; recommended Track B deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`, 18 A4 pages, 44 references)
+Last updated: 2026-05-16 (cycle 036 closed: dual-scope packaging + proposal kickoff — Part A 3 files in `3R-mix/deliverables/` (SUBMISSION_PACKAGE_ADVISOR / SUBMISSION_RECORD / RELATION_TO_TRACK_A) package the 2026-05-15 Track B Chinese survey for advisor / school internal review; Part B 4 files in new subdirectory `planning/proposal_dream3r/` (OUTLINE_V1 9-section dual outline + STYLE_CONTRACT vocab substitution table 22 rows + sync rule + DRAFT_INTERNAL_V1 § 1 ~1800 字 + DRAFT_EXTERNAL_V1 § 1 ~1500 字 with 候选架构 X 代号) launch the Chinese Dream3R 开题报告 dual-draft scaffold; § 2-§ 9 placeholders only; WORK_RISK_REGISTER v1.1 → v1.2 additive +3 rows (R-PROP-VOCAB-1 / R-PROP-CLAIM-1 / R-PROP-SYNC-1); DEC-20260516-001 + cycle log; status flipped idle → cycle 036 in_progress → idle on close; G2 + G3a + G3b + G4 vocab firewall + over-claim greps all returned 0 hits; cycle 035 deliverables + Track A Dream3R v0.3 server-verified through cycle 034 + Track B 3R-mix wound down 2026-05-14 + 2026-05-15 prose naturalization pass all unchanged)
 
-Status: **idle** (cycle 035 closed 2026-05-15: 4 survey-driven markdown deliverables landed + WORK_RISK_REGISTER bumped + cycle log + sync chain — no spec / code / server action; cycles 033 + 034 closed earlier; 3R-mix Track B polished to refined deliverable on 2026-05-13; awaiting user direction on next workstream)
+Status: **idle** (cycle 036 closed 2026-05-16: 13 file ops landed (9 NEW + 4 MODIFIED); Part A advisor submission packaging + Part B Dream3R proposal dual-draft kickoff + risk register v1.2 + cycle log + sync chain — no spec / code / server action; § 2-§ 9 proposal body text drafting deferred to cycle 037+; cycles 033 + 034 + 035 closed earlier; awaiting user direction on next workstream)
 
 ## Why this file exists
 
@@ -23,7 +23,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ```text
 task_id:    none-active
 phase:      idle between cycles
-cycles:     032 + 033 + 034 + 035 closed; Track B 3R-mix survey polished
+cycles:     032 + 033 + 034 + 035 + 036 closed; Track B 3R-mix survey polished + packaged for advisor review; Dream3R 开题报告 dual-draft kickoff with § 1 alignment proof
 status:     idle
 ```
 
@@ -62,6 +62,147 @@ No active cycle. Two parallel tracks are at a checkpoint:
 | 0513-S3 | 3R-mix paper Fig.1 embedding (DUSt3R / VGGT / MonST3R / CUT3R) | done | `figures/`, `main.tex` |
 | 0513-S4 | 3R-mix source-checked rewrites (MV-DUSt3R+ / Fast3R / VGGT / TTT3R + 7 × 2026 preprints) | done | `Dream/3R-mix/main.tex`, `notes/paper_inventory.md` |
 | 0513-S5 | 3R-mix three refinement passes (caption shortening + language naturalization + final refine) | done | `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` (16 A4 pages, 0 errors / 0 warnings) |
+
+## Cycle 036 subtask board (closed 2026-05-16)
+
+| ID | Subtask | Status | Canonical artifact |
+| --- | --- | --- | --- |
+| C036-S1 | DEC-20260516-001 launch authorization | done | `decisions/DEC-20260516-001-cycle-036-survey-submission-and-proposal-kickoff.md` |
+| C036-S2 | Part A advisor cover note (vocab-clean per G2) | done | `3R-mix/deliverables/SUBMISSION_PACKAGE_ADVISOR_2026-05-16.md` |
+| C036-S3 | Part A submission record (slots for recipient / channel / SHA256 / submitted_at) | done | `3R-mix/deliverables/SUBMISSION_RECORD_2026-05-16.md` |
+| C036-S4 | Part A Track A relationship internal meta (escape valve; not delivered to advisor) | done | `3R-mix/deliverables/RELATION_TO_TRACK_A_2026-05-16.md` |
+| C036-S5 | Part B style contract (vocab substitution table 22 rows + bilingual sync rule + 候选架构 X naming + candidate-not-final 句式 表) | done | `planning/proposal_dream3r/STYLE_CONTRACT.md` |
+| C036-S6 | Part B 9-section dual outline + chapter mapping + 字数 estimate + cycle 037+ drafting order | done | `planning/proposal_dream3r/OUTLINE_V1.md` |
+| C036-S7 | Part B 内部稿 § 1 ~1800 字 + § 2-§ 9 placeholders | done | `planning/proposal_dream3r/DRAFT_INTERNAL_V1.md` |
+| C036-S8 | Part B 外部稿 § 1 ~1500 字 (代号 候选架构 X) + § 2-§ 9 placeholders; G3a + G3b + G4 vocab firewall + over-claim greps all 0 hits | done | `planning/proposal_dream3r/DRAFT_EXTERNAL_V1.md` |
+| C036-S9 | Cross-spec proposal-cycle risk register additions (3 new rows: R-PROP-VOCAB-1 / R-PROP-CLAIM-1 / R-PROP-SYNC-1) | done | `planning/WORK_RISK_REGISTER.md` (v1.2 additive) |
+| C036-S10 | Cycle 036 log | done | `cycles/CYCLE-20260516-001.md` |
+| C036-S11 | Sync chain (TASK_SNAPSHOT first + WORKFLOW_STATUS + INDEX) | done | this file + `WORKFLOW_STATUS.md` + `INDEX.md` |
+
+Cycle 036 deliverable summary:
+
+```text
+DEC-20260516-001:
+  - authorizes only 13 file ops total (9 NEW + 4 MODIFIED): 3 Part A
+    files in 3R-mix/deliverables/ + 4 Part B files in new
+    planning/proposal_dream3r/ + DEC + cycle log + 4 sync targets
+    (WORK_RISK_REGISTER v1.1 -> v1.2 additive + TASK_SNAPSHOT +
+    WORKFLOW_STATUS + INDEX)
+  - forbids Dream/3R-mix/main.tex / references.bib / notes/* edits,
+    Dream/specs/ edits, Dream/code/ edits, Dream/paradigm/ edits,
+    server actions, checkpoint, training, model inference, real
+    submission action (left to user post-cycle), v0.4 spec delta
+    drafting (B1/B2/B3 from cycle 035 proposal §5 remain
+    proposal-status; each requires its own DEC), § 2-§ 9 proposal
+    body text drafting (§ 1 only this cycle as alignment proof),
+    Dream-vocabulary in advisor cover note, raw "Dream3R" /
+    forbidden patterns in DRAFT_EXTERNAL_V1.md § 1 prose
+
+Part A (3R-mix advisor submission packaging):
+  - SUBMISSION_PACKAGE_ADVISOR_2026-05-16.md ~600 字 Chinese cover
+    note; 6 sections (主旨 / 范围 / 与英文综述差异 / 证据边界 /
+    路线说明 / 请求审阅事项); G2 vocab firewall grep 0 hits on
+    Dream|Dream3R|KYKT|agent|skill|workflow|本地项目|cycle|SPEC-|DEC-|CR-
+  - SUBMISSION_RECORD_2026-05-16.md YAML metadata + checklist with
+    slots for recipient / channel / pdf_sha256 (PowerShell
+    Get-FileHash) / submitted_by / contact / submitted_at;
+    pre-filled fields page_count = 18, ref_count = 44, figure_count
+    = 6, table_count = 5, vocab_grep_verified = 2026-05-16
+  - RELATION_TO_TRACK_A_2026-05-16.md ~600 字 internal meta;
+    documents Track B / Track A relationship; not delivered with
+    PDF; only file allowed to mention Dream-vocabulary
+
+Part B (Dream3R proposal dual-draft kickoff):
+  - new subdirectory planning/proposal_dream3r/ created
+  - STYLE_CONTRACT.md vocab substitution table 22 rows
+    (Dream3R -> 候选架构 X / SPEC-* -> 体系结构设计文档 v0.X /
+    DEC-* -> 项目关键决策点 N / CYCLE-* -> 研发周期 N /
+    CR-1..CR-6 -> 信号校验规则族 (1-6) / W1..W22 -> 实现里程碑 1-22 /
+    F-001/F-002 -> 内部工作规则 / 算力部署约束 / agent / skill /
+    workflow / KYKT / ablate_recurrence.py / ABL-memory-N /
+    ABL-v02-N / NSA three-branch / AnchorBank / StateToken / Mamba
+    hybrid / pointmap L2 = 20.47 / 4DGS asset etc.); §3 sync rule
+    internal-is-master + periodic external snapshot + grep
+    verification + cycle-end sync log; §4 候选架构 X naming
+    introduction; §5 candidate-not-final 句式 contrast (9 禁用 vs
+    允许 句式 对照); §6 sync log (cycle 036 entry: 13 vocab
+    substitutions seeded + § 1 grep verified clean)
+  - OUTLINE_V1.md §2 9-section dual outline (外稿 ~16000 字 / 内稿
+    ~21100 字) + §3 chapter mapping table (外稿 ↔ 内稿 ↔ 复用
+    素材) + §4 cycle 037-042 drafting order (cycle 037 §2 国内外
+    研究现状 first because largest single-section block + most
+    heavily reuses Track B 综述 + double-draft sync stress-tests
+    STYLE_CONTRACT immediately) + §5 §1 风格样本 200 字 双稿对照
+  - DRAFT_INTERNAL_V1.md §1 ~1800 字 covers §1.1 Track A 主线决策
+    起源 (DEC-20260506-001) / §1.2 Dream3R v0.3 当前状态 (W1-W18 +
+    KITTI smoke L2 = 20.47 + 部署服务器 path) / §1.3 Track B 综述
+    四轴反哺 / §1.4 三个核心研究问题 Q1 验证机制路径 (Critic) +
+    Q2 长序列内存路径 (Memory) + Q3 多专家组合路径 (Composer) /
+    §1.5 候选 vs 最终边界 / §1.6 Dream 项目工件引用 (DEC + SPEC +
+    cycle 链); §2-§9 placeholders with TBD comments + 子节
+    suggestions; G4 over-claim grep 0 hits after §1.5 rephrase
+    "本研究的成果不是论证 Dream3R 相对 SOTA 具有压倒性优势, 而是
+    评估..."
+  - DRAFT_EXTERNAL_V1.md §1 ~1500 字 covers §1.1 前馈式三维重建
+    (3R) 研究方向 / §1.2 六类典型几何失败模式 (弱纹理 / 镜面玻璃
+    / 快速运动 / 长基线 / 尺度漂移 / 域外) / §1.3 三组未充分解决
+    问题 (验证 vs 适应 + 长序列内存机制统一 + 多专家组合实证) /
+    §1.4 本研究目标 (代号 候选架构 X 引入 + 4 设计目标) / §1.5
+    研究地位 (candidate-not-final + 不押注单一方案) / §1.6 学术
+    价值与意义 (3 方面贡献); §2-§9 placeholders; G3a vocab firewall
+    grep 0 hits after fixing §元数据 row "完全剥离内部 workflow
+    词汇" -> "完全剥离内部研究流程相关用词"; G3b "Dream3R"
+    case-insensitive grep 0 hits after removing §元数据 文件路径
+    row containing workspace path; G4 over-claim grep 0 hits after
+    §1.5 rephrase "本研究的目标不是论证 X 相对现有方法具有压倒性
+    优势..."
+
+WORK_RISK_REGISTER.md v1.2 additive (+3 rows):
+  - R-PROP-VOCAB-1: external draft Dream-vocabulary leakage; mitigated
+    by STYLE_CONTRACT §2 vocab table + §3 sync rule + per-sync grep
+    verification; cycle 036 close passed verification with 0 hits on
+    full forbidden pattern
+  - R-PROP-CLAIM-1: 开题报告 over-claim 候选架构 X 为最终方案;
+    mitigated by STYLE_CONTRACT §5 candidate-not-final 句式 表 +
+    per-cycle grep verification on draft sections as they land;
+    cycle 036 close passed verification with 0 hits on both internal
+    and external §1
+  - R-PROP-SYNC-1: 双稿语义漂移 (内部稿 §X vs 外部稿 §X 对同一
+    研究问题描述出现实质差异); mitigated by STYLE_CONTRACT §3
+    internal-is-master sync rule + 外部稿 standalone 编辑限制 +
+    每 cycle 末尾 sync log entry
+
+Result:
+  - 13 file ops complete (9 NEW + 4 MODIFIED); stop gates G0-G6 all
+    passed; G2 + G3a + G3b + G4 vocab firewall + over-claim greps
+    all returned 0 hits after one corrective pass each; mainline
+    decisions all in force
+
+Evidence boundary:
+  - packaging + planning + § 1 markdown only; no actual survey
+    submission performed (manual user action post-cycle), no § 2-§ 9
+    proposal body text drafted, no spec change, code change,
+    calibration run, or ablation run validated by cycle 036
+  - Track B 3R-mix manuscript surface unchanged (still wound down at
+    2026-05-15 prose naturalization deliverable; only `deliverables/`
+    received 3 new files)
+  - candidate-not-final boundary preserved: DRAFT_INTERNAL_V1 §1.5 +
+    DRAFT_EXTERNAL_V1 §1.5 explicitly state X / Dream3R is being
+    evaluated, not converged on
+
+Next admissible direction (per DEC-20260516-001 §Next Direction If Passed):
+  A. launch cycle 037 § 2 国内外研究现状 (recommended; largest single
+     block; double-draft sync stress-test)
+  B. user executes actual survey submission action + fills
+     SUBMISSION_RECORD slots (manual action outside any cycle)
+  C. revise OUTLINE_V1 chapter structure before cycle 037 (preserve
+     V1, create V2)
+  D. pause + revise cycle 036 deliverables based on quality review
+  E. return to architecture-first mainline non-proposal work
+     (W22 / W23 / Fast3R omegaconf per cycle 035 §Next Direction D)
+  F. launch one of cycle 035 §Next Direction A-C instead (calibration
+     / long-seq ablation / v0.4 spec delta) -> independent DEC each
+```
 
 ## Cycle 035 subtask board (closed 2026-05-15)
 

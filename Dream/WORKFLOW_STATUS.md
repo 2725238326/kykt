@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-15 (cycle 035 closed — DEC-20260515-001 authorized survey-driven markdown deliverables; 3 new planning files (SOTA_MATRIX_V2 / CRITIC_CALIBRATION_PLAN_V1 / LONG_SEQ_REAL_TABLE_PLAN) + 4 new cross-spec risk rows in WORK_RISK_REGISTER + cycle log; no spec / code / server action; Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14 + 2026-05-15 prose naturalization pass; recommended Track B deliverable `3r_survey_stage_final_2026-05-15_natural.pdf`, 18 A4 pages, 44 references)
+Last updated: 2026-05-16 (cycle 036 closed — DEC-20260516-001 authorized dual-scope packaging + proposal kickoff; Part A 3 files in `3R-mix/deliverables/` (SUBMISSION_PACKAGE_ADVISOR + SUBMISSION_RECORD + RELATION_TO_TRACK_A) package the 2026-05-15 Track B Chinese survey for advisor / school internal review; Part B 4 files in new subdirectory `planning/proposal_dream3r/` (OUTLINE_V1 + STYLE_CONTRACT + DRAFT_INTERNAL_V1 + DRAFT_EXTERNAL_V1) launch the Chinese Dream3R 开题报告 dual-draft scaffold (§ 1 ~1800 内 / ~1500 外 字 complete; § 2-§ 9 placeholders for cycle 037+); WORK_RISK_REGISTER v1.1 → v1.2 additive (+3 rows R-PROP-VOCAB-1 / R-PROP-CLAIM-1 / R-PROP-SYNC-1); G2 + G3a + G3b + G4 vocab firewall + over-claim greps all 0 hits; no spec / code / server action; Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14 + 2026-05-15 prose naturalization pass remains the canonical deliverable for the actual submission)
 
 ## Current Phase
 
@@ -81,7 +81,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Source registry | active; cycle 013 mining pass added SRC-2026-009..015 (7 new rows: MapAnything / Julian Ost AAAI-2026 driving permanence / tttLRM / awesome-dust3r curated index / DUSt3R-MASt3R-VGGT MVS evaluation / NTIRE 2026 / VGGT) | `registry/source_registry.md` |
 | Research unit registry | seeded | `registry/research_unit_registry.md` |
 | Decision registry | seeded | `registry/decision_registry.md` |
-| Cycle logs | active | `cycles/CYCLE-20260515-001.md` (cycle 035 done; survey-driven markdown deliverables + 4 risk register additions + sync chain); `cycles/CYCLE-20260511-001.md` (cycle 034 done; KITTI real-data smoke + Mamba/Gaussian + Track B 3R-mix kickoff); `cycles/CYCLE-20260510-001.md` (cycle 033 done; W1-W16 v0.3 architecture advancement); `cycles/CYCLE-20260508-008.md` (cycle 031 local Memory v0.3 P0 scaffold) |
+| Cycle logs | active | `cycles/CYCLE-20260516-001.md` (cycle 036 done; advisor submission packaging + Dream3R 开题报告 dual-draft kickoff + risk register v1.2 + sync chain); `cycles/CYCLE-20260515-001.md` (cycle 035 done; survey-driven markdown deliverables + 4 risk register additions + sync chain); `cycles/CYCLE-20260511-001.md` (cycle 034 done; KITTI real-data smoke + Mamba/Gaussian + Track B 3R-mix kickoff); `cycles/CYCLE-20260510-001.md` (cycle 033 done; W1-W16 v0.3 architecture advancement); `cycles/CYCLE-20260508-008.md` (cycle 031 local Memory v0.3 P0 scaffold) |
 | Dream3R v0.3 code (Track A) | active; server-verified at `/hdd3/kykt26/code/dream3r/`; first KITTI real-data smoke on `2011_09_26_drive_0001_sync_02` window pair (pointmap L2 20.47 = integration evidence, not trained quality) | `code/dream3r/REVIEW_PROMPT.md`, `code/dream3r/RECENT_PROGRESS.md`, `code/dream3r/NEXT_PHASE_ROADMAP.md` |
 | 3R-mix Chinese survey (Track B) | **wound down 2026-05-14 (route C: arXiv-only)**; 2026-05-14 quality pass added CroCo + MASt3R mechanism + §10 failure modes + `fig:timeline`; 2026-05-15 prose naturalization pass rewrote 10 paragraphs to drop LLM-style enumerated structures, parallel patterns and workflow vocabulary; 18 A4 pages, 44 references, 6 figures (4 TikZ + 2 paper-Fig.1 composites), 5 booktabs tables, 0 LaTeX errors / 0 warnings; deliberately decoupled from Dream/KYKT internal vocabulary | `Dream/3R-mix/README.md`, `Dream/3R-mix/NEW_CHAT_HANDOFF.md`, `Dream/3R-mix/main.tex`, `Dream/3R-mix/deliverables/3r_survey_stage_final_2026-05-15_natural.pdf` |
 | Experiment planning | active; local v0.3 P0 scaffold now exists and ABL-memory-0 passed, but later ablations still require separate DEC + gate | `experiments/prototypes/memory_v03_p0/outputs/summary_go_no_go.md` |
@@ -102,7 +102,9 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | 3R Composer finalist spec | draft (L1); L2 case cards drafted in cycle 009 (paper-derived); CASE-COMPOSER-03 v2 row promoted to canonical per DEC-20260504-004; CASE-COMPOSER-04 KYKT-metadata-derived added in cycle 012 (advances G2 inferred -> inferred-with-real-inventory-anchor; G2 NOT closed); CASE-COMPOSER-05 added cycle 014 as VGGT capability-card gap addendum (per-card gap, no v2.2 contract revision); demo storyboard `STORY-20260505-004-composer.md` drafted cycle 012 | `specs/SPEC-20260504-001-3r-composer.md` + `cases/CASE-20260505-COMPOSER-01..05.md` + `storyboards/STORY-20260505-004-composer.md` |
 | Cross-spec signal contract | **v2.1 active** (per DEC-20260505-001): additive revision over v2 — adds "Forward-reference null protocol" subsection formalizing the pattern exercised by cycle-009 + cycle-010 cards; v2 substance unchanged (alpha = 0.5 inferred; signal owner table; CR-1..CR-6; cost_adjusted_match; route_regret cost-typed). v1 + v2 prose preserved. Cycle 011 G5 closed by this revision; cycle 010 G4 closed-by-documentation under the protocol. v2 -> v3 candidates 8x8 grid partition + identity_consistency threshold pinning deferred. | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` + `decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-target.md` |
 | Literature guidance board | v1 active; post-cycle-013 SPINE refresh fold-in done. PAPER_RELATED_WORK_SKELETON.md upgraded cycle 013 to prose draft. Cycle 014 added PAPER_PHASE2_BLUEPRINT.md as a claim-safe paper-writing plan; G7 advanced to blueprint anchor but not closed | `literature/INDEX.md` + four `literature/SPINE_*.md` + `literature/CRITICAL_NOTES.md` + `literature/PAPER_RELATED_WORK_SKELETON.md` + `literature/PAPER_PHASE2_BLUEPRINT.md` |
-| Work risk register | v1 active; consolidates per-spec + cross-spec risks | `planning/WORK_RISK_REGISTER.md` |
+| Work risk register | v1.2 active (cycle 036 +3 proposal-cycle rows R-PROP-VOCAB-1 / R-PROP-CLAIM-1 / R-PROP-SYNC-1 appended after v1.1 cycle 035 +4 cross-spec rows R-OOD-1 / R-EXT-PRIOR-1 / R-4DGS-LIC-1 / R-INPUT-EXT-1); consolidates per-spec + cross-spec + proposal-cycle risks | `planning/WORK_RISK_REGISTER.md` |
+| Dream3R 开题报告 dual-draft (Track C) | active; cycle 036 kickoff — § 1 ~1800 内 + ~1500 外 字 complete as style-and-vocabulary alignment proof; § 2-§ 9 placeholders for cycle 037+; G2 + G3a + G3b + G4 vocab firewall + over-claim greps all 0 hits; 外部稿 uses 代号 "候选架构 X" / "本研究架构" (no raw "Dream3R" in main text) | `planning/proposal_dream3r/OUTLINE_V1.md` + `STYLE_CONTRACT.md` + `DRAFT_INTERNAL_V1.md` + `DRAFT_EXTERNAL_V1.md` |
+| Track B advisor submission packaging | active; cycle 036 packaging — Chinese cover note (~600 字, G2 vocab-clean) + submission record with recipient / channel / SHA256 / submitted_at slots + Track A relationship internal meta (not delivered to advisor); actual submission action (email / IM / portal / offline) is post-cycle user action | `3R-mix/deliverables/SUBMISSION_PACKAGE_ADVISOR_2026-05-16.md` + `SUBMISSION_RECORD_2026-05-16.md` + `RELATION_TO_TRACK_A_2026-05-16.md` |
 | Demo storyboard template | active form; all 4 finalists now have draft storyboards (Critic from cycle 011 = D3 first demo target; Memory + Permanence + Composer from cycle 012); none authorized for showing; promotion to `approved-for-showing` requires a separate per-finalist DEC | `templates/demo_storyboard.md` + `storyboards/STORY-20260505-001..004.md` |
 | Teacher audience profile | placeholder; awaits user input to unblock D3 | `paradigm/TEACHER_AUDIENCE_PROFILE.md` |
 | Source mining (cycle 005 pass) | complete for visual priors, depth priors, active perception, event VO | `sources/FRONTIER_SOURCE_MAP.md` (Cycle 005 Source Mining Pass section) |
@@ -129,45 +131,55 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 035 closeout recommendation (cycle 035 closed 2026-05-15; survey-driven markdown deliverables landed; Track A architecture-first mainline unchanged; Track B 3R-mix wound down 2026-05-14 to arXiv-only route):
+Cycle 036 closeout recommendation (cycle 036 closed 2026-05-16; Part A 3 advisor submission packaging files + Part B 4 Dream3R 开题报告 dual-draft kickoff files + WORK_RISK_REGISTER v1.2 + cycle log + sync chain landed; Track A architecture-first mainline unchanged; Track B 3R-mix wound down 2026-05-14 + 2026-05-15 prose naturalization deliverable remains the canonical PDF for the actual submission):
 
 ```text
-Cycle 035 landed 4 survey-driven markdown deliverables (per
-DEC-20260515-001 + `planning/SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md` §4
-P0-1..P0-4). Next admissible direction (pick at most one to launch
-next; each option requires its own DEC):
+Cycle 036 landed 13 file ops (9 NEW + 4 MODIFIED) per
+DEC-20260516-001. Next admissible direction (pick at most one to
+launch next; A / C / D / E / F each require their own DEC; B is a
+manual user action):
 
-  A. Calibration data collection on KITTI (CRITIC_CALIBRATION_PLAN_V1
-     execution; per-failure-mode threshold standardization on C4
-     Critic 5 sub-signals; requires F-002 server authorization;
-     CRITIC_CALIBRATION_PLAN_V1 §8 5-metric validation gate must hold).
+  A. Launch cycle 037 to draft § 2 国内外研究现状 in both
+     DRAFT_INTERNAL_V1.md and DRAFT_EXTERNAL_V1.md (recommended
+     starting point: § 2 is the largest single-section block
+     ~3500 外 + ~4000 内 字, most heavily reuses Track B 综述
+     §1-§10 + 5 tables + 6 figures + 44 references, and double-
+     draft sync stress-tests the STYLE_CONTRACT vocabulary
+     substitution table immediately; per OUTLINE_V1.md §4 drafting
+     order).
 
-  B. ablate_recurrence on KITTI long windows (LONG_SEQ_REAL_TABLE_PLAN
-     execution; 4 variants × windows ∈ {10, 20, 50, 100} staged
-     execution; requires F-002 server authorization; LONG_SEQ_REAL_TABLE_PLAN
-     §7 6-metric validation gate must hold; B4 budget-governance subtype
-     coverage gap acknowledged).
+  B. User executes the actual survey submission action (email /
+     IM / portal / offline) and fills the SUBMISSION_RECORD_2026-
+     05-16.md slots (recipient / channel / pdf_sha256 via
+     PowerShell Get-FileHash / submitted_by / contact /
+     submitted_at). This is a manual user action outside any
+     cycle. Cover note + submission record + Track A relationship
+     meta are all packaging-ready.
 
-  C. v0.4 spec delta drafting (B1 C4 Critic path split: verification vs
-     test-time adaptation / B2 output asset contract: 4D pointmap +
-     dynamic mask + 4DGS asset interfaces / B3 input extension axis:
-     pose / intrinsics / sparse depth / video). Each delta = independent
-     DEC + markdown-only spec addendum to SPEC-20260506-004 v0.2.
+  C. Revise OUTLINE_V1.md chapter structure before cycle 037
+     (merge / split sections, reorder, change 字数 distribution).
+     Per STYLE_CONTRACT §6 sync log discipline, OUTLINE_V1 is
+     preserved and OUTLINE_V2 created. Useful if you want to
+     change the 9-section default to something tighter.
 
-  D. Resolve Fast3R `omegaconf` dependency in dream3r conda env
-     (carry-over from cycle 034; independent install-authorizing DEC).
+  D. Pause and revise the cycle 036 deliverables based on
+     quality review — e.g., adjust the §1 风格样本 if it doesn't
+     read right; adjust the 22-row vocabulary substitution table;
+     adjust the candidate-not-final 句式 contrast 表.
 
-  E. Pause and revise the proposal based on cycle 035 deliverable
-     quality (`planning/SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md` status
-     remains draft until separate DEC formally accepts it as v0.4
-     design input).
+  E. Return to architecture-first mainline non-proposal work
+     (W22 visualization pack / W23 expert adapter loading
+     prerequisites / Fast3R `omegaconf` resolution per cycle 035
+     §Next Direction option D). Each independent DEC.
 
-  F. Return to architecture-first mainline non-survey work (e.g., W22
-     visualization pack, W23 expert adapter loading prerequisites per
-     `code/dream3r/NEXT_PHASE_ROADMAP.md`).
+  F. Launch one of the cycle 035 §Next Direction options A-C
+     (calibration run on KITTI per CRITIC_CALIBRATION_PLAN_V1 /
+     long-seq ablation per LONG_SEQ_REAL_TABLE_PLAN / v0.4 spec
+     delta drafting B1/B2/B3) instead — cycle 036 close does not
+     preempt those candidates. Each independent DEC.
 ```
 
-Track A architecture-first remains the mainline per DEC-20260506-001. The proposal upstream (SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md) remains `draft, awaiting user review`; cycle 035 only landed its P0 markdown deliverables, did not ratify it as a v0.4 spec design input. Track B paper writing remains support; it is not the project's primary output.
+Track A architecture-first remains the mainline per DEC-20260506-001. The proposal upstream (SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md) remains `draft, awaiting user review`; cycle 036 consumed it as planning input feeding OUTLINE_V1 §2 §5 §8 §9 素材, not as ratified v0.4 spec design. The Dream3R 开题报告 itself is candidate-not-final per DEC-20260501-011 — the 外部稿 uses 代号 "候选架构 X" / "本研究架构" specifically to encode this status into the academic language. The actual Track B submission is the user's post-cycle action; cycle 036 only delivered the packaging.
 
 Still blocked on user approval:
 
