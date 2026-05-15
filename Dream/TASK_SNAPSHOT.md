@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-15 (Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14, followed by 2026-05-15 prose naturalization pass — 10 paragraphs rewritten to drop LLM tells; current recommended deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`, 18 A4 pages, 44 references)
+Last updated: 2026-05-15 (cycle 035 closed: survey-driven markdown deliverables landed — `planning/SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md` proposal + 3 new planning files (SOTA_MATRIX_V2 / CRITIC_CALIBRATION_PLAN_V1 / LONG_SEQ_REAL_TABLE_PLAN) + 4 new cross-spec risk rows in WORK_RISK_REGISTER + DEC-20260515-001; status flipped idle → cycle 035 in_progress → idle on close; Track A Dream3R v0.3 server-verified through cycle 034 unchanged; Track B 3R-mix Chinese survey wound down 2026-05-14 + 2026-05-15 prose naturalization pass — 10 paragraphs rewritten to drop LLM tells; recommended Track B deliverable `3R-mix/deliverables/3r_survey_stage_final_2026-05-15_natural.pdf`, 18 A4 pages, 44 references)
 
-Status: **idle** (cycles 033 + 034 closed; 3R-mix Track B polished to refined deliverable on 2026-05-13; awaiting user direction on next workstream)
+Status: **idle** (cycle 035 closed 2026-05-15: 4 survey-driven markdown deliverables landed + WORK_RISK_REGISTER bumped + cycle log + sync chain — no spec / code / server action; cycles 033 + 034 closed earlier; 3R-mix Track B polished to refined deliverable on 2026-05-13; awaiting user direction on next workstream)
 
 ## Why this file exists
 
@@ -23,7 +23,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ```text
 task_id:    none-active
 phase:      idle between cycles
-cycles:     032 + 033 + 034 closed; Track B 3R-mix survey polished
+cycles:     032 + 033 + 034 + 035 closed; Track B 3R-mix survey polished
 status:     idle
 ```
 
@@ -62,6 +62,77 @@ No active cycle. Two parallel tracks are at a checkpoint:
 | 0513-S3 | 3R-mix paper Fig.1 embedding (DUSt3R / VGGT / MonST3R / CUT3R) | done | `figures/`, `main.tex` |
 | 0513-S4 | 3R-mix source-checked rewrites (MV-DUSt3R+ / Fast3R / VGGT / TTT3R + 7 × 2026 preprints) | done | `Dream/3R-mix/main.tex`, `notes/paper_inventory.md` |
 | 0513-S5 | 3R-mix three refinement passes (caption shortening + language naturalization + final refine) | done | `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` (16 A4 pages, 0 errors / 0 warnings) |
+
+## Cycle 035 subtask board (closed 2026-05-15)
+
+| ID | Subtask | Status | Canonical artifact |
+| --- | --- | --- | --- |
+| C035-S1 | Survey-driven optimization proposal (cycle 035 upstream) | done | `planning/SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md` (status preserved at draft) |
+| C035-S2 | DEC-20260515-001 launch authorization | done | `decisions/DEC-20260515-001-cycle-035-survey-driven-markdown-deliverables-launch.md` |
+| C035-S3 | SOTA matrix V2 (re-label SPEC-007 v0.2 Tier 1-5 against survey four-axis + input-extension bonus axis) | done | `planning/SOTA_MATRIX_V2.md` |
+| C035-S4 | Critic calibration plan V1 (per-failure-mode threshold standardization, plan-only) | done | `planning/CRITIC_CALIBRATION_PLAN_V1.md` |
+| C035-S5 | Long-seq real-data table plan (ablate_recurrence extension to KITTI ≥10 windows, plan-only) | done | `planning/LONG_SEQ_REAL_TABLE_PLAN.md` |
+| C035-S6 | Cross-spec risk register additions (4 new rows: R-OOD-1 / R-EXT-PRIOR-1 / R-4DGS-LIC-1 / R-INPUT-EXT-1) | done | `planning/WORK_RISK_REGISTER.md` (v1.1 additive) |
+| C035-S7 | Cycle 035 log | done | `cycles/CYCLE-20260515-001.md` |
+| C035-S8 | Sync chain (TASK_SNAPSHOT first + WORKFLOW_STATUS + INDEX) | done | this file + `WORKFLOW_STATUS.md` + `INDEX.md` |
+
+Cycle 035 deliverable summary:
+
+```text
+DEC-20260515-001:
+  - authorizes only writing 3 new planning files + appending 4 risk rows
+    to WORK_RISK_REGISTER + sync chain + cycle log
+  - forbids Dream/specs/ edits, Dream/code/ edits, server actions,
+    checkpoint, training, frontend, ablation runs, evaluate_real_sequence
+    runs, Track B 3R-mix edits, RECENT_PROGRESS / NEXT_PHASE_ROADMAP edits,
+    v0.4 spec delta drafting (B1/B2/B3 from proposal remain proposal-status)
+
+3 new planning files (cycle 035 P0-1/P0-2/P0-3 deliverables):
+  - SOTA_MATRIX_V2.md: re-labels 19 comparator entries (T1 in-pool 7
+    + T2 dropped 3 + T3 oos 1 + T4 foundation 1 + T5 orthogonal 8) plus
+    Point3R / Mem3R / G-CUT3R / Pow3R / MASt3R-SfM appendix entries against
+    five axes (failure modes / long-seq memory / test-time / output asset
+    + input extension bonus); identifies 4 first-class-support gaps
+  - CRITIC_CALIBRATION_PLAN_V1.md: maps survey six failure modes to C4
+    Critic five sub-signals; defines sub-sample sampling rules per mode;
+    outlines method A (distribution-quantile P95) vs method B (supervised
+    classifier) with selection decision tree; sets 5-metric validation gate
+  - LONG_SEQ_REAL_TABLE_PLAN.md: maps 4 ablate_recurrence variants
+    (baseline_cross_attention / mamba_hybrid / no_nsa / no_stable_memory)
+    to survey §6 four memory mechanism types; defines 4 long-seq-specific
+    metrics (scale_drift_proxy / memory_decay_proxy / anchor_fill_rate /
+    retrieval_diversity); outlines windows=10/20/50/100 staged execution
+    with 6-metric validation gate; explicit B4 budget-governance subtype
+    gap noted
+
+WORK_RISK_REGISTER.md v1.1 additive:
+  - R-OOD-1: OOD detection path absent in C4 Critic
+  - R-EXT-PRIOR-1: external prior vs geometry conflict unmodeled in
+    CR-1..CR-6
+  - R-4DGS-LIC-1: 4DGS asset license chain undocumented in W18 GaussianHead
+  - R-INPUT-EXT-1: input extension axis (pose / sparse depth / video) absent
+
+Result:
+  - 7 artifacts present (DEC + cycle log + 3 plans + risk register + this
+    sync chain); stop gates G0-G5 all passed; visual scan confirmed no
+    forbidden-action claims in the 3 new files
+
+Evidence boundary:
+  - planning markdown only; no calibration run, no ablation run, no spec
+    change, no code change, no server action validated by cycle 035
+  - 3 new plans explicitly mark themselves "plan-only; execution needs
+    independent DEC" in their §1 + Metadata sections
+  - proposal upstream status remains draft until separate DEC formally
+    accepts it as v0.4 design input
+
+Next admissible direction (per DEC-20260515-001 §Next Direction If Passed):
+  A. calibration data collection on KITTI -> requires independent DEC + F-002
+  B. ablate_recurrence on KITTI long windows -> requires independent DEC + F-002
+  C. v0.4 spec delta drafting (B1 Critic path split / B2 output asset
+     contract / B3 input extension axis) -> requires independent DEC per delta
+  D. pause + revise proposal based on cycle 035 deliverable quality
+  E. return to architecture-first mainline non-survey work (W22 / W23)
+```
 
 Cycle 031 active boundary:
 
