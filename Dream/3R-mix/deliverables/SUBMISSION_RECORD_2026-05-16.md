@@ -11,7 +11,8 @@ submission_metadata:
 primary_deliverable:
   filename: 3r_survey_stage_final_2026-05-15_natural.pdf
   relative_path: Dream/3R-mix/deliverables/3r_survey_stage_final_2026-05-15_natural.pdf
-  pdf_sha256: __<runtime fill via PowerShell Get-FileHash -Algorithm SHA256>__
+  pdf_sha256: A0763DB7AB7A1E8E1427D4DCC8CB62BC15F94F3F2D915AD0BFBB235CC99C64B0
+  pdf_sha256_computed_at: 2026-05-16 (PowerShell Get-FileHash -Algorithm SHA256; read-only operation, did not modify the PDF)
   page_count: 18
   ref_count: 44
   figure_count: 6
@@ -40,7 +41,7 @@ publication_route:
 
 post_submission_actions_pending:
   - 用户实际执行提交动作（email / 上传 / 当面）
-  - 提交完成后回填 recipient + channel + submitted_by + contact + pdf_sha256 字段
+  - 提交完成后回填 recipient + channel + submitted_by + contact 字段（pdf_sha256 已于 2026-05-16 预填）
   - 提交后等待导师 / 学校反馈；如有实质性内容反馈则启动新的修订 cycle
 
 audit_chain:
@@ -54,8 +55,9 @@ audit_chain:
 
 ## 提交动作 checklist（用户执行时填写）
 
-- [ ] 计算 PDF SHA256 并回填到上方 `pdf_sha256` 字段
+- [x] 计算 PDF SHA256 并回填到上方 `pdf_sha256` 字段（已于 2026-05-16 预填，SHA256 = A0763DB7AB7A1E8E1427D4DCC8CB62BC15F94F3F2D915AD0BFBB235CC99C64B0）
   - PowerShell 命令：`Get-FileHash -Algorithm SHA256 .\3r_survey_stage_final_2026-05-15_natural.pdf`
+  - 如重新生成 PDF 需重算并替换上方 SHA256
 - [ ] 决定提交渠道（email / IM / portal / offline），回填到 `channel` 字段
 - [ ] 填写导师姓名 / 学院联系人到 `recipient` 字段
 - [ ] 填写作者署名 + 邮箱到 `submitted_by` + `contact` 字段

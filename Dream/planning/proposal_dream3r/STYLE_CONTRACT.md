@@ -45,6 +45,25 @@ Dream3R 开题报告按用户决策采用双稿:
 | StateToken / Mamba hybrid | "状态记忆向量" / "Mamba-Transformer 混合循环结构" | 中文化 |
 | pointmap L2 = 20.47 | "点图 L2 误差 20.47 (作为集成证据, 非训练后质量)" | 数值保留, 上下文标注 |
 | 4DGS asset | "四维高斯渲染资产 (4D Gaussian Splatting)" | 首次出现展开英文 |
+| C1 Perceiver | 感知模块 / 视觉骨干 | 模块名中文化 (cycle 038 §4 添加) |
+| C2 Memory | 记忆模块 | 同上 |
+| C3 Permanence | 永久性模块 | 同上 |
+| C4 Critic | 校验模块 | 同上 |
+| C5 Composer | 编排模块 / 多专家组合层 | 同上 |
+| C6 Bus | 总线模块 / 信号契约层 | 同上 |
+| Pillar A / Pillar D | 主线 A / 主线 D | 主张层中文化 (cycle 038 §4 添加) |
+| Delta N (v0.2 spec delta) | "(内部设计文档中的某项 delta)" / omit | spec ID 不暴露 |
+| A5 reroute_model | 路由切换动作 / 切换模型动作 | 动作名中文化 |
+| repair actions 0/1/2/3/4/5 | 修复动作 0/1/2/3/4/5 | 数字保留, 动作名中文化 |
+| conflict_score / theta_conflict | 冲突评分 / 冲突阈值 | 信号 + 阈值中文化 |
+| capability_match (spread) | 能力匹配度 (跨度) | 描述符中文化 |
+| cost_adjusted_match | 成本调整后的匹配度 | 同上 |
+| epsilon_tie | 平局窗口 | 同上 |
+| fail_fast / fail_fast_threshold | 早期失败 (阈值) | 同上 |
+| evidence label | 证据标签 | 信号属性中文化 |
+| forward-reference null protocol | 前向引用空协议 | v2.1 子协议中文化 |
+| permanence_link | 永久性 link | 信号路径名半中文化 |
+| signal names (suppress_static_write / latent_drift_proxy / write_value_estimate 等) | 保留英文 (作为引号包裹的信号名) | signal ID 不强制中文化, 上下文以中文解释 |
 
 **新增规则**: 任何上表未列出的内部术语在内部稿首次出现时, 在外部稿同步出现时必须在本表追加一行, 并在 §6 sync log 记录新增。
 
@@ -116,6 +135,8 @@ per DEC-20260501-011 (thesis reframe; Dream3R 为 candidate-not-final) + DEC-202
 
 ```text
 2026-05-16 · cycle 036 close · §1 initial draft created in both internal and external · 13 vocab substitutions seeded in §2 · DRAFT_EXTERNAL_V1.md §1 grep verified clean (0 hits on cycle|SPEC-|DEC-|CR-N|agent|skill|workflow|本地项目 + 0 hits on Dream3R case-insensitive)
+2026-05-16 · cycle 037 close · §2 国内外研究现状 drafted in DRAFT_INTERNAL_V1.md (~4200 字, Dream-vocabulary master) then snapshotted to DRAFT_EXTERNAL_V1.md (~3700 字, vocab-clean using 代号 候选架构 X / 本研究架构) · 7 sub-sections (2.1 基础谱系 / 2.2 多视角规模化 / 2.3 视频动态 4D / 2.4 长序列内存四类 B1-B4 / 2.5 测试时三类 C1-C3 / 2.6 输出资产三类 D1-D3 / 2.7 综述四轴覆盖矩阵 + 落点) · vocab substitutions used (delta over §1 seed; no new rows added to §2 substitution table this cycle, all substitutions covered by existing 22-row seed): Dream3R → 候选架构 X / 本研究架构; SPEC-20260506-004 v0.2 / SPEC-20260508-001 v0.3 / SPEC-20260507-001 v0.2 → omit (replaced with paraphrase via "多专家组合层" / "记忆模块" / "比较图谱" 等中文化命名); CYCLE-20260515-001 / cycle 035 → omit (replaced with "本研究后续阶段计划" / "同期内部规划文档"); CR-1..CR-6 → "信号校验规则族 (1-6)"; DEC-20260504-002 → "本研究的不押注单一支线设计"; W17/W18 → omit (replaced with "已经实装到张量契约级别"); AnchorBank K=256 → "空间锚点存储 (容量 256)"; NSA three-branch → "三分支稀疏注意力 (压缩 / 选择 / 滑窗)"; StateToken → "状态记忆向量"; Mamba hybrid → "Mamba-Transformer 混合循环结构"; 4DGS asset → "4DGS 资产 / 四维高斯渲染资产 (4D Gaussian Splatting)"; SOTA_MATRIX_V2 / WORK_RISK_REGISTER / CRITIC_CALIBRATION_PLAN_V1 / LONG_SEQ_REAL_TABLE_PLAN → "若干本研究的内部规划文档" / "本研究的明确实证缺口" / "本研究的实证缺口" 等高层化命名 · G3a vocab firewall grep on full DRAFT_EXTERNAL_V1.md (pattern cycle|SPEC-|DEC-|CR-N|agent|skill|workflow|本地项目): 0 hits · G3b Dream3R case-insensitive grep on full DRAFT_EXTERNAL_V1.md: 0 hits · G4 over-claim grep on both drafts §2 (pattern 证明.{0,10}优于|最佳.{0,5}架构|最终.{0,5}架构|X 解决了|Dream3R 解决了): 0 hits on both
+2026-05-16 · cycle 038 close · §4 研究方案 (外部稿) / §4 Dream3R v0.3 架构 (内部稿) drafted in DRAFT_INTERNAL_V1.md (~4000 字 Dream-vocabulary master, C1-C6 编号 + Delta 1/2/3/5/6 引用 + CR-1..CR-6 引用) then snapshotted to DRAFT_EXTERNAL_V1.md (~3000 字 vocab-clean 六模块中文化命名) · 8 sub-sections (4.1 整体设计 + 帧预算 / 4.2 感知模块 C1 Perceiver DINOv3-S / 4.3 记忆模块 C2 三分支 + 锚点存储 + 状态记忆向量 + Mamba 混合 / 4.4 永久性模块 C3 Slot Attention + permanence_link / 4.5 校验模块 C4 Sampson + depth + 共视 + 修复动作 0-5 / 4.6 编排模块 C5 7 专家池 / 4.7 总线模块 C6 六条信号校验规则 / 4.8 与现有 3R 系统的结构差异) · §2 vocab substitution table appended 19 new rows (C1-C6 → 感知 / 记忆 / 永久性 / 校验 / 编排 / 总线 模块; Pillar A/D → 主线 A/D; Delta N → omit; A5 reroute_model → 路由切换动作; repair actions 0-5 → 修复动作 0-5; conflict_score / theta_conflict → 冲突评分 / 冲突阈值; capability_match spread → 能力匹配度跨度; cost_adjusted_match → 成本调整后的匹配度; epsilon_tie → 平局窗口; fail_fast → 早期失败; evidence label → 证据标签; forward-reference null protocol → 前向引用空协议; permanence_link → 永久性 link; signal names suppress_static_write / latent_drift_proxy / write_value_estimate → 保留英文上下文中文解释) · 22-row seed 表升级到 41 行总计 · 1 corrective edit needed: cycle 037 在 grep 之后追加的 DRAFT_EXTERNAL_V1 元数据 row "最后更新 | 2026-05-16 (cycle 037 §2 起草; +~3700 字)" 在 cycle 037 prose-only G3a 范围外, 但 cycle 038 全文件 G3a 范围内触发 1 hit; rephrased 为 "最后更新 | 2026-05-16 (§2 + §4 起草, 累计正文 +~7000 字)" 去除 cycle 字串 · G3a full-file grep 复跑 0 hits · G3b 0 hits · G4 0 hits on both drafts (full file)
 ```
 
 cycle 037+ 起草 §2 后追加。
