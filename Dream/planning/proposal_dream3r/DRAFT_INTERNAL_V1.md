@@ -4,9 +4,9 @@
 |---|---|
 | 文件类型 | 开题报告内部稿 (Dream-vocabulary; 不外发) |
 | 创建日期 | 2026-05-16 |
-| 最后更新 | 2026-05-16 (cycle 037 §2 ~4200 字 + cycle 038 §4 ~4000 字, 累计正文 +~8200 字) |
-| 状态 | v1 draft; §1 + §2 + §4 完整起草; §3 / §5-§9 placeholder, 待 cycle 039+ 起草 |
-| 授权根 | DEC-20260516-001 (cycle 036 launch) + DEC-20260516-002 (cycle 037 §2) + DEC-20260516-003 (cycle 038 §4) |
+| 最后更新 | 2026-05-16 (cycle 037 §2 ~4200 字 + cycle 038 §4 ~4000 字 + cycle 039 §3 ~1800 字 + §6 ~1300 字, 累计正文 +~11300 字) |
+| 状态 | v1 draft; §1 + §2 + §3 + §4 + §6 完整起草; §5 / §7 / §8 / §9 placeholder, 待 cycle 040+ 起草 |
+| 授权根 | DEC-20260516-001 (cycle 036 launch) + DEC-20260516-002 (cycle 037 §2) + DEC-20260516-003 (cycle 038 §4) + DEC-20260516-004 (cycle 039 §3 + §6) |
 | 配套文件 | OUTLINE_V1.md (章节结构) + STYLE_CONTRACT.md (双稿契约) + DRAFT_EXTERNAL_V1.md (外部稿) |
 | 双稿关系 | 本稿是 master per STYLE_CONTRACT §3 规则 1; 外部稿是 internal 周期性快照 |
 | 词汇 | 含 Dream / Dream3R / cycle / SPEC / DEC / CR / W-task / Track A / Track B / 服务器 path / agent 等 |
@@ -170,9 +170,82 @@ Dream3R v0.3 在四轴上的整体定位: **不押注单一支线**, 而是在 C
 
 ## §3 候选研究问题
 
-<!-- TBD cycle 039; 起草目标 ~1800 字 -->
-<!-- 上游素材: §1.4 三个核心研究问题展开 + DEC-20260501-011 + DEC-20260504-002 -->
-<!-- 子节建议: 3.1 Q1 验证机制路径 (Critic) + 3.2 Q2 长序列内存路径 (Memory) + 3.3 Q3 多专家组合路径 (Composer) + 3.4 Critic / Memory / Permanence / Composer 4 finalist 模块的 no-all-in 设计 + 3.5 candidate-not-final 边界声明 -->
+本章在 §1.4 提出的三个核心研究问题 (Q1 验证机制 / Q2 长序列内存 / Q3 多专家组合) 基础上, 把每个 Q 与 §2 综述谱系 + §4 Dream3R v0.3 架构两侧的素材对齐, 给出 (a) 该研究问题的 gap identification, (b) Dream3R v0.3 在当前迭代中的候选路径, (c) falsification 路径在 §5 评测设计中的入口, (d) candidate-not-final 边界声明。三个 Q 之后, §3.4 阐明四个 finalist 模块 (Critic / Memory / Permanence / Composer) 的独立性 (per DEC-20260504-002 no-all-in), §3.5 给出本研究的整体研究地位声明 (per DEC-20260501-011 candidate-not-final)。
+
+### 3.1 Q1 验证机制的架构层落地 (Critic 路径)
+
+**研究问题陈述**: 在前馈式 3R 架构中, 几何验证 (无参数更新的一致性检查 + 修复) 与测试时适应 (TTT 风格的参数更新) 在架构层应否拆为两条独立路径? 拆分后两条路径的边际贡献能否分离?
+
+**Gap identification**: 综述 §7 (映射到 §2.5) 区分了测试时三类机制 — C1 一致性优化 (Test3R, 无参数更新)、C2 测试时参数更新 (TTT3R)、C3 先验注入 (G-CUT3R / Pow3R / MASt3R-SfM)。现有 3R 系统中, 这三类机制以独立工作发表, 缺乏在单一架构内的并置评估。具体而言: Test3R 走 image-triplet 一致性优化, 不更新模型参数; TTT3R 把递推 3R 模型的状态更新当成在线 test-time training, 通过反向传播在推理阶段动态调整记忆更新速率。两者在性质上不同 (一个是固定模型 + 输出修正, 另一个是动态模型 + 参数更新), 但在哪一个 + 在何种条件下 + 边际贡献多大, 现有文献无法回答。
+
+**Dream3R v0.3 候选路径**: 当前 C4 Critic (per SPEC-20260506-004 v0.2 §C4) 是"验证 + 修复"hybrid — 含 Test3R 风格的几何一致性验证 (Sampson / depth / 共视 conflict 三类信号, 无参数更新) + repair action 0/1/2 (rerun_local_region / rerun_global / A5 reroute_model 切换专家, 无参数更新) + repair action 3/4/5 stub (未实装)。TTT3R 风格的测试时参数更新路径未拆出。这一 hybrid 配置使得"几何验证 vs 参数适应"两类机制的边际贡献在 Dream3R v0.3 当前实装下无法分离。
+
+为分离这两类机制, cycle 035 SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL §5 B1 提出 v0.4 spec delta 候选: 在架构层把 C1 一致性优化与 C2 TTT 参数更新拆为两条独立路径, 让 C4 Critic 专注于 verification + repair, 另起一个 TTT 路径模块 (暂记 C4', 命名候选) 负责测试时参数更新。该 v0.4 spec delta 当前仍 proposal-status, 未在 cycle 039 起草; §3.1 在开题报告语义层把它作为本研究的明确实证缺口与候选设计方向。
+
+**Falsification 路径**: 在 §5 实验设计中, ABL-v02-1..9 (SPEC-005 v0.2) 主要消融 v0.3 架构层 deltas, 不直接评估 C4 Critic 拆分前后的边际贡献。cycle 035 CRITIC_CALIBRATION_PLAN_V1 把六类失败模式 → C4 五个 sub-signal 的标定方案 ready, 但执行 gated on F-002 server authorization。Q1 的正面 evaluation 需要 (a) v0.4 spec delta B1 起草并实装 (post-开题报告 work), 然后 (b) 在 KITTI 长序列上对照"hybrid C4 v0.3" vs "拆分后 v0.4 (C4 + C4')"两组配置, 度量 route_regret + 修复后 pointmap L2 + 测试时算力开销。在开题报告时间窗口内 (M1-M5), Q1 的 evaluation 边界停留在 plan + spec-delta-drafted 阶段, 不承诺实证拆分对比。
+
+**candidate-not-final 边界**: Q1 不主张 Critic 拆分路径优于 hybrid 路径; 也不主张 hybrid 路径优于 TTT3R 风格独立适应路径。Q1 是 "评估两条路径的边际差异是否在标准 3R 评测下显著存在" 的研究问题, 不是 "证明哪条路径更优" 的结论性命题。
+
+### 3.2 Q2 长序列内存四类机制的架构层统一 (Memory 路径)
+
+**研究问题陈述**: 在单一 3R 架构的 C2 Memory 模块内, 同时实装综述 §6 抽象出的长序列内存四类机制 (B1 递推状态 / B2 空间指针 / B3 混合记忆 / B4 缓存治理) 是否可行? 四类机制间的协同 / 冲突如何在长序列真实评测下显现?
+
+**Gap identification**: 综述 §6 (映射到 §2.4) 把长序列 3R 工作分为四类互不互斥的内存机制支线。现有系统每个只占四类机制中的一档: CUT3R / STream3R / LongStream 走 B1 递推状态; Spann3R / Point3R 走 B2 空间指针; LONG3R / LoGeR / Mem3R 走 B3 混合记忆; OVGGT / PAS3R / FILT3R 走 B4 缓存治理。换言之, 四类机制在文献里是 disjoint 的; 一个系统选定一档之后, 其他三档在架构层缺席。这导致两个未回答的问题: (a) 单一架构能否同时实装四档而仍维持单帧 30-50 ms 帧预算 (per §4.1 Delta 1)? (b) 四类机制 jointly 实装时, 是否出现协同 (e.g., 空间指针 + 递推状态 的双通道写入提升长序列稳定性) 或冲突 (e.g., 缓存治理的剪枝策略 与混合记忆的注意力 weight 出现 contention)?
+
+**Dream3R v0.3 候选路径**: C2 Memory (per SPEC-20260508-001 v0.3 addendum, supersedes Delta 3) 通过 NSA three-branch (compressed / selected / sliding) + AnchorBank K=256 + StateToken + Mamba-Transformer 混合循环结构覆盖前三档:
+
+- B1 递推状态 ← StateToken (compressed branch, per NSA_MEMORY_INTEGRATION_MEMO §Compressed)
+- B2 空间指针 ← AnchorBank K=256 (selected branch + selection gate)
+- B3 混合记忆 ← Mamba hybrid + NSA three-branch (sliding branch 局部 + 全局)
+
+B4 缓存治理 ⚠ partial: 帧预算约束接口存在 (per §4.1 Delta 1 latency budget 30-50 ms), 但动态剪枝策略未与基线对照 (per cycle 035 LONG_SEQ_REAL_TABLE_PLAN §B4 explicit coverage gap)。Q2 的核心是验证这一同时覆盖关系在 KITTI windows ≥ 10 长序列上是否 (a) 维持帧预算, (b) 在四类机制 jointly 实装时显现协同或冲突。
+
+**Falsification 路径**: §5 实验设计将通过 ablate_recurrence.py 4 variants (baseline_cross_attention / mamba_hybrid / no_nsa / no_stable_memory) + cycle 035 LONG_SEQ_REAL_TABLE_PLAN 4 度量 (scale_drift_proxy / memory_decay_proxy / anchor_fill_rate / retrieval_diversity) 在 windows ∈ {10, 20, 50, 100} 上展开。Q2 的正面 evaluation 需要 F-002 server authorization 启动 KITTI 长序列 evaluation 跑; 在开题报告时间窗口内, Q2 的 evaluation 边界停留在 plan-ready + W17 实装完成阶段, 不承诺 KITTI 长序列实证数值。
+
+B4 缓存治理子问题需要 v0.4 spec delta 候选 (动态剪枝接口) 或 v0.4 evaluation extension (现有帧预算接口的剪枝策略评估), 在开题报告时间窗口内不要求 closure。
+
+**candidate-not-final 边界**: Q2 不主张 Dream3R v0.3 C2 Memory 是长序列内存机制统一的最终方案; 也不主张四类机制同时实装必然优于专一档。Q2 是 "评估单一架构同时实装多机制的可行性 + 协同/冲突显现" 的研究问题。
+
+### 3.3 Q3 多专家组合是否优于单一 expert (Composer 路径)
+
+**研究问题陈述**: 在前馈式 3R 架构中, 多专家组合 (best-of-N routing) 相对单一 expert 是否在标准评测下显现显著实证优势? 与 Test3R 内置 verifier 组合时, C4 Critic 的额外边际价值如何?
+
+**Gap identification**: 综述 §3 + §6 + §7 + §8 (映射到 §2.2 / §2.4 / §2.5 / §2.6) 显示, 现有 3R 系统在不同 regime 上各有优势: MASt3R 在静态对几何上精度高, Fast3R 在多视图密集场景下高效, Spann3R 在流式场景下具备内置内存, CUT3R 在动态容忍场景下表现稳健, MoGe-2 在单目 pointmap 上 fail-safe, DepthAnything-V2 在单目 depth foundation 上 license-clear, Test3R 在测试时一致性验证上自带 verifier。多专家组合作为架构层方案 (per SPEC-20260506-004 v0.2 Delta 5 + COMPOSER_CAPABILITY_DESCRIPTORS 7-expert pool + DEC-20260507-001 Tier 1 in-pool) 在工程上具备直接合理性, 但其相对单一专家的实证优势是否在标准评测下显著存在, 现有文献缺乏对照实验。
+
+**Dream3R v0.3 候选路径**: C5 Composer (per §4.6) 通过 7-expert pool + capability descriptor + 路由策略 (capability_match spread > 0 → cost_adjusted_match 解析 ties; spread = 0 → fail_fast 触发) 显式实装 best-of-N 路由。CR-1 与 C4 Critic 协作 (Critic A5 reroute 须有 Composer capability_match spread 支持); CR-4 处理 tied capability (Composer 不强制选择, Critic 在 epsilon_tie 窗口内决断)。
+
+Q3 涉及两个子问题:
+
+- **Q3-a**: best-of-N (7-expert pool) vs single-expert (e.g., MASt3R-only) 在 KITTI 真实数据上, pointmap L2 + route_regret + scale_drift_proxy 哪一组显著占优?
+- **Q3-b**: 加入 Test3R 后, 7-expert pool + Test3R verifier 组合是否相对 6-expert pool + 外部 C4 Critic 显现额外边际价值? (per SPEC-20260507-002 v0.3 ABL-v02-10 Test3R-alone candidate)
+
+**Falsification 路径**: §5 实验设计将通过 ABL-v02-4 (Composer best-of-N vs single-expert) + ABL-v02-6 (capability_match 测量) + ABL-v02-10 (Test3R-alone vs Test3R-in-pool) 三组消融在 KITTI / DTU 评测协议下展开。Q3 的正面 evaluation 需要 F-002 server authorization 启动多专家真实加载 + 多 regime workload 评测; 在开题报告时间窗口内 (W19-W23 期间), Q3 的 evaluation 边界停留在 ABL 实验组 ready + 评测协议 ready 阶段, 不承诺多专家路由 best practice 的最终判定。
+
+**candidate-not-final 边界**: Q3 不主张 Dream3R v0.3 C5 Composer 7-expert pool 是多专家组合的最终方案; 也不主张 best-of-N 路由必然优于单一 expert。Q3 是 "提供 best-of-N vs single-expert 的对照实验证据" 的研究问题, 不是 "证明 best-of-N 普遍占优" 的结论性命题。
+
+### 3.4 四个 finalist 模块的独立性 (no-all-in 设计)
+
+per DEC-20260504-002 (no-all-in on single finalist), Dream3R v0.3 的 4 个 finalist 模块 (C4 Critic / C2 Memory / C3 Permanence / C5 Composer) 设计上保持独立性: 任一模块的实证表现不达标均不影响其他三模块的独立评估。这一独立性体现在三个层面:
+
+- **架构层独立**: C4 / C2 / C3 / C5 各自有 standalone SPEC (SPEC-20260503-001 Critic / SPEC-20260503-002 Memory / SPEC-20260503-003 Permanence / SPEC-20260504-001 Composer); 跨模块通过 C6 Bus + CR-1..CR-6 cross-spec signal contract (per §4.7) 协同, 不通过 shared parameter 耦合。
+- **评测层独立**: §5 实验设计中, ABL-v02-1..9 + ABL-memory-0..11 + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN 各自针对单一模块设计消融组与度量, 不要求多模块 jointly 达标。
+- **研究问题独立**: §3.1 Q1 (Critic 验证) / §3.2 Q2 (Memory 长序列) / §3.3 Q3 (Composer 路由) 各自挂在不同 finalist 模块上; Q1 失败不否决 Q2 / Q3, 反之亦然。
+
+值得注意: §3.1-§3.3 的三个 Q 直接挂在 C4 / C2 / C5 三个 finalist 模块上, C3 Permanence (动静分离) 不构成本研究三个 Q 的核心命题, 但作为 4 finalist 之一仍在 §4.4 + §5 + §7 实证轨道内独立评估 (per DEC-20260504-002 no-all-in 不允许 silent retiring of any non-finalist track)。
+
+这一独立性是 candidate-not-final 框架的工程支撑: 任一模块若被后续工作替换或修订, 其他模块仍可独立留存; 任一 Q 若被实证证伪, 其他两 Q 仍可独立评估。
+
+### 3.5 候选 vs 最终的研究地位声明
+
+per DEC-20260501-011 (Dream3R thesis reframe; candidate-not-final), Dream3R 是被评估的候选架构, 非项目收敛方案。这一研究地位声明对本研究三个 Q 与三个创新点 (§6.2) 的措辞构成硬约束:
+
+- 本研究 **不** 论证 Dream3R 相对 SOTA 在任一单一指标上具有压倒性优势 (per §4.8 整体定位)
+- 本研究 **不** 主张 Dream3R 是最终方案; v0.4 spec delta 候选 (B1 Critic 路径拆分 / B2 输出资产契约 / B3 输入扩展 axis, per cycle 035 SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL §5) 表明后续版本明确可能修订或替换 v0.3 架构
+- 本研究 **不** 把 C2 Memory v0.3 (NSA + AnchorBank + StateToken + Mamba hybrid) 等同于长序列内存机制的最优方案; SPEC-20260508-001 v0.3 addendum 自身的 "未实装的 candidate" 与 "engineering-judgment 标记" 是 candidate 框架的实证体现
+
+研究地位的正面表述: 本研究的成果是 (a) 一个具体的 3R 候选架构 (Dream3R v0.3) 的设计文档 + 实证评测, (b) 综述四轴判断与候选架构 X 路径的覆盖矩阵 (per §2.7 + cycle 035 SOTA_MATRIX_V2), (c) 多机制并置评估的 best practice 实证数据, (d) v0.4 spec delta 演进路径的明确候选清单。这些成果都不是 "Dream3R 是 3R 方向的最终解" 的结论性主张, 而是 "Dream3R v0.3 提供了一个具体且可证伪的候选架构 + 实证轨道" 的研究地位声明。
+
+候选架构演化路径在 §8 时间安排 + §9 风险章节进一步展开, 包括 v0.4 spec delta 候选清单 + 候选架构被修订/替换的风险条目 (R-PROP-CLAIM-1 in WORK_RISK_REGISTER v1.2)。
 
 ---
 
@@ -299,9 +372,55 @@ v2.1 的 additive 变化 (per DEC-20260505-001) 是新增 "Forward-reference nul
 
 ## §6 预期成果
 
-<!-- TBD cycle 039; 起草目标 ~1300 字 -->
-<!-- 上游素材: DEC-20260501-011 + DEC-20260504-002 + §3 三个 Q -->
-<!-- 子节建议: 6.1 架构设计文档 (SPEC v0.3/v0.4 系列) + 6.2 原型实现 (W1-W22 完成 + W23-W30 候选) + 6.3 评测结果 (Q1/Q2/Q3 实证) + 6.4 创新点声明 (verification-as-architecture / heterogeneous best-of-N / NSA-hybrid memory; 严格使用 candidate-not-final 句式) -->
+本章按三个子节给出本研究的预期成果与创新点。§6.1 列出本研究的预期交付物 (架构设计文档 + 原型实现 + 评测结果 + 综述与方法学副产物); §6.2 把 §3 三个 Q (Q1 验证 / Q2 长序列内存 / Q3 多专家组合) 对应的三个创新点 (IP1 verification-as-architecture / IP3 NSA-hybrid memory / IP2 heterogeneous best-of-N Composer) 显式声明; §6.3 阐明本研究与现有工作的实证差异 — 本研究 **不** 主张 Dream3R 相对 SOTA 压倒性领先, 主张提供多机制并置的对照实验证据。三个子节都受 STYLE_CONTRACT §5 candidate-not-final 句式表硬约束。
+
+### 6.1 预期交付物
+
+本研究的预期交付物分四类:
+
+**架构设计文档**: Dream3R v0.3 的完整 SPEC 系列 (已有 SPEC-20260506-004 v0.2 + SPEC-20260508-001 v0.3 + SPEC-20260507-001 v0.2 + SPEC-20260507-002 v0.3 + SPEC-20260506-005 v0.2 + SPEC-20260508-002 + paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md v2.1 七份), 加上 cycle 035 SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL §5 提出的 v0.4 spec delta 候选 (B1 Critic 路径拆分 / B2 输出资产契约 / B3 输入扩展 axis), 在开题报告时间窗口结束 (M5 节点) 之前形成 v0.3 完整稿 + v0.4 spec delta 候选清单。
+
+**原型实现**: code/dream3r/ (服务器部署 /hdd3/kykt26/code/dream3r/), 当前 W1-W18 完成 (per RECENT_PROGRESS.md), 包括 DINOv2 backbone 实际跑通 + 3D-aware retrieval + active/stable state + Grassmannian 正则化 + 几何 Critic + ISA slot + 真实 MASt3R + Spann3R adapter + W17 Mamba-Transformer 混合循环 + W18 GaussianHead tensor 契约 (renderer-free)。开题报告时间窗口内的预期延伸: W19 多专家真实加载 + W20 路由层实装 + W21-W22 ablate_recurrence + critic_calibration 真实数据扩展。W23-W30 (DTU loader / TTT / 4DGS renderer / 真实数据训练) 作为 post-开题报告 work, 不在预期交付物声明范围内。
+
+**评测结果**: ABL-v02-1..9 + ABL-memory-0..11 + cycle 035 CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN 在 KITTI 真实数据上的对照实验数据集合, 包括 (a) §3.1 Q1 verification 路径的 evaluation gating data (拆分前 hybrid v0.3 实证基线), (b) §3.2 Q2 长序列内存四类机制在 windows ∈ {10, 20, 50, 100} 上的协同/冲突显现数据, (c) §3.3 Q3 best-of-N vs single-expert 的 pointmap L2 + route_regret + scale_drift_proxy 对照数据, (d) Test3R-alone 在 pillar A 上与 Dream3R Critic-gate pipeline 的对照数据 (per ABL-v02-10)。所有评测结果都以"评估候选架构 X 是否在 ... 维度上呈现优势"的句式呈现, 不以"宣称 X 优于 SOTA"的句式呈现。
+
+**综述与方法学副产物**: Track B 3R-mix 中文综述 (18 A4 页 / 44 引文 / 6 图 5 表 / 2026-05-15 prose naturalization deliverable, arXiv 自存档路线) 是本研究的方向定调副产物, 已在 cycle 036 packaging 完成 SHA256 pre-fill。Track A 与 Track B 共享 references.bib 但不互相引用 (sibling artifacts; 词汇隔离声明 in RELATION_TO_TRACK_A_2026-05-16.md)。cycle 035 SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL + SOTA_MATRIX_V2 + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN 4 markdown deliverables 是综述反哺 Track A 主线的实证副产物。
+
+### 6.2 创新点声明
+
+per §3.1-§3.3 三个 Q 与 §4 六模块设计, 本研究的三个创新点 (Innovation Points, IP) 如下:
+
+**IP1: Verification-as-architecture (校验作为架构组件; 对应 Q1 + §4.5 + Pillar A)**
+
+把几何验证 (一致性检查 + 修复) 显式作为 3R 架构层组件, 而非测试时附加路径或后处理步骤。Dream3R v0.3 通过 C4 Critic (Sampson / depth / 共视 conflict 三类信号 + repair actions 0/1/2 stub 3/4/5) 实现这一架构组件化。creation novelty 不在于"几何验证本身是新概念"(经典 BA / SfM 也含验证元素), 而在于"把验证 + 修复在前馈式 3R 架构内显式作为模块 + 信号契约的一部分"。本研究的对照实验将提供 C4 Critic 在 Dream3R v0.3 内的 (a) 失败模式检出率, (b) 修复动作有效性, (c) 与 Test3R 内置 verifier 在测试时一致性优化上的对照数据。
+
+句式约束: 不说 "Dream3R 已完全解决几何验证问题"; 说 "Dream3R 在架构层提供了几何验证的候选模块设计 + 对照实验证据"。
+
+**IP2: Heterogeneous best-of-N Composer (异构多专家组合; 对应 Q3 + §4.6 + Pillar D)**
+
+把多个不同 regime 优势的 3R expert (MASt3R / Fast3R / Spann3R / CUT3R / MoGe-2 / DepthAnything-V2 / Test3R) 通过 capability descriptor + 路由策略组合, 在架构层显式实装 best-of-N 选择。creation novelty 不在于 "best-of-N 路由本身" (经典 ensemble 也含 best-of-N 元素), 而在于 (a) capability descriptor 把每个 expert 在 9 axes 上携带 paper-derived / engineering-derived 标签, (b) 路由由 capability_match spread + cost_adjusted_match + epsilon_tie 决定 (per v2 contract upgrade, DEC-20260504-004), (c) 与 C4 Critic 通过 CR-1 协作路由切换。本研究将提供 best-of-N (7-expert pool) vs single-expert 在 KITTI 真实数据上的 pointmap L2 + route_regret 对照数据。
+
+句式约束: 不说 "best-of-N 路由必然优于单一 expert"; 说 "本研究提供 best-of-N vs single-expert 的对照实验数据"。
+
+**IP3: NSA-hybrid memory (统一覆盖长序列内存四类机制; 对应 Q2 + §4.3 + 综述 §6 四类)**
+
+把综述 §6 抽象出的长序列内存四类机制 (B1 递推状态 / B2 空间指针 / B3 混合记忆 / B4 缓存治理) 在单一 C2 Memory 模块内通过 NSA three-branch + AnchorBank K=256 + StateToken + Mamba-Transformer 混合循环结构 jointly 实装。creation novelty 不在于"NSA 三分支机制本身" (NSA 类机制在文献中已有), 而在于 (a) 把 NSA 三分支映射到长序列内存四类机制的前三档 (compressed ↔ B1, selected ↔ B2, sliding ↔ B3), (b) 同时维持单帧 30-50 ms 帧预算 (per Delta 1), (c) B4 缓存治理 partial coverage 与实证缺口的显式承认 (per cycle 035 LONG_SEQ_REAL_TABLE_PLAN §B4 coverage gap)。本研究将提供 ablate_recurrence 4 variants 在 KITTI windows ∈ {10, 20, 50, 100} 上的 scale_drift_proxy + memory_decay_proxy + anchor_fill_rate + retrieval_diversity 数据。
+
+句式约束: 不说 "Dream3R 已完全解决长序列内存问题"; 说 "Dream3R 在单一架构内同时实装四类机制中的前三档, 为长序列内存机制统一提供候选实证"。
+
+三个 IP 与 §3.1-§3.3 三个 Q 一一对应 (Q1 ↔ IP1; Q2 ↔ IP3; Q3 ↔ IP2)。三个 IP 的 candidate-not-final 共同体现在 "提供 ... 候选 ... + 对照实验证据" 的句式模式, 而非 "宣称 X 优于 Y" 的结论性命题。
+
+### 6.3 与现有工作的实证差异
+
+本研究与现有 3R 工作的实证差异不在 "Dream3R 相对 SOTA 在某单一指标上压倒性领先" — 这一论断超出本研究的 candidate-not-final 边界, 也与 §4.8 整体定位 + DEC-20260501-011 + DEC-20260504-002 三项决策矛盾。
+
+本研究与现有 3R 工作的实证差异在三个层面:
+
+- **方法学差异**: 现有 3R 工作以 "单一论文一个方法" 的离散发表模式为主; 本研究以 "在统一架构内多机制并置评估" 的对照实验模式为主。前者擅长在某一档 (e.g., B1 递推状态 或 B2 空间指针) 上 push SOTA; 后者擅长在多档之间提供协同 / 冲突 / 边际贡献的对照数据。两者不互替, 是研究方向上的互补关系。
+- **失败模式系统化差异**: 现有 3R 工作 (per 综述 §10) 多数把六类典型失败模式作为 "limitations" 章节简要提及; 本研究通过 C4 Critic + cycle 035 CRITIC_CALIBRATION_PLAN_V1 把六类失败模式映射到 5 个 sub-signal 的逐类阈值标定, 提供失败模式系统化的对照实验证据。这一差异是 IP1 的方法学体现。
+- **架构组合差异**: 现有 3R 工作以 "single best architecture" 为主; 本研究通过 C5 Composer + COMPOSER_CAPABILITY_DESCRIPTORS 7-expert pool 显式实装 "heterogeneous best-of-N"。这一差异是 IP2 的架构体现。
+
+本研究的实证目标不是把 Dream3R 推上 KITTI / DTU / ScanNet 等单一 leaderboard 的 top-N; 而是在 §5 实验设计指定的 evaluation 协议下, 提供三个 Q 与三个 IP 对应的对照实验数据, 让后续工作 (无论是 Dream3R v0.4 演进, 还是其他 3R 架构) 可以基于这些数据判断: (a) 当前 Dream3R v0.3 在三个 Q 上的覆盖与缺口, (b) v0.4 spec delta 候选 (B1 / B2 / B3) 应优先推进哪一个, (c) 是否有 v0.5 候选架构 需要替换 v0.3 整体设计。这一对照实验数据 + 候选演化路径是本研究的核心实证差异, 也是 candidate-not-final 框架的工程落点。
 
 ---
 
