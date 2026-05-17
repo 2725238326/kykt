@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-17 (cycle 042 closed: Dream3R 开题报告最终修订 + PDF 编译 + advisor 提交 packaging — content frozen after cycle 041 通稿审查; bottom metadata cleanup; §8.1 past-tense fix; references.bib copied from Track B 44 entries; PDF compiled via pandoc 3.9 + xelatex + SimSun: proposal_external_v1_2026-05-17.pdf 263 KB exit code 0; deliverables/ created: cover note + submission record; G3a 0 + G3b 0 on cover note; STYLE_CONTRACT v1 closed (50 rows, 7 sync log entries); proposal track (cycles 036-042) functionally closed)
+Last updated: 2026-05-17 (post cycle 042: user 指令开题报告扩展为双支柱项目 — 支柱 A Dream3R 新架构模型 (已有 §1-§9) + 支柱 B KYKT 聚合管理平台 (待新增); PROPOSAL_EXPANSION_PLAN.md + AGENT_HANDOFF_PROPOSAL_EXPANSION.md 已创建; 待其他 agent 执行扩展写作)
 
-Status: **idle** (cycle 042 closed 2026-05-17: 10 file ops (7 NEW + 3 MODIFIED); proposal track (Track C, cycles 036-042) functionally closed — §1-§9 dual-draft complete ~19300 内 + ~15000 外 字; PDF 263 KB; advisor cover note + submission record ready; STYLE_CONTRACT v1 closed 50 rows; no spec / code / server action; remaining user action: actual submission (fill SUBMISSION_RECORD slots) + optional revision cycle 043 based on advisor feedback; awaiting user direction)
+Status: **idle** (cycle 042 closed; 开题报告扩展规划已就绪 — 双支柱: Dream3R 新架构 (已完成 §1-§9 ~15000 外字) + KYKT 聚合管理平台 (待写 ~6000-9000 字); PROPOSAL_EXPANSION_PLAN.md + AGENT_HANDOFF_PROPOSAL_EXPANSION.md ready for other agent execution; PDF v1 exists at 263 KB but will need recompilation after expansion)
 
 ## Why this file exists
 
