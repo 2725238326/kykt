@@ -155,5 +155,8 @@ function buildModelConstraintTags(
   if (item?.runner_status === "env_blocked_curope") {
     tags.push("curope blocked");
   }
+  if (item?.runner_status === "runner_pending_smoke") {
+    tags.push("runner pending");
+  }
   return tags;
 }

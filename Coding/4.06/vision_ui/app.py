@@ -165,8 +165,8 @@ STATUS_LABELS = {
 
 DELIVERY_GAPS = [
     {
-        "title": "主动新模型还缺环境和官方 smoke run",
-        "detail": "Spann3R、Align3R、Fast3R、CUT3R 目录已就绪，但还需要独立 conda env、官方 repo、权重和 first smoke run。",
+        "title": "Align3R / CUT3R 还缺 runner 和平台 smoke",
+        "detail": "Spann3R、Fast3R 已完成平台 E2E；Align3R / CUT3R 的 curope 已解锁，下一步是补标准 runner、输出合同和首个平台开户 smoke。",
     },
     {
         "title": "远端取消与清理仍然不够硬",

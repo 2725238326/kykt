@@ -364,9 +364,137 @@ v2.1 的 additive 变化 (per DEC-20260505-001) 是新增 "Forward-reference nul
 
 ## §5 消融与评测设计
 
-<!-- TBD cycle 040; 起草目标 ~2800 字 -->
-<!-- 上游素材: SPEC-20260506-005 v0.2 ABL-v02-1..9 + SPEC-20260507-002 v0.3 ablation addendum + SPEC-20260508-002 ABL-memory-0..11 + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN -->
-<!-- 子节建议: 5.1 三层证据阶梯 + 5.2 ABL-v02-1..9 架构消融 + 5.3 ABL-memory-0..11 记忆消融 + 5.4 Critic 阈值校准 (CRITIC_CALIBRATION_PLAN_V1) + 5.5 长序列真实表 (LONG_SEQ_REAL_TABLE_PLAN) + 5.6 评测数据集 (KITTI / DTU 拟扩展) + 5.7 指标 (pointmap L2 + route_regret + scale_drift + memory_decay) -->
+本章在三个 SPEC + 两个 cycle 035 plan + 一份服务器端 progress ledger 的基础上, 描述 Dream3R v0.3 的评测协议: §5.1 给出三层证据阶梯, §5.2-§5.5 展开四组消融 / 标定 / 长序列评测, §5.6 列出评测数据集, §5.7 列出主要评测指标。本章为 plan-level, 所有 ABL-v02-N / ABL-memory-N / Critic 校准 / 长序列评测的执行 gated on F-002 server authorization 与 per-step DEC, 不在 cycle 040 启动。
+
+### 5.1 三层证据阶梯
+
+per DEC-20260503-001 (research-code-discipline) rule 5 Honesty Override + cycle 008.5 evidence ladder, Dream3R 评测证据按三层逐层升级, 每层都有独立的 falsification 标准:
+
+- **L1 论文层证据 (paper-derived)**: 综述 §1-§10 涵盖的 44 引文 + cycle 013 SPINE_* 4 个 finalist 文献骨干 + cycle 008.5 finalist mechanism spec 引述。本层证据反映"该机制在论文中报告了如此表现", 不构成本研究的实证主张。
+- **L2 代理用例层证据 (case-derived)**: cycle 009-012 的 13 张 case card (CRITIC-01..03 / MEMORY-01..03 / PERMANENCE-01..03 / COMPOSER-01..05) 在 paper-derived 与 KYKT-metadata-derived 数据上验证 cross-spec signal contract v2.1 (CR-1..CR-6) 的可行性。本层证据反映"按现有论文 + 内部 metadata 可以 instantiate 信号契约", 不构成 v0.3 架构层 best practice 的最终实证。
+- **L3 原型实现层证据 (code-observed)**: code/dream3r/ 的 W1-W18 实装 + cycle 034 KITTI smoke (pointmap L2 = 20.4747 on 2011_09_26_drive_0001_sync_02, windows=2; per RECENT_PROGRESS.md line 56-78: integration evidence, not trained reconstruction quality) + cycle 031 local ABL-memory-0 fixture/logging gate pass (22/22 validity checks)。本层证据反映"v0.3 架构端到端 pipeline 跑通, fixture/logging 基底通过 validity gate", 不构成模型质量 / 训练后表现 / 论文-级别 claim 的实证。
+
+三层证据互不替代: L1 是上游 framing, L2 是 cross-spec 信号契约的 cycle-级 stress test, L3 是 W-task 级实装。§5.2-§5.5 列出的所有 ABL / 标定 / 长序列评测均 L3 级活动, 执行后才能升级该 ABL 的 evidence label 至 code-observed; 执行前仍为 plan-only。
+
+### 5.2 架构层消融实验组 (ABL-v02-1..10)
+
+per SPEC-20260506-005 v0.2 + SPEC-20260507-002 v0.3 addendum, 架构层消融组覆盖 v0.2 六个 Delta + v0.3 ABL-v02-10 addendum, 共 10 项 ABL 分三个 tier:
+
+**Tier 1 (load-bearing 4 项)**:
+
+- ABL-v02-1 NSA-removal: 把 C2 Memory 的 NSA selected branch 退化为 cosine top-k, 检验 Delta 3 (NSA 三分支) + Delta 4 (Sparse Attention as architectural optimization) 的边际贡献。Pillar A + Pillar E 双向 falsification 入口。
+- ABL-v02-4 Composer best-of-N: 7-expert pool vs single-expert isolation, 检验 Delta 5 (7 admitted experts) + Delta 6 (A+D pillar narrowing) 的实证基础。Pillar D 主 falsification 入口; §3.3 Q3 核心证据来源。
+- ABL-v02-6 selection-gate signal subsetting: Critic-only / Permanence-only / Both / Neither 四 variants, 检验 Delta 3 verification coupling 与 C4 Critic 信号通道的边际贡献。Pillar A + E 共同 falsification 入口; §3.1 Q1 核心证据来源。
+- ABL-v02-10 Test3R-alone comparator (cycle 023 v0.3 addendum 新增): full Critic + bus gates + Test3R lazy vs Test3R built-in verifier only, 同 trigger frequency, 检验 Pillar A robustness — 若 Test3R-alone 匹配或超过 Dream3R Critic-gate pipeline, Pillar A 弱化或证伪。§3.1 Q1 + §3.3 Q3-b (Test3R 内置 verifier 边际) 双向证据。
+
+**Tier 2 (training 维护 4 项)**:
+
+- ABL-v02-2 DINOv3 backbone tier: -S vs -B vs -L 三 variants, 检验 Delta 2 backbone 替换的 weight-class regression vs ViT-L baseline 的 robustness。
+- ABL-v02-3 frozen vs partial-unfreeze: top-2/4 blocks 解冻 vs 全微调, 检验 frozen-backbone 决策的 training cost / quality tradeoff。
+- ABL-v02-7 head training schedule: head-only vs multi-stage warmup vs full joint, 检验 v0.3 训练 stability + 收敛。
+- ABL-v02-8 frame-budget benchmark: per-component + end-to-end + lazy-path latency on TITAN RTX 24GB, 检验 Delta 1 30-50 ms/frame budget + 30 FPS compliance。
+
+**Tier 3 (longer-tail 2 项)**: ABL-v02-5 capability_match measurement (per-expert per-regime 度量); ABL-v02-9 NSA kernel benefit decomposition (hardware-aware vs algorithmic-only vs plain dense+top-k; cu121 portability)。
+
+ABL-v02-4 内附 **VGGT offline-batch baseline** (per SPEC-20260507-002 v0.3 addendum Variant X): VGGT (~1.2B) 在同 benchmark 上以 offline-batch 模式运行, 与 Dream3R streaming-first Composer 在 B1+B2+B4 三类 benchmark 上对比。Honest framing: Dream3R 的 streaming-first 优势是 streaming-specific, 非 universal-on-batch; 该 baseline 是 Pillar D threat (per cycle 022 paper §6 v0.2 comparator positioning) 的实证回应。
+
+整体合规预算约 1377 GPU-hours (per cycle 023 v0.3 addendum), 含 Tier 1 + Tier 2 + Tier 3 + ABL-v02-10 + VGGT baseline; 实际执行按 per-ABL 单独 DEC + F-002 服务器授权逐步推进, 不在 cycle 040 启动。
+
+### 5.3 记忆机制消融实验组 (ABL-memory-0..11)
+
+per SPEC-20260508-002 (v1.1 cycle 029 reviewed and corrected), 记忆机制消融组针对 SPEC-008 v0.3 提出的 C2 Memory v0.3 变体 (V0 vector AnchorBank / V1 spatial key-value bank / V2 state-token recurrence / V3 hybrid bus-gated writes) 在 P0 静态 tensor fixture (R1 loop / R2 drift / R3 dynamic / R4 conflict / R5 budget 五类 regime) 上展开 12 项 ABL:
+
+- **Tier 0 验证 fixture/logging 基底**: ABL-memory-0 (cycle 031 已执行通过 22/22 validity checks; 该通过仅 = fixture + logging substrate 通过, 不 = C2 memory 质量验证)
+- **Tier 1 load-bearing memory 主张 5 项**: ABL-memory-1 spatial vs vector bank (V0 vs V1 vs V3 in R1) / ABL-memory-3 state-token recurrence (V0 vs V2 vs V3 in R2 continuity + drift) / ABL-memory-4 bus-gated dynamic suppression (V1 ungated vs V3 gated in R3) / ABL-memory-5 conflict quarantine (V1 vs V3 in R4) / ABL-memory-6 utility pruning vs LRU (V1/V3 in R5 future-use survival)
+- **Tier 2 训练维护 + uncertainty 3 项**: ABL-memory-2 duplicate filtering / ABL-memory-7 entropy as uncertainty signal / ABL-memory-8 operation proxy + latency envelope
+- **Tier 3 未来 P1/P3/P4 集成 3 项**: ABL-memory-9 value payload source / ABL-memory-10 memory before vs after decoder / ABL-memory-11 NSA gate after payload semantics
+
+cycle 029 v1.1 review 后 5 项关键 correction 已入册 (per MEMORY_V03_ABLATION_REVIEW.md R-029-1..5):
+
+- **R-029-1 Oracle-bus boundary**: P0 fixture 允许 synthesize 5 个 bus oracle 字段 (`dynamic_ratio` / `suppress_static_write` / `conflict_score` / `permanence_link` / `capability_match`) 作为 cross-spec 信号; **禁止** V0/V1/V2/V3 直接 read 3 个 ground-truth 字段 (`group_id` / `is_dynamic` / `is_corrupt`), 否则 oracle 泄漏导致评测无效
+- **R-029-2 Hard/soft fail rule**: hard_fail = metric fails condition + logs valid (本研究记录 go/no-go); soft_fail = inconclusive / weak denominator / repairable interface issue (本研究 escalate, 不直接 no-go)
+- **R-029-3 State-token stale-smooth fail**: 状态记忆向量 V2 在 R2 drift 上 stale-smooth 模式 (写后立即读, 无 recurrence) 必须 fail; 不允许 V2 silently 用同窗口 zero-recurrence 形态过 ABL-memory-3
+- **R-029-4 Op proxy-only cost claim**: ABL-memory-8 cost label 只能用 operation proxy (multiply-adds + memory ops), 不能用 wall-time (因 P0 静态 fixture 与 server 真实 GPU latency 不可比)
+- **R-029-5 Controlled loop/revisit narrowed**: ABL-memory-1 / 6 的 "revisit accuracy" 主张限定在 fixture-controlled loop, 不延伸至真实序列
+
+执行后才能升级该 ABL 的 evidence label, cycle 040 仅 plan-level 引用; cycle 031 已执行的 ABL-memory-0 通过仅适用于 Tier 0 验证, 不构成 Tier 1-3 主张证据。
+
+### 5.4 校验阈值标定方案 (CRITIC_CALIBRATION_PLAN_V1)
+
+per cycle 035 P0-1 deliverable CRITIC_CALIBRATION_PLAN_V1.md, C4 Critic 当前的 unified `theta_conflict` 单阈值替换为按六类失败模式 × 5 sub-signal 的 30-scalar 阈值表。5 sub-signal 命名: `pose_novelty` / `view_overlap` / `reprojection_residual` (Sampson 类) / `pointmap_conflict` (depth 一致性) / `confidence_drop`。
+
+六类失败模式 → primary + secondary signal 映射 (per CRITIC_CALIBRATION_PLAN_V1.md §3 表):
+
+- A1 弱纹理: primary confidence_drop + secondary reprojection_residual (反向); 子类特征 = 稀疏匹配 + 残差分布偏移
+- A2 镜面玻璃: primary pointmap_conflict + secondary depth-RGB inconsistency; 反射 vs 真实几何二元
+- A3 快速运动: primary pose_novelty + secondary dynamic_ratio (来自 Permanence); 大帧间位姿变化
+- A4 长基线: primary view_overlap (低/反向) + secondary reprojection_residual (基线放大); 共视区小 + 大视差
+- A5 尺度漂移: primary latent_drift_proxy (来自 Memory) + secondary confidence_drop (累积); 长序列累积
+- A6 域外 (OOD): primary confidence_drop (全局低) + secondary route_regret_estimate (Composer; 高 = 无适配 expert); 训练分布外
+
+标定 method 选择 decision tree:
+
+- **Method A (distribution-quantile, P0)**: 在 sub-sample histogram 上取 P95 quantile; 无需 ground-truth labels; 是 cycle 040 - cycle 041 时间窗口内的默认起点
+- **Method B (supervised binary classifier, P1)**: 需要 per-pixel L2 ground-truth; 输出 mode-distribution probabilities; 需 v0.4 spec delta 起草作为入口
+
+5-metric validation gate (per §6 of CRITIC_CALIBRATION_PLAN_V1.md):
+
+1. mode_estimate accuracy ≥ 80% (P0) / ≥ 95% (P1) per sub-sample
+2. per-mode P95 vs single theta_conflict 在 KITTI 2-window smoke 上不回归 (baseline L2 = 20.47 不变差)
+3. fixed seed 下重复 calibration: P95 阈值 variance < 5%
+4. dataset license 链 clear 一项独立 calibration DEC
+5. fallback path 完整: 若 mode_estimate 失败, 退回 v0.3 single threshold, 不 silent unknown repair
+
+整体规模 ~30 scalar threshold + sub-sample 分组采样规则; 执行 gated on F-002 server authorization + 独立 DEC, 不在 cycle 040 启动。
+
+### 5.5 长序列真实数据评测 (LONG_SEQ_REAL_TABLE_PLAN)
+
+per cycle 035 P0-3 deliverable LONG_SEQ_REAL_TABLE_PLAN.md, 在 KITTI long windows ∈ {10, 20, 50, 100} 上展开 4 ablate_recurrence variants × 4 long-sequence metrics 的对照评测:
+
+**4 ablate_recurrence variants** (现有 ablate_recurrence.py 实装):
+
+1. baseline_cross_attention: cross_attention recurrence + NSA + stable_memory (对照 baseline; 综述 §6 B1 递推状态)
+2. mamba_hybrid: mamba SSM recurrence + NSA + stable_memory (Dream3R v0.3 默认; 综述 §6 B3 混合记忆)
+3. no_nsa: mamba SSM + 移除 NSA + stable_memory (检验 NSA 三分支边际)
+4. no_stable_memory: mamba SSM + NSA + 移除 stable_memory (检验 active/stable 分离边际)
+
+**4 long-sequence metrics** (新增, 区别于 §5.7 一般 pointmap 指标):
+
+- D1 scale_drift_proxy: pointmap L2 ratio per physical point across windows; 单调上升 → drift
+- D2 memory_decay_proxy: P(selected_indices_window_i ∩ written_window_0); 衰减 → anchor forgetting
+- D3 anchor_fill_rate: nonzero_anchors / K (K=256); 饱和 → budget triggered
+- D4 retrieval_diversity: unique_indices / sum_indices; 高 = 健康 / 低 = "hot anchor" 重复
+
+**Windows staging** (monotone upgrade gate, per LONG_SEQ_REAL_TABLE_PLAN §3): KITTI-LONG-10 (40 frames, seq 00 partial) → KITTI-LONG-20 (80 frames, seq 00/02 partial) → KITTI-LONG-50 (200 frames, seq 04/06) → KITTI-LONG-100 (400 frames, seq 00/05/07 complete)。每一档跑 ≥ 3 seeds; 高档需先通过低档的 elapsed_ms_mean + D1-D4 stability gate 才推进。
+
+**B4 缓存治理 coverage gap (per §3 plan)**: 4 variants 覆盖综述 §6 B1 递推状态 + B2 空间指针 + B3 混合记忆三档, **不覆盖** B4 预算治理 (LONG3R-style dynamic pruning)。cycle output 须在 §B4 子节明示 "4 variants 不覆盖 §6 B4 子类, 避免读者误读"。B4 closure 需 v0.4 spec delta 候选 (动态剪枝接口) 或 v0.4 evaluation extension。
+
+6-metric validation gate (per §6 of LONG_SEQ_REAL_TABLE_PLAN.md): windows=3 baseline 不回归 cycle 033 synthetic / D1-D4 stability < 5% / B4 sub-class 明示 uncovered warning / windows upgrade monotone / ≥ 3 seeds per variant / KITTI sequence selection 在 startup DEC 中 fix 不 runtime cherry-pick。
+
+预计资源约 10 GPU-hours single-GPU for full sweep; 执行 gated on F-002 server authorization + 独立 DEC, 不在 cycle 040 启动。
+
+### 5.6 评测数据集
+
+Dream3R v0.3 的评测数据集分三层:
+
+- **静态 fixture (R1-R5, cycle 031 已实装)**: 确定性 tensor fixture, 不依赖外部数据集 license; 用于 ABL-memory-0..8 在 fixture-controlled regime 下的对照 (R1 loop / R2 drift / R3 dynamic / R4 conflict / R5 budget)。优势: 完全可重现; 劣势: 不反映真实 dataset distribution
+- **KITTI 真实数据 (cycle 034 已通过 smoke)**: 已实装 data/kitti_real.py + evaluate_real_sequence.py + KITTI rectified RGB/depth 加载链; cycle 034 smoke 在 2011_09_26_drive_0001_sync_02 的 2 windows 上跑通, pointmap L2 = 20.4747 + depth RMSE = 21.8658 (integration evidence, 非训练后质量, per §7.3)。开题报告期间 KITTI 是主评测集合 (KITTI-LONG-10 / 20 / 50 / 100 staged)
+- **DTU 拟扩展 (W19 unblocked task)**: data/dtu.py loader stub 已起草, 但 DTU license 链 + multi-view registration loader 仍 W19 任务; cycle 040 引用为 plan, 不在 cycle 040 启动
+
+per cycle 034 经验, KITTI 的 rectified + GPS 同步窗口对作为 streaming 输入比较友好; DTU 的多视图 + 稀疏 calibration 更接近 SPEC-007 v0.2 Tier 1 in-pool 7 expert 中 MASt3R / Spann3R 的原 paper 评测协议, 是 §5.2 ABL-v02-4 Composer best-of-N 实证需要扩展的数据集。后续 W19 + DTU loader 接入 + 评测协议补充 stays gated on 独立 DEC + F-002 server authorization。
+
+### 5.7 主要评测指标
+
+Dream3R v0.3 在三层证据阶梯上使用的主要评测指标分四组:
+
+- **pointmap / depth 几何指标**: pointmap L2 (per-pixel 三维点 L2 误差) + depth RMSE + per-mode pointmap quality decomposition (按六类失败模式分子样本); 适用 §5.2 ABL-v02 全部 + §5.4 Critic 标定 + §5.5 长序列评测
+- **路由指标**: route_regret (cost-typed per v2 contract, DEC-20260504-004) + capability_match spread + epsilon_tie window hit rate + fail_fast trigger rate; 适用 §5.2 ABL-v02-4/5/6 + §3.3 Q3 best-of-N vs single-expert 对照
+- **记忆指标**: scale_drift_proxy / memory_decay_proxy / anchor_fill_rate / retrieval_diversity (4 项 per §5.5) + latent_drift_proxy (CR-3 信号路径) + write_value_estimate (CR-2 信号路径); 适用 §5.3 ABL-memory 全部 + §5.5 长序列评测
+- **校验指标**: conflict_score / theta_conflict trigger rate + per-mode mode_estimate accuracy + repair action success rate + Critic-Composer reroute (A5) hit rate (per CR-1); 适用 §5.4 Critic 标定 + §5.2 ABL-v02-6/10
+
+cross-spec consistency 指标 (per CR-1..CR-6 v2.1): cross_spec_refusal log count + forward-reference null occurrence + evidence label preservation rate at consumption (per CR-5); 适用所有 ABL 的 cross-spec 信号路径审计。
+
+所有指标在 cycle 040 仅 plan-level 引用, 执行 gated; cycle 034 KITTI smoke 的 pointmap L2 = 20.4747 + depth RMSE = 21.8658 是唯一已有的 L3 真实数据数值 (集成证据, 非训练后质量)。
 
 ---
 
@@ -426,17 +554,184 @@ per §3.1-§3.3 三个 Q 与 §4 六模块设计, 本研究的三个创新点 (I
 
 ## §7 已完成工作
 
-<!-- TBD cycle 040; 起草目标 ~2200 字 -->
-<!-- 上游素材: code/dream3r/RECENT_PROGRESS.md W1-W18 + KITTI smoke + cycle 033-035 deliverables + 综述 deliverable -->
-<!-- 子节建议: 7.1 架构设计 (SPEC 系列 v0.1/v0.2/v0.3) + 7.2 实现里程碑 W1-W18 + 7.3 KITTI 真实数据集成证据 + 7.4 综述发布 (Track B) + 7.5 综述反哺主线 (cycle 035 4 deliverables) + 7.6 cycle 历史 (cycle 015 / 016 / 018 / 019 / 020 / 021 / 022 / 023 / 024 / 025 / 026 / 027 / 028 / 029 / 030 / 031 / 032 / 033 / 034 / 035) -->
+本章按六个子节给出 Dream3R 项目截至 2026-05-17 的已完成工作: §7.1 架构设计文档系列, §7.2 实现里程碑 W1-W18, §7.3 KITTI 真实数据集成证据, §7.4 综述 (Track B) 发布, §7.5 综述反哺主线 (cycle 035 4 deliverables), §7.6 cycle 历史。本章 evidence label 严格遵守 RESEARCH_CODE_DISCIPLINE rule 5 Honesty Override: paper-derived / code-observed / engineering-demonstrated / inferred / speculative / unknown 分级标注; pointmap L2 = 20.4747 数值明示为"集成证据, 非训练后质量"。
 
----
+### 7.1 架构设计文档系列
+
+Dream3R 截至 2026-05-17 的架构设计 corpus 包含 7 份正式 SPEC + 1 份 paradigm 跨 spec 契约 + 若干 planning artifact:
+
+- **SPEC-20260506-001 v0.1 Dream3R 架构 (cycle 016 S2; 1821 行)**: control-graph-as-architecture; hybrid substrate (transformer + SSM + slot + bus); 4 finalist 综合为 C1-C5 + C6 bus; CR-1..CR-6 作为 gates; A1-A8 映射到具体 layer
+- **SPEC-20260506-002 v0.1 ablation plan (cycle 016 S3)**: 10 ablations 3 tier; falsification table per architectural claim; B1-B6 benchmark categories
+- **SPEC-20260506-003 v0.1 comparator map (cycle 016 S4)**: 14+ models across 7 groups; 8 comparison axes; threat ranking
+- **SPEC-20260506-004 v0.2 架构 delta (cycle 018 S4; 6 deltas)**: 帧预算 30-50 ms (Delta 1) / DINOv3-S 替换 ViT-L (Delta 2) / bounded anchor bank + NSA retrieval (Delta 3) / Sparse Attention as engineering optimization (Delta 4) / 7-expert Composer pool (Delta 5) / 主张窄化为 Pillar A + Pillar D (Delta 6); v0.1 body 不动 per DEC-002
+- **SPEC-20260506-005 v0.2 ablation v0.2 (cycle 019 S2)**: 9 ABL-v02 + per-ABL review checklist for other-agent handoff; 主张映射 v0.2 Deltas 1-6
+- **SPEC-20260507-001 v0.2 comparator v0.2 (cycle 021 S3; 880 行)**: 5-tier 重组 (in-pool 7 / out-of-pool 3 / out-of-scope 1 / foundation 1 / orthogonal 8) + 3 NEW axes 9-11 (NSA / DINOv3 / Composer pool) + Pillar A/D 威胁重排
+- **SPEC-20260507-002 v0.3 addendum (cycle 023 S3)**: 增 ABL-v02-10 Test3R-alone Tier 1 comparator + VGGT offline-batch baseline annotation + Pillar A 4 sub-claim × primary ABL falsification map + 更新 compute budget ~1377 GPU-hours
+- **SPEC-20260508-001 v0.3 C2 Memory addendum (cycle 026 S3)**: supersedes Delta 3; vector GRU + vector AnchorBank + NSA-label 升级为 latent state-token recurrence + explicit spatial key/value memory + geometry-aware bus-gated writes; CUT3R-like state tokens / Spann3R-like spatial bank / recent frame-value tokens
+- **SPEC-20260508-002 v1.1 Memory ablation addendum (cycle 028 + cycle 029 review)**: ABL-memory-0..11 + cycle 029 R-029-1..5 corrections (oracle-bus boundary, hard/soft fail rule, state-token stale-smooth fail, op proxy cost, controlled loop narrowed)
+- **paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md v2.1 (cycle 011 + cycle 011 v2.1 additive)**: CR-1..CR-6 跨 spec 信号契约 + forward-reference null protocol 子协议 (v2.1 additive per DEC-20260505-001)
+- **planning 配套**: COMPOSER_CAPABILITY_DESCRIPTORS (cycle 018 S2) / NSA_MEMORY_INTEGRATION_MEMO (cycle 018 S3) / DINOV3_C1_INTEGRATION_MEMO (cycle 018 S3) / MEMORY_V03_DESIGN_STUDY (cycle 025) / MEMORY_V03_P0_PROTOTYPE_PLAN (cycle 027) / MEMORY_V03_ABLATION_REVIEW (cycle 029) / SOTA_MATRIX_V2 (cycle 035 P0-2) / CRITIC_CALIBRATION_PLAN_V1 (cycle 035 P0-1) / LONG_SEQ_REAL_TABLE_PLAN (cycle 035 P0-3) / WORK_RISK_REGISTER v1.2 (cycle 036 +3 proposal-cycle 行)
+
+所有 SPEC 在 git 历史 + cycle log 中可回溯; v0.1 body 在 v0.2 / v0.3 addendum 中保留不动 (per RESEARCH_CODE_DISCIPLINE rule 3 surgical edits + rule 5 honesty override)。
+
+### 7.2 实现里程碑 W1-W18
+
+per code/dream3r/RECENT_PROGRESS.md (服务器部署 /hdd3/kykt26/code/dream3r/), 截至 cycle 034 (2026-05-11) Dream3R v0.3 在服务器端通过两层验证:
+
+**Tier 1 集成验证 (11 项, code-observed)**:
+
+- v0.3 forward / backward 整 pipeline 跑通
+- multi-window streaming state 更新
+- NSA 三分支 (compressed / selected / sliding) mixing
+- active → stable memory promote / recall
+- 3D-aware AnchorBank retrieval
+- C4 Critic repair action handoff (A5 reroute → C5 Composer)
+- C3 Permanence slot pose tracking
+- Mamba recurrence factory & demo
+- W18 GaussianHead tensor 契约 (no renderer, renderer-free)
+- 合成 ablate_recurrence & visualization
+- KITTI rectified RGB/depth loader + evaluate_real_sequence.py
+
+**Tier 2 真实数据 smoke (code-observed; cycle 034)**:
+
+- KITTI rectified RGB/depth windows 加载链跑通
+- 两 windows 真实序列通过 Dream3R 完整 pipeline 前向
+- evaluation JSON 产出
+- 实测: pointmap L2 = 20.4747, depth RMSE = 21.8658
+
+**主要实装文件清单** (code/dream3r/):
+
+- `bus.py`: C6 Memory Bus typed signal 命名空间 + CR-1..CR-6 gates (零参数)
+- `modules.py`: C1 Perceiver (ViT backbone + heads) / C2 Memory (GRU + Mamba) / C3 Permanence (Slot Attention) / C4 Critic (TransformerEncoder) / C5 Composer (table join)
+- `mamba_block.py`: Mamba-Transformer hybrid recurrence backbone (W17)
+- `gaussian_head.py`: GaussianHead tensor 契约 (W18, renderer-free)
+- `memory_anchor_bank.py` + `nsa_attention.py`: NSA three-branch + AnchorBank K=256
+- `composer_experts/`: 7-expert adapter 子目录 (MASt3R / Fast3R real loaded; CUT3R / MoGe-2 / DepthAnything-V2 / Test3R stub)
+- `data/kitti_real.py` + `evaluate_real_sequence.py`: KITTI 真实数据 loader + evaluation entry
+- `ablate_recurrence.py` + `export_demo_artifacts.py`: 4 variants 合成 ablation + demo artifact export
+- `tests/test_isa_slots.py`: W16 ISA pose stress tests
+
+ABL-memory-0 在本地 P0 scaffold (cycle 031, experiments/prototypes/memory_v03_p0/) 通过 22/22 fixture / logging validity checks; 该 pass 仅 = Tier 0 fixture/logging substrate 验证, **不** = C2 memory 质量 / retrieval 质量 / recurrence 质量 / reconstruction 质量 / 模型行为 / 论文 claim 验证。
+
+### 7.3 KITTI 真实数据集成证据
+
+per cycle 034 + RECENT_PROGRESS.md line 56-78, Dream3R v0.3 在 KITTI 真实序列上的首次真实数据 smoke:
+
+```text
+dataset    : kitti_rectified
+sequence   : 2011_09_26_drive_0001_sync_02
+windows    : 2 (相邻 frame pair)
+device     : cuda
+backend    : mamba_ssm
+pointmap L2: 20.4747
+depth RMSE : 21.8658
+```
+
+**evidence label 边界声明 (per RECENT_PROGRESS.md line 78)**:
+
+```text
+This is real-data integration evidence, not SOTA reconstruction
+accuracy. The numbers reflect that the entire pipeline (data load
+→ C1 Perceiver → C2 Memory → C3 Permanence → C4 Critic → C5
+Composer → C6 Bus → 输出 4D pointmap + dynamic mask) runs end-to-
+end on real KITTI rectified frames without crashing or silent
+NaN. The numbers do NOT reflect trained reconstruction quality,
+do NOT support any SOTA-comparable claim, and do NOT close any
+of the §3 Q1/Q2/Q3 research questions.
+```
+
+L2 = 20.47 / RMSE = 21.87 在 KITTI rectified 上的数量级位于"集成跑通 + 输出 shape 正确 + 数值在合理范围"区间; 训练前 baseline 数值, 未经过 v0.3 端到端训练。任何后续 Q1/Q2/Q3 实证主张 (per §3 + §6) 都需要 W19-W30 训练 + 真实数据 ABL + KITTI long-window evaluation, 这些仍 gated on F-002 server authorization + 独立 DEC。
+
+### 7.4 综述发布 (Track B 3R-mix)
+
+Track B 中文 3R 综述于 2026-05-06 启动 (cycle 034 S8 + 0513 series), 2026-05-14 wound down 至 route C arXiv-only (per RELATION_TO_TRACK_A_2026-05-16.md):
+
+- **形态**: 18 A4 页 LaTeX (ctexart + xelatex + unsrtnat); 10 sections; 6 figures (4 TikZ + 2 paper-Fig.1 composites); 5 booktabs tables; 0 LaTeX errors / 0 warnings
+- **引文**: 44 BibTeX entries, 全部 cite (无 \nocite{*}); CroCo + MASt3R 机制 段补充 2026-05-14
+- **figures**: dust3r / vggt / monst3r / cut3r 4 paper Fig.1 crop 嵌入 (per 2026-05-13 user-confirmed reuse license; 仅 4 篇)
+- **deliverables**:
+  - `deliverables/3r_survey_stage_final_2026-05-13.pdf` (基线 polish)
+  - `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` (cycle 034 三轮 polish)
+  - `deliverables/3r_survey_stage_final_2026-05-14_quality.pdf` (CroCo + §10 失败模式 + fig:timeline 修订)
+  - `deliverables/3r_survey_stage_final_2026-05-15_natural.pdf` (2026-05-15 prose naturalization deliverable; **当前推荐提交 PDF**)
+
+**词汇隔离 (per cycle 034 G2 grep verified)**: main.tex / references.bib / notes/* 均 0 hit on `Dream\|Dream3R\|KYKT\|agent\|skill\|workflow\|本地项目\|cycle\|SPEC-\|DEC-\|CR-`。综述 manuscript surface 不出现 Dream / KYKT 内部 vocabulary, 是 sibling artifact (per Dream/3R-mix/deliverables/RELATION_TO_TRACK_A_2026-05-16.md)。
+
+**提交 packaging (cycle 036 + cycle 037)**: `deliverables/SUBMISSION_PACKAGE_ADVISOR_2026-05-16.md` (~600 字 中文 cover note, G2 vocab-clean) + `deliverables/SUBMISSION_RECORD_2026-05-16.md` (含 recipient / channel / submitted_at slot + pdf_sha256 = A0763DB7AB7A1E8E1427D4DCC8CB62BC15F94F3F2D915AD0BFBB235CC99C64B0 pre-filled 2026-05-16) + `deliverables/RELATION_TO_TRACK_A_2026-05-16.md` (~600 字 internal meta, 不与 PDF 同包提交)。实际提交动作 (email / IM / portal / offline) 是用户 cycle 外人工动作; packaging stands ready。
+
+### 7.5 综述反哺主线 (cycle 035)
+
+per cycle 035 (2026-05-15), 综述四轴判断 (六类失败模式 / 长序列内存四类 / 测试时三类 / 输出资产三类) 反哺 Track A Dream3R 主线, 输出 4 markdown deliverables + WORK_RISK_REGISTER 4 新行:
+
+- **SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md (cycle 035 上游 proposal; status: draft awaiting user review)**: 21 子类覆盖矩阵 (✓ 6 first-class / ⚠ 11 partial / ✗ 4 absent); P0/P1/P2 gap 识别; 类型 A/B/C/D 优化建议; W19-W30 roadmap 重排建议
+- **SOTA_MATRIX_V2.md (cycle 035 P0-2)**: 五张 Tables A-E 重新标注 SPEC-007 v0.2 19 comparator entries 与 5 axes (失败模式 / 长序列内存 / 测试时 / 输出资产 / 输入扩展 bonus); 4 first-class-support gap (OOD / external prior / 4DGS license / 输入扩展 axis) 反哺 WORK_RISK_REGISTER
+- **CRITIC_CALIBRATION_PLAN_V1.md (cycle 035 P0-1)**: 六类失败模式 → C4 Critic 5 sub-signal 映射; method A vs B selection decision tree; 5-metric validation gate (plan-only, 执行 gated)
+- **LONG_SEQ_REAL_TABLE_PLAN.md (cycle 035 P0-3)**: 4 ablate_recurrence variants × 4 long-seq metrics × windows ∈ {10, 20, 50, 100} 分级执行; B4 缓存治理 explicit coverage gap; 6-metric validation gate (plan-only, 执行 gated)
+- **WORK_RISK_REGISTER.md v1.1 (cycle 035 +4 行)**: R-OOD-1 (域外检测缺口) + R-EXT-PRIOR-1 (外部先验冲突) + R-4DGS-LIC-1 (4DGS license 链) + R-INPUT-EXT-1 (输入扩展 axis)。cycle 036 v1.2 再加 R-PROP-VOCAB-1 / R-PROP-CLAIM-1 / R-PROP-SYNC-1 三 proposal-cycle 行, 共 20 行
+
+cycle 035 4 markdown deliverables 是 Track B → Track A 单向反哺; 综述 manuscript 在 2026-05-14 wound down 后未受到主线后续工作回流污染。
+
+### 7.6 cycle 历史
+
+cycle 015 (2026-05-05) 起 Dream 主线进入架构-first 轨道 (per DEC-20260506-001); cycle 016-021 完成 v0.2 markdown trio (SPEC-004 + SPEC-005 + SPEC-007); cycle 022 paper v1.2 (PAPER_DRAFT_V1.md 含 v0.2 deltas 与 comparator); cycle 023 v0.3 ablation addendum (ABL-v02-10 + VGGT baseline); cycle 024 服务器 v0.2 scaffold; cycle 025-027 C2 Memory v0.3 设计与 P0 plan; cycle 028-031 ablation addendum review + local P0 scaffold + ABL-memory-0 fixture pass; cycle 032 v0.3 codebase 服务器端验证 (synthetic 训练 10 epochs 收敛, 8.4ms p95 profiling, 9/9 smoke tests, 4/4 unit tests, 通过 REVIEW_PROMPT.md onboarding); cycle 033-034 W1-W18 实装完成 + KITTI smoke; cycle 035 综述反哺 4 deliverables; cycle 036-039 开题报告双稿 § 1 + § 2 + § 3 + § 4 + § 6 起草; cycle 040 (本 cycle) § 5 + § 7 + § 8 起草。
+
+cycle 015 Critic L3 pilot scope (DEC-20260505-005 authorized 但 per-step micro gates 仍 required) 在 cycle 016 主线 redirect 后保持 paused at S9 done, 不 abandon — L3 infrastructure (test3r conda env on server + launch.py patch + 4 local shallow clones) 留作 future Critic A4 evidence anchor (per DEC-20260506-001 §S2/D6')。
+
+整体 cycle 历史的 evidence label: cycle 032 服务器端验证 + cycle 034 KITTI smoke 为 code-observed; 其他 cycle 输出 (markdown SPEC / planning / cycle log) 为 engineering-demonstrated 或 paper-derived; 任一 cycle 输出均未 promote 至 paper-proven。
 
 ## §8 时间安排
 
-<!-- TBD cycle 040; 起草目标 ~1500 字 -->
-<!-- 上游素材: code/dream3r/NEXT_PHASE_ROADMAP.md W19-W27 + 综述驱动优化提案 §6 重排 + DEC-20260515-001 §Next Direction A-E -->
-<!-- 子节建议: 8.1 短期 (cycle 036-041 开题报告起草) + 8.2 中期 M3-M5 (W19-W23 真实路由 + W24 Critic 校准 + W25 TTT + W26 输入扩展 + B1/B2/B3 v0.4 spec delta) + 8.3 长期 M6-M8 (W27 3DGS renderer + 真实数据训练 + 论文撰写 + 综合评测) -->
+本章按三个时间段给出 Dream3R 后续研究计划: §8.1 短期 (M1-M2, cycle 040-042 开题报告完稿 + 提交 + 启动后续 ABL plan)、§8.2 中期 (M3-M5, W19-W23 真实路由 + W24-W26 v0.4 spec delta + B1/B2/B3 候选)、§8.3 长期 (M6-M8, W27 3DGS renderer + 真实数据训练 + 论文撰写 + 综合评测)。时间表为 candidate timeline, 非 committed schedule, 受 F-002 server authorization + per-step DEC + advisor 反馈影响。
+
+### 8.1 短期 (M1-M2)
+
+短期目标 = 开题报告完稿 + 提交 + 已 plan 的 P0/P1 deliverable 执行入口。
+
+- **cycle 040 (本 cycle, 2026-05-17)**: § 5 + § 7 + § 8 dual-draft 完稿 (~11000 字); STYLE_CONTRACT 41→43→44+ rows (cycle 040 加 评测 protocol 术语); § 9 仍 placeholder
+- **cycle 041 (estimated 2026-05-17 后)**: § 9 风险分析 起草 (~1500 字 内 + ~1000 字 外, 引用 WORK_RISK_REGISTER v1.2 20 行 select 6-8 行学术化) + 通稿审查 (双稿一致性 grep + 候选不等于最终 句式 二轮审查 + 字数估算回归) + STYLE_CONTRACT final sync
+- **cycle 042 (estimated 2026-05-18 后)**: 最终修订 + PDF 编译 (xelatex / pandoc 待选; cycle 041 close 后定型) + 提交 packaging (复用 cycle 036 Part A pattern 起草 SUBMISSION_PACKAGE_ADVISOR_PROPOSAL.md + SUBMISSION_RECORD.md)
+- **Track B 实际提交动作 (用户 cycle 外人工动作)**: 综述 deliverables/3r_survey_stage_final_2026-05-15_natural.pdf + cover note + SUBMISSION_RECORD slot 填写 (recipient / channel / submitted_at), 与 cycle 040 + 041 + 042 并行可执行
+
+短期 cycle 040-042 evidence label: 全部 markdown-only + plan-level; 不启动 server 行动 / 训练 / checkpoint / 任何 ABL 执行。
+
+### 8.2 中期 (M3-M5)
+
+中期目标 = W19-W26 实装 + B1/B2/B3 v0.4 spec delta 候选 + cycle 035 P0/P1 plan 执行入口。每项 milestone 需独立 DEC + F-002 server authorization。
+
+按 cycle 035 SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL §6 W-task reorder 推荐 (recommendation-status, 非 committed):
+
+- **W20 SOTA matrix (P0 已升级, cycle 035 已完成)**: planning/SOTA_MATRIX_V2.md 已 land
+- **W24 Critic calibration plan (P0 已升级, cycle 035 已完成 plan)**: 执行 gated; 中期入口
+- **W21 ablate_recurrence long-seq table plan (P0 已升级, cycle 035 已完成 plan)**: 执行 gated; 中期入口
+- **W19 真实数据路径 (DTU + KITTI loader, real evaluation entry)**: cycle 040 cycle 后第一个 unblocked task (per NEXT_PHASE_ROADMAP); DTU license 链 + multi-view registration loader 是主要工作量
+- **W22 visualization pack (NSA weights / AnchorBank occupancy / Critic timeline / state drift curves)**: unblocked (post-demo, medium-high priority); 中期独立 DEC
+- **W23 expert routing 真实加载 (CUT3R / MoGe-2 / DepthAnything-V2 真实 adapter; Fast3R omegaconf depfix)**: 中期高优 unblocked; 与 W19 + W22 并行可推进
+- **W24 Critic calibration 执行 (cycle 035 plan 升级到 W24 实装)**: F-002 + 独立 DEC; 30 scalar threshold 表 + sub-sample 分组采样的具体执行
+- **W25 测试时适应 (TTT3R 风格参数更新路径)**: Gated (post 真实数据); 与 B1 v0.4 spec delta (Critic 路径拆分) 协同
+- **W26 输入扩展 axis 设计 (输入扩展 axis: pose / sparse depth / video; 与 Pow3R / MapAnything 路径对接)**: Gated (design first); 与 B3 v0.4 spec delta (输入扩展 axis) 协同
+
+**v0.4 spec delta 候选 (proposal-status; per cycle 035 SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL §5)**:
+
+- **B1 Critic 路径拆分**: 把 C4 Critic 一致性优化 vs C2 TTT 参数更新拆为两路径 (per §3.1 Q1); 与 W25 协同
+- **B2 输出资产契约**: D1 / D2 / D3 (含 4DGS) 输出资产 explicit contract; 与 W27 协同; 受 R-4DGS-LIC-1 风险约束
+- **B3 输入扩展 axis**: 引入 pose / sparse depth / video 作为 first-class 输入接口 (per Pow3R / MapAnything 谱系); 与 W26 协同; 关联 R-INPUT-EXT-1 风险
+
+每 v0.4 spec delta 候选需独立 DEC 起草 (类似 SPEC-008 v0.3 addendum 流程)。
+
+### 8.3 长期 (M6-M8)
+
+长期目标 = W27 4DGS renderer 接入 + 真实数据训练 + 论文撰写 + 综合评测。这一段时间窗 (estimated 6-8 月后) 远 outside 开题报告时间窗口, 时间表 candidate 性更强。
+
+- **W27 4DGS renderer (gsplat / gaussian-splatting 路径)**: 把 W18 GaussianHead tensor 契约接入实际可渲染 4DGS asset; 受 R-4DGS-LIC-1 风险约束 (renderer license 链未文档化); 与 B2 v0.4 spec delta 协同; 独立 DEC + F-002 + license check 三 gate
+- **W28 训练基础设施 (checkpoint resume / 确定性 seed / run metadata / config snapshot)**: 真实数据训练的工程支撑; F-002 + 独立 DEC
+- **真实数据训练**: 在 W19 (DTU loader) + W21 (long-seq) + W23 (expert 真实加载) + W24 (Critic 标定) + W28 (训练基础设施) 都通过后, 启动 v0.3 端到端真实数据训练; 这是 Q1/Q2/Q3 实证 evaluation 的 prerequisite
+- **W29 文档 pack (架构图 / method matrix / ablation 表 / limitations / claim tracking)**: 持续维护, 不单独 milestone
+- **论文撰写 (Phase 2)**: PAPER_DRAFT_V1.md v1.2 → v2 升级, 含 ABL-v02-1..10 + ABL-memory-0..11 实证数值, 候选目标会议 (per DEC-20260506-001 paper-as-support; 具体会议 + 篇幅 + scope gated on 用户方向)
+- **综合评测**: KITTI / DTU / 可能扩展 ScanNet / 7-Scenes 等; 与 §3 Q1/Q2/Q3 三组研究问题对照; 与 B1/B2/B3 v0.4 spec delta 协同
+
+长期阶段 evidence label 待 Tier 1 + Tier 2 ABL 跑出后才能从 plan-only 升级至 code-observed / engineering-demonstrated; 任何 paper-proven claim 仍需会议接收。
+
+整体时间表 candidate-not-final 性 (per DEC-20260501-011): M1-M8 各阶段都可能因为 (a) 服务器算力 / GPU 可用性 (per F-002), (b) 实证结果反馈 (e.g., ABL-v02-4 best-of-N 不显著 → 重新 prioritize Pillar D 路径), (c) v0.4 spec delta 候选选择 (B1 vs B2 vs B3 优先级), (d) advisor 反馈 (开题报告 feedback 可能 reshape M1-M2), (e) Track B 综述提交后是否引发新方向 等因素调整。每次调整在对应 cycle log 记录, 不 silent 改时间表。
 
 ---
 

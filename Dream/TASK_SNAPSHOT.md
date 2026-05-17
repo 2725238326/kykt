@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-16 (cycle 038 closed: Dream3R 开题报告 § 4 研究方案 / Dream3R v0.3 架构 dual-draft 起草 — DRAFT_INTERNAL_V1.md § 4 ~4000 字 Dream-vocabulary master (C1-C6 编号 + Delta 1/2/3/5/6 + CR-1..CR-6 引用) + DRAFT_EXTERNAL_V1.md § 4 ~3000 字 vocab-clean snapshot using 六模块中文化命名 (感知/记忆/永久性/校验/编排/总线); 8 sub-sections cover 整体设计 + 帧预算 / 感知 / 记忆 / 永久性 / 校验 / 编排 / 总线 / 与现有 3R 系统的结构差异; STYLE_CONTRACT §2 vocab table 22→41 rows (+19 module-internal terminology substitutions); §6 sync log appended cycle 038 entry; G3a + G3b + G4 greps all 0 hits after 1 corrective edit (cycle-037-residue "cycle 037" leakage in DRAFT_EXTERNAL metadata row, caught by cycle 038's full-file G3a, rephrased to "§2 + §4 起草, 累计正文 +~7000 字"); § 1 + § 2 + § 4 累计 ~8200 内 + ~7000 外 字 (~36% of OUTLINE_V1 §2 表 总字数估算); cycles 037 + 036 + 035 + 034 all in force; DEC-20260516-003 + cycle log + sync chain)
+Last updated: 2026-05-17 (cycle 039 closed: Dream3R 开题报告 § 3 候选研究问题 + § 6 预期成果与创新点 dual-draft 起草 — DRAFT_INTERNAL_V1.md § 3 ~1800 字 + § 6 ~1300 字 Dream-vocabulary master (Q1/Q2/Q3 + 三个 IP + 4-finalist 独立性 + candidate-not-final 声明) + DRAFT_EXTERNAL_V1.md § 3 ~1500 字 + § 6 ~1000 字 vocab-clean snapshot (三个研究问题 + 三个 IP); § 3 5 sub-sections: 3.1 Q1 验证机制 / 3.2 Q2 长序列内存 / 3.3 Q3 多专家组合 / 3.4 4-finalist 模块独立性 / 3.5 候选 vs 最终 研究地位; § 6 3 sub-sections: 6.1 预期交付物 / 6.2 三个 IP 声明 (Q1↔IP1 / Q2↔IP3 / Q3↔IP2) / 6.3 与现有工作的实证差异; STYLE_CONTRACT §2 vocab table 41→43 rows (+2: C4' TTT 路径模块代号 / Innovation Point IP1/IP2/IP3); §6 sync log appended cycle 039 entry; G3a + G3b 0 hits on first pass; G4 7 hits per side from candidate-not-final 句式 examples in negation-pattern context, applied 7 corrective edits per cycle 036 precedent (最终架构方案 → 最终方案 / X 解决了 → X 已完全解决 / Dream3R 解决了 → Dream3R 已完全解决 / 证明 ... 优于 → 宣称 ... 优于), re-grep all 0 hits; § 1 + § 2 + § 3 + § 4 + § 6 累计 ~11300 内 + ~9500 外 字 (~54% of OUTLINE_V1 §2 表 总字数估算); cycles 038 + 037 + 036 + 035 + 034 all in force; DEC-20260516-004 + cycle log + sync chain)
 
-Status: **idle** (cycle 038 closed 2026-05-16: 8 file ops landed (2 NEW + 6 MODIFIED); § 4 研究方案 / Dream3R v0.3 架构 双稿同步起草完成 + STYLE_CONTRACT 22→41 rows extension + 1 corrective edit on cycle-037-residue + cycle log + sync chain — no spec / code / server action; § 3 / § 5-§ 9 proposal body text drafting deferred to cycles 039-041 per OUTLINE_V1 §4 顺序; cycles 033 + 034 + 035 + 036 + 037 closed earlier in same session; awaiting user direction on next workstream)
+Status: **idle** (cycle 039 closed 2026-05-17: 8 file ops landed (2 NEW + 6 MODIFIED); § 3 + § 6 dual-draft completed + STYLE_CONTRACT 41→43 rows extension + 7 corrective edits per side on G4 negation-context hits + cycle log + sync chain — no spec / code / server action; § 5 / § 7 / § 8 / § 9 proposal body text drafting deferred to cycles 040-041 per OUTLINE_V1 §4 顺序; cycles 033 + 034 + 035 + 036 + 037 + 038 closed earlier in same session series; awaiting user direction on next workstream)
 
 ## Why this file exists
 
@@ -23,7 +23,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ```text
 task_id:    none-active
 phase:      idle between cycles
-cycles:     032 + 033 + 034 + 035 + 036 + 037 + 038 closed; Track B 3R-mix survey packaged + SHA256 pre-filled; Dream3R 开题报告 dual-draft § 1 + § 2 + § 4 complete (~8200 内 / ~7000 外 字 ≈ 36% target); STYLE_CONTRACT 22→41 rows
+cycles:     032 + 033 + 034 + 035 + 036 + 037 + 038 + 039 closed; Track B 3R-mix survey packaged + SHA256 pre-filled; Dream3R 开题报告 dual-draft § 1 + § 2 + § 3 + § 4 + § 6 complete (~11300 内 / ~9500 外 字 ≈ 54% target); STYLE_CONTRACT 22→41→43 rows
 status:     idle
 ```
 
@@ -62,6 +62,120 @@ No active cycle. Two parallel tracks are at a checkpoint:
 | 0513-S3 | 3R-mix paper Fig.1 embedding (DUSt3R / VGGT / MonST3R / CUT3R) | done | `figures/`, `main.tex` |
 | 0513-S4 | 3R-mix source-checked rewrites (MV-DUSt3R+ / Fast3R / VGGT / TTT3R + 7 × 2026 preprints) | done | `Dream/3R-mix/main.tex`, `notes/paper_inventory.md` |
 | 0513-S5 | 3R-mix three refinement passes (caption shortening + language naturalization + final refine) | done | `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` (16 A4 pages, 0 errors / 0 warnings) |
+
+## Cycle 039 subtask board (closed 2026-05-17)
+
+| ID | Subtask | Status | Canonical artifact |
+| --- | --- | --- | --- |
+| C039-S1 | DEC-20260516-004 launch authorization | done | `decisions/DEC-20260516-004-cycle-039-proposal-sections-3-and-6-dual-draft.md` |
+| C039-S2 | Draft §3 in DRAFT_INTERNAL_V1.md (master, Dream-vocabulary, ~1800 字, 5 sub-sections: 3.1 Q1 验证机制 + 3.2 Q2 长序列内存 + 3.3 Q3 多专家组合 + 3.4 4-finalist 模块独立性 + 3.5 候选 vs 最终 研究地位) | done | `planning/proposal_dream3r/DRAFT_INTERNAL_V1.md` §3 |
+| C039-S3 | Draft §6 in DRAFT_INTERNAL_V1.md (master, Dream-vocabulary, ~1300 字, 3 sub-sections: 6.1 预期交付物 + 6.2 三个 IP 声明 (Q1↔IP1 / Q2↔IP3 / Q3↔IP2) + 6.3 与现有工作的实证差异) | done | `planning/proposal_dream3r/DRAFT_INTERNAL_V1.md` §6 |
+| C039-S4 | Snapshot §3 to DRAFT_EXTERNAL_V1.md (vocab-clean, ~1500 字, 5 sub-sections mirroring internal with 三个研究问题 + 候选架构 X 命名) | done | `planning/proposal_dream3r/DRAFT_EXTERNAL_V1.md` §3 |
+| C039-S5 | Snapshot §6 to DRAFT_EXTERNAL_V1.md (vocab-clean, ~1000 字, 3 sub-sections mirroring internal with vocab-clean 三个 IP 命名) | done | `planning/proposal_dream3r/DRAFT_EXTERNAL_V1.md` §6 |
+| C039-S6 | G3a + G3b + G4 vocab-firewall + over-claim greps (full file scope) | done with 7 corrective edits per side | First-pass G3a + G3b both 0 hits on first pass. First-pass G4 caught 7 hits per side in candidate-not-final 句式 negation-context examples ("不主张 ... 最终架构方案" / "不说 'X 解决了 ...'" / "不以 '证明 X 优于 SOTA' 的句式呈现"). Applied 7 corrective edits per side via replace_all (最终架构方案 → 最终方案 + X 解决了 → X 已完全解决 + Dream3R 解决了 → Dream3R 已完全解决 + 证明 ... 优于 → 宣称 ... 优于). Re-ran G3a + G3b + G4 → all 0 hits on both drafts (full file). Per cycle 036 precedent. |
+| C039-S7 | STYLE_CONTRACT §2 vocab substitution table append (+2 new rows: C4' TTT 路径模块代号 → omit / "后续候选模块"; Innovation Point / IP1/IP2/IP3 → 保留英文 + 中文括注, 双稿一致无替换) | done | `planning/proposal_dream3r/STYLE_CONTRACT.md` §2 (41 → 43 rows) |
+| C039-S8 | STYLE_CONTRACT §6 sync log append (cycle 039 entry: 5+3 sub-sections + 2 new substitutions + 7 corrective edit narrative + 4 grep results) | done | `planning/proposal_dream3r/STYLE_CONTRACT.md` §6 |
+| C039-S9 | Cycle 039 log | done | `cycles/CYCLE-20260516-004.md` |
+| C039-S10 | Sync chain (TASK_SNAPSHOT first + WORKFLOW_STATUS + INDEX) | done | this file + `WORKFLOW_STATUS.md` + `INDEX.md` |
+
+Cycle 039 deliverable summary:
+
+```text
+DEC-20260516-004:
+  - authorizes only 8 file ops total (2 NEW + 6 MODIFIED): DEC + cycle
+    log + 3 modified drafts/contract + 3 sync targets
+  - forbids Dream/3R-mix/main.tex / references.bib / notes/* edits,
+    Dream/specs/ edits, Dream/code/ edits, Dream/paradigm/ edits,
+    OUTLINE_V1.md edits, WORK_RISK_REGISTER.md edits, sections other
+    than §3 + §6 of either draft, server actions, checkpoint,
+    training, model inference, ablation runs, v0.4 spec delta
+    drafting (B1/B2/B3 candidates referenced in §3.1 + §6.1 as
+    forward-looking only), actual Track B survey submission
+
+§3 候选研究问题 (5 sub-sections):
+  - §3.1 Q1 验证机制路径 (Critic; Gap = 综述 §2.5 三类机制无单一架构
+    并置评估; v0.3 路径 = C4 hybrid 验证 + 修复; v0.4 候选 B1 拆分
+    proposal-status; 评估路径 = ABL + KITTI long-seq; candidate-not-
+    final 边界声明)
+  - §3.2 Q2 长序列内存机制统一 (Memory; Gap = 综述 §2.4 四类机制各
+    占一档; v0.3 路径 = C2 NSA + AnchorBank + StateToken + Mamba
+    hybrid 覆盖 B1+B2+B3 + B4 partial; 评估路径 = ablate_recurrence
+    + KITTI windows ∈ {10, 20, 50, 100}; candidate-not-final 边界)
+  - §3.3 Q3 多专家组合 (Composer; Gap = 综述各专家 regime 优势分散
+    缺对照; v0.3 路径 = C5 7-expert pool + capability descriptor +
+    路由策略; 两子问题 Q3-a best-of-N vs single-expert + Q3-b
+    Test3R-in-pool vs 外置 Critic; 评估路径 = ABL-v02-4 + ABL-v02-6
+    + ABL-v02-10; candidate-not-final 边界)
+  - §3.4 4-finalist 模块独立性 (per DEC-20260504-002 no-all-in):
+    架构层 / 评测层 / 研究问题层 三层独立性; Permanence 不挂 Q
+    但 silent retiring 仍禁止
+  - §3.5 候选 vs 最终 研究地位声明 (per DEC-20260501-011):
+    本研究三个"不"主张 + 正面表述 (具体候选 + 覆盖矩阵 + 多机制
+    best practice + v0.4 演进路径)
+
+§6 预期成果与创新点 (3 sub-sections):
+  - §6.1 预期交付物 (4 类: 架构设计文档 + 原型实现 W1-W18 + 评测
+    结果 ABL + 综述与方法学副产物)
+  - §6.2 三个 IP 声明:
+      IP1 Verification-as-architecture ↔ Q1 + §4.5 + Pillar A
+      IP2 Heterogeneous best-of-N Composer ↔ Q3 + §4.6 + Pillar D
+      IP3 NSA-hybrid memory ↔ Q2 + §4.3 + 综述四类
+      每个 IP 携带句式约束 ("不说 ... 解决了 ...; 说 ... 提供候选
+      模块设计 + 对照实验证据")
+  - §6.3 与现有工作的实证差异 (3 层面: 方法学差异 多机制并置评估
+    vs 单一论文一个方法 + 失败模式系统化差异 + 架构组合差异 异构
+    multi-expert vs single best architecture; 实证目标不是
+    leaderboard top-N 而是为后续工作判断 v0.4 演进方向提供对照
+    数据)
+
+STYLE_CONTRACT 升级:
+  - §2 vocab substitution table 41 → 43 rows (+2: C4' TTT 路径模块
+    代号 → omit / "后续候选模块"; Innovation Point / IP1/IP2/IP3
+    → 保留英文 + 中文括注 双稿一致)
+  - §6 sync log appended cycle 039 entry with substitutions used +
+    7 corrective edit narrative + 4 grep results
+
+G4 negation-context observation:
+  - 7 hits per side from candidate-not-final 句式 examples ("不说
+    'X 解决了 ...', 说 ...") explicitly using forbidden patterns
+    in pedagogical 反例 context; per cycle 036 precedent applied
+    corrective rephrasing (最终架构方案 → 最终方案 / X 解决了 →
+    X 已完全解决 / 证明 ... 优于 → 宣称 ... 优于) to remove
+    literal regex substrings while preserving 句式 contrast
+    semantics; observation recorded in cycle log for cycle 040 /
+    041 通稿审查 to potentially propose STYLE_CONTRACT §5 negation-
+    context exemption rule if pattern recurs at scale
+
+Result:
+  - 8 artifacts present (DEC + cycle log + 3 modified drafts/contract
+    + 3 sync targets); stop gates G0-G6 all passed with 7 corrective
+    edits per side at G4 (negation-context forbidden-pattern hits
+    caught by full-file grep, fixed); § 1 + § 2 + § 3 + § 4 + § 6
+    累计 ~11300 内 + ~9500 外 字 ≈ 54% of OUTLINE_V1 §2 表 总字数
+    估算 (~21100 内 / ~16000 外)
+
+Evidence boundary:
+  - §3 + §6 claim-positioning text at research-plan level; no spec
+    change, code change, calibration run, ablation run, or v0.4
+    delta drafting validated by cycle 039
+  - candidate-not-final framing preserved throughout per
+    DEC-20260501-011; §3.5 + §6.2 + §6.3 are the highest-density
+    candidate-not-final 句式 application across the entire proposal
+  - no-all-in posture preserved: §3.4 explicitly preserves 4-module
+    independence including Permanence as a non-Q-anchored peer
+    finalist per DEC-20260504-002
+
+Next admissible direction (per DEC-20260516-004 §Next Direction):
+  A. cycle 040 §5 实验设计 + §7 已完成工作 + §8 时间安排 together
+     (recommended; three implementation-anchored chapters tightly
+     coupled; ~4500 外 + ~6500 内 字 total ≈ ~11000 字)
+  B. revise §3 + §6 based on self-review or advisor feedback
+  C. cycle 035 §Next Direction A-C alternatives (calibration / long-
+     seq ablation / v0.4 spec delta drafting)
+  D. pause + reassess after §3 + §6 quality review
+  E. user executes Track B survey submission (manual action)
+  F. mainline non-proposal work (W22 / W23 / Fast3R omegaconf)
+```
 
 ## Cycle 038 subtask board (closed 2026-05-16)
 

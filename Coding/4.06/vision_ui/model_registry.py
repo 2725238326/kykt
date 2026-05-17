@@ -138,9 +138,9 @@ MODEL_CATALOG.update(
             family="video_depth_consistency",
             param_family="video_sequence",
             source_types=("video", "frames"),
-            runner_status="env_blocked_curope",
+            runner_status="runner_pending_smoke",
             research_priority=94,
-            launch_blocker="远端 Align3R 仍缺 curope / Depth Pro / Depth Anything V2 环境确认和官方 smoke run。",
+            launch_blocker="远端 Align3R 的 curope 已在 2026-05-03 重编并验证；下一步是写 align3r_runner.py 并跑首个平台开户 smoke。",
         ),
         "fast3r": ModelCatalogEntry(
             value="fast3r",
@@ -159,9 +159,9 @@ MODEL_CATALOG.update(
             family="streaming_state_reconstruction",
             param_family="streaming_sequence",
             source_types=("video", "frames", "images"),
-            runner_status="env_blocked_curope",
+            runner_status="runner_pending_smoke",
             research_priority=88,
-            launch_blocker="远端 CUT3R 仍缺 curope / gsplat / evo / open3d 环境确认、权重落位和官方 smoke run。",
+            launch_blocker="远端 CUT3R 的 curope 已在 2026-05-03 编译并验证；下一步是写 cut3r_runner.py 并跑官方 examples/001 的平台开户 smoke。",
         ),
         "pi3x": ModelCatalogEntry(
             value="pi3x",

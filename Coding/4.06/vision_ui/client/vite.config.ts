@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 const runtimeEnv =
   (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {};
 const host = runtimeEnv.TAURI_DEV_HOST;
+const buildTarget = runtimeEnv.TAURI_ENV_PLATFORM && runtimeEnv.TAURI_ENV_PLATFORM !== "windows" ? "safari13" : "chrome105";
 
 export default defineConfig({
   clearScreen: false,
@@ -29,7 +30,7 @@ export default defineConfig({
     }
   },
   build: {
-    target: runtimeEnv.TAURI_ENV_PLATFORM === "windows" ? "chrome105" : "safari13",
+    target: buildTarget,
     minify: !runtimeEnv.TAURI_ENV_DEBUG ? "esbuild" : false,
     sourcemap: !!runtimeEnv.TAURI_ENV_DEBUG
   }

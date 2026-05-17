@@ -337,8 +337,111 @@ v2.1 的 additive 变化是新增"前向引用空协议"子节，把代理用例
 
 ## §5 实验设计与评测协议
 
-<!-- TBD; 起草目标 ~2000 字 -->
-<!-- 子节建议: 5.1 三层证据阶梯 (论文层 / 代理用例层 / 原型实现层) + 5.2 架构层消融实验组 (针对四个子模块的退化 / 替换) + 5.3 记忆机制消融实验组 + 5.4 校验阈值标定方案 (六类失败模式逐类标定) + 5.5 长序列真实数据评测 (KITTI 长窗口 ≥ 10) + 5.6 评测数据集 + 5.7 主要评测指标 (点图 L2 误差 / 路由后悔 / 尺度漂移代理 / 记忆衰减代理) -->
+本章在本研究的内部消融实验方案 + 校验标定方案 + 长序列真实评测方案三份规划文档基础上, 描述候选架构 X 的评测协议: §5.1 给出三层证据阶梯, §5.2-§5.5 展开四组消融 / 标定 / 长序列评测, §5.6 列出评测数据集, §5.7 列出主要评测指标。本章为 plan-level, 所有评测的执行需要远端服务器算力授权与对应阶段独立决策, 不在当前阶段启动。
+
+### 5.1 三层证据阶梯
+
+本研究的评测证据按三层逐层升级, 每层有独立的可证伪标准:
+
+- **L1 论文层证据**: 同期中文综述涵盖的 44 引文 + 四个子模块的文献骨干阅读 + 候选机制论文引述。本层证据反映"该机制在论文中报告了如此表现", 不构成本研究的实证主张。
+- **L2 代理用例层证据**: 在已发表论文 + 内部 metadata 数据上验证跨模块信号契约的可行性, 在多个 regime 下检验四个子模块之间的协作约束。本层证据反映"按现有论文与内部 metadata 可以 instantiate 信号契约", 不构成架构层 best practice 的最终实证。
+- **L3 原型实现层证据**: 候选架构 X 的远端服务器实装 + KITTI 真实序列首次跑通 (集成证据, 非训练后质量, 详见 §7.3) + 本地静态 fixture 验证基底通过有效性 gate。本层证据反映"架构端到端 pipeline 跑通, fixture 与日志基底通过", 不构成模型质量 / 训练后表现 / 论文-级别 claim 的实证。
+
+三层证据互不替代: L1 是上游 framing, L2 是跨模块信号契约的阶段级 stress test, L3 是实装里程碑级活动。§5.2-§5.5 列出的所有消融 / 标定 / 长序列评测均 L3 级活动, 执行后才能升级该评测的证据标签至 code-observed; 执行前仍为 plan-only。
+
+### 5.2 架构层消融实验组
+
+架构层消融组覆盖候选架构 X 的六个设计 delta + 一个 v0.3 addendum, 共 10 项消融实验分三个 tier:
+
+**Tier 1 (主张 load-bearing 4 项)**: 三分支稀疏注意力移除 / 多专家组合 vs 单一专家 / 选择门信号子集 / Test3R-alone 对照。Test3R-alone 实验是 v0.3 addendum 新增项: full 校验 + 总线 gates + Test3R lazy 路径 对照 Test3R 内置 verifier only, 检验主线 A (验证作为架构组件) 的 robustness — 若 Test3R-alone 匹配或超过本研究架构的校验门控管线, 主线 A 弱化或证伪。
+
+**Tier 2 (训练维护 4 项)**: 视觉骨干 tier 选择 (-S vs -B vs -L) / frozen vs 部分解冻 / head 训练 schedule / 帧预算 benchmark (TITAN RTX 24GB; 30 FPS 合规性)。
+
+**Tier 3 (longer-tail 2 项)**: 能力匹配度 per-expert per-regime 度量 / 三分支稀疏注意力 kernel benefit decomposition (硬件感知 vs 算法 vs plain dense+top-k; cu121 portability)。
+
+多专家组合消融内附 VGGT offline-batch baseline: VGGT (~1.2B) 在同 benchmark 上以 offline-batch 模式运行, 与本研究架构 streaming-first 多专家组合在 windows ∈ {10, 20, 50, 100} 三类 benchmark 上对比。Honest framing: 本研究架构的 streaming-first 优势是 streaming-specific, 非 universal-on-batch; 该 baseline 是主线 D 威胁的实证回应。
+
+整体合规预算约 1377 GPU-hours, 含 Tier 1 + Tier 2 + Tier 3 + Test3R-alone + VGGT baseline; 实际执行按各消融项单独决策 + 远端服务器算力授权逐步推进, 不在本阶段启动。
+
+### 5.3 记忆机制消融实验组
+
+记忆机制消融组针对内部 C2 记忆模块的四个候选变体 (V0 向量锚点存储 / V1 显式空间键值存储 / V2 状态记忆向量 / V3 hybrid 总线门控写入) 在本地静态张量 fixture 的五类 regime (R1 闭环 / R2 漂移 / R3 动态 / R4 冲突 / R5 预算) 上展开 12 项消融:
+
+- **Tier 0 验证 fixture 与日志基底**: 第 0 项消融已执行通过 22/22 有效性检查; 该通过 = fixture 与日志基底通过, **不** = C2 记忆质量验证
+- **Tier 1 主张 load-bearing 5 项**: 空间锚点 vs 向量锚点 / 状态记忆向量 recurrence / 总线门控动态抑制 / 冲突隔离 / 效用剪枝 vs LRU
+- **Tier 2 训练维护 + 不确定性 3 项**: 重复过滤 / 熵作为不确定性信号 / 操作代理 + 延迟包络
+- **Tier 3 未来集成 3 项**: 值载荷来源 / 记忆相对解码器位置 / 三分支稀疏注意力门控 (NSA gate after payload semantics)
+
+本研究内部对该消融方案进行了 review 修订, 共 5 项关键 correction 入册:
+
+- **Oracle-bus 边界**: P0 fixture 允许 synthesize 5 个 bus oracle 字段作为跨模块信号; **禁止** 候选变体直接读取 3 个 ground-truth 字段, 否则 oracle 泄漏导致评测无效
+- **Hard/soft fail 规则**: hard_fail = 度量 fail 且日志有效 (记录 go/no-go); soft_fail = 不充分 / 弱分母 / 可修复接口问题 (escalate, 不直接 no-go)
+- **状态记忆向量 stale-smooth fail**: V2 在 R2 漂移上 stale-smooth 模式 (写后立即读, 无 recurrence) 必须 fail
+- **操作代理 cost-only**: 操作代理消融的 cost 标签只用 multiply-adds + memory ops, 不用 wall-time (静态 fixture 与服务器 GPU 延迟不可比)
+- **可控闭环 / revisit 主张限定**: revisit accuracy 主张限定在 fixture-controlled 闭环, 不延伸至真实序列
+
+执行后才能升级该消融的证据标签; cycle 040 仅 plan-level 引用; 已执行的第 0 项消融通过仅适用于 Tier 0 验证, 不构成 Tier 1-3 主张证据。
+
+### 5.4 校验阈值标定方案
+
+校验模块当前的统一冲突阈值替换为按六类失败模式 × 5 sub-signal 的 30-scalar 阈值表。5 sub-signal 命名: 位姿新颖性 / 共视重叠率 / 重投影残差 (Sampson 类) / 点图冲突 (深度一致性) / 置信度衰减。
+
+六类失败模式 → primary + secondary signal 映射:
+
+- 弱纹理: primary 置信度衰减 + secondary 重投影残差 (反向); 子类特征 = 稀疏匹配 + 残差分布偏移
+- 镜面玻璃: primary 点图冲突 + secondary 深度-RGB 不一致; 反射 vs 真实几何二元
+- 快速运动: primary 位姿新颖性 + secondary 动态比 (来自永久性模块); 大帧间位姿变化
+- 长基线: primary 共视重叠率 (低/反向) + secondary 重投影残差 (基线放大); 共视区小 + 大视差
+- 尺度漂移: primary 潜变量漂移代理 (来自记忆模块) + secondary 置信度衰减 (累积); 长序列累积
+- 域外: primary 置信度衰减 (全局低) + secondary 路由后悔估计 (编排模块; 高 = 无适配专家); 训练分布外
+
+标定方法选择决策树:
+
+- **方法 A (分布分位数, P0)**: 在子样本直方图上取 P95 分位数; 无需 ground-truth 标签; 是当前阶段的默认起点
+- **方法 B (监督二元分类器, P1)**: 需要 per-pixel L2 ground-truth; 输出模式分布概率; 需要后续设计候选起草作为入口
+
+5 项验证 gate: 模式估计准确率 ≥ 80% (P0) / ≥ 95% (P1) per 子样本 + per-mode P95 vs 单一阈值在 KITTI 2-window smoke 上不回归 + fixed seed 下重复标定 P95 阈值方差 < 5% + 数据集 license 链 clear + fallback path 完整 (若模式估计失败, 退回单一阈值, 不 silent unknown repair)。
+
+整体规模约 30 项阈值标量 + 子样本分组采样规则; 执行需远端服务器算力授权 + 独立决策, 不在本阶段启动。
+
+### 5.5 长序列真实数据评测
+
+在 KITTI 长 windows ∈ {10, 20, 50, 100} 上展开 4 个 ablate_recurrence 变体 × 4 项长序列度量的对照评测:
+
+**4 个变体** (现有 ablate_recurrence 实装): baseline_cross_attention (cross_attention recurrence + 三分支稀疏注意力 + stable_memory) / mamba_hybrid (Mamba SSM recurrence + 三分支稀疏注意力 + stable_memory, 当前默认) / no_nsa (Mamba SSM + 移除三分支稀疏注意力 + stable_memory) / no_stable_memory (Mamba SSM + 三分支稀疏注意力 + 移除 stable_memory)
+
+**4 项长序列度量**: 尺度漂移代理 (跨窗口点图 L2 比率) / 记忆衰减代理 (后窗口检索 ∩ 前窗口写入概率) / 锚点填充率 (非零锚点 / K=256) / 检索多样性 (unique / sum)
+
+**Windows 分级**: KITTI-LONG-10 (40 frames, seq 00 partial) → KITTI-LONG-20 (80 frames, seq 00/02 partial) → KITTI-LONG-50 (200 frames, seq 04/06) → KITTI-LONG-100 (400 frames, seq 00/05/07 complete)。每一档跑 ≥ 3 seeds; 高档需先通过低档的延迟均值 + 长序列度量 stability gate 才推进 (monotone upgrade)。
+
+**缓存治理覆盖缺口**: 4 变体覆盖综述的递推状态 + 空间指针 + 混合记忆三档, **不覆盖** 缓存治理档 (LONG3R 风格动态剪枝)。本研究方案明示该 sub-class uncovered, 避免读者误读为全四档覆盖。缓存治理 closure 需要后续设计候选 (动态剪枝接口) 或 evaluation extension。
+
+6 项验证 gate: windows=3 baseline 不回归合成基线 + 度量定义 stability < 5% + 缓存治理 sub-class uncovered 明示 + windows upgrade monotone + ≥ 3 seeds per variant + KITTI sequence selection 在 startup 决策中 fix 不 runtime cherry-pick。
+
+预计资源约 10 GPU-hours single-GPU for full sweep; 执行需远端服务器算力授权 + 独立决策, 不在本阶段启动。
+
+### 5.6 评测数据集
+
+本研究的评测数据集分三层:
+
+- **静态 fixture**: 确定性 tensor fixture, 不依赖外部数据集 license; 用于记忆机制消融在 fixture-controlled regime 下的对照 (闭环 / 漂移 / 动态 / 冲突 / 预算 五类)。优势完全可重现; 劣势不反映真实数据集分布
+- **KITTI 真实数据**: 已实装 KITTI rectified RGB/depth 加载链与真实序列评测入口; 已在 2 windows 上跑通 smoke (集成证据, 非训练后质量, 详见 §7.3)。开题报告期间 KITTI 是主评测集合 (长 windows 分级评测的载体)
+- **DTU 拟扩展**: DTU loader stub 已起草, 但 DTU license 链 + multi-view registration loader 仍后续工作; 本研究架构 §5.2 多专家组合消融 (MASt3R / Spann3R 原 paper 评测协议) 需要 DTU 扩展支撑
+
+后续 W19 阶段 DTU loader 接入 + 评测协议补充需要远端服务器算力授权 + 独立决策。
+
+### 5.7 主要评测指标
+
+本研究使用的主要评测指标分四组:
+
+- **点图 / 深度几何指标**: 点图 L2 误差 + 深度 RMSE + per-mode 点图质量按六类失败模式分子样本; 适用架构层消融全部 + 校验标定 + 长序列评测
+- **路由指标**: 路由后悔 (cost-typed; 含成本不对称 tie 处理) + 能力匹配度跨度 + 平局窗口命中率 + 早期失败触发率; 适用多专家组合消融 + 与 §3 第三组研究问题对照
+- **记忆指标**: 尺度漂移代理 / 记忆衰减代理 / 锚点填充率 / 检索多样性 (4 项 per §5.5) + 潜变量漂移代理 (跨模块信号路径) + 写入价值估计 (跨模块信号路径); 适用记忆机制消融全部 + 长序列评测
+- **校验指标**: 冲突评分 / 冲突阈值触发率 + per-mode 模式估计准确率 + 修复动作成功率 + 校验-编排路由切换命中率; 适用校验标定 + 选择门信号子集消融
+
+跨模块一致性指标: cross_spec_refusal 日志计数 + 前向引用空协议触发计数 + 证据标签在消费时的保留率; 适用所有消融的跨模块信号路径审计。
+
+所有指标在本阶段仅 plan-level 引用, 执行 gated; KITTI smoke 的点图 L2 = 20.4747 + 深度 RMSE = 21.8658 是当前唯一已有的 L3 真实数据数值 (集成证据, 非训练后质量)。
 
 ---
 
@@ -398,15 +501,143 @@ per §3.1-§3.3 三个研究问题与 §4 六模块设计, 本研究的三个创
 
 ## §7 研究进展与已完成工作
 
-<!-- TBD; 起草目标 ~1500 字 -->
-<!-- 子节建议: 7.1 架构设计文档 (体系结构设计文档 v0.1 / v0.2 / v0.3) + 7.2 实现里程碑 1-18 (远端服务器原型实现) + 7.3 真实数据集成证据 (KITTI 点图 L2 误差 20.47, 作为系统集成证据, 非训练后质量) + 7.4 中文综述发布 (前馈式 3R 综述, 18 页 44 引文, arXiv 自存档路线) -->
+本章按六个子节给出本研究截至 2026-05-17 的已完成工作: §7.1 架构设计文档系列, §7.2 实现里程碑 1-18, §7.3 KITTI 真实数据集成证据, §7.4 同期完成的中文综述, §7.5 综述反哺主线工作, §7.6 项目阶段历史。本章证据标签严格遵守"论文层 / 代理用例层 / 原型实现层"三层证据阶梯分级; 点图 L2 = 20.4747 数值明示为"集成证据, 非训练后质量"。
+
+### 7.1 架构设计文档系列
+
+候选架构 X 截至 2026-05-17 的架构设计 corpus 包含七份正式内部设计文档 + 一份跨模块信号契约 + 若干配套规划文档:
+
+- 主体架构 v0.1 (基础版本): 控制图作为架构主线; hybrid substrate (transformer + SSM + slot + 总线); 四个候选机制综合为感知 + 记忆 + 永久性 + 校验 + 编排 + 总线 六模块; 跨模块信号校验规则族作为 gates
+- 消融实验方案 v0.1 与 比较图谱 v0.1: 10 消融 3 tier + 各架构主张的可证伪表; 14+ 比较方法 7 组 8 axes 威胁排序
+- 主体架构 v0.2 delta: 六个 delta — 帧预算 30-50 ms / 视觉骨干替换为 DINOv3-S / 锚点存储 + 三分支稀疏注意力 / Sparse Attention as architectural optimization / 7 专家池组合层 / 主张窄化为主线 A + D
+- 消融实验方案 v0.2: 9 项消融 + per-ABL review checklist; 主张映射 v0.2 六个 delta
+- 比较图谱 v0.2: 5-tier 重组 (in-pool 7 / out-of-pool 3 / out-of-scope 1 / foundation 1 / orthogonal 8) + 3 NEW axes (三分支稀疏注意力 / 视觉骨干 tier / 编排模块 expert pool 组成) + 主线 A/D 威胁重排
+- 消融实验方案 v0.3 addendum: 增 Test3R-alone Tier 1 comparator + VGGT offline-batch baseline + 主线 A 4 sub-claim × primary 消融可证伪表 + 更新 compute budget ~1377 GPU-hours
+- 记忆模块 v0.3 addendum: supersedes 主体架构 v0.2 的 delta 3; 向量 GRU + 向量锚点 + NSA-label 升级为 latent 状态记忆向量 + 显式空间键值存储 + 几何感知总线门控写入
+- 记忆模块 v1.1 消融 addendum: 12 项记忆消融 + review 修订 (oracle-bus 边界 / hard/soft fail 规则 / state-token stale-smooth fail / op 代理 cost / controlled 闭环 narrowed)
+- 跨模块信号契约 v2.1: 六条信号校验规则 + 前向引用空协议子协议 (v2.1 additive)
+
+配套规划文档: 编排模块 capability descriptor / 三分支稀疏注意力 × 记忆模块集成 memo / 视觉骨干 × 感知模块集成 memo / 记忆模块 v0.3 设计研究 / P0 静态 tensor 原型方案 / 记忆消融 review / SOTA 矩阵 / 校验标定方案 / 长序列真实评测方案 / 工作风险登记表 (20 行)。
+
+所有设计文档在 git 历史 + 阶段日志中可回溯; v0.1 body 在 v0.2 / v0.3 addendum 中保留不动 (per 内部修改纪律 rule 3 surgical edits + rule 5 honesty override)。
+
+### 7.2 实现里程碑 1-18
+
+候选架构 X 远端服务器部署 (kykt26 服务器, dream3r 实现仓库) 截至本研究阶段 34 (2026-05-11) 通过两层验证:
+
+**Tier 1 集成验证 (11 项)**: v0.3 forward / backward pipeline 跑通; 多窗口流式状态更新; 三分支稀疏注意力 (压缩 / 选择 / 滑窗) 混合; active → stable 记忆 promote / recall; 三维感知锚点存储检索; 校验模块修复动作交接 (路由切换 → 编排模块); 永久性模块 slot 位姿跟踪; Mamba recurrence 工厂与 demo; 高斯参数头张量契约 (无渲染器); 合成消融与可视化; KITTI rectified RGB/depth 加载链 + 真实序列评测入口。
+
+**Tier 2 真实数据 smoke (本研究阶段 34)**: KITTI rectified RGB/depth windows 加载链跑通; 两 windows 真实序列通过本研究架构完整 pipeline 前向; 评测 JSON 产出; 实测点图 L2 = 20.4747, 深度 RMSE = 21.8658 (集成证据, 非训练后质量)。
+
+主要实装单元 (本研究的远端服务器实现仓库): 总线 (信号命名空间 + 信号校验规则 gates, 零参数) / 感知 + 记忆 + 永久性 + 校验 + 编排 五模块 modules / Mamba-Transformer hybrid recurrence backbone / 高斯参数头张量契约 / 三分支稀疏注意力 + 锚点存储 K=256 / 7 专家适配器子目录 (MASt3R + Fast3R 真实加载; CUT3R / MoGe-2 / DepthAnything-V2 / Test3R stub) / KITTI 真实数据加载与评测入口 / 4 变体合成消融 + demo artifact export / ISA slot 位姿测试。
+
+第 0 项记忆消融在本地 P0 scaffold (本研究阶段 31) 通过 22/22 fixture / logging 有效性检查; 该 pass 仅 = Tier 0 fixture/logging 基底验证, **不** = C2 记忆质量 / retrieval 质量 / recurrence 质量 / reconstruction 质量 / 模型行为 / 论文 claim 验证。
+
+### 7.3 KITTI 真实数据集成证据
+
+本研究阶段 34 在 KITTI 真实序列上的首次真实数据 smoke:
+
+```text
+dataset    : kitti_rectified
+sequence   : 2011_09_26_drive_0001_sync_02
+windows    : 2 (相邻 frame pair)
+device     : cuda
+backend    : mamba_ssm
+pointmap L2: 20.4747
+depth RMSE : 21.8658
+```
+
+**证据边界声明**: 这是真实数据集成证据, 非 SOTA 重建准确性。数值反映整个 pipeline (data load → 感知 → 记忆 → 永久性 → 校验 → 编排 → 总线 → 输出 4D 点图 + dynamic mask) 在真实 KITTI rectified frames 上端到端跑通, 无 crash 与 silent NaN。数值 **不** 反映训练后重建质量, **不** 支持任何 SOTA 可比 claim, **不** 关闭任何 §3 三组研究问题。
+
+L2 = 20.47 / RMSE = 21.87 在 KITTI rectified 上的数量级位于"集成跑通 + 输出 shape 正确 + 数值在合理范围"区间; 训练前 baseline 数值, 未经过端到端训练。任何后续三组研究问题的实证主张都需要后续真实数据训练 + 真实数据消融 + KITTI 长 windows evaluation, 这些仍需要远端服务器算力授权 + 独立决策。
+
+### 7.4 同期完成的中文综述
+
+本研究同期完成中文 3R 综述 (按 arXiv 自存档路线收尾, 与本开题报告 sibling 性质, 不互相引用):
+
+- 形态: 18 A4 页 LaTeX (ctexart + xelatex + unsrtnat); 10 sections; 6 figures (4 TikZ + 2 paper-Fig.1 composites); 5 booktabs tables; 0 LaTeX errors / 0 warnings
+- 引文: 44 BibTeX entries 全部 cite (无 \nocite{*}); CroCo + MASt3R 机制段 2026-05-14 补充
+- 失败模式系统化: §10 整理六类典型几何失败模式 (弱纹理 / 镜面玻璃 / 快速运动 / 长基线 / 尺度漂移 / 域外), 该判断反哺本研究架构主线 (详见 §7.5)
+- 当前推荐 PDF: deliverables/3r_survey_stage_final_2026-05-15_natural.pdf (2026-05-15 prose naturalization deliverable)
+- 提交 packaging: 中文 cover note + 提交记录 (含 pdf_sha256 已 pre-fill: A0763DB7AB7A1E8E1427D4DCC8CB62BC15F94F3F2D915AD0BFBB235CC99C64B0) + 与本开题报告关系内部 meta (不与 PDF 同包提交)
+
+综述 manuscript surface 不出现内部 vocabulary, 是与本研究架构开题报告的 sibling artifact, 共享引文池但不互相引用。综述实际提交动作 (邮件 / IM / portal / offline) 是同期独立人工动作; packaging stands ready。
+
+### 7.5 综述反哺主线
+
+综述四轴判断 (六类失败模式 / 长序列内存四类 / 测试时三类 / 输出资产三类) 反哺本研究架构主线, 输出 4 项规划 markdown deliverables + 4 行工作风险登记条目:
+
+- 综述驱动优化提案 (上游 proposal; status draft, awaiting user review): 21 子类覆盖矩阵 (6 first-class / 11 partial / 4 absent); P0/P1/P2 gap 识别; A/B/C/D 类优化建议; 实现里程碑 19-30 重排建议
+- SOTA 矩阵 v2: 五张 Tables A-E 重新标注 比较图谱 v0.2 19 entries 与 5 axes (失败模式 / 长序列内存 / 测试时 / 输出资产 / 输入扩展 bonus); 4 first-class-support gap (域外检测 / 外部先验冲突 / 4DGS 许可链 / 输入扩展 axis) 反哺风险登记
+- 校验标定方案 v1: 六类失败模式 → 校验模块 5 sub-signal 映射; 方法 A vs 方法 B selection 决策树; 5 项验证 gate (plan-only)
+- 长序列真实评测方案: 4 变体 × 4 度量 × windows ∈ {10, 20, 50, 100} 分级执行; 缓存治理 explicit coverage gap; 6 项验证 gate (plan-only)
+- 工作风险登记表 v1.1 (+4 行): 域外检测缺口 / 外部先验冲突 / 4DGS 许可链 / 输入扩展 axis。后续 v1.2 (+3 行) 加 proposal-cycle 相关 vocab firewall / claim 过度 / 双稿语义漂移 三 行, 共 20 行
+
+4 项 markdown deliverables 是综述 → 主线 单向反哺; 综述 manuscript 在 2026-05-14 收尾后未受到主线后续工作回流污染。
+
+### 7.6 项目阶段历史
+
+本研究阶段 15 (2026-05-05) 起进入架构-first 轨道; 阶段 16-21 完成 v0.2 markdown 三件套 (架构 + 消融 + 比较); 阶段 22 论文 v1.2 (含 v0.2 deltas 与 比较 positioning); 阶段 23 v0.3 消融 addendum (Test3R-alone + VGGT baseline); 阶段 24 服务器 v0.2 scaffold; 阶段 25-27 C2 记忆模块 v0.3 设计与 P0 plan; 阶段 28-31 消融 addendum review + 本地 P0 scaffold + 第 0 项记忆消融 fixture pass; 阶段 32 v0.3 codebase 服务器端验证 (合成训练 10 epochs 收敛, 8.4ms p95 profiling, 9/9 smoke tests, 4/4 unit tests, 通过远端 onboarding 文档); 阶段 33-34 实现里程碑 1-18 实装完成 + KITTI smoke; 阶段 35 综述反哺 4 deliverables; 阶段 36-39 开题报告双稿 §1 + §2 + §3 + §4 + §6 起草; 阶段 40 (本阶段) §5 + §7 + §8 起草。
+
+阶段 15 校验 L3 pilot 范围在阶段 16 主线 redirect 后保持 paused, 不 abandon — L3 infrastructure (Test3R conda env on server + launch.py patch + 4 local shallow clones) 留作 future 校验模块证据 anchor。
+
+项目阶段历史的证据标签: 阶段 32 服务器端验证 + 阶段 34 KITTI smoke 为 code-observed; 其他阶段输出 (markdown 设计文档 / 规划 / 阶段日志) 为 engineering-demonstrated 或 paper-derived; 任一阶段输出均未 promote 至 paper-proven。
 
 ---
 
 ## §8 研究计划与时间安排
 
-<!-- TBD; 起草目标 ~1000 字 -->
-<!-- 子节建议: 8.1 短期 (M1-M2 候选架构 v0.4 完善 + 校验模块阈值标定 + 长序列真实数据评测) + 8.2 中期 (M3-M5 多专家路由真实加载 + 测试时适应路径设计 + 输入扩展轴设计) + 8.3 长期 (M6-M8 可渲染输出接入 + 真实数据训练 + 论文撰写 + 综合评测) -->
+本章按三个时间段给出候选架构 X 后续研究计划: §8.1 短期 (M1-M2, 开题报告完稿 + 提交 + 启动后续消融 plan)、§8.2 中期 (M3-M5, 实现里程碑 19-23 真实路由 + 24-26 后续设计候选)、§8.3 长期 (M6-M8, 实现里程碑 27 4DGS 渲染器 + 真实数据训练 + 论文撰写 + 综合评测)。时间表为候选时间表 (candidate timeline), 非 committed schedule, 受远端服务器算力授权 + 各 milestone 独立决策 + 导师反馈影响。
+
+### 8.1 短期 (M1-M2)
+
+短期目标 = 开题报告完稿 + 提交 + 已 plan 的 P0/P1 deliverable 执行入口。
+
+- **本研究当前阶段 (2026-05-17)**: §5 + §7 + §8 双稿完稿 (约 11000 字累计); 内部风格契约 vocab 替换表与同步日志扩充; §9 仍 placeholder
+- **本研究下一阶段**: §9 风险分析起草 (引用工作风险登记表 20 行 select 6-8 行学术化) + 通稿审查 (双稿一致性核验 + 候选不等于最终句式二轮审查 + 字数估算回归) + 内部风格契约最终同步
+- **本研究最终修订阶段**: 最终修订 + PDF 编译 + 提交 packaging (复用同期完成的中文综述提交模式起草 advisor cover note + 提交记录)
+- **同期综述实际提交动作 (cycle 外人工动作)**: 同期完成的中文综述 PDF + cover note + 提交记录 slot 填写 (recipient / channel / submitted_at)
+
+短期阶段证据标签: 全部 markdown-only + plan-level; 不启动服务器行动 / 训练 / checkpoint / 任何消融执行。
+
+### 8.2 中期 (M3-M5)
+
+中期目标 = 实现里程碑 19-26 实装 + 后续设计候选 + 已有 plan 执行入口。每项 milestone 需独立决策 + 远端服务器算力授权。
+
+按综述驱动优化提案的实现里程碑重排推荐 (recommendation-status, 非 committed):
+
+- 实现里程碑 20 SOTA 矩阵 (已升级 P0, 上一阶段已完成 markdown deliverable)
+- 实现里程碑 24 校验标定 plan (已升级 P0, 已完成 plan; 执行 gated; 中期入口)
+- 实现里程碑 21 长序列真实评测 plan (已升级 P0, 已完成 plan; 执行 gated; 中期入口)
+- 实现里程碑 19 真实数据路径 (DTU + KITTI loader, 真实评测入口): cycle 040 后第一个 unblocked task; DTU license 链 + multi-view registration loader 是主要工作量
+- 实现里程碑 22 可视化 pack (三分支稀疏注意力权重 / 锚点存储占用 / 校验模块时间线 / 状态漂移曲线): unblocked (post-demo, medium-high priority); 中期独立决策
+- 实现里程碑 23 多专家真实加载 (CUT3R / MoGe-2 / DepthAnything-V2 真实 adapter; Fast3R omegaconf depfix): 中期高优 unblocked; 与实现里程碑 19 + 22 并行可推进
+- 实现里程碑 24 校验标定执行 (前述 plan 升级到 24 实装): 30 项阈值 + 子样本分组采样的具体执行
+- 实现里程碑 25 测试时适应 (TTT 风格参数更新路径): Gated (post 真实数据); 与后续设计候选 B1 (校验路径拆分) 协同
+- 实现里程碑 26 输入扩展 axis 设计 (输入扩展 axis: pose / sparse depth / video; 与 Pow3R / MapAnything 路径对接): Gated (design first); 与后续设计候选 B3 (输入扩展 axis) 协同
+
+**后续设计候选 (proposal-status)**:
+
+- B1 校验路径拆分: 把校验模块的一致性优化 vs 测试时参数更新拆为两路径 (per §3.1); 与实现里程碑 25 协同
+- B2 输出资产契约: 4D 点图 / 动态掩码 / 4DGS 输出资产 explicit contract; 与实现里程碑 27 协同; 受 4DGS 许可链风险约束
+- B3 输入扩展 axis: 引入 pose / sparse depth / video 作为 first-class 输入接口 (per Pow3R / MapAnything 谱系); 与实现里程碑 26 协同; 关联输入扩展 axis 风险
+
+每后续设计候选需独立决策起草 (类似 记忆模块 v0.3 addendum 流程)。
+
+### 8.3 长期 (M6-M8)
+
+长期目标 = 实现里程碑 27 4DGS 渲染器接入 + 真实数据训练 + 论文撰写 + 综合评测。这一时间窗 (estimated 6-8 月后) 远 outside 开题报告时间窗口, 时间表候选性更强。
+
+- 实现里程碑 27 4DGS 渲染器 (gsplat / gaussian-splatting 路径): 把已实装的高斯参数头张量契约接入实际可渲染 4DGS asset; 受 4DGS 许可链风险约束; 与后续设计候选 B2 协同; 独立决策 + 远端服务器算力授权 + license check 三 gate
+- 实现里程碑 28 训练基础设施 (checkpoint resume / 确定性 seed / run metadata / config snapshot): 真实数据训练的工程支撑; 独立决策 + 远端服务器算力授权
+- 真实数据训练: 在实现里程碑 19 (DTU loader) + 21 (long-seq) + 23 (expert 真实加载) + 24 (校验标定) + 28 (训练基础设施) 都通过后, 启动端到端真实数据训练; 这是 §3 三组研究问题实证 evaluation 的 prerequisite
+- 实现里程碑 29 文档 pack (架构图 / method matrix / 消融表 / limitations / claim tracking): 持续维护, 不单独 milestone
+- 论文撰写 (Phase 2): 论文 v1.2 → v2 升级, 含全部消融实证数值, 候选目标会议 (具体会议 + 篇幅 + scope 待 advisor 反馈; 论文为本研究的 SUPPORT artifact, 非主线 PRIMARY)
+- 综合评测: KITTI / DTU / 可能扩展 ScanNet / 7-Scenes 等; 与 §3 三组研究问题对照; 与后续设计候选 B1/B2/B3 协同
+
+长期阶段证据标签待 Tier 1 + Tier 2 消融跑出后才能从 plan-only 升级至 code-observed / engineering-demonstrated; 任何 paper-proven claim 仍需会议接收。
+
+整体时间表候选不等于最终性: M1-M8 各阶段都可能因 (a) 服务器算力 / GPU 可用性, (b) 实证结果反馈 (e.g., 多专家组合消融不显著 → 重新 prioritize 主线 D 路径), (c) 后续设计候选选择 (B1 vs B2 vs B3 优先级), (d) 导师反馈 (开题报告 feedback 可能 reshape M1-M2), (e) 同期综述提交后是否引发新方向 等因素调整。每次调整在对应阶段日志记录, 不 silent 改时间表。
 
 ---
 
