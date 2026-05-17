@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-17 (cycle 041 closed: Dream3R 开题报告 § 9 风险分析与应对 dual-draft 起草 + 通稿审查 + STYLE_CONTRACT final sync — DRAFT_INTERNAL_V1.md § 9 ~1500 字 (6 sub-sections: 架构层/跨模块/实证执行/工程时序/开题报告 process/风险应对策略) + DRAFT_EXTERNAL_V1.md § 9 ~1000 字 (5 sub-sections vocab-clean); STYLE_CONTRACT 48→50 rows; G3a 0 hits + G3b 0 hits + G4 1 corrective edit (negation-context § 9.5) then 0 hits; § 1-§ 9 全部章节完整 ~19300 内 + ~15000 外 字 ≈ 92-94% target; 通稿审查 clean (no § 1-§ 8 surgical edits needed); DEC-20260517-002 + cycle log CYCLE-20260517-002 + sync chain)
+Last updated: 2026-05-17 (cycle 042 closed: Dream3R 开题报告最终修订 + PDF 编译 + advisor 提交 packaging — content frozen after cycle 041 通稿审查; bottom metadata cleanup; §8.1 past-tense fix; references.bib copied from Track B 44 entries; PDF compiled via pandoc 3.9 + xelatex + SimSun: proposal_external_v1_2026-05-17.pdf 263 KB exit code 0; deliverables/ created: cover note + submission record; G3a 0 + G3b 0 on cover note; STYLE_CONTRACT v1 closed (50 rows, 7 sync log entries); proposal track (cycles 036-042) functionally closed)
 
-Status: **idle** (cycle 041 closed 2026-05-17: 8 file ops landed (2 NEW + 6 MODIFIED); § 9 dual-draft completed + 通稿审查 + STYLE_CONTRACT 48→50 rows final sync + 1 G4 corrective edit + cycle log + sync chain — no spec / code / server action; § 1-§ 9 all 9 sections complete in both drafts; ready for cycle 042 最终修订 + PDF 编译 + advisor submission packaging per OUTLINE_V1 §4; cycles 032-041 all closed; awaiting user direction on next workstream)
+Status: **idle** (cycle 042 closed 2026-05-17: 10 file ops (7 NEW + 3 MODIFIED); proposal track (Track C, cycles 036-042) functionally closed — §1-§9 dual-draft complete ~19300 内 + ~15000 外 字; PDF 263 KB; advisor cover note + submission record ready; STYLE_CONTRACT v1 closed 50 rows; no spec / code / server action; remaining user action: actual submission (fill SUBMISSION_RECORD slots) + optional revision cycle 043 based on advisor feedback; awaiting user direction)
 
 ## Why this file exists
 
@@ -23,7 +23,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ```text
 task_id:    none-active
 phase:      idle between cycles
-cycles:     032-041 all closed; Track B 3R-mix survey packaged + SHA256 pre-filled; Dream3R 开题报告 dual-draft § 1-§ 9 all complete (~19300 内 / ~15000 外 字 ≈ 92-94% target); STYLE_CONTRACT 22→41→43→48→50 rows; 通稿审查 complete
+cycles:     032-042 all closed; proposal track (Track C, cycles 036-042) functionally closed: §1-§9 dual-draft + PDF + advisor packaging complete; Track B 3R-mix survey packaged; STYLE_CONTRACT v1 closed 50 rows 7 sync entries
 status:     idle
 ```
 

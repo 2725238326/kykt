@@ -1,6 +1,6 @@
 # Dream Workflow Status
 
-Last updated: 2026-05-17 (cycle 041 closed — DEC-20260517-002 authorized § 9 风险分析与应对 dual-draft + 通稿审查 + STYLE_CONTRACT final sync; DRAFT_INTERNAL_V1 § 9 ~1500 字 (6 sub-sections) + DRAFT_EXTERNAL_V1 § 9 ~1000 字 (5 sub-sections vocab-clean); STYLE_CONTRACT 48→50 rows; G3a 0 + G3b 0 + G4 1 corrective edit then 0; § 1-§ 9 全部章节完整 ~19300 内 + ~15000 外 字 ≈ 92-94% target; 通稿审查 clean; ready for cycle 042 最终修订 + PDF 编译)
+Last updated: 2026-05-17 (cycle 042 closed — DEC-20260517-003 authorized 最终修订 + PDF 编译 + advisor 提交 packaging; content frozen; bottom metadata cleanup + §8.1 past-tense; references.bib 44 entries; PDF 263 KB pandoc+xelatex; cover note + submission record G3a/G3b clean; STYLE_CONTRACT v1 closed 50 rows 7 entries; proposal track (Track C, cycles 036-042) functionally closed)
 
 ## Current Phase
 
@@ -103,7 +103,7 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 | Cross-spec signal contract | **v2.1 active** (per DEC-20260505-001): additive revision over v2 — adds "Forward-reference null protocol" subsection formalizing the pattern exercised by cycle-009 + cycle-010 cards; v2 substance unchanged (alpha = 0.5 inferred; signal owner table; CR-1..CR-6; cost_adjusted_match; route_regret cost-typed). v1 + v2 prose preserved. Cycle 011 G5 closed by this revision; cycle 010 G4 closed-by-documentation under the protocol. v2 -> v3 candidates 8x8 grid partition + identity_consistency threshold pinning deferred. | `paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md` + `decisions/DEC-20260505-001-cycle-011-launch-and-d3-demo-target.md` |
 | Literature guidance board | v1 active; post-cycle-013 SPINE refresh fold-in done. PAPER_RELATED_WORK_SKELETON.md upgraded cycle 013 to prose draft. Cycle 014 added PAPER_PHASE2_BLUEPRINT.md as a claim-safe paper-writing plan; G7 advanced to blueprint anchor but not closed | `literature/INDEX.md` + four `literature/SPINE_*.md` + `literature/CRITICAL_NOTES.md` + `literature/PAPER_RELATED_WORK_SKELETON.md` + `literature/PAPER_PHASE2_BLUEPRINT.md` |
 | Work risk register | v1.2 active (cycle 036 +3 proposal-cycle rows R-PROP-VOCAB-1 / R-PROP-CLAIM-1 / R-PROP-SYNC-1 appended after v1.1 cycle 035 +4 cross-spec rows R-OOD-1 / R-EXT-PRIOR-1 / R-4DGS-LIC-1 / R-INPUT-EXT-1); consolidates per-spec + cross-spec + proposal-cycle risks | `planning/WORK_RISK_REGISTER.md` |
-| Dream3R 开题报告 dual-draft (Track C) | **§ 1-§ 9 全部章节完整**; cycle 036-041 (6 cycles) 累计 ~19300 内 + ~15000 外 字 ≈ 92-94% of OUTLINE_V1 target; STYLE_CONTRACT 50 rows; 通稿审查 complete (no § 1-§ 8 surgical edits needed); ready for cycle 042 最终修订 + PDF 编译 + advisor submission packaging | `planning/proposal_dream3r/OUTLINE_V1.md` + `STYLE_CONTRACT.md` + `DRAFT_INTERNAL_V1.md` + `DRAFT_EXTERNAL_V1.md` |
+| Dream3R 开题报告 dual-draft (Track C) | **完成 (functionally closed)**; cycles 036-042 (7 cycles) 累计 ~19300 内 + ~15000 外 字; §1-§9 all complete; PDF compiled (263 KB); advisor cover note + submission record ready; STYLE_CONTRACT v1 closed 50 rows; remaining action = user actual submission + optional revision cycle 043 | `planning/proposal_dream3r/` (OUTLINE + STYLE_CONTRACT + DRAFT_INTERNAL + DRAFT_EXTERNAL + deliverables/ + references.bib) |
 | Track B advisor submission packaging | active; cycle 036 packaging + cycle 037 SHA256 pre-fill — Chinese cover note (~600 字, G2 vocab-clean) + submission record with recipient / channel / submitted_at slots (pdf_sha256 已于 2026-05-16 预填 = A0763DB7AB7A1E8E1427D4DCC8CB62BC15F94F3F2D915AD0BFBB235CC99C64B0) + Track A relationship internal meta (not delivered to advisor); actual submission action (email / IM / portal / offline) is post-cycle user action | `3R-mix/deliverables/SUBMISSION_PACKAGE_ADVISOR_2026-05-16.md` + `SUBMISSION_RECORD_2026-05-16.md` + `RELATION_TO_TRACK_A_2026-05-16.md` |
 | Demo storyboard template | active form; all 4 finalists now have draft storyboards (Critic from cycle 011 = D3 first demo target; Memory + Permanence + Composer from cycle 012); none authorized for showing; promotion to `approved-for-showing` requires a separate per-finalist DEC | `templates/demo_storyboard.md` + `storyboards/STORY-20260505-001..004.md` |
 | Teacher audience profile | placeholder; awaits user input to unblock D3 | `paradigm/TEACHER_AUDIENCE_PROFILE.md` |
@@ -131,40 +131,40 @@ Use this prompt when preparing KYKT frontend design work for Gemini CLI.
 
 ## Recommended Next User Decision
 
-Cycle 041 closeout recommendation (cycle 041 closed 2026-05-17; Dream3R 开题报告 § 1-§ 9 全部章节完整 ~19300 内 + ~15000 外 字 ≈ 92-94% target; 通稿审查 complete; Track A architecture-first mainline unchanged):
+Cycle 042 closeout recommendation (cycle 042 closed 2026-05-17; proposal track (Track C, cycles 036-042) functionally closed; Track A architecture-first mainline unchanged):
 
 ```text
-Cycle 041 landed § 9 风险分析与应对 in both drafts (~2500 字
-synchronized content across 6+5 sub-sections + STYLE_CONTRACT
-48→50 rows + 1 G4 corrective edit on negation-context § 9.5) per
-DEC-20260517-002. 通稿审查 completed: § 7.3 集成证据 caveat +
-§ 5 plan-only caveats + § 8 candidate timeline + § 3.5/§ 6.2/§ 6.3
-candidate-not-final 措辞 all verified; no § 1-§ 8 surgical edits
-needed. § 1-§ 9 dual-draft complete. Next admissible direction
-(A / B / C / D / E / F each require their own DEC or user action):
+Cycle 042 completed 最终修订 + PDF 编译 + advisor 提交 packaging
+per DEC-20260517-003. Deliverables:
+  - proposal_external_v1_2026-05-17.pdf (263 KB, pandoc+xelatex)
+  - SUBMISSION_PACKAGE_ADVISOR_PROPOSAL_2026-05-17.md (cover note)
+  - SUBMISSION_RECORD_PROPOSAL_2026-05-17.md (metadata + checklist)
+  - references.bib (44 entries from Track B survey pool)
+G3a/G3b vocab firewall on cover note: 0 hits. STYLE_CONTRACT v1
+closed (50 rows, 7 sync log entries). Proposal track summary:
+7 cycles, 9 sections, ~19300 内 + ~15000 外 字, 14 corrective
+edits total, 50 vocab substitution rows.
 
-  A. Launch cycle 042 最终修订 + PDF 编译 + advisor submission
-     packaging (recommended next: per OUTLINE_V1 §4 cycle 042 target;
-     includes bottom metadata cleanup + references.bib + figure
-     generation + PDF pathway selection).
+Next admissible direction (each requires user action or DEC):
 
-  B. Revise § 9 or any § 1-§ 8 section based on self-review or
-     advisor feedback.
+  A. User reviews PDF + cover note and provides feedback →
+     revision cycle 043 if needed.
 
-  C. Launch cycle 035 §Next Direction A-C alternatives —
-     calibration data collection / ablate_recurrence on KITTI /
-     v0.4 spec delta drafting (B1/B2/B3). Each independent DEC +
-     F-002 server authorization.
+  B. User executes actual proposal submission (fills
+     SUBMISSION_RECORD_PROPOSAL slots: recipient / channel /
+     submitted_at).
 
-  D. Pause and reassess after full dual-draft quality review.
+  C. User executes Track B survey submission (packaging ready
+     with SHA256 pre-filled since cycle 037).
 
-  E. User executes Track B survey submission (manual action;
-     packaging stands ready with SHA256 pre-filled).
+  D. Return to Track A architecture-first mainline (W19+ /
+     ablation execution / v0.4 spec delta). Each step requires
+     independent DEC + F-002 server authorization.
 
-  F. Return to architecture-first mainline non-proposal work.
+  E. Pause and reassess.
 ```
 
-Track A architecture-first remains the mainline per DEC-20260506-001. The Dream3R 开题报告 is candidate-not-final per DEC-20260501-011 — all 9 sections complete with appropriate caveats (plan-only ABL gated on F-002, 集成证据 非训练后质量, candidate timeline). 通稿审查 verified G3a/G3b/G4 clean across full dual-draft. The actual Track B submission is the user's post-cycle action; cycle 036 + cycle 037 delivered all packaging materials.
+Track A architecture-first remains the mainline per DEC-20260506-001. The Dream3R 开题报告 is candidate-not-final per DEC-20260501-011 — all 9 sections complete with appropriate caveats (plan-only ABL gated on F-002, 集成证据 非训练后质量, candidate timeline). Both Track B survey and Track C proposal deliverables are packaged; actual submission for both is the user's post-cycle action.
 
 Still blocked on user approval:
 
