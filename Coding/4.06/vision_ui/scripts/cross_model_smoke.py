@@ -175,6 +175,22 @@ def prepare_job(m: ModelRun) -> str:
     job_dir = f"{REMOTE_JOBS}/xmodel_{m.key}"
     ssh(f"rm -rf {job_dir} && mkdir -p {job_dir}/input {job_dir}/output {job_dir}/logs")
     ssh(f"cp {SAMPLE_SOURCE}/*.jpg {job_dir}/input/")
+
+    # MonST3R runner requires job.json
+    if m.key == "monst3r":
+        job_json = json.dumps({
+            "job_id": f"xmodel_{m.key}",
+            "model": "monst3r",
+            "params": {
+                "max_frames": 48,
+                "image_size": 512,
+                "scene_graph": "swin-5",
+                "niter": 300,
+                "use_gt_mask": False,
+            },
+        })
+        ssh(f"cat > {job_dir}/job.json << 'ENDJOB'\n{job_json}\nENDJOB")
+
     return job_dir
 
 

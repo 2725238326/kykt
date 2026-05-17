@@ -1,0 +1,135 @@
+{
+  "timestamp": "2026-05-17T16:57:00",
+  "sample": "cut3r/examples/001 (13 frames 1920x1080)",
+  "models": [
+    {
+      "key": "dust3r",
+      "label": "DUSt3R",
+      "status": "success",
+      "elapsed_seconds": 91.15,
+      "artifact_count": 0,
+      "error": "",
+      "artifact_groups": []
+    },
+    {
+      "key": "mast3r",
+      "label": "MASt3R",
+      "status": "success",
+      "elapsed_seconds": 94.98,
+      "artifact_count": 0,
+      "error": "",
+      "artifact_groups": []
+    },
+    {
+      "key": "monst3r",
+      "label": "MonST3R",
+      "status": "success",
+      "elapsed_seconds": 223.26,
+      "artifact_count": 0,
+      "error": "",
+      "artifact_groups": []
+    },
+    {
+      "key": "spann3r",
+      "label": "Spann3R",
+      "status": "success",
+      "elapsed_seconds": 24.8,
+      "artifact_count": 3,
+      "error": "",
+      "artifact_groups": [
+        {
+          "key": "pointcloud",
+          "label": "点云结果",
+          "count": 1,
+          "description": "优先在 MeshLab 中检查全局结构与噪声。"
+        },
+        {
+          "key": "transform",
+          "label": "相机与变换",
+          "count": 1,
+          "description": "用于复查相机轨迹与 Nerfstudio/3DGS 兼容导出。"
+        },
+        {
+          "key": "array",
+          "label": "几何数组",
+          "count": 1,
+          "description": "用于后续诊断 pointmap 与置信过滤效果。"
+        }
+      ]
+    },
+    {
+      "key": "fast3r",
+      "label": "Fast3R",
+      "status": "success",
+      "elapsed_seconds": 28.47,
+      "artifact_count": 4,
+      "error": "",
+      "artifact_groups": [
+        {
+          "key": "pointcloud",
+          "label": "点云结果",
+          "count": 1,
+          "description": "优先检查结构完整性和稠密程度。"
+        },
+        {
+          "key": "camera",
+          "label": "相机信息",
+          "count": 1,
+          "description": "用于复查相机位姿和焦距估计。"
+        },
+        {
+          "key": "confidence",
+          "label": "置信摘要",
+          "count": 1,
+          "description": "用于诊断低置信区域与整体可信度。"
+        },
+        {
+          "key": "metadata",
+          "label": "运行元数据",
+          "count": 1,
+          "description": "用于复查 attention backend、profiling 与输入列表。"
+        }
+      ]
+    },
+    {
+      "key": "cut3r",
+      "label": "CUT3R",
+      "status": "success",
+      "elapsed_seconds": 26.21,
+      "artifact_count": 52,
+      "error": "",
+      "artifact_groups": [
+        {
+          "key": "camera",
+          "label": "相机参数",
+          "count": 13,
+          "description": "逐帧相机内外参 (npz)。"
+        },
+        {
+          "key": "depth",
+          "label": "深度图",
+          "count": 13,
+          "description": "逐帧深度图 (npy)，检查在线估计的时序稳定性。"
+        },
+        {
+          "key": "confidence",
+          "label": "置信图",
+          "count": 13,
+          "description": "逐帧置信分布 (npy)。"
+        },
+        {
+          "key": "pointcloud",
+          "label": "点云结果",
+          "count": 0,
+          "description": "全局点云，检查在线重建的结构完整性。"
+        },
+        {
+          "key": "scene",
+          "label": "三维场景",
+          "count": 0,
+          "description": "GLB 格式场景文件。"
+        }
+      ]
+    }
+  ]
+}
