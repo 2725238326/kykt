@@ -4,7 +4,7 @@
 |---|---|
 | 文件类型 | planning artifact (双稿语言风格契约 + sync rule) |
 | 创建日期 | 2026-05-16 |
-| 状态 | v1 closed (cycle 036 启动 → cycle 042 最终修订; §2 vocab 50 行; §6 sync log 7 entries) |
+| 状态 | v1.1 active (cycle 036 启动 → cycle 042 最终修订 → expansion cycle 开始; §2 vocab 62 行; §6 sync log 7+1 entries) |
 | 授权根 | DEC-20260516-001 (cycle 036) + DEC-20260516-002 (cycle 037) + DEC-20260516-003 (cycle 038) + DEC-20260516-004 (cycle 039) + DEC-20260517-001 (cycle 040) + DEC-20260517-002 (cycle 041) + DEC-20260517-003 (cycle 042) |
 | 触及范围 | 仅本文件; 同步规则约束 DRAFT_INTERNAL_V1.md ↔ DRAFT_EXTERNAL_V1.md |
 
@@ -73,6 +73,18 @@ Dream3R 开题报告按用户决策采用双稿:
 | 集成证据 (integration evidence) | 集成证据 (integration evidence; 区别于训练后质量) | cycle 040 §7.3 添加; RECENT_PROGRESS.md line 78 boundary statement 标签 |
 | R-OOD-1 / R-EXT-PRIOR-1 / R-4DGS-LIC-1 / R-INPUT-EXT-1 | 域外检测缺口 / 外部先验冲突 / 可渲染输出许可链 / 输入扩展空缺 (内部 R-编号 omit) | cycle 041 §9 添加; WORK_RISK_REGISTER v1.1 +4 cross-spec 风险中文化 |
 | R-PROP-VOCAB-1 / R-PROP-CLAIM-1 / R-PROP-SYNC-1 | (内部稿保留 R-编号; 外部稿 omit, 改写为 vocab 泄漏风险 / over-claim 风险 / 双稿语义漂移风险) | cycle 041 §9.5 添加; WORK_RISK_REGISTER v1.2 +3 proposal-cycle 风险中文化 |
+| KYKT / KYKT 平台 | 本研究管理平台 / 聚合管理平台 | expansion cycle 添加; 支柱 B 项目名称 |
+| vision_ui | 平台前端 / 桌面客户端 | expansion cycle 添加; 前端代码仓库名 |
+| runner / ssh_runner | 模型执行器 / 远端推理调度器 | expansion cycle 添加; 执行层组件名 |
+| model_registry | 模型注册层 | expansion cycle 添加; 注册抽象层 |
+| smoke test (平台层) | 集成验证 / 端到端验证 | expansion cycle 添加; 平台层验证步骤命名 |
+| job.json / status.json | 任务描述文件 / 状态文件 | expansion cycle 添加; 平台输出合同文件名 |
+| scene_meta.json | 输出元数据合同 | expansion cycle 添加; 平台统一输出元数据文件名 |
+| local_jobs/ | 本地任务缓存 | expansion cycle 添加; 本地缓存目录名 |
+| Tauri / Tauri 2 | 保留 (通用桌面框架名, 不替换) | expansion cycle 添加; 通用技术名词保留 |
+| FastAPI / React / TypeScript | 保留 (通用技术名词, 不替换) | expansion cycle 添加; 通用技术名词保留 |
+| /hdd3/kykt26/... (服务器绝对路径) | omit (改为 "远端 GPU 服务器" / "远端实验环境") | expansion cycle 添加; 内部路径不外露 |
+| 服务器 env 名 (monst3r, dust3r, mast3r, spann3r 等) | omit (改为 "对应模型运行环境") | expansion cycle 添加; conda env 名不外露 |
 
 **新增规则**: 任何上表未列出的内部术语在内部稿首次出现时, 在外部稿同步出现时必须在本表追加一行, 并在 §6 sync log 记录新增。
 
@@ -152,7 +164,7 @@ per DEC-20260501-011 (thesis reframe; Dream3R 为 candidate-not-final) + DEC-202
 2026-05-17 · cycle 040 close · §5 实验设计与评测协议 + §7 研究进展与已完成工作 + §8 研究计划与时间安排 drafted together in DRAFT_INTERNAL_V1.md (§5 ~2800 字 + §7 ~2200 字 + §8 ~1500 字 = ~6500 字 Dream-vocabulary master; ABL-v02-1..10 + ABL-memory-0..11 + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN + W1-W18 + KITTI smoke + 综述 + cycle 历史 + M1-M8 时间表) then snapshotted to DRAFT_EXTERNAL_V1.md (§5 ~2000 字 + §7 ~1500 字 + §8 ~1000 字 = ~4500 字 vocab-clean 评测协议 + 研究进展 + 时间安排) · §5 7 sub-sections (5.1 三层证据阶梯 / 5.2 架构层消融 / 5.3 记忆机制消融 / 5.4 Critic 标定 / 5.5 长序列真实评测 / 5.6 评测数据集 / 5.7 主要评测指标) · §7 6 sub-sections (7.1 架构设计文档系列 / 7.2 实现里程碑 W1-W18 / 7.3 KITTI 集成证据 / 7.4 综述发布 / 7.5 综述反哺 / 7.6 cycle 历史) · §8 3 sub-sections (8.1 短期 M1-M2 / 8.2 中期 M3-M5 / 8.3 长期 M6-M8) · §2 vocab substitution table appended 5 new rows (hard_fail / soft_fail → 硬失败 / 软失败 双稿一致; oracle-bus → 理想信号总线 (上界估计基准); monotone upgrade gate → 单调升级门; fixture regime R1-R5 → 校准 fixture 制度 R1-R5; 集成证据 (integration evidence) → 集成证据 双稿一致 区别于训练后质量) · 43-row 表升级到 48 行总计 · G3a + G3b 5 corrective edits needed (cycle 036 + cycle 039 precedent): 4 G3a hits + 1 G3b hit on first pass — §5.3 closing paragraph "cycle 040 仅 plan-level 引用" 改写为 "本阶段仅 plan-level 引用"; §7.5 deliverables list "dream3r 实现仓库" (lowercase repo name) 改写为 "本研究架构实现仓库"; §7.5 "proposal-cycle 相关 vocab firewall / claim 过度 / 双稿语义漂移 三 行" 改写为 "开题报告阶段相关 vocab 防火墙 / claim 过度 / 双稿语义漂移 三行"; §8.1 short-term bullet "(cycle 外人工动作)" 改写为 "(本阶段外人工动作)"; §8.2 medium-term bullet "cycle 040 后第一个 unblocked task" 改写为 "本阶段后第一个 unblocked task" · G4 0 hits on first pass (§5 + §7 + §8 不再含 cycle 039 那种 candidate-not-final 句式 contrast 高密度段落, 因此 negation-context literal 没有 trigger) · G3a + G3b + G4 re-greps all 0 hits on both drafts (full file) · 累计正文 § 1 + § 2 + § 3 + § 4 + § 5 + § 6 + § 7 + § 8 ~17800 内 + ~14000 外 字 ≈ 85% of OUTLINE_V1 §2 表 总字数估算 (~21100 内 / ~16000 外) · 实证-anchored 章节首次 stress test on vocab 替换表 + sync rule + candidate-not-final 句式 三重约束, 5 corrective edits 全部围绕 "cycle" 字串泄漏 (§7.5 内部 sync chain 描述 + §5.3 计划性表述 + §8 时间表 + §7.5 仓库 lowercase 命名 leak) 而非 over-claim 句式; cycle 041 通稿审查 + §9 风险章节为唯一剩余 chapter
 ```
 
-cycle 037+ 起草 §2 后追加。cycle 039 close 2026-05-17 追加 §3 + §6 entry。cycle 040 close 2026-05-17 追加 §5 + §7 + §8 entry。cycle 041 close 2026-05-17 追加 §9 entry。cycle 042 close 2026-05-17 追加 最终修订 + PDF 编译 entry。
+cycle 037+ 起草 §2 后追加。cycle 039 close 2026-05-17 追加 §3 + §6 entry。cycle 040 close 2026-05-17 追加 §5 + §7 + §8 entry。cycle 041 close 2026-05-17 追加 §9 entry。cycle 042 close 2026-05-17 追加 最终修订 + PDF 编译 entry。expansion cycle 2026-05-17 追加 §2 KYKT vocab +12 行 + OUTLINE + DRAFT 双支柱扩展 entry。
 
 ## 7. 不在本契约范围内的事项
 

@@ -4,8 +4,8 @@
 |---|---|
 | 文件类型 | 开题报告内部稿 (Dream-vocabulary; 不外发) |
 | 创建日期 | 2026-05-16 |
-| 最后更新 | 2026-05-17 (cycle 042 最终修订; §1-§9 累计正文 ~19300 字) |
-| 状态 | v1 draft; §1-§9 全部起草完成; 待 cycle 042 最终修订 + PDF 编译 |
+| 最后更新 | 2026-05-17 (expansion cycle: 双支柱扩展; §1-§9 累计正文 ~27000 字) |
+| 状态 | v1.1 draft; §1-§9 + 支柱 B KYKT 平台内容扩展完成 |
 | 授权根 | DEC-20260516-001 (cycle 036) + DEC-20260516-002 (cycle 037) + DEC-20260516-003 (cycle 038) + DEC-20260516-004 (cycle 039) + DEC-20260517-001 (cycle 040) + DEC-20260517-002 (cycle 041) + DEC-20260517-003 (cycle 042) |
 | 配套文件 | OUTLINE_V1.md (章节结构) + STYLE_CONTRACT.md (双稿契约) + DRAFT_EXTERNAL_V1.md (外部稿) |
 | 双稿关系 | 本稿是 master per STYLE_CONTRACT §3 规则 1; 外部稿是 internal 周期性快照 |
@@ -83,6 +83,18 @@ per DEC-20260501-011 (thesis reframe, candidate-not-final) + DEC-20260504-002 (n
 - `Dream/planning/SOTA_MATRIX_V2.md` (综述四轴 + 输入扩展 axis re-label)
 - `Dream/code/dream3r/RECENT_PROGRESS.md` (W1-W18 ledger)
 - `Dream/cycles/CYCLE-20260511-001.md` (cycle 034 KITTI smoke 实证)
+
+### 1.7 支柱 B: KYKT 聚合管理平台的研究必要性
+
+随着前馌式三维重建从 DUSt3R 单一基准方法演化为 MASt3R / MonST3R / Spann3R / Fast3R / CUT3R / Align3R 等多模型并行演进的局面, 研究者面临日益尖锐的工程管理挑战: 每个模型拥有独立的 Python 环境 / CUDA 依赖 / 检查点路径 / 推理脚本 / 输出格式, 模型间的横向对比需要大量重复性工程労动。这一局面与 Dream3R v0.3 C5 Composer 7-expert pool 的架构设计直接相关: 消融实验的多专家对照、Critic 标定、长序列评测都需要一个统一的平台来调度执行、归集结果、组织对比。
+
+KYKT 聚合管理平台 (Coding/4.06/vision_ui) 作为本项目的第二支柱, 为 Dream3R 架构研究提供工程基础设施:
+
+- **统一模型注册与执行合同**: 通过 model_registry + runner 合同 + job.json / status.json / scene_meta.json 统一输出结构, 让 6+ 个 3R 模型共享同一套调度、结果归集、评估流水线
+- **研究闭环支撑**: Dream3R 的消融实验 (ABL-v02-1..10 / ABL-memory-0..11) 、Critic 标定 (CRITIC_CALIBRATION_PLAN_V1) 、长序列评测 (LONG_SEQ_REAL_TABLE_PLAN) 均可通过 KYKT 平台的远端 SSH 调度执行, 本地桌面端实时跟踪状态与结果
+- **应用对接层 (候选)**: 后续将模型推理封装为 REST/gRPC 接口, 对接三维重建下游应用 (点云编辑 / AR / 数字孪生 等), 形成研究→工程→应用的完整链路
+
+两大支柱的关系: Dream3R 架构 (支柱 A) 提供算法创新, KYKT 平台 (支柱 B) 提供工程平台; Dream3R 的消融/评测需要 KYKT 平台调度执行, KYKT 平台的核心价值 = 为 Dream3R 等新架构提供标准化实验环境。本研究把支柱 B 作为项目主体问题之一 (§3 Q4), 而非仅仅工程贡献。
 
 ---
 
@@ -166,6 +178,26 @@ Dream3R v0.3 在四轴上的整体定位: **不押注单一支线**, 而是在 C
 
 落点判断的工件锚点: SOTA_MATRIX_V2.md 五张 Tables A-E (cycle 035 P0-2 deliverable) + SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md §3 21 子类覆盖矩阵 (cycle 035 上游 proposal) + WORK_RISK_REGISTER.md v1.2 17 行 (cycle 035 +4 cross-spec + cycle 036 +3 proposal-cycle)。这些工件本章不复制, 仅引用; §5 消融与评测 / §9 研究风险将进一步展开各子类的 falsification 路径与风险缓解机制。
 
+### 2.8 现有 3R 工具链与平台综述
+
+上述 §2.1-§2.7 的综述聚焦于算法与架构层面。然而, 多模型并行演进带来的不仅是算法挑战, 也是工程管理挑战。本节梳理现有 3R 方向的工具链与平台现状, 识别统一聚合管理平台的空白。
+
+**学术平台 (NeRF 主导)**:
+
+Nerfstudio (Tancik et al., 2023) 是当前最成熟的学术级 3D 重建平台, 提供统一的训练 / 评估 / 可视化流水线。但 Nerfstudio 的架构设计围绕 NeRF 范式 (per-scene optimization + volume rendering), 与前馌式 3R 的 feed-forward 范式存在根本差异: 3R 模型不需要每场景训练, 而是单次前向传播结合 streaming / batch 多模式输入。Nerfstudio 的 pipeline 抽象、数据解析器、viewer 均针对 NeRF 设计, 无法直接复用于 DUSt3R / MASt3R / Spann3R 等 3R 模型。
+
+**商业产品 (封闭生态)**:
+
+Polycam / Luma AI / RealityCapture 等商业产品将多视图重建包装为一键化工作流, 但均为闭源产品, 算法细节不可审计, 无法复现实验结果; 且其核心算法多属 SfM + MVS + 3DGS 等传统路线, 尚未全面集成前馌式 3R 模型。对于需要对照实验、消融分析、架构级对比的学术研究, 商业平台无法提供所需的可控性与可解释性。
+
+**各模型官方 Demo (孤岛现状)**:
+
+DUSt3R / MASt3R / MonST3R / Spann3R / Fast3R / CUT3R 等模型各自提供官方 demo.py 或 Gradio 界面, 但每个 demo 独立运行, 各自有不同的 Python 环境、输入格式、输出结构、评估指标。在同一场景上对比多个模型需要研究者手动编写开叱 / 解析 / 转换代码, 实验成本随模型数量线性增长。这一“孤岛现状”是 Dream3R C5 Composer 7-expert pool 实证评估的主要工程障碍。
+
+**空白识别**: 缺乏一个面向前馌式 3R 的统一聚合对比管理平台。这一平台需要: (a) 统一的模型注册与执行合同, 让新模型接入的边际成本可控; (b) 统一的输出结构, 让跨模型对比不需要格式转换; (c) 远端 GPU 服务器调度, 让本地桌面端无需直接管理服务器环境; (d) 评估与对比框架, 让消融实验结果可组织、可复现。这一空白是本研究支柱 B (KYKT 聚合管理平台, per §1.7) 的研究动机, 也是 §3 Q4 (统一聚合管理与评估平台) 的学术依据。
+
+Dream3R v0.3 的消融实验设计 (§5) 直接依赖这一平台: ABL-v02-4 Composer best-of-N vs single-expert 需要在同一平台上调度多模型运行; KITTI 长序列评测需要统一的结果归集与指标计算; Critic 标定需要跨模型的对比数据。KYKT 平台的设计将在 §4-B 展开。
+
 ---
 
 ## §3 候选研究问题
@@ -247,11 +279,33 @@ per DEC-20260501-011 (Dream3R thesis reframe; candidate-not-final), Dream3R 是�
 
 候选架构演化路径在 §8 时间安排 + §9 风险章节进一步展开, 包括 v0.4 spec delta 候选清单 + 候选架构被修订/替换的风险条目 (R-PROP-CLAIM-1 in WORK_RISK_REGISTER v1.2)。
 
+### 3.6 Q4 统一聚合管理与评估平台 (平台路径)
+
+**研究问题陈述**: 如何设计一个面向多模型前馌式 3R 研究的统一聚合管理与评估平台, 使其具备: (a) 新模型接入的低边际成本, (b) 跨模型横向对比的统一输出结构, (c) 远端 GPU 服务器的透明调度, (d) 下游应用对接的 API 封装候选方案?
+
+**Gap identification**: §2.8 识别的三类现状 — Nerfstudio 为 NeRF 设计 (范式不兼容), 商业产品闭源 (不可审计), 官方 demo 孤岛 (边际成本线性增长) — 共同指向同一空白: 前馌式 3R 方向缺乏统一平台。这一空白导致 Dream3R v0.3 的 C5 Composer 7-expert pool 实证评估 (§3 Q3) 的工程成本过高, 也制约了 ABL-v02-4 / CRITIC_CALIBRATION_PLAN_V1 / LONG_SEQ_REAL_TABLE_PLAN 的执行效率。
+
+**KYKT 平台候选路径**: KYKT 聚合管理平台 (Coding/4.06/vision_ui) 通过 Tauri 2 + React + TypeScript + FastAPI + SSH/SCP 技术栈, 在本地桌面端与远端 GPU 服务器之间建立统一调度层。当前已接入 6 个 3R 模型 (DUSt3R / MASt3R / MonST3R / Spann3R / Fast3R / CUT3R), 其中 4 个已通过 smoke test。平台架构设计将在 §4-B 展开。
+
+**Q4 子问题分解**:
+
+- **Q4-a 模型注册与执行合同**: 如何定义统一的 model_registry + runner contract, 使新模型接入仅需“注册模型 → 添加 runner → 添加 SSH dispatch 分支”三步? 当前 6 模型接入之后, 新模型接入的平均耗时如何?
+- **Q4-b 统一评估框架**: 如何设计跨模型对比矩阵 (per sample_manifest.json + job output + evaluation.json), 使 Dream3R 的消融实验结果可组织、可复现?
+- **Q4-c 应用对接层**: 平台层推理能力如何封装为 REST/gRPC 接口, 供下游应用调用? (本阶段仅概念设计, 不吸取实装)
+
+**与 Q1-Q3 的关系**: Q4 为 Q1-Q3 提供工程基础设施。Q3 (best-of-N vs single-expert) 的实证评估直接依赖 Q4-a (多模型统一调度); Q1 (Critic 标定) 依赖 Q4-b (跨模型对比数据); Q2 (长序列评测) 依赖 Q4-a (远端执行调度)。Q4 是工程级研究问题, 其评估标准见 §5.8。
+
+**candidate-not-final 边界**: Q4 不主张 KYKT 平台是唯一可行的 3R 统一平台方案; 也不主张当前架构设计已完备。Q4 是“评估统一平台在多模型 3R 研究中的工程效率与可复现性提升”的研究问题。
+
 ---
 
-## §4 Dream3R v0.3 架构
+## §4 Dream3R v0.3 架构与 KYKT 平台架构
 
-本章在 SPEC-20260506-004 v0.2 (架构 v0.2 delta, 六 Delta 设计) + SPEC-20260508-001 v0.3 (C2 Memory v0.3 addendum) + paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md v2.1 (CR-1..CR-6 cross-spec 信号契约) 的基础上, 按 8 个子节描述 Dream3R v0.3 的整体设计与 C1-C6 六模块。本章为开题报告层的架构描述, 不复述 SPEC 工程细节; SPEC 由 section / Delta / line anchor 引用, 不修改。
+本章分两大部分: §4-A 描述 Dream3R v0.3 候选架构 (支柱 A), §4-B 描述 KYKT 聚合管理平台 (支柱 B)。两大支柱独立设计、并行评估, 通过平台层调度与评测框架协同。
+
+### §4-A Dream3R v0.3 候选架构
+
+本节在 SPEC-20260506-004 v0.2 (架构 v0.2 delta, 六 Delta 设计) + SPEC-20260508-001 v0.3 (C2 Memory v0.3 addendum) + paradigm/CROSS_SPEC_SIGNAL_CONTRACT.md v2.1 (CR-1..CR-6 cross-spec 信号契约) 的基础上, 按 8 个子节描述 Dream3R v0.3 的整体设计与 C1-C6 六模块。本节为开题报告层的架构描述, 不复述 SPEC 工程细节; SPEC 由 section / Delta / line anchor 引用, 不修改。
 
 ### 4.1 整体设计与帧预算
 
@@ -359,6 +413,71 @@ v2.1 的 additive 变化 (per DEC-20260505-001) 是新增 "Forward-reference nul
 **结构差异 3 (轴 D + 多专家组合): 显式 best-of-N expert pool**。综述 §3-§7 中各 3R 系统在不同 regime 上分别擅长 (MASt3R 静态对 / Fast3R 多视图 / Spann3R 流式 / CUT3R 动态容忍 等); Dream3R v0.3 的 C5 Composer 通过 7-expert pool + capability descriptor 显式 best-of-N 路由, 把这一 regime 分化变成架构层显式选择。这一设计是 §3 Q3 (多专家组合实证评估) 的架构前提, 也是 cycle 029 review (per MEMORY_V03_ABLATION_REVIEW.md R-029-1..5) 之后保留的 cycle 035 SOTA_MATRIX_V2 §6 first-class support 6 子类的来源之一。
 
 整体定位: Dream3R v0.3 不主张相对现有 SOTA 在任一单一指标上压倒性领先, 而是评估"在统一架构内同时实装多机制 + 显式路由"这一架构层 best practice 在 Q1 / Q2 / Q3 三组维度上的实证表现 (per DEC-20260501-011 candidate-not-final + DEC-20260504-002 no-all-in)。架构与单一支线方法的实证对照将在 §5 消融与评测设计中按 ABL-v02-1..9 + ABL-memory-0..11 + 综述驱动新增 calibration / long-seq 评测展开。
+
+### §4-B KYKT 聚合管理平台架构
+
+本节描述 KYKT 聚合管理平台 (支柱 B) 的架构设计。平台代码位于 Coding/4.06/vision_ui, 当前处于功能原型阶段 (6 模型接入 / 4 smoke 通过 / 桌面端可用 / AI 评估层存在)。本节按概念设计层描述, 不涉及实装细节。
+
+#### 4-B.1 总体架构与技术栈
+
+KYKT 平台采用桌面优先 (desktop-first) 架构:
+
+```text
+Tauri 2 桌面外壳
+  → React + TypeScript 前端
+  → 本地 FastAPI 后端 (127.0.0.1:8765)
+  → 系统 SSH / SCP 远端调度
+  → GPU 服务器模型执行 (/hdd3/kykt26)
+```
+
+这一架构的设计考量:
+
+- **桌面优先 vs Web SaaS**: 研究场景下 GPU 服务器通常位于校园网或 VPN 内网, 不适合暴露为公网 Web 服务; Tauri 桌面外壳提供本地文件系统访问 + 系统 SSH 调用, 满足研究者日常工作流
+- **本地后端为程**: FastAPI 在本地运行, 管理 job 生命周期 / SSH 连接 / 结果缓存, 避免对远端服务器部署 Web 服务的依赖
+- **透明 SSH 调度**: 模型执行通过系统 SSH + SCP 完成, 不依赖特定远端服务, 兼容各类服务器配置
+- **可移植包装**: 通过内嵌 Python 分发 + React 构建 + Tauri 单文件分发, 实现一键部署 (per PORTABLE_BUNDLE.md)
+
+#### 4-B.2 模型注册与执行合同
+
+KYKT 平台定义统一的模型注册与执行合同:
+
+- **模型注册 (model_registry.py)**: 每个模型携带 ID / 名称 / 族 (DUSt3R 族 / MonST3R 族) / 运行状态 / 参数族 / 输出合同 / 服务器环境信息; 新模型接入仅需: 注册模型 → 添加 runner → 添加 SSH dispatch 分支
+- **Runner 合同**: 每个模型的 runner (e.g., dust3r_runner.py / monst3r_runner.py / spann3r_runner.py) 遵守相同的 I/O 合同: 读取 job.json → 执行推理 → 输出 scene_meta.json + 标准 output/ 目录结构
+- **Job 生命周期**: 创建 → 准备远端目录 → 上传输入 → 上传 runner → 远端执行 → 下载结果 → 完成/失败; 状态转移通过 status.json 跟踪
+- **当前覆盖**: DUSt3R (smoke ✓) / MASt3R (smoke ✓) / MonST3R (smoke ✓) / Spann3R (smoke ✓) / Fast3R (前向通过) / CUT3R (环境就绪, runner 待写)
+
+这一合同设计保证新模型接入时无需修改前端 / 调度层 / 评估层, 仅需实现 runner + 注册元数据, 边际成本可控。这是 Q4-a (新模型接入低边际成本) 的架构基础。
+
+#### 4-B.3 统一评估框架
+
+KYKT 平台提供三层评估机制:
+
+- **自动指标层**: 每个 job 完成后自动生成 result_summary.json + result_summary.md, 包含运行时、内存占用、输出完整性 (artifact count / expected vs actual)
+- **手动评分层**: evaluation.json 支持人工评分 (quality / completeness / notes), 保存在 local_jobs/<job_id>/ 下, 在前端可视化展示
+- **AI 评估层**: advisor.py 接入 OpenAI-compatible API, 可对已完成 job 进行自动诊断 / 建议 / 报告生成 (per settings/advisor.json 配置)
+- **样本矩阵 (Sample Matrix)**: samples_manifest.json 定义跨模型对比样本集, 前端提供排序 / 筛选 / 批量操作 / 报告导出 / locate-job 联动
+
+该评估框架为 Dream3R ABL-v02-4 (best-of-N vs single-expert) 提供横向对比基础设施, 也为 Q4-b (跨模型对比矩阵) 提供工程实现。
+
+#### 4-B.4 应用对接层 (概念设计)
+
+本阶段 KYKT 平台以研究工具为主; 后续计划将推理能力封装为应用对接层, 概念设计包括:
+
+- **REST API 封装**: 将已经准备好的 model_registry + runner 合同包装为 HTTP 接口, 提供 /infer (单次推理) + /batch (批量推理) + /compare (多模型对比) 端点
+- **gRPC streaming (候选)**: 对于 Spann3R / CUT3R 等流式模型, streaming 接口更自然; gRPC 作为候选传输协议
+- **下游应用场景 (概念)**: 点云编辑 / AR 场景重建 / 数字孪生 / 自动驾驶感知 等需要三维重建能力的场景, 通过 API 层获取 KYKT 平台的多模型推理服务
+
+本节仅为概念设计, 不吸取实装承诺; 实装时序见 §8 P-6 里程碑。
+
+#### 4-B.5 与 Dream3R 架构的协同关系
+
+KYKT 平台 (支柱 B) 与 Dream3R 架构 (支柱 A) 的协同关系体现在三个层面:
+
+- **执行层**: Dream3R 的 ABL-v02-1..10 / ABL-memory-0..11 / Critic 标定 / 长序列评测均可通过 KYKT 平台的 SSH 调度执行, 本地桌面端实时跟踪状态与结果
+- **对比层**: Dream3R C5 Composer 7-expert pool 的实证评估通过 KYKT 平台的 Sample Matrix 与评估框架组织多模型对比数据
+- **演进层**: Dream3R 未来版本 (v0.4+) 可作为 KYKT 平台上的新模型接入, 与现有 3R 模型在同一评测框架下对比
+
+这一协同关系保证: (a) 支柱 A 的研究问题 (Q1-Q3) 有可执行的工程基础, (b) 支柱 B 的研究问题 (Q4) 有明确的上层应用场景 (= Dream3R 消融评估), (c) 两支柱可独立评估且互相增强。
 
 ---
 
@@ -496,11 +615,22 @@ cross-spec consistency 指标 (per CR-1..CR-6 v2.1): cross_spec_refusal log coun
 
 所有指标在 cycle 040 仅 plan-level 引用, 执行 gated; cycle 034 KITTI smoke 的 pointmap L2 = 20.4747 + depth RMSE = 21.8658 是唯一已有的 L3 真实数据数值 (集成证据, 非训练后质量)。
 
+### 5.8 平台层评测标准 (支柱 B)
+
+支柱 B (KYKT 聚合管理平台) 的评测标准与支柱 A (架构层算法指标) 不同, 采用工程效率与可复现性指标:
+
+- **新模型接入耗时 (Q4-a)**: 衡量新模型从“环境就绪”到“首次 smoke 通过”的平均工时 (person-hours); 目标: 在 6 模型接入经验基础上, 后续新模型接入≤ 8h 工时 (runner 写作 + smoke + 注册)
+- **统一合同覆盖率 (Q4-a)**: 已接入模型中, 完整遵守 runner I/O 合同 (job.json → scene_meta.json + output/) 的比例; 目标: ≥ 80% (5/6 模型完整合同)
+- **跨模型对比矩阵完整性 (Q4-b)**: samples_manifest.json 中定义的对比样本集上, 实际产出有效结果的 (model × sample) 单元格占比; 目标: ≥ 60% (4/6 模型 × 全部对比样本)
+- **API 对接能力 (Q4-c)**: REST API 层是否能够成功提供单次推理 / 批量推理 / 多模型对比三类端点 (候选指标, 仅概念验证)
+
+评测方式: 平台层评测不依赖 F-002 server authorization, 可在本地环境 + 现有服务器上执行; 评测时序见 §8 P-1..P-7 里程碑。
+
 ---
 
 ## §6 预期成果
 
-本章按三个子节给出本研究的预期成果与创新点。§6.1 列出本研究的预期交付物 (架构设计文档 + 原型实现 + 评测结果 + 综述与方法学副产物); §6.2 把 §3 三个 Q (Q1 验证 / Q2 长序列内存 / Q3 多专家组合) 对应的三个创新点 (IP1 verification-as-architecture / IP3 NSA-hybrid memory / IP2 heterogeneous best-of-N Composer) 显式声明; §6.3 阐明本研究与现有工作的实证差异 — 本研究 **不** 主张 Dream3R 相对 SOTA 压倒性领先, 主张提供多机制并置的对照实验证据。三个子节都受 STYLE_CONTRACT §5 candidate-not-final 句式表硬约束。
+本章按三个子节给出本研究的预期成果与创新点。§6.1 列出本研究的预期交付物 (架构设计文档 + 原型实现 + 评测结果 + 综述与方法学副产物 + KYKT 平台); §6.2 把 §3 四个 Q (Q1 验证 / Q2 长序列内存 / Q3 多专家组合 / Q4 统一平台) 对应的四个创新点 (IP1 verification-as-architecture / IP2 heterogeneous best-of-N Composer / IP3 NSA-hybrid memory / IP4 统一聚合管理平台) 显式声明; §6.3 阐明本研究与现有工作的实证差异 — 本研究 **不** 主张 Dream3R 相对 SOTA 压倒性领先, 主张提供多机制并置的对照实验证据。三个子节都受 STYLE_CONTRACT §5 candidate-not-final 句式表硬约束。
 
 ### 6.1 预期交付物
 
@@ -538,6 +668,14 @@ per §3.1-§3.3 三个 Q 与 §4 六模块设计, 本研究的三个创新点 (I
 
 三个 IP 与 §3.1-§3.3 三个 Q 一一对应 (Q1 ↔ IP1; Q2 ↔ IP3; Q3 ↔ IP2)。三个 IP 的 candidate-not-final 共同体现在 "提供 ... 候选 ... + 对照实验证据" 的句式模式, 而非 "宣称 X 优于 Y" 的结论性命题。
 
+**IP4: 面向前馌式 3R 的统一聚合管理平台 (工程创新点; 对应 Q4 + §4-B + Pillar B)**
+
+设计并实现一个面向多模型前馌式 3R 研究的统一聚合管理平台 (KYKT), 通过统一模型注册 / 执行合同 / 评估框架 / 应用对接层四层设计, 为 Dream3R 等新架构的消融实验与跨模型对比提供标准化工程基础设施。creation novelty 不在于“平台概念本身”(工具链平台在 ML 研究中已有 MLflow / Nerfstudio 等), 而在于 (a) 针对前馌式 3R 范式的统一 runner 合同设计 (区别于 NeRF per-scene 工作流), (b) 6 个异构 3R 模型在同一平台上的实际接入与对比, (c) 与 Dream3R 架构研究 (Q1-Q3) 的直接协同。
+
+句式约束: 不说 "KYKT 是唯一可行的 3R 统一平台"; 说 "KYKT 平台为多模型 3R 研究提供了一个统一聚合管理的候选方案 + 工程实证".
+
+四个 IP 与 §3.1-§3.6 四个 Q 对应 (Q1 ↔ IP1; Q2 ↔ IP3; Q3 ↔ IP2; Q4 ↔ IP4)。其中 IP1-IP3 属支柱 A (算法创新), IP4 属支柱 B (工程创新); 四个 IP 的 candidate-not-final 共同体现在 "提供 ... 候选 ... + 实证证据" 的句式模式。
+
 ### 6.3 与现有工作的实证差异
 
 本研究与现有 3R 工作的实证差异不在 "Dream3R 相对 SOTA 在某单一指标上压倒性领先" — 这一论断超出本研究的 candidate-not-final 边界, 也与 §4.8 整体定位 + DEC-20260501-011 + DEC-20260504-002 三项决策矛盾。
@@ -549,6 +687,8 @@ per §3.1-§3.3 三个 Q 与 §4 六模块设计, 本研究的三个创新点 (I
 - **架构组合差异**: 现有 3R 工作以 "single best architecture" 为主; 本研究通过 C5 Composer + COMPOSER_CAPABILITY_DESCRIPTORS 7-expert pool 显式实装 "heterogeneous best-of-N"。这一差异是 IP2 的架构体现。
 
 本研究的实证目标不是把 Dream3R 推上 KITTI / DTU / ScanNet 等单一 leaderboard 的 top-N; 而是在 §5 实验设计指定的 evaluation 协议下, 提供三个 Q 与三个 IP 对应的对照实验数据, 让后续工作 (无论是 Dream3R v0.4 演进, 还是其他 3R 架构) 可以基于这些数据判断: (a) 当前 Dream3R v0.3 在三个 Q 上的覆盖与缺口, (b) v0.4 spec delta 候选 (B1 / B2 / B3) 应优先推进哪一个, (c) 是否有 v0.5 候选架构 需要替换 v0.3 整体设计。这一对照实验数据 + 候选演化路径是本研究的核心实证差异, 也是 candidate-not-final 框架的工程落点。
+
+支柱 B 的实证差异体现在: 现有 3R 研究以“每篇论文一个独立 demo”的离散工作流为主; 本研究通过 KYKT 平台提供“多模型统一调度 + 横向对比 + 研究闭环”的工程实证。这一差异是 IP4 的工程体现, 也是支柱 B 独立于支柱 A 的实证贡献。
 
 ---
 
@@ -679,6 +819,40 @@ cycle 015 Critic L3 pilot scope (DEC-20260505-005 authorized 但 per-step micro 
 
 整体 cycle 历史的 evidence label: cycle 032 服务器端验证 + cycle 034 KITTI smoke 为 code-observed; 其他 cycle 输出 (markdown SPEC / planning / cycle log) 为 engineering-demonstrated 或 paper-derived; 任一 cycle 输出均未 promote 至 paper-proven。
 
+### 7.7 KYKT 平台开发进展 (支柱 B)
+
+KYKT 聚合管理平台 (Coding/4.06/vision_ui) 截至 2026-05-17 的开发进展:
+
+**模型接入与 smoke test**:
+
+| 模型 | 服务器环境 | Runner | Smoke | 备注 |
+|---|---|---|---|---|
+| DUSt3R | ✓ 环境 + 权重 | ✓ dust3r_runner.py | ✓ 通过 | 静态对 / 多视图 |
+| MASt3R | ✓ 环境 + 权重 | ✓ mast3r_runner.py | ✓ 通过 | 静态多图匹配 |
+| MonST3R | ✓ 环境 + 权重 + 第三方 | ✓ monst3r_runner.py | ✓ 通过 | 视频/动态重建 |
+| Spann3R | ✓ 环境 + 权重 | ✓ spann3r_runner.py | ✓ 通过 | 流式重建 |
+| Fast3R | ✓ 环境 + 权重 | ✓ fast3r_runner.py | ○ 前向通过 | 长序列多视图 |
+| CUT3R | ✓ 环境 (curope 重建) | ○ 待写 | ○ 待测 | 在线/持久状态 |
+
+**桌面端产品 surface**:
+
+- 命令中心 (focus job + 运行健康 + 快速导航)
+- 工作台 (job 列表 / 筛选 / 批量操作 / 键盘导航 / inspector)
+- 创建工作区 (模型目录驱动 / 参数路由 / 输入分组)
+- 样本矩阵 (samples_manifest.json / 排序 / 筛选 / 报告导出)
+- 部署控制台 (远端状态查询 / 模型部署状态)
+- AI 顾问 (OpenAI-compatible / 评估 / 建议 / 报告生成)
+
+**关键工程成果**:
+
+- Tauri 2 桌面外壳: 自动管理 FastAPI 后端启动 / 健康检查 / 日志写入
+- FastAPI JSON API: /api/bootstrap, /api/jobs, /api/samples, /api/deployment/status, /api/advisor 等完整端点
+- SSH/SCP 远端调度: SIGTERM → grace → SIGKILL 的安全取消流 + 孤立任务恢复
+- 可移植包装: NSIS / MSI 安装程序 + 单文件 exe; 内嵌 Python 分发方案已设计
+- curope CUDA 扩展重建: Align3R + CUT3R 环境均已经解除阻塞 (2026-05-03)
+
+**evidence label**: 平台开发进展全部为 code-observed 或 engineering-demonstrated; DUSt3R / MASt3R / MonST3R / Spann3R 四个 smoke test 产出了实际 job artifact (matches.png / pointcloud.ply / scene.glb 等), 存储在 local_jobs/ 下。
+
 ## §8 时间安排
 
 本章按三个时间段给出 Dream3R 后续研究计划: §8.1 短期 (M1-M2, cycle 040-042 开题报告完稿 + 提交 + 启动后续 ABL plan)、§8.2 中期 (M3-M5, W19-W23 真实路由 + W24-W26 v0.4 spec delta + B1/B2/B3 候选)、§8.3 长期 (M6-M8, W27 3DGS renderer + 真实数据训练 + 论文撰写 + 综合评测)。时间表为 candidate timeline, 非 committed schedule, 受 F-002 server authorization + per-step DEC + advisor 反馈影响。
@@ -731,13 +905,29 @@ cycle 015 Critic L3 pilot scope (DEC-20260505-005 authorized 但 per-step micro 
 
 长期阶段 evidence label 待 Tier 1 + Tier 2 ABL 跑出后才能从 plan-only 升级至 code-observed / engineering-demonstrated; 任何 paper-proven claim 仍需会议接收。
 
+### 8.4 KYKT 平台里程碑 P-1..P-7 (支柱 B)
+
+支柱 B (KYKT 平台) 的开发里程碑嵌入 M1-M8 时间框架:
+
+| 里程碑 | 内容 | 时间段 | 依赖 |
+|---|---|---|---|
+| P-1 | CUT3R runner 写作 + smoke test | M1-M2 | curope 环境已就绪 |
+| P-2 | Align3R runner 写作 + smoke test | M1-M2 | curope 环境已就绪 |
+| P-3 | 跨模型对比视图 + 报告导出 | M2-M3 | P-1 + P-2 完成 |
+| P-4 | 统一评估框架 v2 (自动指标 + AI 评估升级) | M3-M4 | P-3 对比数据积累 |
+| P-5 | Dream3R 作为新模型接入 KYKT 平台 | M5-M6 | Dream3R 训练后检查点可用 |
+| P-6 | REST API 封装层 (概念验证) | M6-M7 | P-4 评估框架稳定 |
+| P-7 | 平台整体评测报告 (对应 §5.8 指标) | M7-M8 | P-1..P-6 全部完成 |
+
+P-1 / P-2 为短期优先 (环境已就绪, 只需 runner 写作); P-3..P-4 为中期 (依赖对比数据积累); P-5..P-7 为长期 (依赖 Dream3R 架构进展)。所有里程碑为 candidate timeline, 与支柱 A 的 W-task 同样受 per-step DEC + 服务器可用性约束。
+
 整体时间表 candidate-not-final 性 (per DEC-20260501-011): M1-M8 各阶段都可能因为 (a) 服务器算力 / GPU 可用性 (per F-002), (b) 实证结果反馈 (e.g., ABL-v02-4 best-of-N 不显著 → 重新 prioritize Pillar D 路径), (c) v0.4 spec delta 候选选择 (B1 vs B2 vs B3 优先级), (d) advisor 反馈 (开题报告 feedback 可能 reshape M1-M2), (e) Track B 综述提交后是否引发新方向 等因素调整。每次调整在对应 cycle log 记录, 不 silent 改时间表。
 
 ---
 
 ## §9 研究风险
 
-本章汇总 Dream3R 开题阶段识别的主要研究风险, 按架构层 / 跨模块 / 实证执行 / 工程时序 / 开题报告 process 五个层面分组, 并在 §9.6 给出整体应对策略。风险条目引用 WORK_RISK_REGISTER v1.2 (17 行 per-spec + cross-spec 风险 + cycle 035 v1.1 +4 行 + cycle 036 v1.2 +3 行 = 20 行总计)。所有缓解措施均为 plan-level 或 partial-mitigated, 没有任何风险在开题阶段被完全消除。
+本章汇总开题阶段识别的主要研究风险, 按架构层 / 跨模块 / 实证执行 / 工程时序 / 平台层 (支柱 B) / 开题报告 process 六个层面分组, 并在 §9.7 给出整体应对策略。风险条目引用 WORK_RISK_REGISTER v1.2 (17 行 per-spec + cross-spec 风险 + cycle 035 v1.1 +4 行 + cycle 036 v1.2 +3 行 + expansion cycle +4 行平台风险 = 24 行总计)。所有缓解措施均为 plan-level 或 partial-mitigated, 没有任何风险在开题阶段被完全消除。
 
 ### 9.1 架构层风险
 
@@ -770,7 +960,16 @@ cycle 015 Critic L3 pilot scope (DEC-20260505-005 authorized 但 per-step micro 
 - **v0.4 spec delta 候选优先级**: B1 (Critic 路径拆分) / B2 (输出资产契约) / B3 (输入扩展 axis) 三项 v0.4 spec delta 均为 proposal-status, 不是 locked architecture; 优先级选择 (B1 vs B2 vs B3) 取决于 M3-M5 实证反馈, 开题阶段不可 pre-commit。
 - **3DGS renderer license**: W27 4DGS renderer 接入时序依赖 R-4DGS-LIC-1 清除 + B2 spec delta landing; 长期目标 M6-M8 的 4DGS asset 输出功能路径最长, 风险最集中。
 
-### 9.5 开题报告 process 风险
+### 9.5 平台层风险 (支柱 B)
+
+支柱 B (KYKT 聚合管理平台) 的特有风险:
+
+- **R-PLAT-ENV-1 多模型环境冲突**: 6 个 3R 模型各自依赖不同的 Python 环境 / CUDA 版本 / 第三方库; 服务器端 conda 环境隔离可避免直接冲突, 但磁盘空间 / 共享 CUDA driver 版本约束仍可能导致特定模型运行失败 (如 CUT3R 依赖 curope CUDA 扩展重建)。缓解: per-model conda env + curope 重建脆本已有 (2026-05-03); 残余风险: 未来新模型可能引入新 CUDA 版本要求
+- **R-PLAT-SERVER-1 服务器可用性**: KYKT 平台的远端执行依赖 GPU 服务器 SSH 可达性; 校园网 / VPN 断连、服务器维护、GPU 占用等均可能导致 job 执行失败。缓解: 孤立任务恢复机制 (orphan recovery) + SSH 重连 + SIGTERM/grace/SIGKILL 安全取消流已实现; 残余风险: 多服务器负载均衡未实现 (when 可用)
+- **R-PLAT-TAURI-1 Tauri 兼容性**: Tauri 2 桌面外壳依赖系统 WebView2 (Windows) / WebKit (macOS/Linux); 不同操作系统版本的 WebView 行为差异可能影响前端渲染。缓解: 当前主要针对 Windows 开发测试, 跨平台支持作为后续目标; 残余风险: macOS/Linux 兼容性未验证
+- **R-PLAT-API-1 API 安全性**: REST API 封装层 (§4-B.4 概念设计) 将模型推理能力暴露为 HTTP 接口; 在校园网内网环境下安全风险可控, 但若扩展至公网环境需追加认证 / 限流 / 访问控制。缓解: 本阶段 API 仅概念设计, 不实装; 实装时需安全审查 DEC
+
+### 9.6 开题报告 process 风险
 
 cycle 036 v1.2 新增 3 行 proposal-cycle 风险:
 
@@ -778,7 +977,7 @@ cycle 036 v1.2 新增 3 行 proposal-cycle 风险:
 - **R-PROP-CLAIM-1 over-claim**: 候选架构 X 的 candidate-not-final 定位 (per DEC-20260501-011) 要求所有 claim 句式避免 over-claim 表述 (宣称优越性 / 宣称为最终设计 等); cycle 039 G4 surface 7 hits/side 在 negation-context 句式中, 通过 corrective rephrasing 清除。残余风险: §9 风险描述中 mitigation 措辞可能 inadvertently 暗示风险已完全解决。
 - **R-PROP-SYNC-1 双稿语义漂移**: internal-is-master + 周期性 external 快照规则 (STYLE_CONTRACT §3) 保证双稿语义一致; 但随 §1-§9 全部落地, 累计 ~19000 内 + ~15000 外 字的大规模双稿可能在 §X 间交叉引用点产生微漂移。通稿审查 (本 cycle) 是最终同步窗口。
 
-### 9.6 风险应对策略
+### 9.7 风险应对策略
 
 本研究采用 "层级化缓解 + 残余风险显式声明" 的整体应对策略:
 
@@ -791,6 +990,7 @@ cycle 036 v1.2 新增 3 行 proposal-cycle 风险:
 | P2 | 架构层 per-spec | fixture/logging gate + CR logged-refusal + fail_fast threshold | 真实数据端到端验证待 W19+ |
 | P2 | 工程时序 | candidate timeline + 独立 DEC per W-task | GPU 可用性 / 导师反馈 不可控 |
 | P2 | vocab 泄漏 / 双稿漂移 | STYLE_CONTRACT §2 替换表 48+ 行 + §3 sync rule + per-cycle grep | 边缘情况累积 |
+| P2 | 平台层 (支柱 B) | per-model conda env + orphan recovery + Tauri Windows 主测 + API 概念设计不实装 | 多服务器、跨平台、公网 API 均未验证 |
 
 **整体判断**: 所有已识别风险均有 plan-level 或 partial 缓解路径, 但无一风险在开题阶段被完全消除。这一状态与 candidate-not-final 研究定位 (per DEC-20260501-011) 一致 — Dream3R 是被评估的候选架构, 其风险是研究对象的一部分, 而非需要在开题前清除的工程障碍。后续 cycle 042+ 的每一步推进都将缩小特定风险的残余窗口, 但新风险也可能随实证数据浮出。
 
@@ -802,10 +1002,10 @@ cycle 036 v1.2 新增 3 行 proposal-cycle 风险:
 |---|---|
 | 文件路径 | `Dream/planning/proposal_dream3r/DRAFT_INTERNAL_V1.md` |
 | 创建日期 | 2026-05-16 |
-| 状态 | v1 draft; §1-§9 全部起草完成; cycle 042 最终修订 |
+| 状态 | v1.1 draft; §1-§9 + 支柱 B KYKT 平台内容扩展完成; expansion cycle |
 | 作者 | Dream agent (cycle 036-042) |
 | 上游决策 | DEC-20260516-001 (cycle 036) → DEC-20260517-003 (cycle 042) |
 | 双稿关系 | master per STYLE_CONTRACT §3 规则 1 |
-| 当前字数 | §1-§9 累计正文 ~19300 字 (≈ 92% of OUTLINE §2 内稿估算 ~21100 字) |
-| 起草历史 | cycle 036 §1 → 037 §2 → 038 §4 → 039 §3+§6 → 040 §5+§7+§8 → 041 §9+通稿审查 → 042 最终修订 |
+| 当前字数 | §1-§9 累计正文 ~27000 字 (含支柱 B 扩展 ~7700 字; ≈ 93% of OUTLINE §2 内稿估算 ~29400 字) |
+| 起草历史 | cycle 036 §1 → 037 §2 → 038 §4 → 039 §3+§6 → 040 §5+§7+§8 → 041 §9+通稿审查 → 042 最终修订 → expansion cycle 双支柱扩展 |
 | Sync log | 见 STYLE_CONTRACT.md §6 (append-only; cycle 036-042 全部条目) |

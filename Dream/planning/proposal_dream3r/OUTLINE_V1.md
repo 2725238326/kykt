@@ -4,7 +4,7 @@
 |---|---|
 | 文件类型 | planning artifact (9-section dual outline + chapter mapping + 字数估算 + cycle 037+ 起草顺序) |
 | 创建日期 | 2026-05-16 |
-| 状态 | v1 (cycle 036 启动; cycle 037+ 起草过程中可能调整章节结构) |
+| 状态 | v1.1 (cycle 036 启动 → cycle 042 close → expansion cycle: 双支柱扩展, 增加支柱 B KYKT 平台内容) |
 | 授权根 | DEC-20260516-001 (cycle 036 launch) |
 | 上游 | Dream/3R-mix/main.tex 综述 §1-§10 + Dream/planning/SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL.md + Dream/planning/SOTA_MATRIX_V2.md + Dream/specs/SPEC-* + Dream/decisions/DEC-* + Dream/code/dream3r/RECENT_PROGRESS.md |
 | 触及范围 | 仅本文件; 不动 spec / code / paradigm |
@@ -25,18 +25,33 @@
 
 | § | 外部稿章节 (vocab-clean) | 内部稿章节 (Dream-vocab) | 外稿字数 | 内稿字数 | 起草所需上游 |
 |---|---|---|---|---|---|
-| 1 | 研究背景与问题 | 项目背景与研究问题 | ~1500 | ~2000 | 综述 §1 + DEC-20260506-001 + 综述 §10 失败模式 |
-| 2 | 国内外研究现状 | 比较谱系与现状 | ~3500 | ~4000 | 综述 §2-§9 全章 + SOTA_MATRIX_V2 + SPEC-20260507-001 v0.2 + references.bib 44 entries |
-| 3 | 研究问题与目标 | 候选研究问题 | ~1500 | ~1800 | DEC-20260501-011 + DEC-20260504-002 + 综述 §10 |
-| 4 | 研究方案 (候选架构 X 六模块) | Dream3R v0.3 架构 C1-C6 | ~3000 | ~4000 | SPEC-20260506-004 v0.2 + SPEC-20260508-001 v0.3 + CROSS_SPEC_SIGNAL_CONTRACT v2.1 CR-1..CR-6 + COMPOSER_CAPABILITY_DESCRIPTORS |
-| 5 | 实验设计与评测协议 | 消融与评测设计 | ~2000 | ~2800 | SPEC-20260506-005 v0.2 ABL-v02-1..9 + SPEC-20260507-002 v0.3 ablation addendum + SPEC-20260508-002 ABL-memory-0..11 + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN |
-| 6 | 预期成果与创新点 | 预期成果 | ~1000 | ~1300 | DEC-20260501-011 candidate-not-final + DEC-20260504-002 no-all-in |
-| 7 | 研究进展与已完成工作 | 已完成工作 | ~1500 | ~2200 | code/dream3r/RECENT_PROGRESS.md W1-W18 + KITTI smoke L2=20.47 + 综述 deliverable + cycle 033/034/035 deliverables |
-| 8 | 研究计划与时间安排 | 时间安排 | ~1000 | ~1500 | code/dream3r/NEXT_PHASE_ROADMAP.md W19-W27 + 综述驱动优化提案 §6 重排 |
-| 9 | 风险分析与应对 | 研究风险 | ~1000 | ~1500 | WORK_RISK_REGISTER v1.2 17 rows + 3 new rows (cycle 036) |
-| **总计** | | | **~16000** | **~21100** | |
+| 1 | 研究背景与问题 | 项目背景与研究问题 | ~1800 | ~2500 | 综述 §1 + DEC-20260506-001 + 综述 §10 失败模式 + **支柱 B: 模型多样化带来的管理挑战 → 统一平台必要性** |
+| 2 | 国内外研究现状 | 比较谱系与现状 | ~4500 | ~5200 | 综述 §2-§9 全章 + SOTA_MATRIX_V2 + SPEC-20260507-001 v0.2 + references.bib 44 entries + **支柱 B: §2.8 现有 3R 工具链与平台综述** |
+| 3 | 研究问题与目标 | 候选研究问题 | ~2100 | ~2600 | DEC-20260501-011 + DEC-20260504-002 + 综述 §10 + **支柱 B: Q4 统一聚合管理与评估平台** |
+| 4 | 研究方案 (§4-A 架构 + §4-B 平台) | Dream3R v0.3 架构 + KYKT 平台架构 | ~5500 | ~7000 | SPEC-20260506-004 v0.2 + SPEC-20260508-001 v0.3 + CROSS_SPEC_SIGNAL_CONTRACT v2.1 + COMPOSER_CAPABILITY_DESCRIPTORS + **支柱 B: KYKT.md + PROJECT_PROGRESS + vision_ui/README** |
+| 5 | 实验设计与评测协议 | 消融与评测设计 | ~2600 | ~3400 | SPEC-20260506-005 v0.2 ABL-v02-1..9 + SPEC-20260507-002 v0.3 + SPEC-20260508-002 ABL-memory-0..11 + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN + **支柱 B: 平台层评测标准** |
+| 6 | 预期成果与创新点 | 预期成果 | ~1400 | ~1800 | DEC-20260501-011 candidate-not-final + DEC-20260504-002 no-all-in + **支柱 B: IP4 统一聚合管理平台** |
+| 7 | 研究进展与已完成工作 | 已完成工作 | ~2500 | ~3200 | code/dream3r/RECENT_PROGRESS.md W1-W18 + KITTI smoke L2=20.47 + 综述 deliverable + cycle 033/034/035 deliverables + **支柱 B: KYKT 平台开发进展** |
+| 8 | 研究计划与时间安排 | 时间安排 | ~1300 | ~1900 | code/dream3r/NEXT_PHASE_ROADMAP.md W19-W27 + 综述驱动优化提案 §6 重排 + **支柱 B: P-1..P-7 平台里程碑** |
+| 9 | 风险分析与应对 | 研究风险 | ~1300 | ~1800 | WORK_RISK_REGISTER v1.2 17 rows + 3 new rows (cycle 036) + **支柱 B: 平台层风险** |
+| **总计** | | | **~23000** | **~29400** | |
 
-外部稿估算 18-22 页 A4 中文 (含 4-6 图 + 3-5 表)。内部稿因每节追加 "Dream 项目工件引用" 子块比外部稿长 ~30%。落在用户指定 "10-30 页中等篇幅" 区间, 偏中位。
+外部稿估算 24-28 页 A4 中文 (含 4-6 图 + 3-5 表)。内部稿因每节追加 "Dream 项目工件引用" 子块比外部稿长 ~28%。落在用户指定 "10-30 页中等篇幅" 区间, 偏上位。
+
+### 2.1 支柱 B (KYKT 平台) 各章新增子节映射
+
+| § | 支柱 B 新增内容 | 预估新增字数 (外稿) |
+|---|---|---|
+| 1 | 模型多样化带来的工程管理挑战 → 统一平台必要性 → 研究闭环 | +300 |
+| 2 | §2.8 现有 3R 工具链与平台综述 (Nerfstudio / Polycam / Luma AI / 官方 demo 孤岛现状 → gap) | +1000 |
+| 3 | Q4: 如何设计面向多模型 3R 研究的统一聚合管理与评估平台 (子问题 + 与 Q1-Q3 关系) | +600 |
+| 4 | §4-B 独立节: KYKT 平台架构设计 (总体架构 / 模型注册与执行合同 / 统一评估框架 / 应用对接层 / 与 Dream3R 协同) | +2500 |
+| 5 | 平台层评测标准 (新模型接入耗时 / 统一合同覆盖率 / 跨模型对比矩阵 / API 对接能力) | +600 |
+| 6 | IP4: 面向前馌式 3R 的统一聚合管理平台 (工程创新点 + 与 IP1-IP3 关系) | +400 |
+| 7 | KYKT 平台开发进展 (6 模型接入 / 4 smoke / 桌面端 / AI 评估 / 远端部署) | +1000 |
+| 8 | P-1..P-7 平台里程碑嵌入 M1-M8 | +300 |
+| 9 | 平台层风险 (多模型 env 冲突 / 服务器可用性 / Tauri 兼容性 / API 安全性) | +300 |
+| **总计** | | **+7000** |
 
 ## 3. 章节映射表 (外稿 ↔ 内稿 ↔ 复用素材)
 
@@ -67,7 +82,7 @@
 | 041 | §9 风险分析 + 通稿审查 + STYLE_CONTRACT sync | §9 最后写 (汇总所有前章风险); 通稿审查 = 双稿一致性 grep + 句式审查 | ~3500 |
 | 042 | 最终修订 + PDF 编译 + 提交 packaging | 复用 cycle 036 Part A pattern: 编 PDF + 写 SUBMISSION_PACKAGE_ADVISOR + SUBMISSION_RECORD; 准备外发 | ~2000 |
 
-**总计 cycle 037-042**: 约 6 个 cycle, ~33500 字新增 (外稿 ~16000 + 内稿 ~21100 + sync log + 修订 + 重复) → 落地 ~21 页 A4 外部稿。
+**总计 cycle 037-042 + expansion cycle**: 约 7 个 cycle, ~42000 字新增 (外稿 ~23000 + 内稿 ~29400 + sync log + 修订 + 重复) → 落地 ~25 页 A4 外部稿。
 
 **关键 cycle 037 决策点**: §2 起草过程中可能发现章节结构需要调整。如果发现, cycle 037 close 时 OUTLINE_V1 升级为 OUTLINE_V2, 反映新章节结构 (保留 V1 不动, 历史留档)。
 
@@ -113,7 +128,7 @@ cycle 037+ 起草任何一章前, 务必复核:
 |---|---|
 | 文件路径 | `Dream/planning/proposal_dream3r/OUTLINE_V1.md` |
 | 创建日期 | 2026-05-16 |
-| 状态 | v1 (cycle 036 启动) |
+| 状态 | v1.1 (cycle 036 启动 → expansion cycle 双支柱扩展) |
 | 作者 | Dream agent (cycle 036) |
 | 上游决策 | DEC-20260516-001 (cycle 036 launch) |
 | 同级文件 | STYLE_CONTRACT.md (语言契约) + DRAFT_INTERNAL_V1.md (内部稿) + DRAFT_EXTERNAL_V1.md (外部稿) |
