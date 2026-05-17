@@ -100,6 +100,28 @@ MODEL_REGISTRY: dict[str, ModelSpec] = {
         runner_status="validated_smoke_attention_fallback",
         research_priority=90,
     ),
+    "align3r": ModelSpec(
+        value="align3r",
+        label="Align3R",
+        description="动态视频深度一致性与动态点云",
+        param_family="video_sequence",
+        source_types=("video", "frames"),
+        default_runner="align3r_runner.py",
+        family="video_depth_consistency",
+        runner_status="runner_ready",
+        research_priority=94,
+    ),
+    "cut3r": ModelSpec(
+        value="cut3r",
+        label="CUT3R",
+        description="在线 / persistent-state 三维感知",
+        param_family="streaming_sequence",
+        source_types=("video", "frames", "images"),
+        default_runner="cut3r_runner.py",
+        family="streaming_state_reconstruction",
+        runner_status="validated_smoke",
+        research_priority=88,
+    ),
 }
 
 
@@ -138,9 +160,8 @@ MODEL_CATALOG.update(
             family="video_depth_consistency",
             param_family="video_sequence",
             source_types=("video", "frames"),
-            runner_status="runner_pending_smoke",
+            runner_status="runner_ready",
             research_priority=94,
-            launch_blocker="远端 Align3R 的 curope 已在 2026-05-03 重编并验证；下一步是写 align3r_runner.py 并跑首个平台开户 smoke。",
         ),
         "fast3r": ModelCatalogEntry(
             value="fast3r",
@@ -159,9 +180,8 @@ MODEL_CATALOG.update(
             family="streaming_state_reconstruction",
             param_family="streaming_sequence",
             source_types=("video", "frames", "images"),
-            runner_status="runner_pending_smoke",
+            runner_status="validated_smoke",
             research_priority=88,
-            launch_blocker="远端 CUT3R 的 curope 已在 2026-05-03 编译并验证；下一步是写 cut3r_runner.py 并跑官方 examples/001 的平台开户 smoke。",
         ),
         "pi3x": ModelCatalogEntry(
             value="pi3x",

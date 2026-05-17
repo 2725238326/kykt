@@ -210,6 +210,39 @@ RESULT_CONTRACTS: dict[str, dict] = {
             "other": {"label": "其他产物", "description": "未归入主检查路径的产物。"},
         },
     },
+    "align3r_depth": {
+        "key": "align3r_depth",
+        "downloadMode": "remote_tree_bundle",
+        "requiredFiles": ["output/scene_meta.json"],
+        "optionalFiles": [],
+        "primaryRoles": ["pointcloud", "depth", "camera"],
+        "artifactRoles": {
+            "pointcloud": {"label": "点云结果", "description": "全局点云或动态点云，优先检查结构。"},
+            "depth": {"label": "深度图", "description": "逐帧深度估计，检查深度连续性与一致性。"},
+            "camera": {"label": "相机位姿", "description": "相机外参与轨迹。"},
+            "scene": {"label": "三维场景", "description": "GLB 格式场景文件。"},
+            "array": {"label": "几何数组", "description": "NPY 中间产物。"},
+            "log": {"label": "运行日志", "description": "runner.log 和远端执行日志。"},
+            "other": {"label": "其他产物", "description": "未归入主检查路径的产物。"},
+        },
+    },
+    "cut3r_streaming": {
+        "key": "cut3r_streaming",
+        "downloadMode": "remote_tree_bundle",
+        "requiredFiles": ["output/scene_meta.json"],
+        "optionalFiles": [],
+        "primaryRoles": ["pointcloud", "camera", "depth"],
+        "artifactRoles": {
+            "pointcloud": {"label": "点云结果", "description": "在线重建全局点云，检查结构完整性与噪声。"},
+            "scene": {"label": "三维场景", "description": "GLB 格式场景文件。"},
+            "camera": {"label": "相机参数", "description": "相机位姿与内参。"},
+            "depth": {"label": "深度图", "description": "逐帧深度图，检查在线估计的时序稳定性。"},
+            "confidence": {"label": "置信图", "description": "置信分布可视化。"},
+            "array": {"label": "几何数组", "description": "pointmap 等 NPY 中间产物。"},
+            "log": {"label": "运行日志", "description": "runner.log 和远端执行日志。"},
+            "other": {"label": "其他产物", "description": "未归入主检查路径的产物。"},
+        },
+    },
     "research_catalog": {
         "key": "research_catalog",
         "downloadMode": "not_runnable",
@@ -227,6 +260,8 @@ MODEL_RESULT_CONTRACT_KEYS = {
     "monst3r": "monst3r_scene",
     "spann3r": "spann3r_pointmap",
     "fast3r": "fast3r_pointcloud",
+    "align3r": "align3r_depth",
+    "cut3r": "cut3r_streaming",
 }
 
 
@@ -275,12 +310,18 @@ def build_job_params(model: str, raw_params: dict[str, Any] | None = None) -> di
             "pose_iterations": _int_param(raw_params, "pose_iterations", 100, 0, 1000),
             "focal_estimation_method": str(raw_params.get("focal_estimation_method") or "first_view_from_global_head"),
         }
+    if family == "streaming_sequence":
+        return {
+            "size": _choice_param(raw_params, "size", 512, {224, 512}),
+            "vis_threshold": _float_param(raw_params, "vis_threshold", 1.5, 0.0, 10.0),
+            "max_frames": _int_param(raw_params, "max_frames", 48, 1, 2000),
+        }
     return {}
 
 
 def minimum_input_count(model: str, source_type: str) -> int:
     family = param_family_for(model)
-    if family == "video_sequence" and source_type == "video":
+    if family in ("video_sequence", "streaming_sequence") and source_type == "video":
         return 1
     return 2
 

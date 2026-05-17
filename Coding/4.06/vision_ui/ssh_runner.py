@@ -42,6 +42,11 @@ class ServerConfig:
     remote_fast3r_repo: str = "/hdd3/kykt26/code/fast3r"
     remote_fast3r_env: str = "fast3r"
     remote_fast3r_checkpoint_dir: str = "/hdd3/kykt26/models/fast3r/Fast3R_ViT_Large_512"
+    remote_align3r_repo: str = "/hdd3/kykt26/code/align3r"
+    remote_align3r_env: str = "align3r"
+    remote_cut3r_repo: str = "/hdd3/kykt26/code/cut3r"
+    remote_cut3r_env: str = "cut3r"
+    remote_cut3r_model: str = "/hdd3/kykt26/code/cut3r/src/cut3r_512_dpt_4_64.pth"
 
 
 LOCAL_RUNNERS_DIR = ROOT / "runners"
@@ -95,6 +100,23 @@ FAST3R_ARTIFACT_ROLE_LABELS = {
     "camera": ("相机信息", "用于复查相机位姿和焦距估计。"),
     "confidence": ("置信摘要", "用于诊断低置信区域与整体可信度。"),
     "metadata": ("运行元数据", "用于复查 attention backend、profiling 与输入列表。"),
+    "other": ("其他产物", "未归入主检查路径的产物。"),
+}
+ALIGN3R_ARTIFACT_ROLE_LABELS = {
+    "pointcloud": ("点云结果", "全局点云或动态点云，优先检查结构。"),
+    "depth": ("深度图", "逐帧深度估计，检查深度连续性与一致性。"),
+    "camera": ("相机位姿", "相机外参与轨迹。"),
+    "scene": ("三维场景", "GLB 格式场景文件。"),
+    "array": ("几何数组", "其他 NPY 中间产物。"),
+    "other": ("其他产物", "未归入主检查路径的产物。"),
+}
+CUT3R_ARTIFACT_ROLE_LABELS = {
+    "pointcloud": ("点云结果", "在线重建全局点云，检查结构完整性与噪声。"),
+    "scene": ("三维场景", "GLB 格式场景文件。"),
+    "camera": ("相机参数", "相机位姿与内参。"),
+    "depth": ("深度图", "逐帧深度图，检查在线估计的时序稳定性。"),
+    "confidence": ("置信图", "置信分布可视化。"),
+    "array": ("几何数组", "pointmap 等 NPY 中间产物。"),
     "other": ("其他产物", "未归入主检查路径的产物。"),
 }
 
@@ -177,6 +199,8 @@ def run_remote_job(job_id: str) -> None:
             "monst3r": _run_monst3r_v1,
             "spann3r": _run_spann3r_v1,
             "fast3r": _run_fast3r_v1,
+            "align3r": _run_align3r_v1,
+            "cut3r": _run_cut3r_v1,
         }
         runner_spec = runner_spec_for(job.model)
         dispatcher = dispatchers.get(runner_spec.dispatch_key or "")
@@ -416,6 +440,47 @@ def _run_fast3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> No
         f"2>&1 | tee {shlex.quote(log_path)}"
     )
     update_job(job_id, phase="running_remote_matches", progress_message="正在启动 Fast3R 前馈重建...")
+    _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
+
+
+def _run_align3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+    params = load_job(job_id).params or {}
+    runner_path = f"{config.remote_runners_dir}/align3r_runner.py"
+    log_path = f"{remote_job_dir}/logs/runner.log"
+    local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
+    cmd = (
+        f"set -o pipefail && "
+        f"cd {shlex.quote(config.remote_align3r_repo)} && "
+        f"conda run --no-capture-output -n {shlex.quote(config.remote_align3r_env)} "
+        f"python -u {shlex.quote(runner_path)} "
+        f"--job-dir {shlex.quote(remote_job_dir)} "
+        f"--repo {shlex.quote(config.remote_align3r_repo)} "
+        f"--max-frames {shlex.quote(str(params.get('max_frames', 48)))} "
+        f"2>&1 | tee {shlex.quote(log_path)}"
+    )
+    update_job(job_id, phase="running_remote_matches", progress_message="正在启动 Align3R 深度估计与对齐...")
+    _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
+
+
+def _run_cut3r_v1(config: ServerConfig, job_id: str, remote_job_dir: str) -> None:
+    params = load_job(job_id).params or {}
+    runner_path = f"{config.remote_runners_dir}/cut3r_runner.py"
+    log_path = f"{remote_job_dir}/logs/runner.log"
+    local_log = get_job_dir(job_id) / "logs" / "runner.live.log"
+    cmd = (
+        f"set -o pipefail && "
+        f"cd {shlex.quote(config.remote_cut3r_repo)} && "
+        f"conda run --no-capture-output -n {shlex.quote(config.remote_cut3r_env)} "
+        f"python -u {shlex.quote(runner_path)} "
+        f"--job-dir {shlex.quote(remote_job_dir)} "
+        f"--repo {shlex.quote(config.remote_cut3r_repo)} "
+        f"--model-path {shlex.quote(config.remote_cut3r_model)} "
+        f"--size {shlex.quote(str(params.get('size', 512)))} "
+        f"--vis-threshold {shlex.quote(str(params.get('vis_threshold', 1.5)))} "
+        f"--max-frames {shlex.quote(str(params.get('max_frames', 48)))} "
+        f"2>&1 | tee {shlex.quote(log_path)}"
+    )
+    update_job(job_id, phase="running_remote_matches", progress_message="正在启动 CUT3R 在线三维感知...")
     _ssh_stream(config, cmd, job_id=job_id, phase="running_remote_matches", remote_job_dir=remote_job_dir, local_log_path=local_log)
 
 
