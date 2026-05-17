@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-17 (cycle 040 closed: Dream3R 开题报告 § 5 实验设计与评测协议 + § 7 研究进展与已完成工作 + § 8 研究计划与时间安排 dual-draft 起草 — DRAFT_INTERNAL_V1.md § 5 ~2800 字 + § 7 ~2200 字 + § 8 ~1500 字 = ~6500 字 Dream-vocabulary master (三层证据阶梯 + ABL-v02-1..10 + ABL-memory-0..11 + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN + W1-W18 + KITTI smoke + 综述 + cycle 历史 + M1-M8 时间表) + DRAFT_EXTERNAL_V1.md § 5 ~2000 字 + § 7 ~1500 字 + § 8 ~1000 字 = ~4500 字 vocab-clean snapshot; § 5 7 sub-sections: 5.1 三层证据阶梯 / 5.2 架构层消融 / 5.3 记忆机制消融 / 5.4 Critic 标定 / 5.5 长序列真实评测 / 5.6 评测数据集 / 5.7 主要评测指标; § 7 6 sub-sections: 7.1 架构设计文档系列 / 7.2 实现里程碑 W1-W18 / 7.3 KITTI 集成证据 / 7.4 综述发布 / 7.5 综述反哺 / 7.6 cycle 历史; § 8 3 sub-sections: 8.1 短期 M1-M2 / 8.2 中期 M3-M5 / 8.3 长期 M6-M8; STYLE_CONTRACT §2 vocab table 43→48 rows (+5: hard_fail / soft_fail / oracle-bus / monotone upgrade gate / fixture regime R1-R5 / 集成证据); §6 sync log appended cycle 040 entry; G3a + G3b 5 corrective edits (4 G3a "cycle"-leak + 1 G3b "dream3r" lowercase repo-name leak in § 5.3 + § 7.5 + § 8.1 + § 8.2; rephrased to 本阶段 / 开题报告阶段 / 本研究架构), G4 0 hits on first pass, re-grep all 0 hits; § 1 + § 2 + § 3 + § 4 + § 5 + § 6 + § 7 + § 8 累计 ~17800 内 + ~14000 外 字 (~85% of OUTLINE_V1 §2 表 总字数估算; only § 9 remains for cycle 041); cycles 039 + 038 + 037 + 036 + 035 + 034 all in force; DEC-20260517-001 + cycle log + sync chain)
+Last updated: 2026-05-17 (cycle 041 closed: Dream3R 开题报告 § 9 风险分析与应对 dual-draft 起草 + 通稿审查 + STYLE_CONTRACT final sync — DRAFT_INTERNAL_V1.md § 9 ~1500 字 (6 sub-sections: 架构层/跨模块/实证执行/工程时序/开题报告 process/风险应对策略) + DRAFT_EXTERNAL_V1.md § 9 ~1000 字 (5 sub-sections vocab-clean); STYLE_CONTRACT 48→50 rows; G3a 0 hits + G3b 0 hits + G4 1 corrective edit (negation-context § 9.5) then 0 hits; § 1-§ 9 全部章节完整 ~19300 内 + ~15000 外 字 ≈ 92-94% target; 通稿审查 clean (no § 1-§ 8 surgical edits needed); DEC-20260517-002 + cycle log CYCLE-20260517-002 + sync chain)
 
-Status: **idle** (cycle 040 closed 2026-05-17: 8 file ops landed (2 NEW + 6 MODIFIED); § 5 + § 7 + § 8 dual-draft completed + STYLE_CONTRACT 43→48 rows extension + 5 corrective edits (4 G3a "cycle"-leak + 1 G3b lowercase repo-name leak) + cycle log + sync chain — no spec / code / server action; only § 9 风险分析 proposal body text drafting + 通稿审查 + STYLE_CONTRACT final sync remains for cycle 041 per OUTLINE_V1 §4 顺序; cycles 033 + 034 + 035 + 036 + 037 + 038 + 039 closed earlier in same session series; awaiting user direction on next workstream)
+Status: **idle** (cycle 041 closed 2026-05-17: 8 file ops landed (2 NEW + 6 MODIFIED); § 9 dual-draft completed + 通稿审查 + STYLE_CONTRACT 48→50 rows final sync + 1 G4 corrective edit + cycle log + sync chain — no spec / code / server action; § 1-§ 9 all 9 sections complete in both drafts; ready for cycle 042 最终修订 + PDF 编译 + advisor submission packaging per OUTLINE_V1 §4; cycles 032-041 all closed; awaiting user direction on next workstream)
 
 ## Why this file exists
 
@@ -23,7 +23,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ```text
 task_id:    none-active
 phase:      idle between cycles
-cycles:     032 + 033 + 034 + 035 + 036 + 037 + 038 + 039 + 040 closed; Track B 3R-mix survey packaged + SHA256 pre-filled; Dream3R 开题报告 dual-draft § 1 + § 2 + § 3 + § 4 + § 5 + § 6 + § 7 + § 8 complete (~17800 内 / ~14000 外 字 ≈ 85% target; only § 9 remains for cycle 041); STYLE_CONTRACT 22→41→43→48 rows
+cycles:     032-041 all closed; Track B 3R-mix survey packaged + SHA256 pre-filled; Dream3R 开题报告 dual-draft § 1-§ 9 all complete (~19300 内 / ~15000 外 字 ≈ 92-94% target); STYLE_CONTRACT 22→41→43→48→50 rows; 通稿审查 complete
 status:     idle
 ```
 

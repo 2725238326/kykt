@@ -4,9 +4,9 @@
 |---|---|
 | 文件类型 | 开题报告内部稿 (Dream-vocabulary; 不外发) |
 | 创建日期 | 2026-05-16 |
-| 最后更新 | 2026-05-16 (cycle 037 §2 ~4200 字 + cycle 038 §4 ~4000 字 + cycle 039 §3 ~1800 字 + §6 ~1300 字, 累计正文 +~11300 字) |
-| 状态 | v1 draft; §1 + §2 + §3 + §4 + §6 完整起草; §5 / §7 / §8 / §9 placeholder, 待 cycle 040+ 起草 |
-| 授权根 | DEC-20260516-001 (cycle 036 launch) + DEC-20260516-002 (cycle 037 §2) + DEC-20260516-003 (cycle 038 §4) + DEC-20260516-004 (cycle 039 §3 + §6) |
+| 最后更新 | 2026-05-17 (cycle 040 §5 ~2800 字 + §7 ~2200 字 + §8 ~1500 字 + cycle 041 §9 ~1500 字, 累计正文 ~19300 字) |
+| 状态 | v1 draft; §1-§9 全部起草完成; 待 cycle 042 最终修订 + PDF 编译 |
+| 授权根 | DEC-20260516-001 (cycle 036) + DEC-20260516-002 (cycle 037) + DEC-20260516-003 (cycle 038) + DEC-20260516-004 (cycle 039) + DEC-20260517-001 (cycle 040) + DEC-20260517-002 (cycle 041) |
 | 配套文件 | OUTLINE_V1.md (章节结构) + STYLE_CONTRACT.md (双稿契约) + DRAFT_EXTERNAL_V1.md (外部稿) |
 | 双稿关系 | 本稿是 master per STYLE_CONTRACT §3 规则 1; 外部稿是 internal 周期性快照 |
 | 词汇 | 含 Dream / Dream3R / cycle / SPEC / DEC / CR / W-task / Track A / Track B / 服务器 path / agent 等 |
@@ -737,9 +737,62 @@ cycle 015 Critic L3 pilot scope (DEC-20260505-005 authorized 但 per-step micro 
 
 ## §9 研究风险
 
-<!-- TBD cycle 041; 起草目标 ~1500 字 -->
-<!-- 上游素材: WORK_RISK_REGISTER v1.2 17 rows + cycle 036 +3 = 20 行总计 -->
-<!-- 子节建议: 9.1 域外检测缺口 (R-OOD-1) + 9.2 外部 prior 冲突 (R-EXT-PRIOR-1) + 9.3 4DGS license 链 (R-4DGS-LIC-1) + 9.4 输入扩展 axis 空缺 (R-INPUT-EXT-1) + 9.5 算力约束 (F-002) + 9.6 双稿语义漂移 (R-PROP-SYNC-1; 元层风险) + 9.7 候选架构被替换的可能性 (candidate-not-final 内在风险) -->
+本章汇总 Dream3R 开题阶段识别的主要研究风险, 按架构层 / 跨模块 / 实证执行 / 工程时序 / 开题报告 process 五个层面分组, 并在 §9.6 给出整体应对策略。风险条目引用 WORK_RISK_REGISTER v1.2 (17 行 per-spec + cross-spec 风险 + cycle 035 v1.1 +4 行 + cycle 036 v1.2 +3 行 = 20 行总计)。所有缓解措施均为 plan-level 或 partial-mitigated, 没有任何风险在开题阶段被完全消除。
+
+### 9.1 架构层风险
+
+架构层风险来自 WORK_RISK_REGISTER 中各 finalist SPEC 的 per-spec risk 指针:
+
+- **Critic 标定缺口**: C4 Critic 依赖 Sampson / depth / 共视 三路几何信号的阈值配置 (theta_conflict 等); CRITIC_CALIBRATION_PLAN_V1 提出了 method A (分布分位数 P95) 与 method B (监督分类器 + 单调升级门) 两条路径, 但均处于 plan-only 状态, 执行 gated on F-002。阈值未经真实数据标定前, Critic 的 repair action 分派可能偏保守或偏激进, 直接影响 §3 Q1 的实证评估。
+- **Memory 校准精度**: C2 Memory v0.3 的 NSA 三分支稀疏注意力 + AnchorBank K=256 + StateToken + Mamba-Transformer 混合循环在 ABL-memory-0 fixture/logging gate 通过 (cycle 031, 集成证据), 但 ABL-memory-1..11 全部 plan-only; Memory 的 long-seq 校准精度 (scale_drift_proxy / memory_decay_proxy / anchor_fill_rate / retrieval_diversity 四指标) 尚未在真实数据 windows ∈ {10, 20, 50, 100} 上验证。
+- **Permanence 静态写入覆盖**: C3 Permanence 通过 CR-2 binding 向 Memory 发送 suppress_static_write 信号; Memory 若部分忽略该信号, 动态物体的永久性 link 可能被静态背景覆盖 (per WORK_RISK_REGISTER "Memory honor of Permanence suppress_static_write fails")。缓解依赖 CR-2 logged-refusal rule, 但 refusal 路径在 v0.3 仅 stub 级别。
+- **Composer 零 spread fail-fast**: C5 Composer 的 7-expert pool 依赖 capability_match (spread) 作为路由信号; 当所有 expert 在某 failure mode 下的 spread → 0, Composer 触发 fail_fast (per SPEC-20260504-001 fail_fast_threshold); 这一退化场景在开题阶段仅有文档级缓解 (retire-to-support 路径记录在 WORK_RISK_REGISTER), 未经实证触发。
+- **信号契约漂移**: C6 Bus 的 CR-1..CR-6 cross-spec 信号契约 v2.1 在 v0.3 下未经全路径端到端验证; 任何 case card 对同一信号的语义理解偏差可能导致契约漂移 (per WORK_RISK_REGISTER "Cross-spec signal contract drift")。
+
+### 9.2 跨模块风险
+
+跨模块风险在 cycle 035 综述反哺后浮出, 记录为 WORK_RISK_REGISTER v1.1 +4 行:
+
+- **R-OOD-1 域外检测缺口**: C4 Critic 当前不含显式域外检测路径; 训练分布外 (indoor + urban KITTI/ScanNet 之外) 的窗口可能 silently 通过 Critic acceptance, 使 Composer 路由到错误 expert。缓解: CRITIC_CALIBRATION_PLAN_V1 A6 mode (plan-only); 不可 promote 为 v0.4 finalist without 独立 DEC (per DEC-20260504-002)。
+- **R-EXT-PRIOR-1 外部先验冲突**: 未来 C5 Composer prior-adapter (Depth Pro / Metric3Dv2 / SAM2 / CoTracker 等) 可能输出与 C2 Memory pointmap 或 C4 Critic conflict_score 矛盾的先验; CR-1..CR-6 v2.1 无 resolution priority 定义。缓解: v0.4 spec delta B3 (输入扩展 axis) 可引入 CR-7 candidate external_prior_conflict v2.2, 但需独立 DEC + contract version bump。
+- **R-4DGS-LIC-1 4DGS 许可链**: W18 GaussianHead tensor 契约仅定义张量输出格式, 不含 license metadata; W27 renderer (gsplat / gaussian-splatting 路径) 接入时可能继承 viral / restricted license 的 Gaussian splatting 库。缓解: W27 保持 gated (per NEXT_PHASE_ROADMAP); 实际接入需 per-renderer license review DEC + 用户 gate。
+- **R-INPUT-EXT-1 输入扩展 axis 空缺**: Dream3R v0.3 仅接受 images + sequence 作为输入; Pow3R / MapAnything / MASt3R-SfM 等系统已支持 pose / sparse depth / video timestamp 作为 first-class 输入, 形成 benchmark 准入门槛。缓解: v0.4 spec delta B3 (input_priors tensor channel) 为候选方案; 实装需独立 DEC + C1 + C5 + CR contract 三方联动。
+
+### 9.3 实证执行风险
+
+- **集成证据 vs 训练后质量边界**: §7.3 报告的 KITTI pointmap L2 = 20.4747 是集成证据 (integration evidence), 非训练后重建质量; 数值本身不应被读作 SOTA-comparable。风险: 导师或外部 reviewer 可能将该数值解读为训练后精度。缓解: §7.3 + §5.1 双处 caveat 显式并置; 后续 C2 quality 需要端到端训练 (W19-W28 gated)。
+- **ABL 计划 plan-only 边界**: §5.2 ABL-v02-1..10 + §5.3 ABL-memory-0..11 + §5.4 Critic 标定 + §5.5 长序列评测 均为 plan-only, 执行 gated on F-002 server authorization。风险: 评测协议章节的表格化呈现可能给读者 "已跑" 的视觉暗示。缓解: 每子节末尾重复 "plan-only; 执行 gated" caveat。
+- **数据集 license**: KITTI 主 (CC BY-NC-SA 3.0) 允许学术用途; DTU 拟扩展需确认 license 兼容; 合成 fixture 自建无 license 问题。
+
+### 9.4 工程时序风险
+
+- **W19-W30 时间表候选性**: §8 M3-M8 timeline 是 candidate schedule, 不是 committed schedule; 各 W-task 需独立 DEC + F-002 server authorization, 实际推进节奏受 GPU 可用性 / 实证反馈 / 导师意见三重约束。
+- **v0.4 spec delta 候选优先级**: B1 (Critic 路径拆分) / B2 (输出资产契约) / B3 (输入扩展 axis) 三项 v0.4 spec delta 均为 proposal-status, 不是 locked architecture; 优先级选择 (B1 vs B2 vs B3) 取决于 M3-M5 实证反馈, 开题阶段不可 pre-commit。
+- **3DGS renderer license**: W27 4DGS renderer 接入时序依赖 R-4DGS-LIC-1 清除 + B2 spec delta landing; 长期目标 M6-M8 的 4DGS asset 输出功能路径最长, 风险最集中。
+
+### 9.5 开题报告 process 风险
+
+cycle 036 v1.2 新增 3 行 proposal-cycle 风险:
+
+- **R-PROP-VOCAB-1 vocab 泄漏**: 外部稿 grep 在每 cycle close 时验证 Dream-vocabulary 零泄漏; cycle 036-040 共 surface 10+ hits, 均通过 corrective edits 清除。残余风险: 通稿审查可能在 §1-§8 已关闭章节中 surface 此前未检测的边缘情况 (e.g., 信号名英文 + 上下文暗示内部编号)。
+- **R-PROP-CLAIM-1 over-claim**: 候选架构 X 的 candidate-not-final 定位 (per DEC-20260501-011) 要求所有 claim 句式避免 over-claim 表述 (宣称优越性 / 宣称为最终设计 等); cycle 039 G4 surface 7 hits/side 在 negation-context 句式中, 通过 corrective rephrasing 清除。残余风险: §9 风险描述中 mitigation 措辞可能 inadvertently 暗示风险已完全解决。
+- **R-PROP-SYNC-1 双稿语义漂移**: internal-is-master + 周期性 external 快照规则 (STYLE_CONTRACT §3) 保证双稿语义一致; 但随 §1-§9 全部落地, 累计 ~19000 内 + ~15000 外 字的大规模双稿可能在 §X 间交叉引用点产生微漂移。通稿审查 (本 cycle) 是最终同步窗口。
+
+### 9.6 风险应对策略
+
+本研究采用 "层级化缓解 + 残余风险显式声明" 的整体应对策略:
+
+| 优先级 | 风险层面 | 核心缓解路径 | 残余风险 |
+|---|---|---|---|
+| P0 | 实证执行 | F-002 server gate + plan-only caveat + 集成证据 vs 质量 caveat | ABL 全部未跑; 训练后质量未知 |
+| P0 | over-claim | STYLE_CONTRACT §5 句式表 + per-cycle G4 grep | negation-context 边缘情况 |
+| P1 | 跨模块 (R-OOD-1 / R-EXT-PRIOR-1) | CRITIC_CALIBRATION_PLAN_V1 A6 + v0.4 B3 spec delta 候选 | 均为 plan-only; 执行需独立 DEC |
+| P1 | 4DGS license (R-4DGS-LIC-1) | W27 gated + per-renderer license review | renderer 选型未定 |
+| P2 | 架构层 per-spec | fixture/logging gate + CR logged-refusal + fail_fast threshold | 真实数据端到端验证待 W19+ |
+| P2 | 工程时序 | candidate timeline + 独立 DEC per W-task | GPU 可用性 / 导师反馈 不可控 |
+| P2 | vocab 泄漏 / 双稿漂移 | STYLE_CONTRACT §2 替换表 48+ 行 + §3 sync rule + per-cycle grep | 边缘情况累积 |
+
+**整体判断**: 所有已识别风险均有 plan-level 或 partial 缓解路径, 但无一风险在开题阶段被完全消除。这一状态与 candidate-not-final 研究定位 (per DEC-20260501-011) 一致 — Dream3R 是被评估的候选架构, 其风险是研究对象的一部分, 而非需要在开题前清除的工程障碍。后续 cycle 042+ 的每一步推进都将缩小特定风险的残余窗口, 但新风险也可能随实证数据浮出。
 
 ---
 
