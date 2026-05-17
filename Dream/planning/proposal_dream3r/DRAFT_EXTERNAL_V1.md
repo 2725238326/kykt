@@ -380,7 +380,7 @@ v2.1 的 additive 变化是新增"前向引用空协议"子节，把代理用例
 - **操作代理 cost-only**: 操作代理消融的 cost 标签只用 multiply-adds + memory ops, 不用 wall-time (静态 fixture 与服务器 GPU 延迟不可比)
 - **可控闭环 / revisit 主张限定**: revisit accuracy 主张限定在 fixture-controlled 闭环, 不延伸至真实序列
 
-执行后才能升级该消融的证据标签; cycle 040 仅 plan-level 引用; 已执行的第 0 项消融通过仅适用于 Tier 0 验证, 不构成 Tier 1-3 主张证据。
+执行后才能升级该消融的证据标签; 本阶段仅 plan-level 引用; 已执行的第 0 项消融通过仅适用于 Tier 0 验证, 不构成 Tier 1-3 主张证据。
 
 ### 5.4 校验阈值标定方案
 
@@ -523,7 +523,7 @@ per §3.1-§3.3 三个研究问题与 §4 六模块设计, 本研究的三个创
 
 ### 7.2 实现里程碑 1-18
 
-候选架构 X 远端服务器部署 (kykt26 服务器, dream3r 实现仓库) 截至本研究阶段 34 (2026-05-11) 通过两层验证:
+候选架构 X 远端服务器部署 (kykt26 服务器, 本研究架构实现仓库) 截至本研究阶段 34 (2026-05-11) 通过两层验证:
 
 **Tier 1 集成验证 (11 项)**: v0.3 forward / backward pipeline 跑通; 多窗口流式状态更新; 三分支稀疏注意力 (压缩 / 选择 / 滑窗) 混合; active → stable 记忆 promote / recall; 三维感知锚点存储检索; 校验模块修复动作交接 (路由切换 → 编排模块); 永久性模块 slot 位姿跟踪; Mamba recurrence 工厂与 demo; 高斯参数头张量契约 (无渲染器); 合成消融与可视化; KITTI rectified RGB/depth 加载链 + 真实序列评测入口。
 
@@ -571,7 +571,7 @@ L2 = 20.47 / RMSE = 21.87 在 KITTI rectified 上的数量级位于"集成跑通
 - SOTA 矩阵 v2: 五张 Tables A-E 重新标注 比较图谱 v0.2 19 entries 与 5 axes (失败模式 / 长序列内存 / 测试时 / 输出资产 / 输入扩展 bonus); 4 first-class-support gap (域外检测 / 外部先验冲突 / 4DGS 许可链 / 输入扩展 axis) 反哺风险登记
 - 校验标定方案 v1: 六类失败模式 → 校验模块 5 sub-signal 映射; 方法 A vs 方法 B selection 决策树; 5 项验证 gate (plan-only)
 - 长序列真实评测方案: 4 变体 × 4 度量 × windows ∈ {10, 20, 50, 100} 分级执行; 缓存治理 explicit coverage gap; 6 项验证 gate (plan-only)
-- 工作风险登记表 v1.1 (+4 行): 域外检测缺口 / 外部先验冲突 / 4DGS 许可链 / 输入扩展 axis。后续 v1.2 (+3 行) 加 proposal-cycle 相关 vocab firewall / claim 过度 / 双稿语义漂移 三 行, 共 20 行
+- 工作风险登记表 v1.1 (+4 行): 域外检测缺口 / 外部先验冲突 / 4DGS 许可链 / 输入扩展 axis。后续 v1.2 (+3 行) 加开题报告阶段相关 vocab 防火墙 / claim 过度 / 双稿语义漂移 三行, 共 20 行
 
 4 项 markdown deliverables 是综述 → 主线 单向反哺; 综述 manuscript 在 2026-05-14 收尾后未受到主线后续工作回流污染。
 
@@ -596,7 +596,7 @@ L2 = 20.47 / RMSE = 21.87 在 KITTI rectified 上的数量级位于"集成跑通
 - **本研究当前阶段 (2026-05-17)**: §5 + §7 + §8 双稿完稿 (约 11000 字累计); 内部风格契约 vocab 替换表与同步日志扩充; §9 仍 placeholder
 - **本研究下一阶段**: §9 风险分析起草 (引用工作风险登记表 20 行 select 6-8 行学术化) + 通稿审查 (双稿一致性核验 + 候选不等于最终句式二轮审查 + 字数估算回归) + 内部风格契约最终同步
 - **本研究最终修订阶段**: 最终修订 + PDF 编译 + 提交 packaging (复用同期完成的中文综述提交模式起草 advisor cover note + 提交记录)
-- **同期综述实际提交动作 (cycle 外人工动作)**: 同期完成的中文综述 PDF + cover note + 提交记录 slot 填写 (recipient / channel / submitted_at)
+- **同期综述实际提交动作 (本阶段外人工动作)**: 同期完成的中文综述 PDF + cover note + 提交记录 slot 填写 (recipient / channel / submitted_at)
 
 短期阶段证据标签: 全部 markdown-only + plan-level; 不启动服务器行动 / 训练 / checkpoint / 任何消融执行。
 
@@ -609,7 +609,7 @@ L2 = 20.47 / RMSE = 21.87 在 KITTI rectified 上的数量级位于"集成跑通
 - 实现里程碑 20 SOTA 矩阵 (已升级 P0, 上一阶段已完成 markdown deliverable)
 - 实现里程碑 24 校验标定 plan (已升级 P0, 已完成 plan; 执行 gated; 中期入口)
 - 实现里程碑 21 长序列真实评测 plan (已升级 P0, 已完成 plan; 执行 gated; 中期入口)
-- 实现里程碑 19 真实数据路径 (DTU + KITTI loader, 真实评测入口): cycle 040 后第一个 unblocked task; DTU license 链 + multi-view registration loader 是主要工作量
+- 实现里程碑 19 真实数据路径 (DTU + KITTI loader, 真实评测入口): 本阶段后第一个 unblocked task; DTU license 链 + multi-view registration loader 是主要工作量
 - 实现里程碑 22 可视化 pack (三分支稀疏注意力权重 / 锚点存储占用 / 校验模块时间线 / 状态漂移曲线): unblocked (post-demo, medium-high priority); 中期独立决策
 - 实现里程碑 23 多专家真实加载 (CUT3R / MoGe-2 / DepthAnything-V2 真实 adapter; Fast3R omegaconf depfix): 中期高优 unblocked; 与实现里程碑 19 + 22 并行可推进
 - 实现里程碑 24 校验标定执行 (前述 plan 升级到 24 实装): 30 项阈值 + 子样本分组采样的具体执行

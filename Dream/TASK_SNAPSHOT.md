@@ -1,8 +1,8 @@
 # Dream Task Snapshot
 
-Last updated: 2026-05-17 (cycle 039 closed: Dream3R 开题报告 § 3 候选研究问题 + § 6 预期成果与创新点 dual-draft 起草 — DRAFT_INTERNAL_V1.md § 3 ~1800 字 + § 6 ~1300 字 Dream-vocabulary master (Q1/Q2/Q3 + 三个 IP + 4-finalist 独立性 + candidate-not-final 声明) + DRAFT_EXTERNAL_V1.md § 3 ~1500 字 + § 6 ~1000 字 vocab-clean snapshot (三个研究问题 + 三个 IP); § 3 5 sub-sections: 3.1 Q1 验证机制 / 3.2 Q2 长序列内存 / 3.3 Q3 多专家组合 / 3.4 4-finalist 模块独立性 / 3.5 候选 vs 最终 研究地位; § 6 3 sub-sections: 6.1 预期交付物 / 6.2 三个 IP 声明 (Q1↔IP1 / Q2↔IP3 / Q3↔IP2) / 6.3 与现有工作的实证差异; STYLE_CONTRACT §2 vocab table 41→43 rows (+2: C4' TTT 路径模块代号 / Innovation Point IP1/IP2/IP3); §6 sync log appended cycle 039 entry; G3a + G3b 0 hits on first pass; G4 7 hits per side from candidate-not-final 句式 examples in negation-pattern context, applied 7 corrective edits per cycle 036 precedent (最终架构方案 → 最终方案 / X 解决了 → X 已完全解决 / Dream3R 解决了 → Dream3R 已完全解决 / 证明 ... 优于 → 宣称 ... 优于), re-grep all 0 hits; § 1 + § 2 + § 3 + § 4 + § 6 累计 ~11300 内 + ~9500 外 字 (~54% of OUTLINE_V1 §2 表 总字数估算); cycles 038 + 037 + 036 + 035 + 034 all in force; DEC-20260516-004 + cycle log + sync chain)
+Last updated: 2026-05-17 (cycle 040 closed: Dream3R 开题报告 § 5 实验设计与评测协议 + § 7 研究进展与已完成工作 + § 8 研究计划与时间安排 dual-draft 起草 — DRAFT_INTERNAL_V1.md § 5 ~2800 字 + § 7 ~2200 字 + § 8 ~1500 字 = ~6500 字 Dream-vocabulary master (三层证据阶梯 + ABL-v02-1..10 + ABL-memory-0..11 + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN + W1-W18 + KITTI smoke + 综述 + cycle 历史 + M1-M8 时间表) + DRAFT_EXTERNAL_V1.md § 5 ~2000 字 + § 7 ~1500 字 + § 8 ~1000 字 = ~4500 字 vocab-clean snapshot; § 5 7 sub-sections: 5.1 三层证据阶梯 / 5.2 架构层消融 / 5.3 记忆机制消融 / 5.4 Critic 标定 / 5.5 长序列真实评测 / 5.6 评测数据集 / 5.7 主要评测指标; § 7 6 sub-sections: 7.1 架构设计文档系列 / 7.2 实现里程碑 W1-W18 / 7.3 KITTI 集成证据 / 7.4 综述发布 / 7.5 综述反哺 / 7.6 cycle 历史; § 8 3 sub-sections: 8.1 短期 M1-M2 / 8.2 中期 M3-M5 / 8.3 长期 M6-M8; STYLE_CONTRACT §2 vocab table 43→48 rows (+5: hard_fail / soft_fail / oracle-bus / monotone upgrade gate / fixture regime R1-R5 / 集成证据); §6 sync log appended cycle 040 entry; G3a + G3b 5 corrective edits (4 G3a "cycle"-leak + 1 G3b "dream3r" lowercase repo-name leak in § 5.3 + § 7.5 + § 8.1 + § 8.2; rephrased to 本阶段 / 开题报告阶段 / 本研究架构), G4 0 hits on first pass, re-grep all 0 hits; § 1 + § 2 + § 3 + § 4 + § 5 + § 6 + § 7 + § 8 累计 ~17800 内 + ~14000 外 字 (~85% of OUTLINE_V1 §2 表 总字数估算; only § 9 remains for cycle 041); cycles 039 + 038 + 037 + 036 + 035 + 034 all in force; DEC-20260517-001 + cycle log + sync chain)
 
-Status: **idle** (cycle 039 closed 2026-05-17: 8 file ops landed (2 NEW + 6 MODIFIED); § 3 + § 6 dual-draft completed + STYLE_CONTRACT 41→43 rows extension + 7 corrective edits per side on G4 negation-context hits + cycle log + sync chain — no spec / code / server action; § 5 / § 7 / § 8 / § 9 proposal body text drafting deferred to cycles 040-041 per OUTLINE_V1 §4 顺序; cycles 033 + 034 + 035 + 036 + 037 + 038 closed earlier in same session series; awaiting user direction on next workstream)
+Status: **idle** (cycle 040 closed 2026-05-17: 8 file ops landed (2 NEW + 6 MODIFIED); § 5 + § 7 + § 8 dual-draft completed + STYLE_CONTRACT 43→48 rows extension + 5 corrective edits (4 G3a "cycle"-leak + 1 G3b lowercase repo-name leak) + cycle log + sync chain — no spec / code / server action; only § 9 风险分析 proposal body text drafting + 通稿审查 + STYLE_CONTRACT final sync remains for cycle 041 per OUTLINE_V1 §4 顺序; cycles 033 + 034 + 035 + 036 + 037 + 038 + 039 closed earlier in same session series; awaiting user direction on next workstream)
 
 ## Why this file exists
 
@@ -23,7 +23,7 @@ If this file's "Last updated" timestamp is older than the latest cycle log under
 ```text
 task_id:    none-active
 phase:      idle between cycles
-cycles:     032 + 033 + 034 + 035 + 036 + 037 + 038 + 039 closed; Track B 3R-mix survey packaged + SHA256 pre-filled; Dream3R 开题报告 dual-draft § 1 + § 2 + § 3 + § 4 + § 6 complete (~11300 内 / ~9500 外 字 ≈ 54% target); STYLE_CONTRACT 22→41→43 rows
+cycles:     032 + 033 + 034 + 035 + 036 + 037 + 038 + 039 + 040 closed; Track B 3R-mix survey packaged + SHA256 pre-filled; Dream3R 开题报告 dual-draft § 1 + § 2 + § 3 + § 4 + § 5 + § 6 + § 7 + § 8 complete (~17800 内 / ~14000 外 字 ≈ 85% target; only § 9 remains for cycle 041); STYLE_CONTRACT 22→41→43→48 rows
 status:     idle
 ```
 
@@ -62,6 +62,162 @@ No active cycle. Two parallel tracks are at a checkpoint:
 | 0513-S3 | 3R-mix paper Fig.1 embedding (DUSt3R / VGGT / MonST3R / CUT3R) | done | `figures/`, `main.tex` |
 | 0513-S4 | 3R-mix source-checked rewrites (MV-DUSt3R+ / Fast3R / VGGT / TTT3R + 7 × 2026 preprints) | done | `Dream/3R-mix/main.tex`, `notes/paper_inventory.md` |
 | 0513-S5 | 3R-mix three refinement passes (caption shortening + language naturalization + final refine) | done | `deliverables/3r_survey_stage_final_2026-05-13_refined.pdf` (16 A4 pages, 0 errors / 0 warnings) |
+
+## Cycle 040 subtask board (closed 2026-05-17)
+
+| ID | Subtask | Status | Canonical artifact |
+| --- | --- | --- | --- |
+| C040-S1 | DEC-20260517-001 launch authorization | done | `decisions/DEC-20260517-001-cycle-040-proposal-sections-5-7-8-dual-draft.md` |
+| C040-S2 | Draft §5 in DRAFT_INTERNAL_V1.md (master, Dream-vocabulary, ~2800 字, 7 sub-sections: 5.1 三层证据阶梯 + 5.2 架构层消融 ABL-v02-1..10 + 5.3 记忆机制消融 ABL-memory-0..11 + 5.4 Critic 标定 CRITIC_CALIBRATION_PLAN_V1 + 5.5 长序列真实评测 LONG_SEQ_REAL_TABLE_PLAN + 5.6 评测数据集 KITTI + DTU + 合成 fixture + 5.7 主要评测指标) | done | `planning/proposal_dream3r/DRAFT_INTERNAL_V1.md` §5 |
+| C040-S3 | Draft §7 in DRAFT_INTERNAL_V1.md (master, Dream-vocabulary, ~2200 字, 6 sub-sections: 7.1 架构设计文档系列 SPEC v0.1/v0.2/v0.3 + 7.2 实现里程碑 W1-W18 + 7.3 KITTI 真实数据集成证据 (pointmap L2 = 20.4747 集成证据 非训练后质量) + 7.4 综述发布 + 7.5 综述反哺主线 + 7.6 cycle 历史) | done | `planning/proposal_dream3r/DRAFT_INTERNAL_V1.md` §7 |
+| C040-S4 | Draft §8 in DRAFT_INTERNAL_V1.md (master, Dream-vocabulary, ~1500 字, 3 sub-sections: 8.1 短期 M1-M2 cycle 040-042 开题报告完稿 + 8.2 中期 M3-M5 W19-W26 真实路由 + Critic 校准 + TTT + 输入扩展 + B1/B2/B3 v0.4 spec delta + 8.3 长期 M6-M8 W27 3DGS renderer + 真实数据训练 + 论文撰写 + 综合评测) | done | `planning/proposal_dream3r/DRAFT_INTERNAL_V1.md` §8 |
+| C040-S5 | Snapshot §5 to DRAFT_EXTERNAL_V1.md (vocab-clean, ~2000 字, 7 sub-sections mirroring internal with 学术化命名 + 5 new vocab substitutions: hard_fail/soft_fail → 硬失败/软失败 + oracle-bus → 理想信号总线 + monotone upgrade gate → 单调升级门 + fixture regime R1-R5 → 校准 fixture 制度 + 集成证据 → 集成证据 双稿一致) | done | `planning/proposal_dream3r/DRAFT_EXTERNAL_V1.md` §5 |
+| C040-S6 | Snapshot §7 to DRAFT_EXTERNAL_V1.md (vocab-clean, ~1500 字, 6 sub-sections mirroring internal; § 7.3 KITTI 集成证据-vs-训练后质量 boundary 顯式保留 per RECENT_PROGRESS.md line 78) | done | `planning/proposal_dream3r/DRAFT_EXTERNAL_V1.md` §7 |
+| C040-S7 | Snapshot §8 to DRAFT_EXTERNAL_V1.md (vocab-clean, ~1000 字, 3 sub-sections mirroring internal; M-numbering 保留为 candidate timeline 不是 committed timeline 显式声明) | done | `planning/proposal_dream3r/DRAFT_EXTERNAL_V1.md` §8 |
+| C040-S8 | G3a + G3b + G4 vocab-firewall + over-claim greps (full file scope) | done with 5 corrective edits | First-pass G4 0 hits on both drafts (§5 + §7 + §8 evidence-anchored chapters did not surface negation-context candidate-not-final 句式 contrast at cycle-039 density). First-pass G3a caught 4 hits in DRAFT_EXTERNAL_V1.md: §5.3 closing "cycle 040 仅 plan-level 引用" / §7.5 deliverables "proposal-cycle 相关 vocab firewall" + "dream3r 实现仓库" lowercase (also G3b hit) / §8.1 short-term "(cycle 外人工动作)" / §8.2 medium-term "cycle 040 后第一个 unblocked task". Applied 5 corrective Edits: 本阶段 / 开题报告阶段 / 本研究架构 substitutions. Re-ran G3a + G3b + G4 → all 0 hits on both drafts (full file). Per cycle 036 + cycle 039 precedent. |
+| C040-S9 | STYLE_CONTRACT §2 vocab substitution table append (+5 new rows: hard_fail / soft_fail / oracle-bus / monotone upgrade gate / fixture regime R1-R5 / 集成证据) | done | `planning/proposal_dream3r/STYLE_CONTRACT.md` §2 (43 → 48 rows) |
+| C040-S10 | STYLE_CONTRACT §6 sync log append (cycle 040 entry: 7+6+3 sub-sections + 5 new substitutions + 5 corrective edit narrative + 4 grep results) + 授权根 metadata update | done | `planning/proposal_dream3r/STYLE_CONTRACT.md` §6 + top metadata |
+| C040-S11 | Cycle 040 log | done | `cycles/CYCLE-20260517-001.md` |
+| C040-S12 | Sync chain (TASK_SNAPSHOT first + WORKFLOW_STATUS + INDEX) | done | this file + `WORKFLOW_STATUS.md` + `INDEX.md` |
+
+Cycle 040 deliverable summary:
+
+```text
+DEC-20260517-001:
+  - authorizes only 8 file ops total (2 NEW + 6 MODIFIED): DEC + cycle
+    log + 3 modified drafts/contract + 3 sync targets
+  - forbids Dream/3R-mix/main.tex / references.bib / notes/* edits,
+    Dream/specs/ edits, Dream/code/ edits, Dream/paradigm/ edits,
+    OUTLINE_V1.md edits, WORK_RISK_REGISTER.md edits, sections other
+    than §5 + §7 + §8 of either draft, server actions, checkpoint,
+    training, model inference, calibration runs, ablation runs, v0.4
+    spec delta drafting (B1/B2/B3 candidates referenced in §8.2 as
+    forward-looking only), actual Track B survey submission, claiming
+    pointmap L2 = 20.4747 as training-quality / SOTA-comparable result
+
+§5 实验设计与评测协议 (7 sub-sections):
+  - §5.1 三层证据阶梯: 论文层 (Track B 综述 + SPEC-007 v0.3 comparator)
+    + 代理用例层 (case cards + COMPOSER_CAPABILITY_DESCRIPTORS) +
+    原型实现层 (W1-W18 + KITTI smoke + ablate_recurrence + fixture)
+  - §5.2 架构层消融实验组 ABL-v02-1..10: tier 1 load-bearing
+    ABL-v02-1 (NSA on/off) + ABL-v02-4 (Composer best-of-N vs single)
+    + ABL-v02-6 (capability_match cost_adjusted_match alpha sweep) +
+    ABL-v02-10 (VGGT offline baseline as comparator anchor); plan-only
+    F-002 gated
+  - §5.3 记忆机制消融实验组 ABL-memory-0..11: cycle 029 v1.1 oracle-
+    bus + hard/soft fail rule; ABL-memory-0 fixture/logging validity
+    gate passed (cycle 031, integration evidence not C2 quality);
+    ABL-memory-1..11 plan-only F-002 gated
+  - §5.4 校验阈值标定方案: CRITIC_CALIBRATION_PLAN_V1 六类失败模式
+    (弱纹理 / 镜面 / 快速运动 / 长基线 / 尺度漂移 / 域外) × 5
+    sub-signal (Sampson / depth / 共视 / latent_drift / write_value)
+    表; method A (distribution-quantile P95) vs method B (supervised
+    classifier + monotone upgrade gate); fixture regime R1-R5
+    synthetic failure injection; plan-only
+  - §5.5 长序列真实数据评测: LONG_SEQ_REAL_TABLE_PLAN 4 variants
+    (baseline_cross_attention / mamba_hybrid / no_nsa / no_stable_
+    memory) × 4 metrics (scale_drift_proxy / memory_decay_proxy /
+    anchor_fill_rate / retrieval_diversity) × windows ∈ {10,20,50,100}
+    on KITTI; B4 缓存治理 coverage gap acknowledged; plan-only
+  - §5.6 评测数据集: KITTI 主 (2011_09_26_drive_0001_sync_02
+    已 smoke) + DTU 拟扩展 + 合成 fixture P0 + R1-R5
+  - §5.7 主要评测指标: pointmap L2 + depth RMSE + route_regret +
+    scale_drift_proxy + memory_decay_proxy + anchor_fill_rate +
+    retrieval_diversity + failure-mode detection rate
+
+§7 研究进展与已完成工作 (6 sub-sections):
+  - §7.1 架构设计文档系列: SPEC v0.1 (3 份 cycle 016 architecture +
+    ablation + comparator map) + v0.2 (3 份 cycle 018-021 deltas +
+    comparator v0.2) + v0.3 (3 份 cycle 023-028 C2 memory + comparator
+    + memory ablation addendum)
+  - §7.2 实现里程碑 W1-W18: Tier 1 集成验证 11 项 (W1-W11) + Tier 2
+    真实数据 smoke (W12-W18; W17-W18 tensor-contract level only;
+    server-verified at /hdd3/kykt26/)
+  - §7.3 KITTI 真实数据集成证据: pointmap L2 = 20.4747 on
+    2011_09_26_drive_0001_sync_02 window pair; per RECENT_PROGRESS.md
+    line 78 boundary statement "This is real-data integration
+    evidence, not SOTA reconstruction accuracy"; verbatim caveat
+    保留双稿 § 7.3 closing paragraph; NOT 重建质量数值
+  - §7.4 综述发布: Track B 3R-mix 18 A4 页 + 44 引文 + 6 图 5 表 +
+    路线 C arXiv-only + 2026-05-15 prose naturalization deliverable
+    (3r_survey_stage_final_2026-05-15_natural.pdf)
+  - §7.5 综述反哺主线: cycle 035 4 markdown deliverables (SOTA_MATRIX_V2
+    + CRITIC_CALIBRATION_PLAN_V1 + LONG_SEQ_REAL_TABLE_PLAN +
+    SURVEY_DRIVEN_OPTIMIZATION_PROPOSAL) + WORK_RISK_REGISTER v1.1
+    +4 行 R-OOD-1 / R-EXT-PRIOR-1 / R-4DGS-LIC-1 / R-INPUT-EXT-1
+  - §7.6 cycle 历史: cycle 015 起架构主线 → cycle 016 SPEC v0.1 →
+    cycle 018-021 v0.2 trio → cycle 022 paper v1.2 → cycle 023-027
+    v0.3 memory 设计 → cycle 028-031 P0 + ablation → cycle 032 server
+    verify → cycle 033-034 W1-W18 → cycle 035 综述反哺 → cycle 036-040
+    开题报告
+
+§8 研究计划与时间安排 (3 sub-sections):
+  - §8.1 短期 M1-M2 (cycle 040-042 开题报告完稿 + 提交; cycle 041
+    §9 + 通稿审查; cycle 042 最终修订 + PDF + packaging; 本阶段外
+    人工动作: 用户实际执行 Track B 综述提交)
+  - §8.2 中期 M3-M5 (W19-W23 真实路由 + W24 Critic 校准 + W25 TTT +
+    W26 输入扩展 + B1/B2/B3 v0.4 spec delta 候选; SURVEY_DRIVEN_
+    OPTIMIZATION_PROPOSAL §6 W-task reorder 为 recommendation-status
+    不是 locked schedule; 各 W-task / spec delta 各需独立 DEC + F-002
+    server authorization)
+  - §8.3 长期 M6-M8 (W27 3DGS renderer 实装 + 真实数据训练 + 论文
+    撰写 + 综合评测; D3 4DGS asset 输出 + R-4DGS-LIC-1 风险; 完整
+    评测覆盖 6 类失败模式 × 4 类内存 × 3 类测试时 × 3 类输出资产)
+
+STYLE_CONTRACT 升级:
+  - §2 vocab substitution table 43 → 48 rows (+5 evaluation-protocol
+    terminology: hard_fail / soft_fail / oracle-bus / monotone
+    upgrade gate / fixture regime R1-R5 / 集成证据)
+  - §6 sync log appended cycle 040 entry with substitutions used +
+    5 corrective edit narrative + 4 grep results
+  - 顶部 metadata 授权根 field appended DEC-20260517-001 (cycle 040)
+
+G3a + G3b corrective observation:
+  - 4 G3a hits + 1 G3b hit on first pass (cycle 039 pattern reversed:
+    cycle 039 was G4 negation-context heavy / G3a-b clean; cycle 040
+    was G3a "cycle"-leak heavy / G4 clean; per OUTLINE_V1 §4 章节
+    分工预测 — evidence-anchored 章节 description prose 自然带入
+    "cycle N" + repo-path lowercase 命名 leakage); applied 5
+    corrective edits per cycle 036 + cycle 039 precedent
+    (cycle 040 → 本阶段 / proposal-cycle → 开题报告阶段 / dream3r
+    实现仓库 → 本研究架构实现仓库 / cycle 外 → 本阶段外); G3a +
+    G3b + G4 re-greps all 0 hits
+
+Result:
+  - 8 artifacts present (DEC + cycle log + 3 modified drafts/contract
+    + 3 sync targets); stop gates G0-G6 all passed with 5 corrective
+    edits at G3a + G3b ("cycle" + lowercase repo-name leakage caught
+    by full-file grep, fixed); § 1 + § 2 + § 3 + § 4 + § 5 + § 6 +
+    § 7 + § 8 累计 ~17800 内 + ~14000 外 字 ≈ 85% of OUTLINE_V1 §2
+    表 总字数估算 (~21100 内 / ~16000 外); only § 9 风险分析 remains
+
+Evidence boundary:
+  - §5 + §7 + §8 evidence-anchored text at research-plan level; no
+    spec change, code change, calibration run, ablation run, or v0.4
+    delta drafting validated by cycle 040
+  - §7.3 KITTI smoke evidence 限定为 集成证据 非训练后质量 per
+    RECENT_PROGRESS.md line 78; pointmap L2 = 20.4747 数值 与 caveat
+    并置呈现
+  - ABL-memory-0 fixture/logging pass (cycle 031) cited in §7.2 +
+    §5.3 as validity gate, NOT as C2 memory quality validation
+  - §8 medium-term M3-M5 timeline 显式声明 candidate timeline 不是
+    committed schedule; M-numbering 不构成 commitment
+  - candidate-not-final framing 保留 throughout per DEC-20260501-011
+  - no-all-in posture 保留: §5.2 ABL-v02 + §5.3 ABL-memory 双消融
+    覆盖 4 模块 (Critic / Memory / Permanence / Composer) 独立性
+
+Next admissible direction (per DEC-20260517-001 §Next Direction):
+  A. cycle 041 §9 风险分析 + 通稿审查 + STYLE_CONTRACT final sync
+     (recommended; 最后一个章节; ~1000 外 + ~1500 内 字; total ~2500
+     字; cycle 041 closeout 后 完整 8+1 章节 dual-draft 完整 ready
+     for cycle 042 最终修订 + PDF 编译 + packaging)
+  B. revise §5 + §7 + §8 based on self-review or advisor feedback
+  C. cycle 035 §Next Direction A-C alternatives (calibration / long-
+     seq ablation / v0.4 spec delta drafting)
+  D. pause + reassess after §5 + §7 + §8 quality review
+  E. user executes Track B survey submission (manual action)
+  F. mainline non-proposal work (W22 / W23 / Fast3R omegaconf)
+```
 
 ## Cycle 039 subtask board (closed 2026-05-17)
 
