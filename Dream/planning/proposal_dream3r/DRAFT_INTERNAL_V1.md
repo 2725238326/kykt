@@ -4,9 +4,9 @@
 |---|---|
 | 文件类型 | 开题报告内部稿 (Dream-vocabulary; 不外发) |
 | 创建日期 | 2026-05-16 |
-| 最后更新 | 2026-05-17 (cycle 040 §5 ~2800 字 + §7 ~2200 字 + §8 ~1500 字 + cycle 041 §9 ~1500 字, 累计正文 ~19300 字) |
+| 最后更新 | 2026-05-17 (cycle 042 最终修订; §1-§9 累计正文 ~19300 字) |
 | 状态 | v1 draft; §1-§9 全部起草完成; 待 cycle 042 最终修订 + PDF 编译 |
-| 授权根 | DEC-20260516-001 (cycle 036) + DEC-20260516-002 (cycle 037) + DEC-20260516-003 (cycle 038) + DEC-20260516-004 (cycle 039) + DEC-20260517-001 (cycle 040) + DEC-20260517-002 (cycle 041) |
+| 授权根 | DEC-20260516-001 (cycle 036) + DEC-20260516-002 (cycle 037) + DEC-20260516-003 (cycle 038) + DEC-20260516-004 (cycle 039) + DEC-20260517-001 (cycle 040) + DEC-20260517-002 (cycle 041) + DEC-20260517-003 (cycle 042) |
 | 配套文件 | OUTLINE_V1.md (章节结构) + STYLE_CONTRACT.md (双稿契约) + DRAFT_EXTERNAL_V1.md (外部稿) |
 | 双稿关系 | 本稿是 master per STYLE_CONTRACT §3 规则 1; 外部稿是 internal 周期性快照 |
 | 词汇 | 含 Dream / Dream3R / cycle / SPEC / DEC / CR / W-task / Track A / Track B / 服务器 path / agent 等 |
@@ -687,9 +687,9 @@ cycle 015 Critic L3 pilot scope (DEC-20260505-005 authorized 但 per-step micro 
 
 短期目标 = 开题报告完稿 + 提交 + 已 plan 的 P0/P1 deliverable 执行入口。
 
-- **cycle 040 (本 cycle, 2026-05-17)**: § 5 + § 7 + § 8 dual-draft 完稿 (~11000 字); STYLE_CONTRACT 41→43→44+ rows (cycle 040 加 评测 protocol 术语); § 9 仍 placeholder
-- **cycle 041 (estimated 2026-05-17 后)**: § 9 风险分析 起草 (~1500 字 内 + ~1000 字 外, 引用 WORK_RISK_REGISTER v1.2 20 行 select 6-8 行学术化) + 通稿审查 (双稿一致性 grep + 候选不等于最终 句式 二轮审查 + 字数估算回归) + STYLE_CONTRACT final sync
-- **cycle 042 (estimated 2026-05-18 后)**: 最终修订 + PDF 编译 (xelatex / pandoc 待选; cycle 041 close 后定型) + 提交 packaging (复用 cycle 036 Part A pattern 起草 SUBMISSION_PACKAGE_ADVISOR_PROPOSAL.md + SUBMISSION_RECORD.md)
+- **cycle 040 (2026-05-17, 已完成)**: § 5 + § 7 + § 8 dual-draft 完稿 (~11000 字); STYLE_CONTRACT 43→48 rows
+- **cycle 041 (2026-05-17, 已完成)**: § 9 风险分析 起草 (~1500 字 内 + ~1000 字 外) + 通稿审查 (G3a/G3b/G4 all 0 hits; no § 1-§ 8 surgical edits needed) + STYLE_CONTRACT 48→50 rows final sync
+- **cycle 042 (本 cycle, 2026-05-17)**: 最终修订 + PDF 编译 (pandoc + xelatex) + 提交 packaging (复用 cycle 036 Part A pattern)
 - **Track B 实际提交动作 (用户 cycle 外人工动作)**: 综述 deliverables/3r_survey_stage_final_2026-05-15_natural.pdf + cover note + SUBMISSION_RECORD slot 填写 (recipient / channel / submitted_at), 与 cycle 040 + 041 + 042 并行可执行
 
 短期 cycle 040-042 evidence label: 全部 markdown-only + plan-level; 不启动 server 行动 / 训练 / checkpoint / 任何 ABL 执行。
@@ -796,29 +796,16 @@ cycle 036 v1.2 新增 3 行 proposal-cycle 风险:
 
 ---
 
-## 双稿同步状态
-
-| Sync 时间 | Cycle | 章节 | 同步方向 | Vocab 替换条目 | Vocab 防火墙 grep 验证 |
-|---|---|---|---|---|---|
-| 2026-05-16 | 036 close | §1 first draft | internal → external (initial) | 13 (per STYLE_CONTRACT §2 seed) | DRAFT_EXTERNAL §1 grep clean (0 hits on cycle/SPEC-/DEC-/CR-N/agent/skill/workflow/本地项目 + 0 hits on Dream3R case-insensitive) |
-
-cycle 037+ 起草 §2 后追加。
-
----
-
 ## 元数据
 
 | 字段 | 取值 |
 |---|---|
 | 文件路径 | `Dream/planning/proposal_dream3r/DRAFT_INTERNAL_V1.md` |
 | 创建日期 | 2026-05-16 |
-| 状态 | v1 draft, §1 complete, §2-§9 placeholder |
-| 作者 | Dream agent (cycle 036) |
-| 上游决策 | DEC-20260516-001 |
+| 状态 | v1 draft; §1-§9 全部起草完成; cycle 042 最终修订 |
+| 作者 | Dream agent (cycle 036-042) |
+| 上游决策 | DEC-20260516-001 (cycle 036) → DEC-20260517-003 (cycle 042) |
 | 双稿关系 | master per STYLE_CONTRACT §3 规则 1 |
-| 当前字数 | §1 约 1800 字 (符合 OUTLINE §2 内稿 §1 估算 ~2000 字, 偏差 < 10%) |
-| 下游 | cycle 037 (§2 起草) → cycle 038 (§4) → cycle 039 (§3+§6) → cycle 040 (§5+§7+§8) → cycle 041 (§9+通稿审查) → cycle 042 (最终修订+提交) |
-
----
-
-**End of DRAFT_INTERNAL_V1 §1.** 本文件是 cycle 036 P0-B 子任务 deliverable; cycle 037+ 按 OUTLINE_V1 §4 顺序逐章起草。
+| 当前字数 | §1-§9 累计正文 ~19300 字 (≈ 92% of OUTLINE §2 内稿估算 ~21100 字) |
+| 起草历史 | cycle 036 §1 → 037 §2 → 038 §4 → 039 §3+§6 → 040 §5+§7+§8 → 041 §9+通稿审查 → 042 最终修订 |
+| Sync log | 见 STYLE_CONTRACT.md §6 (append-only; cycle 036-042 全部条目) |
