@@ -8,9 +8,9 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(r"E:\kykt\Dream\planning\proposal_dream3r")
 WORK = ROOT / "deliverables" / "ppt_work"
 REF = Path(r"E:\Work\HSY\气动系统泄漏检测迁移学习.pptx")
-OUT = WORK / "proposal_dream3r_opening_report_reference_mode_v19.pptx"
-PREVIEW = WORK / "previews_reference_mode_v19"
-CONTACT = WORK / "contact_sheet_reference_mode_v19.png"
+OUT = WORK / "proposal_dream3r_opening_report_reference_mode_v21.pptx"
+PREVIEW = WORK / "previews_reference_mode_v21"
+CONTACT = WORK / "contact_sheet_reference_mode_v21.png"
 AI = ROOT / "ppt_assets" / "ai"
 ASSETS = WORK / "reference_mode_assets"
 FIGS = Path(r"E:\kykt\Dream\3R-mix\figures")
@@ -269,17 +269,19 @@ def slide_cover(slide):
             continue
         try:
             if s.Top < 45 and s.Width > 300:
-                s.TextFrame.TextRange.Text = "硕士学位论文开题报告"
+                s.TextFrame.TextRange.Text = "开题报告"
             elif 90 < s.Top < 260 and s.Width > 500:
                 tr = s.TextFrame.TextRange
                 tr.Text = "面向前馈式三维重建的\n新型架构设计与聚合管理平台"
-                tr.Font.Size = 42
+                tr.Font.Size = 40
             elif 330 < s.Top < 380 and s.Left < 430:
                 s.TextFrame.TextRange.Text = "汇报人"
             elif 330 < s.Top < 380 and s.Left >= 430:
-                s.TextFrame.TextRange.Text = "XXX"
+                tr = s.TextFrame.TextRange
+                tr.Text = "崔昊喆  纪博闻"
+                tr.Font.Size = 24
             elif s.Top > 390:
-                s.TextFrame.TextRange.Text = "2026年5月"
+                s.TextFrame.TextRange.Text = "2026春科研课堂"
             else:
                 s.TextFrame.TextRange.Text = ""
         except Exception:
@@ -463,52 +465,52 @@ def build_slide(slide, idx):
             add_box(slide, 255, y, 610, 44, b, fill=WHITE if i % 2 == 0 else LIGHT_BLUE, line=LINE, font=17, bold=(i == 3), color=DARK_BLUE if i % 2 or i == 3 else TEXT, align=2)
         return
     elif idx == 13:
-        add_bar(slide, "多模型对比实验需要统一调度、统一格式和统一结果归集。")
+        add_bar(slide, "3R 模型缺少统一的部署、对比和调用基础设施，实验效率和应用落地都受限。")
         rows = [
-            ("环境差异", "每个模型都有自己的运行环境和依赖"),
-            ("格式差异", "输入、输出和结果目录结构各不相同"),
-            ("工具限制", "Nerfstudio 面向 NeRF；商业产品闭源"),
-            ("平台需求", "统一模型调度、结果格式化和多专家对照"),
+            ("部署成本高", "每个模型各有环境和依赖，部署一次耗时长"),
+            ("对比困难", "输入输出格式不统一，横向比较需手动对齐"),
+            ("工具不适用", "Nerfstudio 面向 NeRF，商业产品闭源"),
+            ("难以调用", "模型能力停留在脚本级，缺少标准接口"),
         ]
         for i, (h, b) in enumerate(rows):
             y = 150 + i * 62
             add_label(slide, 80, y, 150, 44, h)
             add_box(slide, 255, y, 610, 44, b, fill=WHITE if i % 2 == 0 else LIGHT_BLUE, line=LINE, font=17, bold=(i == 3), color=DARK_BLUE, align=2)
-        add_box(slide, 115, 430, 730, 38, "聚合平台用于降低多模型实验的人工配置和手动对比成本。", fill=BLUE, line=BLUE, font=17, bold=True, color=WHITE, align=2)
+        add_box(slide, 115, 430, 730, 38, "统一部署、统一对比、标准化输出与 API 封装。", fill=BLUE, line=BLUE, font=17, bold=True, color=WHITE, align=2)
     elif idx == 14:
-        add_bar(slide, "平台围绕任务提交、状态追踪、结果对比、模型注册和远程调度展开。")
-        funcs = [("命令中心", "提交任务\n查看状态"), ("任务工作台", "上传→运行\n回传→完成"), ("样本矩阵", "同一输入\n多模型并排"), ("模型注册", "一个执行器\n接入新模型"), ("结果归集", "统一输出\n导出报告")]
+        add_bar(slide, "平台覆盖从模型部署、实验运行到能力输出的完整链路。")
+        funcs = [("命令中心", "一键部署\n提交任务\n查看状态"), ("任务工作台", "上传→运行\n回传→完成"), ("样本矩阵", "同一输入\n多模型并排对比"), ("模型注册", "标准接口\n新模型快速上线"), ("能力输出", "统一格式导出\nAPI 封装调用")]
         for i, (h, b) in enumerate(funcs):
             x = 42 + i * 175
             big_card(slide, x, 165, 145, 145, h, b, accent=BLUE if i in (0, 3) else MID_BLUE)
-        add_box(slide, 90, 380, 780, 52, "功能覆盖任务提交、状态追踪、样本对比、模型注册和结果归集。", fill=LIGHT_BLUE, line=LINE, font=19, bold=True, color=DARK_BLUE, align=2)
+        add_box(slide, 90, 380, 780, 52, "部署→实验→对比→输出，覆盖研究到应用的完整路径。", fill=LIGHT_BLUE, line=LINE, font=19, bold=True, color=DARK_BLUE, align=2)
     elif idx == 15:
         add_bar(slide, "平台通过统一执行合同，把桌面前端、后端调度和模型执行器连接起来。")
         add_picture(slide, AI / "F09_platform_four_layer_architecture_3840x2160.png", 70, 145, 820, 285)
-        add_box(slide, 95, 455, 770, 34, "执行器只封装模型差异，平台层保持统一提交、统一跟踪和统一归集。", fill=BLUE, line=BLUE, font=16, bold=True, color=WHITE, align=2)
+        add_box(slide, 95, 455, 770, 34, "执行器封装模型差异，平台层统一提交和归集，顶层预留 API 导出接口。", fill=BLUE, line=BLUE, font=16, bold=True, color=WHITE, align=2)
     elif idx == 16:
         add_bar(slide, "6 个模型端到端验证通过，统一输入下的推理耗时差异明显。")
         bullets(slide, 60, 145, 255, ["DUSt3R / MASt3R", "MonST3R / Spann3R", "Fast3R / CUT3R", "Align3R 权重待补"], "接入模型")
         add_picture(slide, ASSETS / "timing_bars.png", 345, 135, 520, 270)
         add_box(slide, 70, 435, 820, 38, "统一输入为 13 帧 1920×1080；耗时差异体现统一调度与记录的必要性。", fill=LIGHT_BLUE, line=LINE, font=17, bold=True, color=DARK_BLUE, align=2)
     elif idx == 17:
-        add_bar(slide, "平台后续将围绕模型验证、对比视图、报告导出和下游接口推进。")
+        add_bar(slide, "平台从辅助实验到快速部署，再到 API 化服务下游应用。")
         rows = [
-            ("短期", "补齐 Align3R 验证，完善跨模型对比视图"),
-            ("中期", "导出论文表格和图表，设计 API 层接口"),
-            ("长期", "面向 SLAM 初始化、AR 建模和机器人场景理解"),
-            ("应用场景", "科研实验、模型评估、教学演示"),
+            ("短期", "辅助实验：完善对比视图，支撑消融和对照实验"),
+            ("中期", "快速部署：新模型一键接入、即时对比，结果可导出"),
+            ("长期", "API 服务：封装模型能力，供 SLAM / AR / 机器人调用"),
+            ("应用场景", "科研实验 → 模型评估 → 下游应用集成"),
         ]
         for i, (h, b) in enumerate(rows):
             y = 150 + i * 62
             add_label(slide, 90, y, 135, 44, h)
             add_box(slide, 250, y, 610, 44, b, fill=WHITE if i % 2 == 0 else LIGHT_BLUE, line=LINE, font=17, color=DARK_BLUE, align=2)
     elif idx == 18:
-        add_bar(slide, "平台为架构消融提供统一运行环境和结果对比条件。")
+        add_bar(slide, "平台支撑架构验证，验证通过的模型能力可进一步 API 化输出。")
         big_card(slide, 80, 165, 300, 155, "架构研究需求", "多专家对照\n模块消融\n长序列评测\n新架构接入", accent=BLUE)
         add_arrow(slide, 400, 220, 50, 30)
-        big_card(slide, 520, 165, 320, 155, "平台支撑方式", "统一调度\n统一输出格式\n同条件对比\n运行数据记录", accent=rgb(38, 145, 95))
-        add_box(slide, 95, 390, 770, 48, "新架构训练完成后可作为新模型接入平台，与现有模型同条件比较。", fill=LIGHT_BLUE, line=LINE, font=18, bold=True, color=DARK_BLUE, align=2)
+        big_card(slide, 520, 165, 320, 155, "平台支撑方式", "统一调度\n统一输出格式\n同条件对比\n运行数据记录\nAPI 导出", accent=rgb(38, 145, 95))
+        add_box(slide, 95, 390, 770, 48, "平台支撑验证，验证通过的架构可直接封装为 API 对外输出。", fill=LIGHT_BLUE, line=LINE, font=18, bold=True, color=DARK_BLUE, align=2)
     elif idx == 19:
         add_bar(slide, "实验设计分为架构有效性验证和平台支撑能力验证两部分。")
         big_card(slide, 55, 150, 400, 230, "架构侧验证", "模块消融：记忆 / 校验 / 路由\n长序列对照：短序列到长序列\n专家对照：单模型 vs 多专家\n失败场景复核：动态 / 弱纹理 / 反射", accent=BLUE)
