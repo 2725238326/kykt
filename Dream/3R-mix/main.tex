@@ -18,7 +18,7 @@
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!45!black]{hyperref}
 \hypersetup{
-  pdftitle={近期 3R 与前馈式三维重建模型综述：从点图表示到长序列、动态场景与可视化输出},
+  pdftitle={近期 3R 模型综述：前馈式三维重建的表示、时序与输出},
   pdfauthor={},
   pdfsubject={3R and feed-forward 3D reconstruction survey},
   pdfkeywords={3R, feed-forward 3D reconstruction, DUSt3R, pointmap, dynamic scene, long-sequence reconstruction, 3D Gaussian Splatting}
@@ -36,7 +36,7 @@
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 \captionsetup{font=small,labelfont=bf}
 
-\title{\bfseries 近期 3R 与前馈式三维重建模型综述：\\从点图表示到长序列、动态场景与可视化输出}
+\title{\bfseries 近期 3R 模型综述：\\前馈式三维重建的表示、时序与输出}
 \author{}
 \date{2026年5月}
 
@@ -209,16 +209,16 @@ VGGT 把 camera、depth、pointmap 与 tracks 放在同一视觉几何预测框�
 
 实验数字需要按输入规模与硬件设置来读：MV-DUSt3R+ 给的是 12/20 视角场景的秒级示例，并在 HM3D、ScanNet、MP3D 等数据上比较 MVS、位姿与 NVS 指标；Fast3R 的系统表是单张 A100 上 2 到 1500 视角的耗时与显存，重点在"成对全局对齐 → 一次多视角前馈"的代价转换；VGGT 则在一张、少量、到数百张图像的设定下同时给出相机、深度、点图与轨迹\citep{mvdust3rplus,fast3r,vggt}。本文按论文实验条件引用这些数字。图\,\ref{fig:paper-core} 把 DUSt3R 与 VGGT 的原论文方法图放在一起：一边突出点图作为中间语言，另一边强调多种几何量的统一预测。
 
-\begin{figure}[p]
+\begin{figure}[!htbp]
 \centering
-\begin{subfigure}{0.96\textwidth}
+\begin{subfigure}{0.88\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figures/dust3r_fig1.png}
 \caption{DUSt3R}
 \label{fig:paper-dust3r}
 \end{subfigure}
-\vspace{0.8em}
-\begin{subfigure}{0.96\textwidth}
+\vspace{0.5em}
+\begin{subfigure}{0.88\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figures/vggt_fig1.png}
 \caption{VGGT}
@@ -227,7 +227,6 @@ VGGT 把 camera、depth、pointmap 与 tracks 放在同一视觉几何预测框�
 \caption{DUSt3R 与 VGGT 方法图对照。来源：DUSt3R \citet{dust3r}，VGGT \citet{vggt}。}
 \label{fig:paper-core}
 \end{figure}
-\FloatBarrier
 
 表\,\ref{tab:foundation} 进一步汇总这一分支的输入情形、主要输出、机制定位与适用条件。
 
@@ -304,26 +303,27 @@ RayMap3R & 利用 RayMap 的静态偏置识别动态区域 & ray/image dual-bran
 
 \begin{figure}[t]
 \centering
-\resizebox{\textwidth}{!}{
 \begin{tikzpicture}[
-  block/.style={draw, rounded corners=2pt, fill=gray!4, minimum height=0.85cm, align=center, font=\small},
-  group/.style={draw, rounded corners=2pt, fill=blue!3, minimum height=1.0cm, align=center, font=\small},
+  block/.style={draw, rounded corners=2pt, fill=gray!4, minimum height=0.9cm, align=center, font=\small},
+  group/.style={draw, rounded corners=2pt, fill=blue!3, minimum height=0.95cm, text width=3.6cm, align=center, font=\small},
+  widegroup/.style={draw, rounded corners=2pt, fill=blue!3, minimum height=1.05cm, text width=4.25cm, align=center, font=\small},
+  policy/.style={draw, rounded corners=2pt, fill=blue!3, minimum height=1.0cm, text width=4.15cm, align=center, font=\small},
   arrow/.style={-{Stealth[length=2mm]}, line width=0.45pt}
 ]
-\node[block, minimum width=2.2cm] (input) {视频/图像流};
-\node[group, minimum width=3.0cm, right=0.9cm of input, yshift=1.3cm] (state) {递推状态\\CUT3R, STream3R};
-\node[group, minimum width=3.0cm, right=0.9cm of input] (spatial) {空间/指针记忆\\Spann3R, Point3R};
-\node[group, minimum width=3.0cm, right=0.9cm of input, yshift=-1.3cm] (hybrid) {混合记忆\\LONG3R, LoGeR, Mem3R};
-\node[group, minimum width=3.3cm, right=0.9cm of spatial] (policy) {缓存与更新规则\\OVGGT, PAS3R, FILT3R, LongStream};
-\node[block, minimum width=2.4cm, right=0.9cm of policy] (out) {一致点图/深度/相机};
+\node[block, minimum width=2.25cm] (input) at (0,0) {视频/图像流};
+\node[group] (state) at (3.8,1.55) {递推状态\\CUT3R, STream3R};
+\node[group] (spatial) at (3.8,0) {空间/指针记忆\\Spann3R, Point3R};
+\node[widegroup] (hybrid) at (3.8,-1.6) {混合记忆\\LONG3R, LoGeR\\Mem3R};
+\node[policy] (policy) at (8.7,0) {缓存与更新规则\\OVGGT, PAS3R\\FILT3R, LongStream};
+\node[block, minimum width=2.55cm] (out) at (13.0,0) {一致点图\\深度/相机};
 \draw[arrow] (input.east) -- (state.west);
 \draw[arrow] (input.east) -- (spatial.west);
 \draw[arrow] (input.east) -- (hybrid.west);
-\draw[arrow] (state.east) -- (policy.west);
+\draw[arrow] (state.east) -- ++(0.55,0) |- (policy.west);
 \draw[arrow] (spatial.east) -- (policy.west);
-\draw[arrow] (hybrid.east) -- (policy.west);
+\draw[arrow] (hybrid.east) -- ++(0.55,0) |- (policy.west);
 \draw[arrow] (policy.east) -- (out.west);
-\end{tikzpicture}}
+\end{tikzpicture}
 \caption{长序列 3R 中的状态和记忆机制。递推状态、空间记忆、混合记忆和缓存策略分别对应不同的更新规则。}
 \label{fig:memory}
 \end{figure}
