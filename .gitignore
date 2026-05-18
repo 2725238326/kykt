@@ -38,3 +38,4 @@ Dream/experiments/runs/
 
 # Downloaded wheel files. Never commit large binaries.
 *.whl
+Dream/planning/proposal_dream3r/awesome-ai-research-writing/
