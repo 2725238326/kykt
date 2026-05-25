@@ -60,6 +60,7 @@ import {
   matchesJobQuery
 } from "./workflowHelpers";
 import type { BatchJobAction, JobListItem } from "./workflowHelpers";
+import { ResourceMonitor } from "./ResourceMonitor";
 import {
   MessageBanner,
   ModelSemanticChips,
@@ -1045,6 +1046,7 @@ function SystemWorkbench(props: any) {
           ))}
         </div>
       </div>
+      <ResourceMonitor />
     </div>
   );
 }

@@ -2195,8 +2195,8 @@ async def sample_compare_api(sample_id: str):
     return JSONResponse(build_sample_compare_packet(sample_id))
 
 
-@app.get("/api/compare/samples/{sample_id}/report")
-async def sample_compare_report_api(sample_id: str):
+@app.get("/api/compare/samples/{sample_id}/report-markdown")
+async def sample_compare_report_markdown_api(sample_id: str):
     packet = build_sample_compare_packet(sample_id)
     return PlainTextResponse(packet["reportMarkdown"], media_type="text/markdown; charset=utf-8")
 

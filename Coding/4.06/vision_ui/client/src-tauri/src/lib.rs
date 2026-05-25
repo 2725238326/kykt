@@ -377,7 +377,11 @@ fn find_backend_python(backend_root: &Path) -> Result<PathBuf, String> {
 
     // 4. Fall back to system PATH `python.exe`. This requires the user to have
     //    installed the requirements; a portable bundle should avoid this path.
-    if let Ok(output) = Command::new("where").arg("python.exe").output() {
+    let mut where_cmd = Command::new("where");
+    where_cmd.arg("python.exe");
+    #[cfg(windows)]
+    where_cmd.creation_flags(CREATE_NO_WINDOW);
+    if let Ok(output) = where_cmd.output() {
         if output.status.success() {
             let text = String::from_utf8_lossy(&output.stdout);
             if let Some(line) = text.lines().next() {
@@ -461,12 +465,13 @@ fn stop_backend(state: &BackendProcess) {
 }
 
 fn find_listener_pid(port: u16) -> Option<u32> {
-    let output = Command::new("netstat")
-        .args(["-ano", "-p", "tcp"])
+    let mut cmd = Command::new("netstat");
+    cmd.args(["-ano", "-p", "tcp"])
         .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .output()
-        .ok()?;
+        .stderr(Stdio::null());
+    #[cfg(windows)]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    let output = cmd.output().ok()?;
 
     let needle = format!("127.0.0.1:{port}");
     let text = String::from_utf8_lossy(&output.stdout);
@@ -481,11 +486,13 @@ fn find_listener_pid(port: u16) -> Option<u32> {
 }
 
 fn kill_process(pid: u32) -> bool {
-    Command::new("taskkill")
-        .args(["/PID", &pid.to_string(), "/F"])
+    let mut cmd = Command::new("taskkill");
+    cmd.args(["/PID", &pid.to_string(), "/F"])
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status()
+        .stderr(Stdio::null());
+    #[cfg(windows)]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd.status()
         .map(|status| status.success())
         .unwrap_or(false)
 }
