@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-05-25T09:26:14.260Z",
-  "turn_count": 341,
-  "last_progress_at": "2026-05-25T09:26:14.260Z",
-  "last_agent_output": "已完成指定 P0/P1：\n\n- WebSocket 实时推送：新增 `ConnectionManager`、`/ws/jobs/{job_id}`，并让 `job_store.update_job` "
+  "last_turn_at": "2026-05-25T09:32:05.138Z",
+  "turn_count": 342,
+  "last_progress_at": "2026-05-25T09:32:05.138Z",
+  "last_agent_output": "{\"suggestions\":[{\"title\":\"Stop queue polling now that live job updates landed\",\"description\":\"Today’"
 }

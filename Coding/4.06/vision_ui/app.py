@@ -74,6 +74,10 @@ from model_registry import (
     get_model_spec,
 )
 from ssh_runner import ServerConfig, cancel_remote_job, run_remote_job
+from job_scheduler import JobPriority, scheduler
+from resource_monitor import monitor as resource_monitor
+from metrics_calculator import compute_job_metrics
+from report_exporter import build_job_report, build_compare_report, export_html, export_pdf
 
 _RUNNER_THREADS: dict[str, threading.Thread] = {}
 _RUNNER_THREADS_LOCK = threading.Lock()
@@ -2335,3 +2339,133 @@ async def advisor_evaluate_api(job_id: str):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return JSONResponse({"ok": True, **_job_payload(load_job(job_id))})
+
+
+# ══════════════════════════════════════════════════════════════════
+# P1/P2: Scheduler, Resources, Metrics, Reports
+# ══════════════════════════════════════════════════════════════════
+
+@app.get("/api/scheduler/status")
+async def scheduler_status_api():
+    return JSONResponse(scheduler.status())
+
+
+@app.post("/api/scheduler/config")
+async def scheduler_config_api(max_concurrent: int = 2):
+    if max_concurrent < 1 or max_concurrent > 10:
+        raise HTTPException(status_code=400, detail="max_concurrent must be 1-10")
+    scheduler.set_max_concurrent(max_concurrent)
+    return JSONResponse({"ok": True, "max_concurrent": max_concurrent})
+
+
+@app.post("/api/scheduler/enqueue/{job_id}")
+async def scheduler_enqueue_api(job_id: str, priority: str = "normal"):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    
+    try:
+        prio = JobPriority(priority)
+    except ValueError:
+        prio = JobPriority.NORMAL
+    
+    success = scheduler.enqueue(job_id, priority=prio)
+    return JSONResponse({"ok": success, "job_id": job_id, "priority": prio.value})
+
+
+@app.delete("/api/scheduler/dequeue/{job_id}")
+async def scheduler_dequeue_api(job_id: str):
+    success = scheduler.dequeue(job_id)
+    return JSONResponse({"ok": success, "job_id": job_id})
+
+
+@app.get("/api/system/resources")
+async def system_resources_api():
+    return JSONResponse(resource_monitor.get_dict())
+
+
+@app.get("/api/jobs/{job_id}/metrics")
+async def job_metrics_api(job_id: str):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    
+    job_dir = get_job_dir(job_id)
+    metrics = compute_job_metrics(job_dir)
+    return JSONResponse({"job_id": job_id, "metrics": metrics})
+
+
+@app.get("/api/jobs/{job_id}/report")
+async def job_report_api(job_id: str, format: str = "html"):
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    
+    job_dir = get_job_dir(job_id)
+    metrics = compute_job_metrics(job_dir)
+    evaluation = load_evaluation(job_id)
+    
+    report = build_job_report(job.to_dict(), metrics, evaluation)
+    
+    if format == "json":
+        return JSONResponse(report.to_dict())
+    
+    html_content = export_html(report)
+    
+    if format == "pdf":
+        pdf_path = job_dir / f"report_{job_id}.pdf"
+        if export_pdf(report, pdf_path):
+            return FileResponse(pdf_path, filename=f"report_{job_id}.pdf", media_type="application/pdf")
+        else:
+            return PlainTextResponse(html_content, media_type="text/html")
+    
+    return PlainTextResponse(html_content, media_type="text/html")
+
+
+@app.get("/api/compare/samples/{sample_id}/report")
+async def compare_report_api(sample_id: str, format: str = "html"):
+    jobs = [j for j in list_all_jobs() if j.sample_id == sample_id]
+    if not jobs:
+        raise HTTPException(status_code=404, detail=f"未找到样例 {sample_id} 的任务。")
+    
+    report = build_compare_report(sample_id, [j.to_dict() for j in jobs])
+    
+    if format == "json":
+        return JSONResponse(report.to_dict())
+    
+    html_content = export_html(report)
+    
+    if format == "pdf":
+        from pathlib import Path
+        pdf_path = Path(f"compare_report_{sample_id}.pdf")
+        if export_pdf(report, pdf_path):
+            return FileResponse(pdf_path, filename=f"compare_report_{sample_id}.pdf", media_type="application/pdf")
+    
+    return PlainTextResponse(html_content, media_type="text/html")
+
+
+@app.on_event("startup")
+async def startup_event():
+    resource_monitor.start()
+    
+    def dispatch_fn(job_id: str):
+        _prepare_job_for_dispatch(job_id, "由调度器自动派发")
+    
+    def status_fn(job_id: str) -> str:
+        try:
+            job = load_job(job_id)
+            return job.status
+        except FileNotFoundError:
+            return "unknown"
+    
+    scheduler.configure(dispatch_fn, status_fn)
+    scheduler.start()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    scheduler.stop()
+    resource_monitor.stop()
