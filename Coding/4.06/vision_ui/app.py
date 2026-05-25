@@ -12,14 +12,16 @@ import threading
 import time
 import uuid
 import zipfile
-from datetime import datetime, timezone
+from collections import Counter
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel, Field
 
 from advisor import (
     advisor_config_public,
@@ -43,12 +45,14 @@ from job_store import (
     get_job_dir,
     get_log_snippets,
     iter_input_items,
+    list_all_jobs,
     list_jobs,
     load_evaluation,
     load_result_summary,
     load_job,
     query_jobs,
     recover_orphan_running_jobs,
+    register_job_update_listener,
     save_inputs,
     save_evaluation,
     update_job,
@@ -83,6 +87,7 @@ DEPLOYMENT_STATUS_STALE_SECONDS = 300.0
 DEPLOYMENT_STATUS_TIMEOUT_SECONDS = 15.0
 LOGGER = logging.getLogger("kykt.development")
 development_store = DevelopmentStore()
+WS_ALL_JOBS_KEY = "__all__"
 
 
 app = FastAPI(title="KYKT Vision UI", version="0.3.0")
@@ -102,12 +107,93 @@ app.add_middleware(
 )
 
 
+class ConnectionManager:
+    def __init__(self) -> None:
+        self.active_connections: dict[str, list[WebSocket]] = {}
+        self._lock = asyncio.Lock()
+        self._loop: asyncio.AbstractEventLoop | None = None
+
+    def bind_loop(self) -> None:
+        self._loop = asyncio.get_running_loop()
+
+    async def connect(self, job_id: str, websocket: WebSocket) -> None:
+        await websocket.accept()
+        async with self._lock:
+            self.active_connections.setdefault(job_id, []).append(websocket)
+
+    async def disconnect(self, job_id: str, websocket: WebSocket) -> None:
+        async with self._lock:
+            connections = self.active_connections.get(job_id)
+            if not connections:
+                return
+            if websocket in connections:
+                connections.remove(websocket)
+            if not connections:
+                self.active_connections.pop(job_id, None)
+
+    async def broadcast(self, job_id: str, message: dict) -> None:
+        keys = {job_id, WS_ALL_JOBS_KEY}
+        async with self._lock:
+            targets = [
+                (key, websocket)
+                for key in keys
+                for websocket in self.active_connections.get(key, [])
+            ]
+
+        stale: list[tuple[str, WebSocket]] = []
+        for key, websocket in targets:
+            try:
+                await websocket.send_json(message)
+            except Exception:
+                stale.append((key, websocket))
+
+        if stale:
+            async with self._lock:
+                for key, websocket in stale:
+                    connections = self.active_connections.get(key)
+                    if not connections:
+                        continue
+                    if websocket in connections:
+                        connections.remove(websocket)
+                    if not connections:
+                        self.active_connections.pop(key, None)
+
+    def broadcast_from_thread(self, job_id: str, message: dict) -> None:
+        loop = self._loop
+        if loop is None or loop.is_closed():
+            return
+        asyncio.run_coroutine_threadsafe(self.broadcast(job_id, message), loop)
+
+
+manager = ConnectionManager()
+
+
+class BatchJobsRequest(BaseModel):
+    job_ids: list[str] = Field(..., min_length=1)
+    options: dict[str, object] = Field(default_factory=dict)
+
+
+def _normalize_batch_job_ids(job_ids: list[str]) -> list[str]:
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for raw_job_id in job_ids:
+        job_id = str(raw_job_id).strip()
+        if not job_id or job_id in seen:
+            continue
+        seen.add(job_id)
+        normalized.append(job_id)
+    if not normalized:
+        raise HTTPException(status_code=400, detail="job_ids 不能为空。")
+    return normalized
+
+
 @app.on_event("startup")
 async def _recover_orphan_running_jobs() -> None:
     """When the FastAPI process restarts, any prior in-flight job has lost its
     runner thread. Mark them as failed so the UI does not show ghost-running
     cards; the user can click retry to redispatch."""
     try:
+        manager.bind_loop()
         rehydrated = recover_orphan_running_jobs()
     except Exception as exc:  # pragma: no cover - defensive
         LOGGER.warning("Orphan job rehydration failed: %s", exc)
@@ -235,6 +321,76 @@ def build_dashboard_stats(jobs) -> dict:
         if key:
             summary[key] += 1
     return summary
+
+
+def _parse_iso_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is not None:
+        return parsed.astimezone(timezone.utc).replace(tzinfo=None)
+    return parsed
+
+
+def _job_duration_seconds(job) -> float | None:
+    result_summary = load_result_summary(job.job_id)
+    if result_summary:
+        duration = result_summary.get("duration_seconds")
+        if isinstance(duration, (int, float)) and duration >= 0:
+            return float(duration)
+
+        created_at = _parse_iso_datetime(result_summary.get("created_at") or job.created_at)
+        generated_at = _parse_iso_datetime(result_summary.get("generated_at"))
+        if created_at and generated_at and generated_at >= created_at:
+            return (generated_at - created_at).total_seconds()
+    return None
+
+
+def build_stats_overview(jobs) -> dict:
+    status_counter = Counter(job.status for job in jobs)
+    model_counter = Counter(job.model for job in jobs)
+    recent_cutoff = datetime.now() - timedelta(hours=24)
+    recent_created = 0
+    recent_finished = 0
+    by_model = {}
+
+    for job in jobs:
+        created_at = _parse_iso_datetime(job.created_at)
+        if created_at and created_at >= recent_cutoff:
+            recent_created += 1
+            if job.status == "finished":
+                recent_finished += 1
+
+    for model, count in sorted(model_counter.items()):
+        model_jobs = [job for job in jobs if job.model == model]
+        finished_jobs = [job for job in model_jobs if job.status == "finished"]
+        durations = [
+            duration
+            for duration in (_job_duration_seconds(job) for job in finished_jobs)
+            if duration is not None
+        ]
+        by_model[model] = {
+            "count": count,
+            "finished": len(finished_jobs),
+            "failed": sum(1 for job in model_jobs if job.status == "failed"),
+            "cancelled": sum(1 for job in model_jobs if job.status == "cancelled"),
+            "success_rate": round(len(finished_jobs) / count, 4) if count else 0.0,
+            "avg_duration_sec": round(sum(durations) / len(durations), 2) if durations else None,
+        }
+
+    return {
+        "total": len(jobs),
+        "total_jobs": len(jobs),
+        "by_status": dict(sorted(status_counter.items())),
+        "by_model": by_model,
+        "recent_24h": {
+            "created": recent_created,
+            "finished": recent_finished,
+        },
+    }
 
 
 def _split_query_list(value: str | None) -> list[str]:
@@ -520,6 +676,8 @@ def build_job_inspection_packet(job) -> dict:
     return {
         **payload,
         "contract": contract,
+        "phaseDisplay": payload["phase_display"],
+        "advisorReport": payload["advisor_report"],
         "inspection": {
             "jobId": job.job_id,
             "status": job.status,
@@ -533,6 +691,30 @@ def build_job_inspection_packet(job) -> dict:
             "scoreDigest": _score_digest(payload["evaluation"]),
         },
     }
+
+
+def _job_list_item(job) -> dict:
+    return {
+        "job": job.to_dict(),
+        "phase_display": build_phase_display(job.phase, job.status, job.progress_message),
+    }
+
+
+def _job_ws_event(job) -> dict:
+    inspection_packet = build_job_inspection_packet(job)
+    return {
+        "type": "job.updated",
+        "job_id": job.job_id,
+        "list_item": _job_list_item(job),
+        "inspection": inspection_packet,
+    }
+
+
+def _job_store_update_listener(job) -> None:
+    manager.broadcast_from_thread(job.job_id, _job_ws_event(job))
+
+
+register_job_update_listener(_job_store_update_listener)
 
 
 def _inspection_attention_items(job, *, artifact_index: dict, result_summary: dict | None, evaluation: dict | None, advisor_report: dict | None, logs: list[dict]) -> list[dict]:
@@ -967,6 +1149,26 @@ def _prepare_job_for_dispatch(job_id: str, message: str) -> None:
     _launch_remote_job(job_id)
 
 
+def _load_job_or_404(job_id: str):
+    try:
+        return load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+
+
+def _dispatch_job_for_api(job_id: str, message: str):
+    job = _load_job_or_404(job_id)
+    _validate_dispatchable(job)
+    _prepare_job_for_dispatch(job_id, message)
+    return load_job(job_id)
+
+
+def _cancel_job_for_api(job_id: str):
+    _load_job_or_404(job_id)
+    cancel_remote_job(job_id)
+    return load_job(job_id)
+
+
 def _job_compare_record(job, sample_id_override: str | None = None) -> dict:
     evaluation = load_evaluation(job.job_id)
     result_summary = load_result_summary(job.job_id)
@@ -1172,6 +1374,45 @@ def _launch_remote_job(job_id: str) -> None:
         )
         _RUNNER_THREADS[job_id] = thread
         thread.start()
+
+
+async def _send_job_ws_snapshot(websocket: WebSocket, job_id: str) -> bool:
+    if job_id == WS_ALL_JOBS_KEY:
+        result = query_jobs(limit=50)
+        await websocket.send_json(
+            {
+                "type": "jobs.snapshot",
+                "jobs": _job_list_payload(result["jobs"]),
+                "summary": build_dashboard_stats(result["jobs"]),
+                "page": result["page"],
+            }
+        )
+        return True
+
+    try:
+        job = load_job(job_id)
+    except FileNotFoundError:
+        await websocket.send_json({"type": "job.error", "job_id": job_id, "detail": f"未找到任务 {job_id}。"})
+        await websocket.close(code=1008)
+        return False
+
+    await websocket.send_json(_job_ws_event(job))
+    return True
+
+
+@app.websocket("/ws/jobs/{job_id}")
+async def job_websocket(websocket: WebSocket, job_id: str):
+    await manager.connect(job_id, websocket)
+    connected = await _send_job_ws_snapshot(websocket, job_id)
+    if not connected:
+        await manager.disconnect(job_id, websocket)
+        return
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        await manager.disconnect(job_id, websocket)
 
 
 @app.get("/")
@@ -1416,6 +1657,11 @@ async def job_bundle_api(job_id: str):
         filename=bundle_path.name,
         media_type="application/zip",
     )
+
+
+@app.get("/api/stats/overview")
+async def stats_overview_api():
+    return JSONResponse(build_stats_overview(list_all_jobs()))
 
 
 @app.get("/api/health")
@@ -1987,6 +2233,48 @@ async def advisor_test_api():
     except RuntimeError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return JSONResponse(payload)
+
+
+@app.post("/api/jobs/batch-dispatch")
+async def batch_dispatch_api(payload: BatchJobsRequest):
+    results = []
+    for job_id in _normalize_batch_job_ids(payload.job_ids):
+        try:
+            job = _dispatch_job_for_api(job_id, "批量派发任务已接收，正在启动远端调度线程...")
+            results.append(
+                {
+                    "job_id": job_id,
+                    "success": True,
+                    "job": _job_payload(job),
+                    "list_item": _job_list_item(job),
+                }
+            )
+        except HTTPException as exc:
+            results.append({"job_id": job_id, "success": False, "status_code": exc.status_code, "error": exc.detail})
+        except Exception as exc:
+            results.append({"job_id": job_id, "success": False, "status_code": 500, "error": str(exc)})
+    return JSONResponse({"ok": True, "results": results})
+
+
+@app.post("/api/jobs/batch-cancel")
+async def batch_cancel_api(payload: BatchJobsRequest):
+    results = []
+    for job_id in _normalize_batch_job_ids(payload.job_ids):
+        try:
+            job = _cancel_job_for_api(job_id)
+            results.append(
+                {
+                    "job_id": job_id,
+                    "success": True,
+                    "job": _job_payload(job),
+                    "list_item": _job_list_item(job),
+                }
+            )
+        except HTTPException as exc:
+            results.append({"job_id": job_id, "success": False, "status_code": exc.status_code, "error": exc.detail})
+        except Exception as exc:
+            results.append({"job_id": job_id, "success": False, "status_code": 500, "error": str(exc)})
+    return JSONResponse({"ok": True, "results": results})
 
 
 @app.post("/api/jobs/{job_id}/dispatch")

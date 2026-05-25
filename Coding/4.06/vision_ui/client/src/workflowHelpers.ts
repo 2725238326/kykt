@@ -91,7 +91,7 @@ export function isAdvisorSuggested(status: string) {
 }
 
 export function canDispatchJobStatus(status: string) {
-  return status === "draft" || status === "ready" || status === "failed" || status === "cancelled";
+  return status === "draft" || status === "created" || status === "ready" || status === "failed" || status === "cancelled";
 }
 
 export function buildMatrixModelConstraint(item: ModelCatalogItem) {

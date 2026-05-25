@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-05-25T06:59:55.656Z",
-  "turn_count": 340,
-  "last_progress_at": "2026-05-25T06:59:55.656Z",
-  "last_agent_output": "后端已推进到 **P0 底座可审阅状态**：有批量创建、多模型共享 `sample_id`、对比数据包、Markdown 报告接口，并通过基础编译/HTTP smoke。还不是完整生产闭环，缺队列、批"
+  "last_turn_at": "2026-05-25T09:26:14.260Z",
+  "turn_count": 341,
+  "last_progress_at": "2026-05-25T09:26:14.260Z",
+  "last_agent_output": "已完成指定 P0/P1：\n\n- WebSocket 实时推送：新增 `ConnectionManager`、`/ws/jobs/{job_id}`，并让 `job_store.update_job` "
 }

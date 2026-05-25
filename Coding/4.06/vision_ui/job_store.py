@@ -6,7 +6,7 @@ import threading
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Callable, Iterable, Sequence
 
 from model_registry import default_runner_for
 
@@ -14,6 +14,7 @@ from model_registry import default_runner_for
 ROOT = Path(__file__).resolve().parent
 LOCAL_JOBS_DIR = ROOT / "local_jobs"
 _JOB_STORE_LOCK = threading.RLock()
+_JOB_UPDATE_LISTENERS: list[Callable[[JobRecord], None]] = []
 LOG_TAIL_READ_BYTES = 256 * 1024
 JOB_LIST_DEFAULT_LIMIT = 50
 JOB_LIST_MAX_LIMIT = 500
@@ -180,6 +181,22 @@ def save_job(job: JobRecord) -> None:
         )
 
 
+def register_job_update_listener(listener: Callable[[JobRecord], None]) -> None:
+    with _JOB_STORE_LOCK:
+        if listener not in _JOB_UPDATE_LISTENERS:
+            _JOB_UPDATE_LISTENERS.append(listener)
+
+
+def _notify_job_update(job: JobRecord) -> None:
+    with _JOB_STORE_LOCK:
+        listeners = list(_JOB_UPDATE_LISTENERS)
+    for listener in listeners:
+        try:
+            listener(job)
+        except Exception:
+            continue
+
+
 def load_job(job_id: str) -> JobRecord:
     with _JOB_STORE_LOCK:
         return _load_job_record(get_job_dir(job_id) / "job.json")
@@ -187,6 +204,15 @@ def load_job(job_id: str) -> JobRecord:
 
 def list_jobs(limit: int = 20) -> list[JobRecord]:
     return query_jobs(limit=limit)["jobs"]
+
+
+def list_all_jobs() -> list[JobRecord]:
+    with _JOB_STORE_LOCK:
+        ensure_local_jobs_dir()
+        jobs = []
+        for job_json in sorted(LOCAL_JOBS_DIR.glob("*/job.json"), reverse=True):
+            jobs.append(_load_job_record(job_json))
+        return jobs
 
 
 def query_jobs(
@@ -544,7 +570,8 @@ def update_job(
         if progress_message is not None:
             job.progress_message = progress_message
         save_job(job)
-        return job
+    _notify_job_update(job)
+    return job
 
 
 def recover_orphan_running_jobs() -> list[str]:

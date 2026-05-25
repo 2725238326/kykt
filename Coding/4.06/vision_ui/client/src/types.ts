@@ -409,6 +409,36 @@ export type JobsListPayload = {
   page_info?: PageInfo;
 };
 
+export type BatchJobsResponse = {
+  ok: boolean;
+  results: Array<{
+    job_id: string;
+    success: boolean;
+    status_code?: number;
+    error?: string;
+    job?: JobPayload;
+    list_item?: JobsListPayload["jobs"][number];
+  }>;
+};
+
+export type StatsOverviewPayload = {
+  total: number;
+  total_jobs: number;
+  by_status: Record<string, number>;
+  by_model: Record<string, {
+    count: number;
+    finished: number;
+    failed: number;
+    cancelled: number;
+    success_rate: number;
+    avg_duration_sec: number | null;
+  }>;
+  recent_24h: {
+    created: number;
+    finished: number;
+  };
+};
+
 export type DevelopmentLaneItem = {
   id: string;
   title: string;

@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { JobListItem } from "./workflowHelpers";
+import { useEffect, useMemo, useState } from "react";
+import { canDispatchJobStatus, JobListItem } from "./workflowHelpers";
 import { formatDateTime, modelDisplayName, sourceTypeLabel, statusLabel } from "./displayHelpers";
 import { StatusBadge } from "./uiPrimitives";
 import { ModelCatalogItem } from "./types";
@@ -8,7 +8,10 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Loader2
+  Loader2,
+  Square,
+  CheckSquare,
+  XCircle
 } from "lucide-react";
 
 interface QueueWorkspaceProps {
@@ -20,6 +23,9 @@ interface QueueWorkspaceProps {
   onDispatchJob?: (jobId: string) => void;
   onRetryJob?: (jobId: string) => void;
   onCancelJob?: (jobId: string) => void;
+  onBatchDispatch?: (jobIds: string[]) => void;
+  onBatchCancel?: (jobIds: string[]) => void;
+  batchActionBusy?: "dispatch" | "retry" | "cancel" | null;
 }
 
 export function QueueWorkspace({ 
@@ -30,10 +36,15 @@ export function QueueWorkspace({
   onInspectJob,
   onDispatchJob,
   onRetryJob,
-  onCancelJob
+  onCancelJob,
+  onBatchDispatch,
+  onBatchCancel,
+  batchActionBusy
 }: QueueWorkspaceProps) {
+  const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>([]);
+
   const stats = useMemo(() => {
-    const created = jobs.filter(j => j.job.status === "created").length;
+    const created = jobs.filter(j => canDispatchJobStatus(j.job.status)).length;
     const running = jobs.filter(j => j.job.status === "running").length;
     const finished = jobs.filter(j => j.job.status === "finished").length;
     const failed = jobs.filter(j => j.job.status === "failed" || j.job.status === "cancelled").length;
@@ -41,8 +52,47 @@ export function QueueWorkspace({
   }, [jobs]);
 
   const runningJobs = useMemo(() => jobs.filter(j => j.job.status === "running"), [jobs]);
-  const pendingJobs = useMemo(() => jobs.filter(j => j.job.status === "created"), [jobs]);
+  const pendingJobs = useMemo(() => jobs.filter(j => canDispatchJobStatus(j.job.status)), [jobs]);
   const recentJobs = useMemo(() => jobs.slice(0, 10), [jobs]);
+  const selectedBatchSet = useMemo(() => new Set(selectedBatchIds), [selectedBatchIds]);
+  const selectedBatchItems = useMemo(
+    () => jobs.filter((item) => selectedBatchSet.has(item.job.job_id)),
+    [jobs, selectedBatchSet]
+  );
+  const dispatchableBatchIds = useMemo(
+    () => selectedBatchItems.filter((item) => canDispatchJobStatus(item.job.status)).map((item) => item.job.job_id),
+    [selectedBatchItems]
+  );
+  const cancellableBatchIds = useMemo(
+    () => selectedBatchItems.filter((item) => item.job.status === "running").map((item) => item.job.job_id),
+    [selectedBatchItems]
+  );
+  const visibleJobIds = useMemo(() => recentJobs.map((item) => item.job.job_id), [recentJobs]);
+  const allVisibleSelected = visibleJobIds.length > 0 && visibleJobIds.every((id) => selectedBatchSet.has(id));
+
+  useEffect(() => {
+    const availableIds = new Set(jobs.map((item) => item.job.job_id));
+    setSelectedBatchIds((current) => current.filter((id) => availableIds.has(id)));
+  }, [jobs]);
+
+  function toggleBatchJob(jobId: string) {
+    setSelectedBatchIds((current) =>
+      current.includes(jobId) ? current.filter((id) => id !== jobId) : [...current, jobId]
+    );
+  }
+
+  function toggleVisibleJobs() {
+    setSelectedBatchIds((current) => {
+      const currentSet = new Set(current);
+      if (allVisibleSelected) {
+        return current.filter((id) => !visibleJobIds.includes(id));
+      }
+      for (const id of visibleJobIds) {
+        currentSet.add(id);
+      }
+      return Array.from(currentSet);
+    });
+  }
 
   return (
     <div className="queue-workspace">
@@ -69,6 +119,36 @@ export function QueueWorkspace({
           <span className="queue-stat-label">需处理</span>
         </div>
       </div>
+
+      {selectedBatchIds.length > 0 && (
+        <div className="queue-batch-strip">
+          <div className="queue-batch-summary">
+            <strong>已选择 {selectedBatchIds.length} 个任务</strong>
+            <span>{dispatchableBatchIds.length} 个可派发，{cancellableBatchIds.length} 个可取消</span>
+          </div>
+          <div className="queue-batch-actions">
+            <button
+              className="icon-btn primary"
+              disabled={!onBatchDispatch || dispatchableBatchIds.length === 0 || !!batchActionBusy}
+              onClick={() => onBatchDispatch?.(dispatchableBatchIds)}
+              type="button"
+            >
+              <Play size={12} /> 批量派发
+            </button>
+            <button
+              className="icon-btn danger"
+              disabled={!onBatchCancel || cancellableBatchIds.length === 0 || !!batchActionBusy}
+              onClick={() => onBatchCancel?.(cancellableBatchIds)}
+              type="button"
+            >
+              <XCircle size={12} /> 批量取消
+            </button>
+            <button className="icon-btn" onClick={() => setSelectedBatchIds([])} type="button">
+              清空
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="queue-main-grid">
         {/* Left: Running & Pending */}
@@ -163,6 +243,11 @@ export function QueueWorkspace({
             <table className="workbench-table">
               <thead>
                 <tr>
+                  <th style={{width: "42px"}}>
+                    <button className="icon-btn square" onClick={toggleVisibleJobs} title="选择当前列表" type="button">
+                      {allVisibleSelected ? <CheckSquare size={13} /> : <Square size={13} />}
+                    </button>
+                  </th>
                   <th style={{width: "70px"}}>状态</th>
                   <th style={{width: "90px"}}>ID</th>
                   <th>模型</th>
@@ -179,6 +264,15 @@ export function QueueWorkspace({
                     className={selectedJobId === item.job.job_id ? "selected" : ""}
                     onClick={() => onSelectJob(item.job.job_id)}
                   >
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedBatchSet.has(item.job.job_id)}
+                        onChange={() => toggleBatchJob(item.job.job_id)}
+                        onClick={(e) => e.stopPropagation()}
+                        title="加入批量操作"
+                      />
+                    </td>
                     <td>
                       <StatusBadge state={item.job.status} label={statusLabel(item.job.status)} />
                     </td>
@@ -197,7 +291,7 @@ export function QueueWorkspace({
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={7}>
+                    <td colSpan={8}>
                       <div className="queue-table-empty">暂无任务记录</div>
                     </td>
                   </tr>

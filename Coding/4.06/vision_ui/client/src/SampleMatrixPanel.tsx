@@ -186,17 +186,27 @@ export function SampleMatrixPanel(props: {
   }
 
   return (
-    <article className="panel sample-matrix-panel">
-      <div className="section-head">
-        <div>
-          <span className="mini-label">样例库</span>
-          <h4>样例清单与测评矩阵</h4>
-          <p>{manifest?.purpose ?? "等待 /api/samples 返回共享样例计划。"}</p>
+    <div className="samples-workspace">
+      <div className="section-card">
+        <div className="section-card-header">
+          <div>
+            <h3 className="section-card-title">样例清单与测评矩阵</h3>
+            <p className="page-subtitle">{manifest?.purpose ?? "等待 API 返回共享样例计划"}</p>
+          </div>
         </div>
-        <div className="sample-matrix-stats">
-          <SummaryStat label="样例数" value={String(summary?.sample_count ?? samples.length)} />
-          <SummaryStat label="活跃模型" value={String(activeModels.length)} />
-          <SummaryStat label="评分维度" value={String(scoringEntries.length)} />
+        <div className="stats-grid" style={{ marginBottom: "16px" }}>
+          <div className="stat-item">
+            <span className="stat-label">样例数</span>
+            <span className="stat-value">{summary?.sample_count ?? samples.length}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">活跃模型</span>
+            <span className="stat-value">{activeModels.length}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">评分维度</span>
+            <span className="stat-value">{scoringEntries.length}</span>
+          </div>
         </div>
       </div>
 
@@ -605,6 +615,6 @@ export function SampleMatrixPanel(props: {
           ) : null}
         </>
       ) : null}
-    </article>
+    </div>
   );
 }

@@ -8,6 +8,7 @@ import type {
   AppState,
   BackendStatusPayload,
   BatchCompareResponse,
+  BatchJobsResponse,
   ComparePacket,
   DeploymentStatusPayload,
   DevelopmentLaneItem,
@@ -88,6 +89,25 @@ export type JobFilter = "all" | "running" | "attention" | "finished";
 export type WorkspaceTab = "queue" | "create" | "inspect" | "samples" | "compare" | "development" | "system";
 export type CreateMode = "single" | "batch";
 
+type JobSocketEvent =
+  | { type: "jobs.snapshot"; jobs: JobListItem[] }
+  | { type: "job.updated"; job_id: string; list_item: JobListItem; inspection?: InspectionPacket }
+  | { type: "job.error"; job_id?: string; detail: string };
+
+function jobSocketUrl(jobId: string) {
+  return `${API_BASE.replace(/^http/i, "ws")}/ws/jobs/${encodeURIComponent(jobId)}`;
+}
+
+function applyJobListItem(current: JobListItem[], next: JobListItem) {
+  const index = current.findIndex((item) => item.job.job_id === next.job.job_id);
+  if (index === -1) {
+    return [next, ...current];
+  }
+  const updated = [...current];
+  updated[index] = next;
+  return updated;
+}
+
 function App() {
   const [appState, setAppState] = useState<AppState | null>(null);
   const [jobs, setJobs] = useState<JobsListPayload["jobs"]>([]);
@@ -105,6 +125,7 @@ function App() {
   const [serviceMessage, setServiceMessage] = useState("正在准备本地服务...");
   const [submitting, setSubmitting] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
+  const [batchActionKey, setBatchActionKey] = useState<BatchJobAction | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
@@ -145,6 +166,7 @@ function App() {
   const [comparePacket, setComparePacket] = useState<ComparePacket | null>(null);
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState<string | null>(null);
+  const selectedJobIdRef = useRef<string | null>(null);
 
   const modelCatalog = useMemo(() => appState?.modelCatalog ?? [], [appState]);
   const modelContracts = useMemo(() => appState?.modelContracts ?? {}, [appState]);
@@ -266,16 +288,62 @@ function App() {
   }
 
   useEffect(() => {
+    selectedJobIdRef.current = selectedJobId;
+  }, [selectedJobId]);
+
+  useEffect(() => {
     loadDesktopBackendStatus();
     refreshAppState();
     loadJobs();
     loadSamples();
-    
-    const interval = setInterval(() => {
-      loadJobs(false);
+
+    const statusInterval = setInterval(() => {
       loadDesktopBackendStatus();
     }, 8000);
-    return () => clearInterval(interval);
+    return () => clearInterval(statusInterval);
+  }, []);
+
+  useEffect(() => {
+    let socket: WebSocket | null = null;
+    let reconnectTimer: number | null = null;
+    let closed = false;
+
+    function connect() {
+      socket = new WebSocket(jobSocketUrl("__all__"));
+      socket.onopen = () => {
+        setServiceState("ready");
+        setServiceMessage("本地服务已就绪");
+      };
+      socket.onmessage = (event) => {
+        const payload = JSON.parse(event.data) as JobSocketEvent;
+        if (payload.type === "jobs.snapshot") {
+          setJobs(payload.jobs);
+          return;
+        }
+        if (payload.type === "job.updated") {
+          setJobs((current) => applyJobListItem(current, payload.list_item));
+          if (payload.inspection && selectedJobIdRef.current === payload.job_id) {
+            setSelectedInspection(payload.inspection);
+          }
+          return;
+        }
+        if (payload.type === "job.error") {
+          console.warn("Job websocket error", payload.detail);
+        }
+      };
+      socket.onclose = () => {
+        if (!closed) {
+          reconnectTimer = window.setTimeout(connect, 3000);
+        }
+      };
+    }
+
+    connect();
+    return () => {
+      closed = true;
+      if (reconnectTimer !== null) window.clearTimeout(reconnectTimer);
+      socket?.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -463,14 +531,43 @@ function App() {
     try {
       const payload = await fetchJson<JobPayload>(path, { method: "POST" });
       setInfoMessage(buildActionMessage(key, payload.job.job_id));
+      setJobs((current) => applyJobListItem(current, { job: payload.job, phase_display: payload.phase_display }));
       if (selectedJobId === payload.job.job_id) {
         loadInspection(selectedJobId, false);
       }
-      loadJobs(false);
     } catch (e) {
       setErrorMessage("执行操作失败");
     } finally {
       setActionKey(null);
+    }
+  }
+
+  async function postBatchJobAction(action: BatchJobAction, jobIds: string[]) {
+    if (jobIds.length === 0) return;
+    setBatchActionKey(action);
+    const path = action === "cancel" ? "/api/jobs/batch-cancel" : "/api/jobs/batch-dispatch";
+    try {
+      const payload = await fetchJson<BatchJobsResponse>(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_ids: jobIds }),
+      });
+      const successful = payload.results.filter((item) => item.success);
+      for (const item of successful) {
+        const listItem = item.list_item ?? (item.job ? { job: item.job.job, phase_display: item.job.phase_display } : null);
+        if (listItem) {
+          setJobs((current) => applyJobListItem(current, listItem));
+        }
+      }
+      setInfoMessage(`批量${batchActionLabel(action)}完成：${successful.length}/${payload.results.length} 个任务成功。`);
+      const failed = payload.results.filter((item) => !item.success);
+      if (failed.length > 0) {
+        setErrorMessage(failed.map((item) => `${item.job_id}: ${item.error ?? "操作失败"}`).join("；"));
+      }
+    } catch (e) {
+      setErrorMessage(friendlyError(e, `批量${batchActionLabel(action)}失败。`));
+    } finally {
+      setBatchActionKey(null);
     }
   }
 
@@ -558,24 +655,11 @@ function App() {
               selectedJobId={selectedJobId} 
               onSelectJob={setSelectedJobId} 
               onInspectJob={handleInspectJob}
-              onDispatchJob={async (id) => {
-                try {
-                  await fetchJson(`/api/jobs/${id}/dispatch`, { method: "POST" });
-                  loadJobs();
-                  setInfoMessage("任务已派发");
-                } catch (e) {
-                  setErrorMessage(friendlyError(e, "派发失败"));
-                }
-              }}
-              onCancelJob={async (id) => {
-                try {
-                  await fetchJson(`/api/jobs/${id}/cancel`, { method: "POST" });
-                  loadJobs();
-                  setInfoMessage("任务已取消");
-                } catch (e) {
-                  setErrorMessage(friendlyError(e, "取消失败"));
-                }
-              }}
+              onDispatchJob={(id) => void postJobAction(`/api/jobs/${id}/dispatch`, "dispatch")}
+              onCancelJob={(id) => void postJobAction(`/api/jobs/${id}/cancel`, "cancel")}
+              onBatchDispatch={(ids) => void postBatchJobAction("dispatch", ids)}
+              onBatchCancel={(ids) => void postBatchJobAction("cancel", ids)}
+              batchActionBusy={batchActionKey}
             />
           )}
 
@@ -903,37 +987,65 @@ function App() {
 function SystemWorkbench(props: any) {
   const deploymentRows = buildDeploymentComponentRows(props.deploymentStatus, props.modelCatalog);
   return (
-    <section className="system-grid workbench-system-grid">
-      <article className="panel">
-        <PanelTitle eyebrow="System" title="本地服务" />
-        <div className="support-checklist compact-stack">
-          <article className="support-check-item"><strong>状态</strong><p>{props.serviceMessage}</p></article>
-          <article className="support-check-item"><strong>后端</strong><p>{backendStatusText(props.backendStatus)}</p></article>
+    <div className="system-workspace">
+      <div className="system-top-row">
+        <div className="section-card">
+          <div className="section-card-header">
+            <h3 className="section-card-title">本地服务</h3>
+            <span className={`section-card-badge ${props.backendStatus === "ready" ? "success" : ""}`}>
+              {props.backendStatus === "ready" ? "运行中" : "检查中"}
+            </span>
+          </div>
+          <div className="kv-row">
+            <span className="kv-label">服务状态</span>
+            <span className={`kv-value ${props.backendStatus === "ready" ? "success" : ""}`}>{props.serviceMessage}</span>
+          </div>
+          <div className="kv-row">
+            <span className="kv-label">后端进程</span>
+            <span className="kv-value">{backendStatusText(props.backendStatus)}</span>
+          </div>
         </div>
-      </article>
-      <article className="panel">
-        <PanelTitle eyebrow="Advisor" title="AI 配置" />
-        <div className="support-checklist compact-stack">
-          <article className="support-check-item"><strong>状态</strong><p>{props.advisorReady ? `就绪：${props.advisorState.model}` : "未配置"}</p></article>
-          <button className="ghost-button small" onClick={props.openAdvisorSettings}>打开配置</button>
+
+        <div className="section-card">
+          <div className="section-card-header">
+            <h3 className="section-card-title">AI 助手</h3>
+            <span className={`section-card-badge ${props.advisorReady ? "success" : ""}`}>
+              {props.advisorReady ? "已配置" : "未配置"}
+            </span>
+          </div>
+          <div className="kv-row">
+            <span className="kv-label">状态</span>
+            <span className={`kv-value ${props.advisorReady ? "success" : "muted"}`}>
+              {props.advisorReady ? `就绪 · ${props.advisorState.model}` : "未配置"}
+            </span>
+          </div>
+          <div style={{ marginTop: "12px" }}>
+            <button className="ghost-button small" onClick={props.openAdvisorSettings}>打开配置</button>
+          </div>
         </div>
-      </article>
-      <article className="panel deployment-console-panel">
-        <PanelTitle eyebrow="Deployment" title="部署状态" />
-        <div className="deployment-readiness-table">
-          <div className="deployment-readiness-head"><span>模型</span><span>目录</span><span>环境</span><span>文件</span><span>权重</span></div>
+      </div>
+
+      <div className="section-card">
+        <div className="section-card-header">
+          <h3 className="section-card-title">模型部署状态</h3>
+          <button className="ghost-button small" onClick={() => props.loadDeploymentStatus(true, true)}>刷新</button>
+        </div>
+        <div className="deployment-table">
+          <div className="deployment-table-head">
+            <span>模型</span><span>目录</span><span>环境</span><span>文件</span><span>权重</span>
+          </div>
           {deploymentRows.map((row: any) => (
-            <div className={`deployment-readiness-row ${row.tone}`} key={row.component}>
-              <div className="deployment-model-cell">
-                <strong>{modelDisplayName(row.component, props.modelCatalog)}</strong>
-              </div>
-              <span>{row.directory}</span><span>{row.env}</span><span>{row.files}</span><span>{row.checkpoints}</span>
+            <div className={`deployment-table-row ${row.tone}`} key={row.component}>
+              <span className="deployment-model-name">{modelDisplayName(row.component, props.modelCatalog)}</span>
+              <span>{row.directory}</span>
+              <span>{row.env}</span>
+              <span>{row.files}</span>
+              <span>{row.checkpoints}</span>
             </div>
           ))}
         </div>
-        <button className="ghost-button small" onClick={() => props.loadDeploymentStatus(true, true)}>立即刷新</button>
-      </article>
-    </section>
+      </div>
+    </div>
   );
 }
 
