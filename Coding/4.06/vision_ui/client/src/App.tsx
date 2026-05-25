@@ -7,6 +7,8 @@ import type {
   AdvisorStatus,
   AppState,
   BackendStatusPayload,
+  BatchCompareResponse,
+  ComparePacket,
   DeploymentStatusPayload,
   DevelopmentLaneItem,
   EvaluationPayload,
@@ -78,10 +80,13 @@ import { Sidebar } from "./Sidebar";
 import { CommandBar } from "./CommandBar";
 import { QueueWorkspace } from "./QueueWorkspace";
 import { InspectWorkspace } from "./InspectWorkspace";
+import { CompareBoard, CompareBoardInline } from "./CompareBoard";
+import { filterRunnableModels, modelCompatibilityHint } from "./compareHelpers";
 
 export type ServiceState = "starting" | "ready" | "degraded";
 export type JobFilter = "all" | "running" | "attention" | "finished";
-export type WorkspaceTab = "queue" | "create" | "inspect" | "samples" | "development" | "system";
+export type WorkspaceTab = "queue" | "create" | "inspect" | "samples" | "compare" | "development" | "system";
+export type CreateMode = "single" | "batch";
 
 function App() {
   const [appState, setAppState] = useState<AppState | null>(null);
@@ -132,6 +137,14 @@ function App() {
     notes: "",
     params: {}
   });
+  const [createMode, setCreateMode] = useState<CreateMode>("single");
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [batchAutoDispatch, setBatchAutoDispatch] = useState(false);
+  const [batchSubmitting, setBatchSubmitting] = useState(false);
+  const [compareSampleId, setCompareSampleId] = useState<string | null>(null);
+  const [comparePacket, setComparePacket] = useState<ComparePacket | null>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+  const [compareError, setCompareError] = useState<string | null>(null);
 
   const modelCatalog = useMemo(() => appState?.modelCatalog ?? [], [appState]);
   const modelContracts = useMemo(() => appState?.modelContracts ?? {}, [appState]);
@@ -170,6 +183,24 @@ function App() {
     pendingImageCount > 0 ? `图片 ${pendingImageCount}` : null,
     pendingVideoCount > 0 ? `视频 ${pendingVideoCount}` : null,
   ].filter(Boolean).join(" / ") || "暂无", [pendingImageCount, pendingVideoCount]);
+
+  const batchCompatibleModels = useMemo(() => 
+    filterRunnableModels(modelCatalog, formState.source_type),
+    [modelCatalog, formState.source_type]
+  );
+
+  const batchModelHints = useMemo(() => {
+    const hints: Record<string, string | null> = {};
+    for (const m of selectedModels) {
+      hints[m] = modelCompatibilityHint(m, formState.source_type, modelCatalog);
+    }
+    return hints;
+  }, [selectedModels, formState.source_type, modelCatalog]);
+
+  const batchHasBlockers = useMemo(() => 
+    selectedModels.some((m) => batchModelHints[m] !== null),
+    [selectedModels, batchModelHints]
+  );
 
   async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await fetch(`${API_BASE}${path}`, init);
@@ -289,16 +320,84 @@ function App() {
     }
   }
 
+  async function loadComparePacket(sampleId: string, showError = true) {
+    setCompareLoading(true);
+    setCompareError(null);
+    try {
+      const packet = await fetchJson<ComparePacket>(`/api/compare/samples/${encodeURIComponent(sampleId)}`);
+      setComparePacket(packet);
+    } catch (error) {
+      if (showError) setCompareError(friendlyError(error, "加载对比数据失败。"));
+    } finally {
+      setCompareLoading(false);
+    }
+  }
+
+  async function handleBatchCompare(autoDispatch: boolean) {
+    if (selectedModels.length < 1) {
+      setErrorMessage("请至少选择一个模型。");
+      return;
+    }
+    if (files.length === 0) {
+      setErrorMessage("请先上传输入文件。");
+      return;
+    }
+    if (batchHasBlockers) {
+      setErrorMessage("部分模型不兼容当前输入类型。");
+      return;
+    }
+
+    setBatchSubmitting(true);
+    const formData = new FormData();
+    formData.append("models", JSON.stringify(selectedModels));
+    formData.append("source_type", formState.source_type);
+    formData.append("notes", formState.notes);
+    formData.append("auto_dispatch", autoDispatch ? "true" : "false");
+    formData.append("params", JSON.stringify(formState.params));
+    files.forEach(f => formData.append("files", f, f.name));
+
+    try {
+      const result = await fetchJson<BatchCompareResponse>("/api/compare/batches", {
+        method: "POST",
+        body: formData
+      });
+      setFiles([]);
+      setSelectedModels([]);
+      setCompareSampleId(result.sampleId);
+      setComparePacket(result.compare);
+      setActiveWorkspace("compare");
+      setInfoMessage(`批量对比已创建：${result.models.length} 个任务，sample_id: ${result.sampleId}`);
+      loadJobs(false);
+    } catch (e) {
+      setErrorMessage(friendlyError(e, "批量对比创建失败"));
+    } finally {
+      setBatchSubmitting(false);
+    }
+  }
+
+  function toggleBatchModel(model: string) {
+    setSelectedModels((prev) =>
+      prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model]
+    );
+  }
+
+  function openCompareBoard(sampleId: string) {
+    setCompareSampleId(sampleId);
+    loadComparePacket(sampleId);
+    setActiveWorkspace("compare");
+  }
+
   const workspaceTitle = useMemo(() => {
     switch (activeWorkspace) {
       case "queue": return "任务队列";
-      case "create": return "新建任务";
+      case "create": return createMode === "batch" ? "批量对比" : "新建任务";
       case "inspect": return `检视：${selectedJobId || "尚未选择"}`;
       case "samples": return "样例矩阵";
+      case "compare": return `对比面板：${compareSampleId || "--"}`;
       case "development": return "研发加速";
       case "system": return "系统配置";
     }
-  }, [activeWorkspace, selectedJobId]);
+  }, [activeWorkspace, selectedJobId, createMode, compareSampleId]);
 
   async function openAdvisorSettings() {
     setAdvisorConfigLoading(true);
@@ -459,28 +558,117 @@ function App() {
               selectedJobId={selectedJobId} 
               onSelectJob={setSelectedJobId} 
               onInspectJob={handleInspectJob}
+              onDispatchJob={async (id) => {
+                try {
+                  await fetchJson(`/api/jobs/${id}/dispatch`, { method: "POST" });
+                  loadJobs();
+                  setInfoMessage("任务已派发");
+                } catch (e) {
+                  setErrorMessage(friendlyError(e, "派发失败"));
+                }
+              }}
+              onCancelJob={async (id) => {
+                try {
+                  await fetchJson(`/api/jobs/${id}/cancel`, { method: "POST" });
+                  loadJobs();
+                  setInfoMessage("任务已取消");
+                } catch (e) {
+                  setErrorMessage(friendlyError(e, "取消失败"));
+                }
+              }}
             />
           )}
 
           {activeWorkspace === "create" && (
-            <section className="layout-grid create-layout">
-              <article className="panel create-panel">
-                <form className="form-stack" onSubmit={(e) => e.preventDefault()}>
-                  <div className="create-workbench-grid">
-                    <article className="create-block create-config-block">
-                      <div className="form-row">
-                        <label className="field">
-                          <span>模型</span>
-                          <select value={formState.model} onChange={(e) => updateModel(e.target.value)}>
-                            {runnableModelCatalog.map((m) => (
-                              <option key={m.value} value={m.value}>{m.label}</option>
-                            ))}
-                            {catalogOnlyModelCatalog.map((m) => (
-                              <option key={m.value} value={m.value} disabled>{m.label} (未部署)</option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="field">
+            <div className="create-workspace">
+              {/* Step 1: Mode & Model Selection */}
+              <div className="create-section">
+                <div className="create-section-header">
+                  <span className="create-step-num">1</span>
+                  <span className="create-section-title">选择模式</span>
+                </div>
+                <div className="create-mode-toggle">
+                  <button
+                    type="button"
+                    className={`mode-toggle-btn ${createMode === "single" ? "active" : ""}`}
+                    onClick={() => setCreateMode("single")}
+                  >
+                    单任务创建
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-toggle-btn ${createMode === "batch" ? "active" : ""}`}
+                    onClick={() => setCreateMode("batch")}
+                  >
+                    多模型对比
+                  </button>
+                </div>
+              </div>
+
+              <div className="create-main-grid">
+                {/* Left: Model Config */}
+                <div className="create-left-panel">
+                  <div className="create-section">
+                    <div className="create-section-header">
+                      <span className="create-step-num">2</span>
+                      <span className="create-section-title">{createMode === "single" ? "选择模型" : "选择对比模型"}</span>
+                    </div>
+                    {createMode === "single" ? (
+                      <div className="model-selector-grid">
+                        {runnableModelCatalog.map((m) => (
+                          <div
+                            key={m.value}
+                            className={`model-selector-card ${formState.model === m.value ? "selected" : ""}`}
+                            onClick={() => updateModel(m.value)}
+                          >
+                            <div className="model-selector-header">
+                              <strong>{m.label}</strong>
+                              {formState.model === m.value && <span className="model-selected-badge">已选</span>}
+                            </div>
+                            <p className="model-selector-desc">{m.description}</p>
+                            <div className="model-selector-meta">
+                              <span>{m.source_types?.join(" / ") || "images"}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="batch-model-grid">
+                        {batchCompatibleModels.map((m) => {
+                          const hint = batchModelHints[m.value];
+                          const selected = selectedModels.includes(m.value);
+                          return (
+                            <div
+                              key={m.value}
+                              className={`model-selector-card compact ${selected ? "selected" : ""} ${hint ? "blocked" : ""}`}
+                              onClick={() => !hint && toggleBatchModel(m.value)}
+                            >
+                              <div className="model-selector-header">
+                                <input
+                                  type="checkbox"
+                                  checked={selected}
+                                  onChange={() => toggleBatchModel(m.value)}
+                                  disabled={!!hint && !selected}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                <strong>{m.label}</strong>
+                              </div>
+                              {hint && <small className="model-blocker-hint">{hint}</small>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {createMode === "single" && (
+                    <div className="create-section">
+                      <div className="create-section-header">
+                        <span className="create-step-num">3</span>
+                        <span className="create-section-title">参数配置</span>
+                      </div>
+                      <div className="create-config-form">
+                        <label className="field compact">
                           <span>输入类型</span>
                           <select value={formState.source_type} onChange={(e) => updateFormField("source_type", e.target.value)}>
                             {appState?.sourceTypes.filter(st => selectedModelSourceTypes.includes(st.value)).map((st) => (
@@ -488,57 +676,110 @@ function App() {
                             ))}
                           </select>
                         </label>
-                      </div>
-                      <div className="create-model-context">
-                        <strong>{selectedModelCatalog?.description}</strong>
-                        <ModelSemanticChips catalog={modelCatalog} model={formState.model} compact />
-                        {selectedModelLaunchBlocker && <p className="create-model-note blocked">{selectedModelLaunchBlocker}</p>}
-                      </div>
-                      <label className="field">
-                        <span>备注</span>
-                        <textarea rows={2} value={formState.notes} onChange={(e) => updateFormField("notes", e.target.value)} placeholder="记录此实验的特殊目的..." />
-                      </label>
-                    </article>
-
-                    <article className="create-block create-staging-block">
-                      <label className="dropzone">
-                        <input type="file" multiple onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
-                        <span>点击或拖拽选择输入文件</span>
-                      </label>
-                      <div className="staging-stats">
-                        <SummaryStat label="总大小" value={formatFileSize(pendingTotalSize)} />
-                        <SummaryStat label="类型" value={pendingTypeSummary} />
-                      </div>
-                      {files.length > 0 && (
-                        <div className="staging-table">
-                          <div className="staging-table-head"><span>文件名</span><span>类型</span><span>大小</span><span></span></div>
-                          <div className="staging-table-body">
-                            {files.slice(0, 10).map((file) => (
-                              <div className="staging-row" key={`${file.name}-${file.size}`}>
-                                <span className="staging-name">{file.name}</span>
-                                <span>{pendingFileRoleLabel(file)}</span>
-                                <span>{formatFileSize(file.size)}</span>
-                                <button className="ghost-button small staging-remove-button" type="button" onClick={() => setFiles(prev => prev.filter(f => f !== file))}>移除</button>
-                              </div>
-                            ))}
-                            {files.length > 10 && <div className="staging-row"><span className="muted-text">...及另外 {files.length - 10} 个文件</span></div>}
-                          </div>
-                        </div>
-                      )}
-                    </article>
-
-                    <article className="create-block create-params-block">
-                      <details className="advanced-panel" open>
-                        <summary>模型参数契约</summary>
-                        {selectedModelContract ? (
+                        {selectedModelContract && selectedModelContract.paramSchema.fields.length > 0 && (
                           <DynamicParamForm fields={selectedModelContract.paramSchema.fields} values={formState.params} onChange={updateFormField} />
-                        ) : <div className="empty-state">正在加载契约...</div>}
-                      </details>
-                    </article>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {createMode === "batch" && (
+                    <div className="create-section">
+                      <div className="create-section-header">
+                        <span className="create-step-num">3</span>
+                        <span className="create-section-title">输入配置</span>
+                      </div>
+                      <label className="field compact">
+                        <span>输入类型</span>
+                        <select value={formState.source_type} onChange={(e) => updateFormField("source_type", e.target.value)}>
+                          {appState?.sourceTypes.map((st) => (
+                            <option key={st.value} value={st.value}>{st.label}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right: File Upload & Submit */}
+                <div className="create-right-panel">
+                  <div className="create-section">
+                    <div className="create-section-header">
+                      <span className="create-step-num">{createMode === "single" ? "4" : "4"}</span>
+                      <span className="create-section-title">上传文件</span>
+                      {files.length > 0 && <span className="create-file-count">{files.length} 个文件</span>}
+                    </div>
+                    <label className="dropzone-pro">
+                      <input type="file" multiple onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
+                      <div className="dropzone-content">
+                        <div className="dropzone-icon">📁</div>
+                        <strong>点击选择文件或拖拽到此处</strong>
+                        <span>支持图片、视频等格式</span>
+                      </div>
+                    </label>
+                    {files.length > 0 && (
+                      <div className="file-list">
+                        {files.slice(0, 6).map((file) => (
+                          <div className="file-item" key={`${file.name}-${file.size}`}>
+                            <span className="file-name">{file.name}</span>
+                            <span className="file-size">{formatFileSize(file.size)}</span>
+                            <button className="file-remove" type="button" onClick={() => setFiles(prev => prev.filter(f => f !== file))}>×</button>
+                          </div>
+                        ))}
+                        {files.length > 6 && <div className="file-item more">+{files.length - 6} 个文件</div>}
+                      </div>
+                    )}
                   </div>
-                </form>
-              </article>
-            </section>
+
+                  <div className="create-section">
+                    <label className="field compact">
+                      <span>备注（可选）</span>
+                      <input 
+                        type="text" 
+                        value={formState.notes} 
+                        onChange={(e) => updateFormField("notes", e.target.value)} 
+                        placeholder="实验目的或说明..."
+                      />
+                    </label>
+                  </div>
+
+                  <div className="create-submit-section">
+                    {createMode === "single" ? (
+                      <button
+                        className="create-submit-btn primary"
+                        type="button"
+                        onClick={() => handleCreateJob()}
+                        disabled={submitting || !!selectedModelLaunchBlocker || files.length === 0}
+                      >
+                        {submitting ? "创建中..." : "创建任务"}
+                      </button>
+                    ) : (
+                      <div className="create-submit-group">
+                        <button
+                          className="create-submit-btn"
+                          type="button"
+                          onClick={() => handleBatchCompare(false)}
+                          disabled={batchSubmitting || selectedModels.length < 1 || files.length === 0 || batchHasBlockers}
+                        >
+                          {batchSubmitting ? "创建中..." : "仅创建"}
+                        </button>
+                        <button
+                          className="create-submit-btn primary"
+                          type="button"
+                          onClick={() => handleBatchCompare(true)}
+                          disabled={batchSubmitting || selectedModels.length < 1 || files.length === 0 || batchHasBlockers}
+                        >
+                          {batchSubmitting ? "创建中..." : "创建并派发"}
+                        </button>
+                      </div>
+                    )}
+                    {selectedModelLaunchBlocker && (
+                      <p className="create-blocker-msg">{selectedModelLaunchBlocker}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {activeWorkspace === "inspect" && selectedInspection && (
@@ -574,6 +815,21 @@ function App() {
               errorMessage={samplesError}
               modelCatalog={modelCatalog}
               onLocateJob={handleInspectJob}
+              onCopy={async (v, l) => { await navigator.clipboard.writeText(v); setInfoMessage(`${l}已复制`); }}
+            />
+          )}
+
+          {activeWorkspace === "compare" && (
+            <CompareBoard
+              sampleId={compareSampleId}
+              packet={comparePacket}
+              loading={compareLoading}
+              error={compareError}
+              modelCatalog={modelCatalog}
+              apiBase={API_BASE}
+              onInspectJob={handleInspectJob}
+              onRefresh={() => compareSampleId && loadComparePacket(compareSampleId)}
+              onPreviewAsset={(asset) => setPreviewAsset(asset as PreviewAsset)}
             />
           )}
 

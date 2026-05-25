@@ -10,13 +10,14 @@ import shutil
 import subprocess
 import threading
 import time
+import uuid
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -188,6 +189,16 @@ DELIVERY_GAPS = [
 
 ACTIVE_PHASE_CODES = [code for code, *_ in PHASE_FLOW[:6]]
 PROGRESS_PATTERN = re.compile(r"(\d+)\s*/\s*(\d+)")
+COMPARE_VISUAL_KINDS = {"image", "video", "pointcloud", "model3d"}
+COMPARE_PRIMARY_ROLES = {
+    "matches",
+    "pointcloud",
+    "scene",
+    "trajectory",
+    "frame_preview",
+    "dynamic_mask",
+    "metadata",
+}
 EVALUATION_FIELD_LABELS = {
     "structure_completeness": "结构完整性",
     "trajectory_stability": "轨迹稳定性",
@@ -775,11 +786,121 @@ def _validate_new_job(model: str, source_type: str, files: list[UploadFile]) -> 
         raise HTTPException(status_code=400, detail="；".join(errors))
 
 
+def _validate_new_job_file_count(model: str, source_type: str, file_count: int) -> list[str]:
+    return validate_create_request(model, source_type, file_count)
+
+
 def _validate_dispatchable(job) -> None:
     minimum = _minimum_input_count(job.model, job.source_type)
     if len(job.input_files) < minimum:
         unit = "个视频文件" if job.source_type == "video" else "张图片或帧"
         raise HTTPException(status_code=400, detail=f"{get_model_spec(job.model).label} 至少需要 {minimum} {unit}。")
+
+
+def _parse_json_object(value: str | None, field_name: str) -> dict:
+    if not value:
+        return {}
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f"{field_name} JSON 解析失败：{exc.msg}") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail=f"{field_name} 必须是 JSON object。")
+    return payload
+
+
+def _parse_model_selection(value: str) -> list[str]:
+    raw = (value or "").strip()
+    if not raw:
+        raise HTTPException(status_code=400, detail="至少选择一个模型。")
+    if raw.startswith("["):
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=400, detail=f"models JSON 解析失败：{exc.msg}") from exc
+        if not isinstance(payload, list):
+            raise HTTPException(status_code=400, detail="models JSON 必须是数组。")
+        candidates = [str(item).strip() for item in payload]
+    else:
+        candidates = [item.strip() for item in raw.split(",")]
+
+    models: list[str] = []
+    seen: set[str] = set()
+    for model in candidates:
+        if model and model not in seen:
+            seen.add(model)
+            models.append(model)
+    if not models:
+        raise HTTPException(status_code=400, detail="至少选择一个模型。")
+    return models
+
+
+def _new_compare_sample_id() -> str:
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return f"compare-{timestamp}-{uuid.uuid4().hex[:6]}"
+
+
+async def _uploaded_files_to_bytes(files: list[UploadFile]) -> list[tuple[str, bytes]]:
+    uploaded = []
+    for upload in files:
+        uploaded.append((upload.filename or "unnamed.bin", await upload.read()))
+    return uploaded
+
+
+def _build_raw_job_params(
+    *,
+    params: str,
+    image_size: int,
+    scene_graph: str,
+    niter: int,
+    lr: float,
+    batch_size: int,
+    max_points: int,
+    match_viz_count: int,
+    fps: int,
+    num_frames: int,
+    not_batchify: str,
+    real_time: str,
+    window_wise: str,
+    window_size: int,
+    window_overlap_ratio: float,
+) -> dict:
+    raw_params = {
+        "image_size": image_size,
+        "scene_graph": scene_graph,
+        "niter": niter,
+        "lr": lr,
+        "batch_size": batch_size,
+        "max_points": max_points,
+        "match_viz_count": match_viz_count,
+        "fps": fps,
+        "num_frames": num_frames,
+        "not_batchify": not_batchify,
+        "real_time": real_time,
+        "window_wise": window_wise,
+        "window_size": window_size,
+        "window_overlap_ratio": window_overlap_ratio,
+    }
+    raw_params.update(_parse_json_object(params, "params"))
+    return raw_params
+
+
+def _create_job_from_uploaded_bytes(
+    *,
+    model: str,
+    source_type: str,
+    notes: str,
+    sample_id: str,
+    raw_params: dict,
+    uploaded: list[tuple[str, bytes]],
+):
+    errors = _validate_new_job_file_count(model, source_type, len(uploaded))
+    if errors:
+        raise HTTPException(status_code=400, detail="；".join(errors))
+    params = build_contract_job_params(model, raw_params)
+    job = create_job(model=model, source_type=source_type, notes=notes, params=params, sample_id=sample_id)
+    save_inputs(job, uploaded)
+    return load_job(job.job_id)
 
 
 async def _create_job_from_request(
@@ -788,6 +909,7 @@ async def _create_job_from_request(
     source_type: str,
     notes: str,
     sample_id: str,
+    params: str,
     image_size: int,
     scene_graph: str,
     niter: int,
@@ -805,31 +927,32 @@ async def _create_job_from_request(
     files: list[UploadFile],
 ):
     _validate_new_job(model, source_type, files)
-    params = build_contract_job_params(
-        model,
-        {
-            "image_size": image_size,
-            "scene_graph": scene_graph,
-            "niter": niter,
-            "lr": lr,
-            "batch_size": batch_size,
-            "max_points": max_points,
-            "match_viz_count": match_viz_count,
-            "fps": fps,
-            "num_frames": num_frames,
-            "not_batchify": not_batchify,
-            "real_time": real_time,
-            "window_wise": window_wise,
-            "window_size": window_size,
-            "window_overlap_ratio": window_overlap_ratio,
-        },
+    raw_params = _build_raw_job_params(
+        params=params,
+        image_size=image_size,
+        scene_graph=scene_graph,
+        niter=niter,
+        lr=lr,
+        batch_size=batch_size,
+        max_points=max_points,
+        match_viz_count=match_viz_count,
+        fps=fps,
+        num_frames=num_frames,
+        not_batchify=not_batchify,
+        real_time=real_time,
+        window_wise=window_wise,
+        window_size=window_size,
+        window_overlap_ratio=window_overlap_ratio,
     )
-    job = create_job(model=model, source_type=source_type, notes=notes, params=params, sample_id=sample_id)
-    uploaded = []
-    for upload in files:
-        uploaded.append((upload.filename or "unnamed.bin", await upload.read()))
-    save_inputs(job, uploaded)
-    return load_job(job.job_id)
+    uploaded = await _uploaded_files_to_bytes(files)
+    return _create_job_from_uploaded_bytes(
+        model=model,
+        source_type=source_type,
+        notes=notes,
+        sample_id=sample_id,
+        raw_params=raw_params,
+        uploaded=uploaded,
+    )
 
 
 def _prepare_job_for_dispatch(job_id: str, message: str) -> None:
@@ -894,6 +1017,138 @@ def build_sample_job_matrix(manifest: dict, jobs) -> dict:
     return {"rows": rows, "unassigned_jobs": unassigned}
 
 
+def _job_score_snapshot(job) -> dict:
+    evaluation = load_evaluation(job.job_id)
+    return {
+        key: evaluation.get(key)
+        for key in EVALUATION_SCORE_FIELDS
+        if evaluation.get(key) is not None
+    }
+
+
+def _job_compare_visuals(job) -> list[dict]:
+    artifact_index = build_job_artifact_index(job)
+    artifacts = artifact_index.get("artifacts") or []
+    primary_paths = {
+        item.get("relativePath") or item.get("relative_path")
+        for item in artifact_index.get("primaryArtifacts") or []
+    }
+    visuals = []
+    for artifact in artifacts:
+        if artifact.get("kind") not in COMPARE_VISUAL_KINDS and artifact.get("role") not in COMPARE_PRIMARY_ROLES:
+            continue
+        rel_path = artifact.get("relativePath")
+        visuals.append(
+            {
+                "role": artifact.get("role"),
+                "label": artifact.get("label"),
+                "kind": artifact.get("kind"),
+                "name": artifact.get("name"),
+                "relativePath": rel_path,
+                "relative_path": rel_path,
+                "url": artifact.get("url"),
+                "primary": rel_path in primary_paths,
+            }
+        )
+    return sorted(visuals, key=lambda item: (not item["primary"], item["role"] or "", item["name"] or ""))
+
+
+def build_sample_compare_packet(sample_id: str) -> dict:
+    normalized_sample_id = sample_id.strip()
+    if not normalized_sample_id:
+        raise HTTPException(status_code=400, detail="sample_id 不能为空。")
+    result = query_jobs(limit=200, sample_id=normalized_sample_id, sort="created_asc")
+    jobs = result["jobs"]
+    model_cells = []
+    status_counts: dict[str, int] = {}
+    visual_count = 0
+    score_values = []
+
+    for job in jobs:
+        visuals = _job_compare_visuals(job)
+        score_snapshot = _job_score_snapshot(job)
+        score_values.extend(value for value in score_snapshot.values() if isinstance(value, (int, float)))
+        visual_count += len(visuals)
+        status_counts[job.status] = status_counts.get(job.status, 0) + 1
+        model_cells.append(
+            {
+                "model": job.model,
+                "jobId": job.job_id,
+                "job_id": job.job_id,
+                "status": job.status,
+                "statusLabel": status_label(job.status),
+                "status_label": status_label(job.status),
+                "phase": job.phase,
+                "progressMessage": job.progress_message,
+                "progress_message": job.progress_message,
+                "createdAt": job.created_at,
+                "created_at": job.created_at,
+                "scoreSnapshot": score_snapshot,
+                "score_snapshot": score_snapshot,
+                "primaryArtifacts": build_job_artifact_index(job).get("primaryArtifacts") or [],
+                "primary_artifacts": build_job_artifact_index(job).get("primary_artifacts") or [],
+                "visuals": visuals,
+                "outputs": serialize_outputs(job),
+                "previews": serialize_previews(job),
+            }
+        )
+
+    average_score = sum(score_values) / len(score_values) if score_values else None
+    return {
+        "sampleId": normalized_sample_id,
+        "sample_id": normalized_sample_id,
+        "summary": {
+            "jobCount": len(jobs),
+            "job_count": len(jobs),
+            "finished": status_counts.get("finished", 0),
+            "running": status_counts.get("running", 0),
+            "attention": status_counts.get("failed", 0) + status_counts.get("cancelled", 0),
+            "visualCount": visual_count,
+            "visual_count": visual_count,
+            "averageScore": average_score,
+            "average_score": average_score,
+            "statusCounts": status_counts,
+            "status_counts": status_counts,
+        },
+        "modelCells": model_cells,
+        "model_cells": model_cells,
+        "reportMarkdown": build_sample_compare_markdown(normalized_sample_id, model_cells, average_score),
+        "report_markdown": build_sample_compare_markdown(normalized_sample_id, model_cells, average_score),
+    }
+
+
+def build_sample_compare_markdown(sample_id: str, model_cells: list[dict], average_score: float | None) -> str:
+    lines = [
+        f"# 3R Sample Compare: {sample_id}",
+        "",
+        f"- Generated: {datetime.now().isoformat(timespec='seconds')}",
+        f"- Jobs: {len(model_cells)}",
+        f"- Average score: {average_score:.2f}" if average_score is not None else "- Average score: --",
+        "",
+        "| Model | Job | Status | Score fields | Visuals | Primary artifact |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for cell in model_cells:
+        primary = cell.get("primaryArtifacts") or cell.get("primary_artifacts") or []
+        first_primary = primary[0] if primary else {}
+        score_snapshot = cell.get("scoreSnapshot") or {}
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    str(cell.get("model") or "--"),
+                    str(cell.get("jobId") or "--"),
+                    str(cell.get("statusLabel") or cell.get("status") or "--"),
+                    str(len(score_snapshot)),
+                    str(len(cell.get("visuals") or [])),
+                    str(first_primary.get("name") or first_primary.get("relative_path") or "--"),
+                ]
+            )
+            + " |"
+        )
+    return "\n".join(lines) + "\n"
+
+
 def _runner_thread_target(job_id: str) -> None:
     try:
         run_remote_job(job_id)
@@ -949,6 +1204,7 @@ async def create_job_view(
     source_type: str = Form(...),
     notes: str = Form(""),
     sample_id: str = Form(""),
+    params: str = Form(""),
     image_size: int = Form(512),
     scene_graph: str = Form("complete"),
     niter: int = Form(300),
@@ -970,6 +1226,7 @@ async def create_job_view(
         source_type=source_type,
         notes=notes,
         sample_id=sample_id,
+        params=params,
         image_size=image_size,
         scene_graph=scene_graph,
         niter=niter,
@@ -1546,6 +1803,7 @@ async def create_job_api(
     source_type: str = Form(...),
     notes: str = Form(""),
     sample_id: str = Form(""),
+    params: str = Form(""),
     image_size: int = Form(512),
     scene_graph: str = Form("complete"),
     niter: int = Form(300),
@@ -1567,6 +1825,7 @@ async def create_job_api(
         source_type=source_type,
         notes=notes,
         sample_id=sample_id,
+        params=params,
         image_size=image_size,
         scene_graph=scene_graph,
         niter=niter,
@@ -1584,6 +1843,111 @@ async def create_job_api(
         files=files,
     )
     return JSONResponse(_job_payload(job))
+
+
+@app.post("/api/compare/batches")
+async def create_compare_batch_api(
+    models: str = Form(...),
+    source_type: str = Form(...),
+    notes: str = Form(""),
+    sample_id: str = Form(""),
+    auto_dispatch: bool = Form(False),
+    params: str = Form(""),
+    model_params: str = Form(""),
+    image_size: int = Form(512),
+    scene_graph: str = Form("complete"),
+    niter: int = Form(300),
+    lr: float = Form(0.01),
+    batch_size: int = Form(1),
+    max_points: int = Form(250000),
+    match_viz_count: int = Form(50),
+    fps: int = Form(0),
+    num_frames: int = Form(24),
+    not_batchify: str = Form("true"),
+    real_time: str = Form("false"),
+    window_wise: str = Form("false"),
+    window_size: int = Form(100),
+    window_overlap_ratio: float = Form(0.5),
+    files: list[UploadFile] = File(...),
+):
+    selected_models = _parse_model_selection(models)
+    normalized_sample_id = sample_id.strip() or _new_compare_sample_id()
+    base_params = _build_raw_job_params(
+        params=params,
+        image_size=image_size,
+        scene_graph=scene_graph,
+        niter=niter,
+        lr=lr,
+        batch_size=batch_size,
+        max_points=max_points,
+        match_viz_count=match_viz_count,
+        fps=fps,
+        num_frames=num_frames,
+        not_batchify=not_batchify,
+        real_time=real_time,
+        window_wise=window_wise,
+        window_size=window_size,
+        window_overlap_ratio=window_overlap_ratio,
+    )
+    per_model_params = _parse_json_object(model_params, "model_params")
+
+    validation_errors: list[str] = []
+    for model in selected_models:
+        errors = _validate_new_job_file_count(model, source_type, len(files))
+        if errors:
+            validation_errors.append(f"{model}: {'；'.join(errors)}")
+    if validation_errors:
+        raise HTTPException(status_code=400, detail="；".join(validation_errors))
+
+    uploaded = await _uploaded_files_to_bytes(files)
+    jobs = []
+    for model in selected_models:
+        model_override = per_model_params.get(model, {})
+        if model_override and not isinstance(model_override, dict):
+            raise HTTPException(status_code=400, detail=f"model_params.{model} 必须是 JSON object。")
+        raw_params = {**base_params, **model_override}
+        job = _create_job_from_uploaded_bytes(
+            model=model,
+            source_type=source_type,
+            notes=notes,
+            sample_id=normalized_sample_id,
+            raw_params=raw_params,
+            uploaded=uploaded,
+        )
+        jobs.append(job)
+
+    dispatch_results = []
+    if auto_dispatch:
+        for job in jobs:
+            _prepare_job_for_dispatch(job.job_id, "批量对比任务已创建，正在启动远端调度线程...")
+            dispatch_results.append({"job_id": job.job_id, "model": job.model, "dispatched": True})
+
+    refreshed_jobs = [load_job(job.job_id) for job in jobs]
+    compare_packet = build_sample_compare_packet(normalized_sample_id)
+    return JSONResponse(
+        {
+            "ok": True,
+            "sampleId": normalized_sample_id,
+            "sample_id": normalized_sample_id,
+            "models": selected_models,
+            "createdJobs": [_job_payload(job) for job in refreshed_jobs],
+            "created_jobs": [_job_payload(job) for job in refreshed_jobs],
+            "dispatchResults": dispatch_results,
+            "dispatch_results": dispatch_results,
+            "compare": compare_packet,
+        }
+    )
+
+
+@app.get("/api/compare/samples/{sample_id}")
+async def sample_compare_api(sample_id: str):
+    return JSONResponse(build_sample_compare_packet(sample_id))
+
+
+@app.get("/api/compare/samples/{sample_id}/report")
+async def sample_compare_report_api(sample_id: str):
+    packet = build_sample_compare_packet(sample_id)
+    return PlainTextResponse(packet["reportMarkdown"], media_type="text/markdown; charset=utf-8")
 
 
 @app.get("/api/advisor/status")

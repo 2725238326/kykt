@@ -472,3 +472,115 @@ export type ValidationCreateResponse = {
   ok: boolean;
   errors: string[];
 };
+
+// ──────────────────────────────────────────────────────────────
+// Batch Compare Types
+// ──────────────────────────────────────────────────────────────
+
+export type CompareSummary = {
+  jobCount: number;
+  job_count: number;
+  finished: number;
+  running: number;
+  attention: number;
+  visualCount: number;
+  visual_count: number;
+  averageScore: number | null;
+  average_score: number | null;
+  statusCounts: Record<string, number>;
+  status_counts: Record<string, number>;
+};
+
+export type CompareVisual = {
+  role: string;
+  label: string;
+  kind: string;
+  name: string;
+  relativePath: string;
+  relative_path: string;
+  url: string;
+  primary: boolean;
+};
+
+export type CompareModelCell = {
+  model: string;
+  jobId: string;
+  job_id: string;
+  status: string;
+  statusLabel: string;
+  status_label: string;
+  phase: string;
+  progressMessage: string | null;
+  progress_message: string | null;
+  createdAt: string;
+  created_at: string;
+  scoreSnapshot: Record<string, number>;
+  score_snapshot: Record<string, number>;
+  primaryArtifacts: Array<{
+    role: string;
+    label?: string;
+    name: string;
+    relative_path: string;
+    relativePath?: string;
+    note?: string;
+    kind?: string;
+  }>;
+  primary_artifacts: Array<{
+    role: string;
+    label?: string;
+    name: string;
+    relative_path: string;
+    note?: string;
+  }>;
+  visuals: CompareVisual[];
+  outputs: Array<{
+    relative_path: string;
+    display_name: string;
+    url: string;
+    role: string;
+    label: string;
+    kind: string;
+    is_image: boolean;
+    is_pointcloud: boolean;
+    is_model3d: boolean;
+    is_video: boolean;
+    is_log: boolean;
+  }>;
+  previews: Array<{
+    relative_path: string;
+    display_name: string;
+    stored_name: string;
+    url: string;
+    is_image: boolean;
+  }>;
+};
+
+export type ComparePacket = {
+  sampleId: string;
+  sample_id: string;
+  summary: CompareSummary;
+  modelCells: CompareModelCell[];
+  model_cells: CompareModelCell[];
+  reportMarkdown: string;
+  report_markdown: string;
+};
+
+export type BatchCompareResponse = {
+  ok: boolean;
+  sampleId: string;
+  sample_id: string;
+  models: string[];
+  createdJobs: JobPayload[];
+  created_jobs: JobPayload[];
+  dispatchResults: Array<{
+    job_id: string;
+    model: string;
+    dispatched: boolean;
+  }>;
+  dispatch_results: Array<{
+    job_id: string;
+    model: string;
+    dispatched: boolean;
+  }>;
+  compare: ComparePacket;
+};

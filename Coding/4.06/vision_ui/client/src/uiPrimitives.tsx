@@ -53,7 +53,12 @@ export function MessageBanner(props: { kind: "info" | "error"; message: string }
 }
 
 export function StatusBadge(props: { state: string; label: string }) {
-  return <span className={`status-badge ${props.state}`}>{props.label}</span>;
+  return (
+    <span className={`status-badge ${props.state}`}>
+      <span className="status-dot" />
+      {props.label}
+    </span>
+  );
 }
 
 export function ModelSemanticChips(props: {

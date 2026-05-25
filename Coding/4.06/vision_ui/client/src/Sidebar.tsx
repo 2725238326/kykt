@@ -1,4 +1,15 @@
+import type React from "react";
 import { WorkspaceTab } from "./App";
+import { 
+  ListTodo, 
+  Plus, 
+  FlaskConical, 
+  LayoutGrid, 
+  Rocket, 
+  Settings,
+  Activity,
+  type LucideIcon
+} from "lucide-react";
 
 interface SidebarProps {
   activeWorkspace: WorkspaceTab;
@@ -6,24 +17,48 @@ interface SidebarProps {
   summary: {
     total: number;
     running: number;
+    pending?: number;
+    finished?: number;
   };
 }
 
 export function Sidebar({ activeWorkspace, onWorkspaceChange, summary }: SidebarProps) {
-  const navItems: Array<{ key: WorkspaceTab; label: string; icon: string }> = [
-    { key: "queue", label: "工作队列", icon: "📋" },
-    { key: "create", label: "新建任务", icon: "➕" },
-    { key: "samples", label: "样例矩阵", icon: "📊" },
-    { key: "development", label: "研发加速", icon: "🚀" },
-    { key: "system", label: "系统配置", icon: "⚙️" },
+  const navItems: Array<{ key: WorkspaceTab; label: string; Icon: LucideIcon; badge?: () => React.ReactNode }> = [
+    { 
+      key: "queue", 
+      label: "工作队列", 
+      Icon: ListTodo,
+      badge: () => summary.running > 0 ? (
+        <span className="nav-badge running">{summary.running}</span>
+      ) : summary.total > 0 ? (
+        <span className="nav-badge">{summary.total}</span>
+      ) : null
+    },
+    { key: "create", label: "新建任务", Icon: Plus },
+    { key: "compare", label: "对比面板", Icon: FlaskConical },
+    { key: "samples", label: "样例矩阵", Icon: LayoutGrid },
+    { key: "development", label: "研发加速", Icon: Rocket },
+    { key: "system", label: "系统配置", Icon: Settings },
   ];
 
   return (
     <aside className="workspace-sidebar">
       <div className="sidebar-header">
         <div className="brand-mark">K</div>
-        <strong>KYKT Vision</strong>
+        <div className="sidebar-brand">
+          <strong>KYKT Vision</strong>
+          <span className="sidebar-subtitle">Local Workbench</span>
+        </div>
       </div>
+
+      {/* Quick Stats */}
+      {summary.running > 0 && (
+        <div className="sidebar-status">
+          <Activity size={12} className="status-pulse" />
+          <span>{summary.running} 任务运行中</span>
+        </div>
+      )}
+
       <nav className="sidebar-nav">
         {navItems.map((item) => (
           <button
@@ -31,19 +66,15 @@ export function Sidebar({ activeWorkspace, onWorkspaceChange, summary }: Sidebar
             className={`nav-item ${activeWorkspace === item.key ? "active" : ""}`}
             onClick={() => onWorkspaceChange(item.key)}
           >
-            <span>{item.icon}</span>
-            {item.label}
-            {item.key === "queue" && summary.running > 0 && (
-              <span className="section-pill" style={{ marginLeft: "auto" }}>{summary.running}</span>
-            )}
+            <item.Icon size={16} strokeWidth={1.75} />
+            <span>{item.label}</span>
+            {item.badge?.()}
           </button>
         ))}
       </nav>
+
       <div className="sidebar-footer">
-        <div className="dense-text">
-          <p>Local Desktop Workbench</p>
-          <small className="muted-text">v0.1.0-alpha</small>
-        </div>
+        <span className="sidebar-version">v0.3.0</span>
       </div>
     </aside>
   );
