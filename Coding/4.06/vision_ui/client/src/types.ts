@@ -614,3 +614,95 @@ export type BatchCompareResponse = {
   }>;
   compare: ComparePacket;
 };
+
+// ══════════════════════════════════════════════════════════════════
+// P1/P2: Scheduler, Resources, Metrics
+// ══════════════════════════════════════════════════════════════════
+
+export type SchedulerStatus = {
+  running: boolean;
+  max_concurrent: number;
+  queue_length: number;
+  running_count: number;
+  queued_jobs: Array<{
+    job_id: string;
+    priority: "high" | "normal" | "low";
+    retry_count: number;
+    score: number;
+  }>;
+  running_jobs: Array<{
+    job_id: string;
+    priority: "high" | "normal" | "low";
+    started_at: number | null;
+  }>;
+};
+
+export type SystemResources = {
+  cpu_percent: number;
+  memory: {
+    used_mb: number;
+    total_mb: number;
+    free_mb: number;
+    used_percent: number;
+  };
+  disk: {
+    used_gb: number;
+    total_gb: number;
+    free_gb: number;
+    used_percent: number;
+  };
+  gpus: Array<{
+    index: number;
+    name: string;
+    memory_used_mb: number;
+    memory_total_mb: number;
+    memory_free_mb: number;
+    memory_used_percent: number;
+    utilization_percent: number;
+    temperature_c: number | null;
+  }>;
+  gpu_count: number;
+  timestamp: number;
+};
+
+export type JobMetrics = {
+  job_id: string;
+  metrics: {
+    depth?: {
+      file: string;
+      shape: number[];
+      min: number;
+      max: number;
+      metrics: {
+        rmse: number;
+        abs_rel: number;
+        sq_rel: number;
+        delta_1: number;
+        delta_2: number;
+        delta_3: number;
+        valid_ratio: number;
+      };
+    };
+    pointcloud?: {
+      file: string;
+      metrics: {
+        point_count: number;
+        density: number;
+        coverage_ratio: number;
+        bbox: { min: number[]; max: number[] };
+        centroid: number[];
+      };
+    };
+    trajectory?: {
+      file: string;
+      metrics: {
+        ate: number;
+        rpe_trans: number;
+        rpe_rot_deg: number;
+        frame_count: number;
+        path_length: number;
+      };
+    };
+    error?: string;
+  };
+};

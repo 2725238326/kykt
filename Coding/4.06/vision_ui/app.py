@@ -78,6 +78,7 @@ from job_scheduler import JobPriority, scheduler
 from resource_monitor import monitor as resource_monitor
 from metrics_calculator import compute_job_metrics
 from report_exporter import build_job_report, build_compare_report, export_html, export_pdf
+from visual_artifacts import generate_job_visuals, generate_compare_visuals
 
 _RUNNER_THREADS: dict[str, threading.Thread] = {}
 _RUNNER_THREADS_LOCK = threading.Lock()
@@ -2445,6 +2446,47 @@ async def compare_report_api(sample_id: str, format: str = "html"):
             return FileResponse(pdf_path, filename=f"compare_report_{sample_id}.pdf", media_type="application/pdf")
     
     return PlainTextResponse(html_content, media_type="text/html")
+
+
+@app.post("/api/jobs/{job_id}/visuals/generate")
+async def generate_job_visuals_api(job_id: str):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    
+    job_dir = get_job_dir(job_id)
+    results = generate_job_visuals(job_dir)
+    return JSONResponse({"job_id": job_id, "visuals": results})
+
+
+@app.get("/api/jobs/{job_id}/visuals/{filename}")
+async def get_job_visual_api(job_id: str, filename: str):
+    try:
+        load_job(job_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=f"未找到任务 {job_id}。") from exc
+    
+    visual_path = get_job_dir(job_id) / "visuals" / filename
+    if not visual_path.exists():
+        raise HTTPException(status_code=404, detail=f"未找到可视化文件 {filename}。")
+    
+    media_type = "image/png" if filename.endswith(".png") else "image/gif"
+    return FileResponse(visual_path, media_type=media_type)
+
+
+@app.post("/api/compare/samples/{sample_id}/visuals/generate")
+async def generate_compare_visuals_api(sample_id: str):
+    jobs = [j for j in list_all_jobs() if j.sample_id == sample_id]
+    if not jobs:
+        raise HTTPException(status_code=404, detail=f"未找到样例 {sample_id} 的任务。")
+    
+    job_dirs = [get_job_dir(j.job_id) for j in jobs]
+    labels = [j.model for j in jobs]
+    output_dir = Path(f"compare_visuals_{sample_id}")
+    
+    results = generate_compare_visuals(job_dirs, labels, output_dir)
+    return JSONResponse({"sample_id": sample_id, "visuals": results})
 
 
 @app.on_event("startup")
