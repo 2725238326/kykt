@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-05-30T16:13:02.696Z",
-  "turn_count": 343,
-  "last_progress_at": "2026-05-30T16:13:02.696Z",
-  "last_agent_output": "{\"suggestions\":[{\"title\":\"Queue batch compare runs instead of dispatching every model immediately\",\""
+  "last_turn_at": "2026-06-08T13:23:28.672Z",
+  "turn_count": 344,
+  "last_progress_at": "2026-06-08T13:23:28.672Z",
+  "last_agent_output": "老版本 exe 都在：\n\n[E:\\kykt\\release\\kykt_vision_client](E:/kykt/release/kykt_vision_client)\n\n如果你说“现在推荐打开的旧"
 }
