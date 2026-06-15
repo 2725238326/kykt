@@ -1,6 +1,6 @@
 {
-  "last_turn_at": "2026-06-08T13:23:28.672Z",
-  "turn_count": 344,
-  "last_progress_at": "2026-06-08T13:23:28.672Z",
-  "last_agent_output": "老版本 exe 都在：\n\n[E:\\kykt\\release\\kykt_vision_client](E:/kykt/release/kykt_vision_client)\n\n如果你说“现在推荐打开的旧"
+  "last_turn_at": "2026-06-12T20:48:36.968Z",
+  "turn_count": 347,
+  "last_progress_at": "2026-06-12T20:48:36.968Z",
+  "last_agent_output": "我已经按这个意见重构了一版，不是短版提纲，也没有回到“模型大全”。\n\n这版主要改成了更正式的综述思路：\n\n- 扩到 9 页，正文不再太简略。\n- 结构改为：传统流程 → 点图接口 → DUSt3R/M"
 }
